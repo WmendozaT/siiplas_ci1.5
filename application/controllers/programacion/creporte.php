@@ -500,7 +500,7 @@ class Creporte extends CI_Controller {
             $pie=$this->programacionpoa->pie_form($proyecto);
 
             $requerimientos='<b>SIN REQUERIMIENTOS PROGRAMADOS .</b>';
-            $items=$this->model_insumo->list_requerimientos_operacion_procesos($com_id);
+            $items=$this->model_insumo->list_requerimientos_uresponsable($com_id); //// nuevo
             if(count($items)!=0){
                 $requerimientos=$this->programacionpoa->list_requerimientos_reporte($items);
             }

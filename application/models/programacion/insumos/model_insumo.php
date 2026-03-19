@@ -389,7 +389,7 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    // lista de requerimientos alineados a la operacion y a la subactividad
+    // lista de requerimientos alineados a la operacion y a la subactividad (anterior a borrar)
     function list_requerimientos_operacion_procesos($com_id){
         $sql = ' select 
                 p.com_id,
@@ -414,11 +414,17 @@ class Model_insumo extends CI_Model{
                 Inner Join partidas as par On par.par_id=i.par_id
                 where p.com_id='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
                 order by p.prod_cod,par.par_codigo,i.ins_id asc';
-                
-/*        $sql = 'select 
-                c.com_id,
-                c.pfec_id,
-                i.form4_cod as prod_cod,
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    // lista de requerimientos alineados a la Unidad Responsable
+    function list_requerimientos_uresponsable($com_id){
+        $sql = '
+            SELECT 
+                p.com_id,
+                p.prod_cod,
                 i.ins_id,
                 i.ins_codigo,
                 i.ins_cant_requerida,
@@ -432,18 +438,35 @@ class Model_insumo extends CI_Model{
                 i.ins_tipo_modificacion,
                 par.par_id,
                 par.par_codigo,
-                par.par_nombre
-                from _componentes c
-                Inner Join insumos as i On c.com_id=i.com_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where c.com_id='.$com_id.' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.' 
-                order by i.form4_cod,par.par_codigo,i.ins_id asc';*/
+                par.par_nombre,
+
+                COALESCE(prog.mes1, 0) AS mes_1,
+                COALESCE(prog.mes2, 0) AS mes_2,
+                COALESCE(prog.mes3, 0) AS mes_3,
+                COALESCE(prog.mes4, 0) AS mes_4,
+                COALESCE(prog.mes5, 0) AS mes_5,
+                COALESCE(prog.mes6, 0) AS mes_6,
+                COALESCE(prog.mes7, 0) AS mes_7,
+                COALESCE(prog.mes8, 0) AS mes_8,
+                COALESCE(prog.mes9, 0) AS mes_9,
+                COALESCE(prog.mes10, 0) AS mes_10,
+                COALESCE(prog.mes11, 0) AS mes_11,
+                COALESCE(prog.mes12, 0) AS mes_12
+            FROM _productos p
+            INNER JOIN _insumoproducto AS ip ON p.prod_id = ip.prod_id
+            INNER JOIN insumos AS i ON i.ins_id = ip.ins_id
+            INNER JOIN partidas AS par ON par.par_id = i.par_id
+            LEFT JOIN vista_temporalidad_insumo AS prog ON prog.ins_id = i.ins_id 
+            WHERE p.com_id = '.$com_id.'
+              AND p.estado != 3 
+              AND i.ins_estado != 3 
+              AND i.aper_id != 0 
+              AND i.ins_gestion = '.$this->gestion.'
+            ORDER BY p.prod_cod, par.par_codigo, i.ins_id ASC;';
 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
-
-
 
     // lista de requerimientos alineados a PROGRAMAS BOLSAS por actividad (antiguo)
     function lista_requerimientos_inscritos_en_programas_bosas2($prod_id,$com_id){

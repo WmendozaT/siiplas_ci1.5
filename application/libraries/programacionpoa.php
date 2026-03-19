@@ -2082,16 +2082,9 @@ class Programacionpoa extends CI_Controller{
               $cont = 0; $total=0; $total_cert=0; 
               foreach ($lista_insumos as $row) {
               $cont++;
-              $prog = $this->model_insumo->list_temporalidad_insumo($row['ins_id']);
               $total=$total+$row['ins_costo_total'];
               $total_cert=$total_cert+$row['ins_monto_certificado'];
               $color='';
-              if(count($prog)!=0){
-                if(($row['ins_costo_total'])!=$prog[0]['programado_total']){
-                  $color='#f5bfb6';
-                }
-              }
-
               $tabla.=
               '<tr style="font-size: 6.5px;" >
                   <td style="width: 1%; font-size: 4.5px; text-align: center;height:13px;">'.$cont.'</td>
@@ -2102,38 +2095,10 @@ class Programacionpoa extends CI_Controller{
                   <td style="width: 2%; text-align: right">'.round($row['ins_cant_requerida'],2).'</td>
                   <td style="width: 5%; text-align: right;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
                   <td style="width: 5%; text-align: right;font-size: 7.5px;"><b>'.number_format($row['ins_costo_total'], 2, ',', '.').'</b></td>
-                  <td style="width: 5%; text-align: right;font-size: 7.5px;" bgcolor="#ecfbf9"><b>'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</b></td>'; 
-                  if(count($prog)!=0){ 
-                  $tabla.=
-                  '<td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes1'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes2'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes3'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes4'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes5'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes6'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes7'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes8'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes9'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes10'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes11'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes12'], 2, ',', '.').'</td>';
+                  <td style="width: 5%; text-align: right;font-size: 7.5px;" bgcolor="#ecfbf9"><b>'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</b></td>';
+                  for ($i=1; $i <=12 ; $i++) { 
+                    $tabla.='<td style="width: 4%; text-align: right;">'.number_format($row['mes_1'], 2, ',', '.').'</td>';
                   }
-                  else{
-                  $tabla.=
-                  '<td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>';
-                  }
-
               $tabla.='
                   <td style="width: 8%; text-align: left;">'.$row['ins_observacion'].'</td>
                   
