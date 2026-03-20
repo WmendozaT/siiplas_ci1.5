@@ -390,7 +390,7 @@ class Model_insumo extends CI_Model{
     }
 
     // lista de requerimientos alineados a la operacion y a la subactividad (anterior a borrar)
-    function list_requerimientos_operacion_procesos($com_id){
+/*    function list_requerimientos_operacion_procesos($com_id){
         $sql = ' select 
                 p.com_id,
                 p.prod_cod,
@@ -417,7 +417,7 @@ class Model_insumo extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     // lista de requerimientos alineados a la Unidad Responsable
     function list_requerimientos_uresponsable($com_id){
@@ -456,7 +456,7 @@ class Model_insumo extends CI_Model{
             INNER JOIN _insumoproducto AS ip ON p.prod_id = ip.prod_id
             INNER JOIN insumos AS i ON i.ins_id = ip.ins_id
             INNER JOIN partidas AS par ON par.par_id = i.par_id
-            LEFT JOIN vista_temporalidad_insumo AS prog ON prog.ins_id = i.ins_id 
+            LEFT JOIN vista_temporalidad_insumo2 AS prog ON prog.ins_id = i.ins_id 
             WHERE p.com_id = '.$com_id.'
               AND p.estado != 3 
               AND i.ins_estado != 3 
@@ -485,13 +485,27 @@ class Model_insumo extends CI_Model{
 
     /// lista consolidado de requerimientos (todos) en prog bolsas
     function lista_requerimientos_inscritos_en_programas_bosas($aper_id,$com_id){
-         $sql = 'select p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre
+        $sql = 'SELECT p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre,
+                COALESCE(prog.mes1, 0) AS mes_1,
+                COALESCE(prog.mes2, 0) AS mes_2,
+                COALESCE(prog.mes3, 0) AS mes_3,
+                COALESCE(prog.mes4, 0) AS mes_4,
+                COALESCE(prog.mes5, 0) AS mes_5,
+                COALESCE(prog.mes6, 0) AS mes_6,
+                COALESCE(prog.mes7, 0) AS mes_7,
+                COALESCE(prog.mes8, 0) AS mes_8,
+                COALESCE(prog.mes9, 0) AS mes_9,
+                COALESCE(prog.mes10, 0) AS mes_10,
+                COALESCE(prog.mes11, 0) AS mes_11,
+                COALESCE(prog.mes12, 0) AS mes_12
                 from _productos p
                 Inner Join _insumoproducto as ip On p.prod_id=ip.prod_id
                 Inner Join insumos as i On i.ins_id=ip.ins_id
                 Inner Join partidas as par On par.par_id=i.par_id
-                where i.aper_id='.$aper_id.' and p.uni_resp='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
-                group by p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre
+                LEFT JOIN vista_temporalidad_insumo2 AS prog ON prog.ins_id = i.ins_id
+                where i.aper_id='.$aper_id.' and p.uni_resp='.$com_id.' and p.estado!=3 and i.ins_estado!=3 and i.aper_id!=0 and i.ins_gestion='.$this->gestion.'
+                group by p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre,
+                prog.mes1,prog.mes2,prog.mes3,prog.mes4,prog.mes5,prog.mes6,prog.mes7,prog.mes8,prog.mes9,prog.mes10,prog.mes11,prog.mes12
                 order by p.prod_cod,par.par_codigo,i.ins_id asc';
 
         $query = $this->db->query($sql);
@@ -535,19 +549,23 @@ class Model_insumo extends CI_Model{
 
     // LISTA CONSOLIDADO POR PARTIDAS PROGRAMAS BOLSAS 2026
     function list_consolidado_partidas_programas_boLsas_uresponsable($aper_id,$com_id){
-         $sql = 'select poa.par_id,poa.par_codigo,poa.par_nombre,SUM(poa.ins_costo_total) as monto
-                from (
-                    select p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre
-                    from _productos p
-                    Inner Join _insumoproducto as ip On p.prod_id=ip.prod_id
-                    Inner Join insumos as i On i.ins_id=ip.ins_id
-                    Inner Join partidas as par On par.par_id=i.par_id
-                    where i.aper_id='.$aper_id.' and p.uni_resp='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
-                    group by p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre
-                    order by par.par_codigo,i.ins_id asc
-                ) poa
-                group by poa.par_id,poa.par_codigo,poa.par_nombre
-                order by poa.par_codigo asc';
+        $sql = 'SELECT 
+                    par.par_id, 
+                    par.par_codigo, 
+                    par.par_nombre, 
+                    SUM(i.ins_costo_total) AS monto
+                FROM _productos p
+                INNER JOIN _insumoproducto ip ON p.prod_id = ip.prod_id
+                INNER JOIN insumos i ON i.ins_id = ip.ins_id
+                INNER JOIN partidas par ON par.par_id = i.par_id
+                WHERE i.aper_id = '.$aper_id.'
+                  AND p.uni_resp = '.$com_id.'
+                  AND p.estado != 3 
+                  AND i.ins_estado != 3
+                  AND i.aper_id != 0
+                  AND i.ins_gestion = '.$this->gestion.'
+                GROUP BY par.par_id, par.par_codigo, par.par_nombre
+                ORDER BY par.par_codigo ASC';
 
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -557,13 +575,22 @@ class Model_insumo extends CI_Model{
     /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2022 -----*/
     function list_consolidado_partidas_componentes($com_id){
         if($this->gestion>2021){ /// 2022
-            $sql = 'select c.com_id, c.pfec_id,par.par_id, par.par_codigo,par.par_nombre, SUM(i.ins_costo_total) as monto
-                from _componentes c
-                Inner Join insumos as i On i.com_id=c.com_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where c.com_id='.$com_id.' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
-                group by c.com_id, c.pfec_id,par.par_id,   par.par_codigo,par.par_nombre
-                order by par.par_codigo asc';
+            $sql = 'SELECT 
+                        c.com_id, 
+                        c.pfec_id, 
+                        par.par_id, 
+                        par.par_codigo, 
+                        par.par_nombre, 
+                        SUM(i.ins_costo_total) AS monto
+                    FROM _componentes c
+                    INNER JOIN insumos i ON i.com_id = c.com_id
+                    INNER JOIN partidas par ON par.par_id = i.par_id
+                    WHERE c.com_id = '.$com_id.' 
+                      AND i.ins_gestion = '.$this->gestion.'
+                      AND i.ins_estado != 3 
+                      AND i.aper_id != 0 
+                    GROUP BY c.com_id, c.pfec_id, par.par_id, par.par_codigo, par.par_nombre
+                    ORDER BY par.par_codigo ASC';
         }
         else{
             $sql = 'select c.com_id, c.pfec_id,par.par_id, par.par_codigo,par.par_nombre, SUM(i.ins_costo_total) as monto
@@ -594,7 +621,7 @@ class Model_insumo extends CI_Model{
     }
 
     /*---- LISTA GET MONTO PROGRAMADO POR PARTIDA Y PROGRAMA UNIDAD REPONSABLE 2023 -----*/
-    function get_monto_programado_x_partida_programa_uresponsable($com_id,$par_id,$aper_id_oe){
+/*    function get_monto_programado_x_partida_programa_uresponsable($com_id,$par_id,$aper_id_oe){
                 $sql = 'select com_id,par_id,par_codigo,par_nombre,obj_id,aper_id_oe,SUM(ins_costo_total) monto
                         from vista_get_detalle_x_cat_programatica_partida_form5
                         where com_id='.$com_id.' and g_id='.$this->gestion.' and par_id='.$par_id.' and aper_id_oe='.$aper_id_oe.'
@@ -602,7 +629,7 @@ class Model_insumo extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
     /////===== END CONSOLIDADO DE PARTIDAS POR UNIDAD RESPONSABLE
 
 
@@ -619,7 +646,7 @@ class Model_insumo extends CI_Model{
     }
 
     /*---- LISTA GET MONTO PROGRAMADO POR PARTIDA Y PROGRAMA UNIDAD REPONSABLE 2023 -----*/
-    function get_monto_programado_x_partida_programa_unidad($proy_id,$par_id,$aper_id_oe){
+/*    function get_monto_programado_x_partida_programa_unidad($proy_id,$par_id,$aper_id_oe){
         $sql = 'select proy_id,par_id,par_codigo,par_nombre,obj_id,aper_id_oe,SUM(ins_costo_total) monto
                 from vista_get_detalle_x_cat_programatica_partida_form5
                 where proy_id='.$proy_id.' and g_id='.$this->gestion.' and par_id='.$par_id.' and aper_id_oe='.$aper_id_oe.'
@@ -627,7 +654,7 @@ class Model_insumo extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
     /////===== END CONSOLIDADO DE PARTIDAS POR UNIDAD RESPONSABLE
 
 

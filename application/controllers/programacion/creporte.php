@@ -370,7 +370,7 @@ class Creporte extends CI_Controller {
                     }
                     
                     $cabecera_f5=$this->programacionpoa->cabecera($proyecto[0]['tp_id'],5,$proyecto,$componente);
-                    $list_insumos=$this->model_insumo->list_requerimientos_operacion_procesos($pr['com_id']); /// lista de requerimientos
+                    $list_insumos=$this->model_insumo->list_requerimientos_uresponsable($pr['com_id']); /// lista de requerimientos
                     $requerimientos=$this->programacionpoa->list_requerimientos_reporte($list_insumos);
                     
                     $lista_partidas=$this->model_insumo->list_consolidado_partidas_componentes($pr['com_id']);

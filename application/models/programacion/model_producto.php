@@ -212,36 +212,63 @@ class model_producto extends CI_Model {
 
         if($tp==0){ /// listado normal POA (Actividades)
             $sql = '
-                select apg.aper_programa,p.prod_id,p.com_id,p.prod_priori,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
-                p.prod_resultado,p.acc_id,p.prod_cod,p.uni_resp,p.prod_observacion,p.mt_id,p.or_id,i.indi_descripcion,i.indi_abreviacion,
-                ore.or_id,ore.or_codigo,og.og_id,og.og_codigo,enero as m1,febrero as m2, marzo as m3, abril as m4,mayo as m5, junio as m6, julio as m7, agosto as m8, septiembre as m9, octubre as m10, noviembre as m11, diciembre as m12, prog.g_id
-                from _productos p
-                Inner Join indicador as i On i.indi_id=p.indi_id
-                Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=og.aper_id
-                Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=p.prod_id
-                where p.com_id='.$com_id.' and p.estado!=\'3\'
-                order by p.prod_cod asc'; 
+                    SELECT 
+                        apg.aper_programa, p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
+                        p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
+                        p.prod_unidades, p.prod_ponderacion, p.estado, p.prod_mod, p.prod_resultado, p.acc_id, 
+                        p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id, p.or_id, 
+                        i.indi_descripcion, i.indi_abreviacion,
+                        ore.or_id, ore.or_codigo, 
+                        og.og_id, og.og_codigo, 
+                        prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
+                        prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
+                        prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
+                        prog.g_id
+                    FROM _productos p
+                    INNER JOIN indicador i ON i.indi_id = p.indi_id
+                    INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+                    -- Usamos DISTINCT o limitamos la relación si solo necesitas los datos del objetivo
+                    INNER JOIN (
+                        SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
+                    ) opm ON ore.pog_id = opm.pog_id
+                    INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+                    INNER JOIN aperturaprogramatica apg ON apg.aper_id = og.aper_id
+                    INNER JOIN vista_temporalidad_form4_programado prog ON prog.prod_id = p.prod_id
+                    WHERE p.com_id = '.$com_id.' 
+                      AND p.estado != 3
+                    ORDER BY p.prod_cod ASC'; 
         }
         else{ /// listado POa bolsas
             $sql = '
-                select apg.aper_programa,p.prod_id,p.com_id,p.prod_priori,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
-                p.prod_resultado,p.acc_id,p.prod_cod,p.uni_resp,p.prod_observacion,p.mt_id,p.or_id,i.indi_descripcion,i.indi_abreviacion,
-                ore.or_id,ore.or_codigo,og.og_id,og.og_codigo,enero as m1,febrero as m2, marzo as m3, abril as m4,mayo as m5, junio as m6, julio as m7, agosto as m8, septiembre as m9, octubre as m10, noviembre as m11, diciembre as m12, prog.g_id
-                from _productos p
-                Inner Join indicador as i On i.indi_id=p.indi_id
-                Inner Join _componentes as c On p.com_id=c.com_id
-                Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-                Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
-
-                Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=p.prod_id
-                where p.uni_resp='.$com_id.' and prog.g_id='.$this->gestion.' and p.estado!=\'3\'
-                order by apg.aper_programa,p.prod_cod asc'; 
+            SELECT 
+                apg.aper_programa, p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
+                p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
+                p.prod_unidades, p.prod_ponderacion, p.estado, p.prod_mod, p.prod_resultado, p.acc_id, 
+                p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id, p.or_id, 
+                i.indi_descripcion, i.indi_abreviacion,
+                ore.or_id, ore.or_codigo, 
+                og.og_id, og.og_codigo, 
+                prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
+                prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
+                prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
+                prog.g_id
+            FROM _productos p
+            INNER JOIN indicador i ON i.indi_id = p.indi_id
+            INNER JOIN _componentes c ON p.com_id = c.com_id
+            INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
+            INNER JOIN aperturaprogramatica apg ON apg.aper_id = pfe.aper_id
+            INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+            -- Reducimos la tabla de objetivos mensuales a valores únicos para evitar duplicados
+            INNER JOIN (
+                SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
+            ) opm ON ore.pog_id = opm.pog_id
+            INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+            -- Tu nueva vista optimizada con SUM()
+            INNER JOIN vista_temporalidad_form4_programado prog ON prog.prod_id = p.prod_id
+            WHERE p.uni_resp = '.$com_id.' 
+              AND prog.g_id = '.$this->gestion.' 
+              AND p.estado != 3
+            ORDER BY apg.aper_programa, p.prod_cod ASC'; 
         }
         
         $query = $this->db->query($sql);
@@ -354,17 +381,6 @@ class model_producto extends CI_Model {
                 where p.com_id='.$com_id.' and p.estado!=\'3\'
                 order by p.prod_cod asc'; 
 
-        /*$sql = 'select p.prod_id,p.com_id,p.prod_priori,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
-                p.prod_resultado,p.acc_id,p.prod_cod,p.uni_resp,p.prod_observacion,p.mt_id,p.or_id,i.indi_descripcion,i.indi_abreviacion,
-                ore.or_id,ore.or_codigo,og.og_id,og.og_codigo
-                from _productos p
-                Inner Join indicador as i On i.indi_id=p.indi_id
-                Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
-                where p.com_id='.$com_id.' and p.estado!=\'3\'
-                order by p.prod_cod asc'; */
-        
         $query = $this->db->query($sql);
         return $query->result_array();
     }
@@ -373,22 +389,33 @@ class model_producto extends CI_Model {
 
     /*=== LISTA DE OPERACIONES (2020) REPORTE - GASTO CORRIENTE ===*/
     function list_operaciones_pi($com_id){
-        $sql = 'select p.prod_id,p.com_id,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
-                p.prod_resultado,p.acc_id,p.prod_cod, p.prod_observacion,p.mt_id,p.or_id,i.indi_descripcion,
-                ore.or_id,ore.or_codigo,og.og_id,og.og_codigo, oe.obj_codigo,pr.*
-                from _productos p
-                Inner Join indicador as i On i.indi_id=p.indi_id
-                Inner Join vista_productos_temporalizacion_programado_dictamen as pr On pr.prod_id=p.prod_id
-                
-                Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
-
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
-              
-                Inner Join _objetivos_estrategicos as oe On oe.obj_id=og.oe_id
-                
-                where p.com_id='.$com_id.' and p.estado!=\'3\' and pr.g_id='.$this->gestion.'
-                order by p.prod_cod, oe.obj_codigo asc'; 
+        $sql = 'SELECT 
+                    p.prod_id, p.com_id, p.prod_producto, p.prod_ppto, p.indi_id, p.prod_indicador, 
+                    p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, p.prod_unidades, 
+                    p.prod_ponderacion, p.estado, p.prod_mod, p.prod_resultado, p.acc_id, p.prod_cod, 
+                    p.prod_observacion, p.mt_id, p.or_id, 
+                    i.indi_descripcion,
+                    ore.or_id, ore.or_codigo, 
+                    og.og_id, og.og_codigo, 
+                    oe.obj_codigo,
+                    -- Traemos solo lo necesario de la vista (meses y g_id)
+                    pr.mes1, pr.mes2, pr.mes3, pr.mes4, pr.mes5, pr.mes6, 
+                    pr.mes7, pr.mes8, pr.mes9, pr.mes10, pr.mes11, pr.mes12, pr.g_id
+                FROM _productos p
+                INNER JOIN indicador i ON i.indi_id = p.indi_id
+                -- Tu nueva vista optimizada con SUM
+                INNER JOIN vista_temporalidad_form4_programado pr ON pr.prod_id = p.prod_id
+                INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+                -- Reducimos para evitar que un objetivo con 12 meses duplique el producto
+                INNER JOIN (
+                    SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
+                ) opm ON ore.pog_id = opm.pog_id
+                INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+                INNER JOIN _objetivos_estrategicos oe ON oe.obj_id = og.oe_id
+                WHERE p.com_id = '.$com_id.' 
+                  AND p.estado != 3 
+                  AND pr.g_id = '.$this->gestion.'
+                ORDER BY p.prod_cod, oe.obj_codigo ASC'; 
         $query = $this->db->query($sql);
         return $query->result_array();
     }

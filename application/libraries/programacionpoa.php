@@ -1815,20 +1815,11 @@ class Programacionpoa extends CI_Controller{
                   <td style="width: 13%; text-align: justify;">'.$rowp['prod_resultado'].'</td>
                   <td style="width:12%; text-align: justify;">'.$rowp['prod_indicador'].'</td>
                   <td style="width:2%; text-align: center;">'.round($rowp['prod_linea_base'],2).'</td>
-                  <td style="width:2.5%; text-align: center;"><b>'.round($rowp['prod_meta'],2).''.$tp.'</b></td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['enero'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['febrero'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['marzo'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['abril'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['mayo'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['junio'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['julio'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['agosto'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['septiembre'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['octubre'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['noviembre'],2).''.$tp.'</td>
-                  <td style="width:2.5%;" align=center>'.round($rowp['diciembre'],2).''.$tp.'</td>
-                  <td style="width:10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
+                  <td style="width:2.5%; text-align: center;"><b>'.round($rowp['prod_meta'],2).''.$tp.'</b></td>';
+                  for ($i=1; $i <=12 ; $i++) { 
+                    $tabla.='<td style="width:2.5%;" align=center>'.round($rowp['mes'.$i],2).''.$tp.'</td>';
+                  }
+                  $tabla.='
                 </tr>';            
               }
         $tabla.='
@@ -2097,7 +2088,7 @@ class Programacionpoa extends CI_Controller{
                   <td style="width: 5%; text-align: right;font-size: 7.5px;"><b>'.number_format($row['ins_costo_total'], 2, ',', '.').'</b></td>
                   <td style="width: 5%; text-align: right;font-size: 7.5px;" bgcolor="#ecfbf9"><b>'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</b></td>';
                   for ($i=1; $i <=12 ; $i++) { 
-                    $tabla.='<td style="width: 4%; text-align: right;">'.number_format($row['mes_1'], 2, ',', '.').'</td>';
+                    $tabla.='<td style="width: 4%; text-align: right;">'.number_format($row['mes_'.$i], 2, ',', '.').'</td>';
                   }
               $tabla.='
                   <td style="width: 8%; text-align: left;">'.$row['ins_observacion'].'</td>
@@ -2119,115 +2110,8 @@ class Programacionpoa extends CI_Controller{
 
 
 
-    /*----- REPORTE - FORMULARIO 5 PARA PROGRAMAS BOSAS (LISTA LOS REQUERIMIENTOS QUE SE ENCUENTRAN EN PROGRAMAS BOLSAS POR UNIDAD RESPONSABLE)-----*/
-   /* public function list_requerimientos_programas_bolsas_unidadresponsable($prod_id,$com_id){
-      $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($prod_id,$com_id); /// Lista requerimientos
-      $tabla='';
-      $tabla.=' 
-          <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;">
-              <thead>
-              <tr style="font-size: 7px;" bgcolor="#eceaea" align=center>
-                <th style="width:1%;height:15px;">#</th>
-                <th style="width:2%;">COD.<br>ACT.</th> 
-                <th style="width:4%;">PARTIDA</th>
-                <th style="width:15%;">DETALLE REQUERIMIENTO</th>
-                <th style="width:3%;">UNIDAD</th>
-                <th style="width:2%;">CANT.</th>
-                <th style="width:5%;">UNITARIO</th>
-                <th style="width:5%;">TOTAL</th>
-                <th style="width:5%;">TOTAL CERT.</th>
-                <th style="width:4%;">ENE.</th>
-                <th style="width:4%;">FEB.</th>
-                <th style="width:4%;">MAR.</th>
-                <th style="width:4%;">ABR.</th>
-                <th style="width:4%;">MAY.</th>
-                <th style="width:4%;">JUN.</th>
-                <th style="width:4%;">JUL.</th>
-                <th style="width:4%;">AGO.</th>
-                <th style="width:4%;">SEPT.</th>
-                <th style="width:4%;">OCT.</th>
-                <th style="width:4%;">NOV.</th>
-                <th style="width:4%;">DIC.</th>
-                <th style="width:8%;">OBSERVACI&Oacute;N</th>
-              </tr>
-              </thead>
-              <tbody>';
-              $cont = 0; $total=0; $total_cert=0;
-              foreach ($lista_insumos as $row) {
-              $cont++;
-              $prog = $this->model_insumo->list_temporalidad_insumo($row['ins_id']);
-              $total=$total+$row['ins_costo_total'];
-              $total_cert=$total_cert+$row['ins_monto_certificado'];
-              $color='';
-              if(count($prog)!=0){
-                if(($row['ins_costo_total'])!=$prog[0]['programado_total']){
-                  $color='#f5bfb6';
-                }
-              }
-
-              $tabla.=
-              '<tr style="font-size: 6.5px;" >
-                  <td style="width: 1%; font-size: 4.5px; text-align: center;height:13px;">'.$cont.'</td>
-                  <td style="width: 2%; text-align: center; font-size: 8px;"><b>'.$row['prod_cod'].'</b></td>
-                  <td style="width: 4%; text-align: center;font-size: 8px;"><b>'.$row['par_codigo'].'</b></td>
-                  <td style="width: 18%; text-align: left;font-size: 7.5px;">'.strtoupper($row['ins_detalle']).'</td>
-                  <td style="width: 5%; text-align: left">'.strtoupper($row['ins_unidad_medida']).'</td>
-                  <td style="width: 4%; text-align: right">'.round($row['ins_cant_requerida'],2).'</td>
-                  <td style="width: 5%; text-align: right;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
-                  <td style="width: 5%; text-align: right;font-size: 7.5px;">'.number_format($row['ins_costo_total'], 2, ',', '.').'</td>
-                  <td style="width: 5%; text-align: right;font-size: 7.5px;" bgcolor="#ecfbf9"><b>'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</b></td>';  
-                  if(count($prog)!=0){ 
-                  $tabla.=
-                  '<td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes1'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes2'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes3'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes4'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes5'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes6'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes7'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes8'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes9'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes10'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes11'], 2, ',', '.').'</td>
-                  <td style="width: 4%; text-align: right;">'.number_format($prog[0]['mes12'], 2, ',', '.').'</td>';
-                  }
-                  else{
-                  $tabla.=
-                  '<td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>
-                  <td style="width: 4%; text-align: right; color: red">0.00</td>';
-                  }
-
-              $tabla.='
-                  <td style="width: 8%; text-align: left;">'.$row['ins_observacion'].'</td>
-                  
-              </tr>';
-              }
-
-          $tabla.='
-              </tbody>
-              <tr class="modo1" bgcolor="#eceaea">
-                  <td colspan="7" style="height:10px;" ><b>TOTAL PROGRAMADO </b></td>
-                  <td style="width: 4%; text-align: right; font-size: 7px;"><b>'.number_format($total, 2, ',', '.').'</b></td>
-                  <td style="width: 4%; text-align: right; font-size: 7px;"><b>'.number_format($total_cert, 2, ',', '.').'</b></td>
-                  <td colspan="13"></td>
-              </tr>
-          </table><br>';
-      return $tabla;
-    }*/
-
-
-  /*----- REPORTE - FORMULARIO 5 VER REQ POR COMPONENTE-----*/
-    public function list_requerimientos_componente($componente){
+  /*----- REPORTE - FORMULARIO 5 VER REQ POR COMPONENTE (a borrar)-----*/
+   /* public function list_requerimientos_componente($componente){
       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
       $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
 
@@ -2334,7 +2218,7 @@ class Programacionpoa extends CI_Controller{
               </tr>
           </table><br>';
       return $tabla;
-    }
+    }*/
 
 
 

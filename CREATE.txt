@@ -1,0 +1,55 @@
+CREATE OR REPLACE VIEW public.vista_temporalidad_insumo2 AS 
+SELECT 
+    ins_id,
+    SUM(ipm_fis) AS programado_total,
+    SUM(CASE WHEN mes_id = 1 THEN ipm_fis ELSE 0 END) AS mes1,
+    SUM(CASE WHEN mes_id = 2 THEN ipm_fis ELSE 0 END) AS mes2,
+    SUM(CASE WHEN mes_id = 3 THEN ipm_fis ELSE 0 END) AS mes3,
+    SUM(CASE WHEN mes_id = 4 THEN ipm_fis ELSE 0 END) AS mes4,
+    SUM(CASE WHEN mes_id = 5 THEN ipm_fis ELSE 0 END) AS mes5,
+    SUM(CASE WHEN mes_id = 6 THEN ipm_fis ELSE 0 END) AS mes6,
+    SUM(CASE WHEN mes_id = 7 THEN ipm_fis ELSE 0 END) AS mes7,
+    SUM(CASE WHEN mes_id = 8 THEN ipm_fis ELSE 0 END) AS mes8,
+    SUM(CASE WHEN mes_id = 9 THEN ipm_fis ELSE 0 END) AS mes9,
+    SUM(CASE WHEN mes_id = 10 THEN ipm_fis ELSE 0 END) AS mes10,
+    SUM(CASE WHEN mes_id = 11 THEN ipm_fis ELSE 0 END) AS mes11,
+    SUM(CASE WHEN mes_id = 12 THEN ipm_fis ELSE 0 END) AS mes12
+FROM temporalidad_prog_insumo
+GROUP BY ins_id;
+
+
+
+CREATE INDEX idx_temporalidad_insid ON temporalidad_prog_insumo(ins_id);
+
+CREATE INDEX idx_insumos_opt ON insumos (com_id, ins_gestion, ins_estado, aper_id);
+
+CREATE INDEX idx_componentes_id ON _componentes (com_id);
+
+
+
+CREATE OR REPLACE VIEW public.vista_temporalidad_form4_programado AS 
+ SELECT 
+    prod_id,
+    g_id,
+    SUM(CASE WHEN m_id = 1 THEN pg_fis ELSE 0 END) AS mes1,
+    SUM(CASE WHEN m_id = 2 THEN pg_fis ELSE 0 END) AS mes2,
+    SUM(CASE WHEN m_id = 3 THEN pg_fis ELSE 0 END) AS mes3,
+    SUM(CASE WHEN m_id = 4 THEN pg_fis ELSE 0 END) AS mes4,
+    SUM(CASE WHEN m_id = 5 THEN pg_fis ELSE 0 END) AS mes5,
+    SUM(CASE WHEN m_id = 6 THEN pg_fis ELSE 0 END) AS mes6,
+    SUM(CASE WHEN m_id = 7 THEN pg_fis ELSE 0 END) AS mes7,
+    SUM(CASE WHEN m_id = 8 THEN pg_fis ELSE 0 END) AS mes8,
+    SUM(CASE WHEN m_id = 9 THEN pg_fis ELSE 0 END) AS mes9,
+    SUM(CASE WHEN m_id = 10 THEN pg_fis ELSE 0 END) AS mes10,
+    SUM(CASE WHEN m_id = 11 THEN pg_fis ELSE 0 END) AS mes11,
+    SUM(CASE WHEN m_id = 12 THEN pg_fis ELSE 0 END) AS mes12,
+    COUNT(*) AS n
+ FROM prod_programado_mensual
+ GROUP BY prod_id, g_id;
+
+ALTER TABLE public.vista_temporalidad_form4_programado
+  OWNER TO postgres;
+
+
+  CREATE INDEX idx_prod_prog_mensual_opt ON prod_programado_mensual (prod_id, g_id);
+  CREATE INDEX idx_productos_com_id ON _productos (com_id, estado);
