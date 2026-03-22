@@ -527,7 +527,7 @@ class Model_insumo extends CI_Model{
 
 
     // LISTA CONSOLIDADO POR PARTIDAS PROGRAMAS BOLSAS por actividad (Antiguo)
-    function list_consolidado_partidas_programas_boLsas_uresponsable2($prod_id,$com_id){
+/*    function list_consolidado_partidas_programas_boLsas_uresponsable2($prod_id,$com_id){
          $sql = 'select poa.prod_id,poa.par_id,poa.par_codigo,poa.par_nombre,SUM(poa.ins_costo_total) as monto
                 from (
 
@@ -545,7 +545,7 @@ class Model_insumo extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     // LISTA CONSOLIDADO POR PARTIDAS PROGRAMAS BOLSAS 2026
     function list_consolidado_partidas_programas_boLsas_uresponsable($aper_id,$com_id){
@@ -574,7 +574,7 @@ class Model_insumo extends CI_Model{
 
     /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2022 -----*/
     function list_consolidado_partidas_componentes($com_id){
-        if($this->gestion>2021){ /// 2022
+
             $sql = 'SELECT 
                         c.com_id, 
                         c.pfec_id, 
@@ -591,18 +591,7 @@ class Model_insumo extends CI_Model{
                       AND i.aper_id != 0 
                     GROUP BY c.com_id, c.pfec_id, par.par_id, par.par_codigo, par.par_nombre
                     ORDER BY par.par_codigo ASC';
-        }
-        else{
-            $sql = 'select c.com_id, c.pfec_id,par.par_id, par.par_codigo,par.par_nombre, SUM(i.ins_costo_total) as monto
-                from _componentes c
-                Inner Join _productos as p On c.com_id=p.com_id
-                Inner Join _insumoproducto as ip On ip.prod_id=p.prod_id
-                Inner Join insumos as i On i.ins_id=ip.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where c.com_id='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
-                group by c.com_id, c.pfec_id,par.par_id,   par.par_codigo,par.par_nombre
-                order by par.par_codigo asc';
-        }
+
 
         $query = $this->db->query($sql);
         return $query->result_array();

@@ -16,6 +16,7 @@ class User extends CI_Controller{
         $this->load->model('ejecucion/model_certificacion');
         $this->load->model('mantenimiento/model_ptto_sigep');
         $this->load->model('reportes/mreporte_operaciones/mrep_operaciones');
+        $this->load->model('programacion/insumos/model_insumo'); /// gestion 2020
         $this->load->model('model_control_menus');
         $this->load->library('session');
         $this->load->library('encrypt');
@@ -38,11 +39,10 @@ class User extends CI_Controller{
         $this->conf_ajuste_poa=$this->session->userdata('conf_ajuste_poa'); 
         $this->conf_credenciales=$this->session->userdata('conf_psw'); /// configuracion de credenciales
         $this->fun_credencial=$this->session->userdata('credencial_funcionario'); /// credenciales del funcionario
-        //$this->load->library('genera_informacion');
+        $this->load->library('dashboard');
     }
 
-    public function vaca_404()
-    {
+    public function vaca_404(){
         $this->load->view('rewriten_404');
     }
     
@@ -172,311 +172,9 @@ class User extends CI_Controller{
         if ($this->session->userdata('is_logged_in')) {
             redirect('admin/dashboard');
         } else {
-            
-            $captcha= $this->generar_captcha(array(0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R'),4);
-            
-            $data['cod_captcha']=$captcha;
-            $data['captcha']=md5($captcha);
 
-
-            $tabla='
-            <style>
-                .caja {
-                font-family: sans-serif;
-                font-size: 28px;
-                font-weight: 100;
-                color: #000000;
-                background: #d1d9dc;
-                margin: 0 0 15px;
-                overflow: hidden;
-                padding: 3px;
-                }
-
-                #loading {
-                    display: none;
-                    position: fixed;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 24px;
-                    z-index: 1000;
-                }
-
-                #loadingpws {
-                    display: none;
-                    position: fixed;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 24px;
-                    z-index: 1000;
-                }
-
-                .modal {
-                    display: none;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.6);
-                }
-
-                .modal2 {
-                    display: none;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 250%;
-                    height: 150%;
-                }
-
-                .modal-content {
-                    background: white;
-                    width: 400px;
-                    margin: 50px auto;
-                    padding: 30px;
-                    text-align: center;
-                    border-radius: 8px;
-                }
-
-                .modal-content2 {
-                    background: white;
-                    width: 600px;
-                    margin: 50px auto;
-                    padding: 30px;
-                    border-radius: 18px;
-                }
-
-                .open-btn {
-                    background: #4CAF50;
-                    color: white;
-                    font-size: 16px;
-                }
-
-                .close-btn {
-                    background: #f44336;
-                    color: white;
-                }
-            </style>';
-            $tabla.='
-        <div id="kc-content-wrapper">
-        <input name="base" type="hidden" value="'.base_url().'">
-        <div class="background-siat-login overflow-hidden d-flex justify-content-center align-items-center" style="height: 100vh;">
-            <div class="container px-md-5 text-center text-lg-start my-5 ">
-            <div>
-              <a href="#" style="font-size:11px;color: hsl(150, 80%, 90%)" onclick="show2()"><b>ABRIR ARCHIVOS ADJUNTOS</b></a>
-            </div>
-                <div class="row gx-lg-5 align-items-center mb-sm-0">
-                    <div class="col-lg-6 mb-sm-0 mb-lg-0 text-center mt-lg-0" style="z-index: 10">
-                        <div class="imgSiat">
-                            <picture>
-                                <source srcset="'.base_url().'assets/login_nuevo/img/logo_CNS_header.png" media="(min-width: 992px)" width="200px" height="auto">
-                                <source srcset="'.base_url().'assets/login_nuevo/img/logo_CNS_header.png" media="(min-width: 768px)" width="200px" height="auto">
-                                <img class="img-fluid animateBolivia" src="'.base_url().'assets/login_nuevo/img/logo_CNS_header.png"alt="logoSiatBolivia" width="200px" height="auto">
-                            </picture>
-                            
-                            <h1 class="my-5 display-5 fw-bold ls-tight text-center titleSiat" style="color: hsl(218, 81%, 95%)">
-                                Sistema de Planificaci&oacute;n y Seguimiento al POA
-                                <br/>
-                                <span style="color: #FFFF">SIIPLAS v2.0</span>
-                            </h1>
-                            
-                            <div class="redesSocialesHeader">
-                                <a href="https://www.facebook.com/CNS.Bolivia/" target="_blank"><img class="rrss mx-2" src="'.base_url().'assets/login_nuevo/img/facebook.svg"/ alt="rrssFacebook"></a>
-                                <a href="https://www.instagram.com/cnsbolivia/" target="_blank"><img class="rrss mx-2" src="'.base_url().'assets/login_nuevo/img/instagram.svg"/ alt="rrssinstagram"></a>
-                                <a href="https://www.youtube.com/channel/UCH8i2IHse60iSiyeYAihomg" target="_blank"><img class="rrss mx-2" src="'.base_url().'assets/login_nuevo/img/youtube.svg"/ alt="rrssYoutube"></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 mb-lg-0 position-relative">
-                    <br/>
-                        <div class="card bg-card">
-                            <div class="card-body px-4 py-4 px-md-5">
-
-                                
-                                <div id="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
-                                <form role="form" action="'.base_url().'index.php/admin/validate" method="post" id="form" class="login-form">
-                                    <input type="hidden" name="tp" id="tp" value="0">
-                                    <div align=center>
-                                        <b style="color:black;">DEPARTAMENTO NACIONAL DE PLANIFICACIÓN - C.N.S.</b>
-                                    </div>';
-                                        if($this->session->flashdata('success')){
-                                            $tabla.='
-                                                <div class="alert alert-success" role="alert">
-                                                <h4 class="alert-heading">Solicitud Enviada!</h4>
-                                                <p>'.$this->session->flashdata('success').'</p>
-                                                </div>';
-                                            
-                                            }
-                                            elseif($this->session->flashdata('danger')){
-                                                $tabla.='
-                                                <div class="alert alert-danger" role="alert">
-                                                <h4 class="alert-heading">Solicitud Enviada!</h4>
-                                                <p>'.$this->session->flashdata('danger').'</p>
-                                                </div>';
-                                            }
-                                    $tabla.='
-                                    <h5 class="text-center fw-bold my-4 titleBienvenido">Bienvenido/a!</h5>
-                                    <div class="row align-items-center">
-                                        <div class="col">
-                                        <div id="form-login-username" class="form-group">      
-                                            <input type="radio" name="radio-inline" id="radio0" checked="checked">
-                                            <i></i><b>Unidad Administrativa</b></label> &nbsp;&nbsp; 
-                                            <input type="radio" name="radio-inline" id="radio1">
-                                            <i></i><font color="#146f64"><b>Establecimiento de Salud</b></font></label>
-                                        </div>
-                                        </div>
-                                    </div>
-
-                                    <input id="deviceId" class="dOt" name="deviceId">
-
-                                    <div class="row align-items-center">
-                                        <div class="col">
-                                            <div class="form-floating mb-2">
-                                                <input tabindex="1" type="text" class="form-control form-input-bg" name="user_name" placeholder="USUARIO" minlength="5" maxlength="20" autocomplete="off" style="text-transform:uppercase;" oninput="this.value = this.value.toUpperCase();">
-                                                <label for="user_name">USUARIO SIIPLAS</label>
-                                                <div id="usu" class="text-danger text-start" style="font-size:9px;visibility: hidden;">
-                                                   <b> Este campo es requerido</b>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto pf-0">
-                                            <img src="'.base_url().'assets/login_nuevo/img/help.svg" class="tootip" title="USUARIO: Acceso asignado por el Departamento Nacional de Planificación"/>
-                                        </div>
-                                    </div>
-
-                                    <input id="deviceId" class="dOt" name="deviceId">
-
-                                    <div class="row align-items-center">
-                                        <div class="col">
-                                            <div class="form-floating mb-2">
-                                                <input tabindex="3" id="password" class="form-control form-input-bg" name="password" type="password" autocomplete="off" placeholder="CONTRASEÑA" minlength="4" maxlength="50"/>
-                                                <label for="password">PASSWORD</label>
-                                                <div id="pass" class="text-danger text-start" style="font-size:9px; visibility: hidden;" style="font-size:8px;">
-                                                  <b>  Este campo es requerido</b>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto pf-0">
-                                            <img src="'.base_url().'assets/login_nuevo/img/help.svg" onclick="togglePassword(\'password\')" class="tootip" id="toggleIcon" title="CLAVE DE ACCESO: Acceso asignado por el Departamento Nacional de Planificación"/>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-center py-3">
-                                        <p class="caja" id="refreshs" style="text-align:center"><b>'.$data['cod_captcha'].'</b></p>
-                                        <input type="hidden" name="captcha" id="captcha"  value="'.$data['captcha'].'" style="text-transform:uppercase;" oninput="this.value = this.value.toUpperCase();">
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <input tabindex="4" id="dat_captcha" name="dat_captcha" type="text" class="form-control form-input-bg text-center" placeholder="Ingrese el texto de la imagen" autofocus minlength="4" maxlength="4" >
-                                        <div id="cat" class="text-danger text-start" style="font-size:9px; visibility: hidden;" style="font-size:8px;">
-                                            <b>  Este campo es requerido</b>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-grid gap-2 mt-2">
-                                        <input tabindex="4" class="btn btn-lg mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" style="width: 100%;" name="login" id="kc-login" type="submit" value="INGRESAR"/>
-                                    </div>
-                                </form>
-                                <br>
-                                <a href="#" style="color:blue; font-size:11px;" onclick="show()">Olvidaste tu Contraseña?</a>
-                            </div>
-                        </div>
-                    </div>
-                
-                </div>
-            </div>
-        </div>
-
-            <div id="modal" class="modal">
-                <div class="modal-content">
-                <a href="#" onclick="hide()" align=right>Cerrar (x)</a>
-                <hr>
-                    <h2>RECUPERAR CONTRASEÑA</h2>
-                    <p>Registrar los siguientes campos.</p>
-
-                    <div id="loadingpws" ><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
-                    <form role="form" action="'.base_url().'index.php/validatepsw" method="post" id="formpws" class="login-form">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <div class="form-floating mb-2">
-                                    <input tabindex="1" type="text" class="form-control form-input-bg" name="user_namepws" placeholder="USUARIO" minlength="5" maxlength="20" autocomplete="off" style="text-transform:uppercase;" oninput="this.value = this.value.toUpperCase();">
-                                    <label for="user_namepws">Usuario SIIPLAS</label>
-                                    <div id="usupsw" class="text-danger text-start" style="font-size:9px;visibility: hidden;">
-                                       <b> Este campo es requerido</b>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <input id="deviceId" class="dOt" name="deviceId">
-
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <div class="form-floating mb-2">
-                                    <input tabindex="3" id="emailpws" class="form-control form-input-bg" name="emailpws" type="text" autocomplete="off" placeholder="CORREO ELECTRONICO" minlength="6" maxlength="50"/>
-                                    <label for="emailpws">Correo Electronico</label>
-                                    <div id="email" class="text-danger text-start" style="font-size:9px; visibility: hidden;" style="font-size:8px;">
-                                      <b>  Este campo es requerido</b>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2 mt-2">
-                            <input tabindex="4" class="btn btn-lg mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" style="width: 100%;" name="login" id="kc-login" type="submit" value="Enviar"/>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div id="modal2" class="modal">
-                <div class="modal-content2">
-                <div style="text-align:right"><a href="#" onclick="hide()">Cerrar (x)</a></div>
-                
-                    <h2>LISTA DE ARCHIVOS 2025</h2>
-                    <ul class="custom-list" align=left>
-                        <li>📋 <a href="'.base_url().'assets/video/Resoluaciones_Directorio_MARZO_JUNIO_2025.xlsx" download  title="RESOLUCIONES DE DIRECTORIO">Matriz de Seguimiento a Resoluciones de Directorio</a></li>
-                        <li>📋 <a href="'.base_url().'assets/video/MPP_SOA.pdf" download  title="MPP SOA CNS">Manual de Procesos y Procedimientos del SOA CNS</a></li>
-                    </ul>';
-
-                  /*  <h2>MANUALES DE USUARIO SIIPLAS</h2>
-                    <ul class="custom-list" align=left>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_ACTUALIZACION_DE_CREDENCIALES_SIIPLAS.pdf" download  title="ACTUALIZACION DE CREDENCIALES">MANUAL - ACTUALIZACION DE CREDENCIALES SIIPLAS</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_DE_USUARIO-CONSULTAS_POA_V2.pdf" download  title="CONSULTA POA">MANUAL - CONSULTA POA SIIPLAS</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_REVERSION_DE_SALDOS_DISPONIBLES.pdf" download  title="REVERSION DE SALDOS DISPONIBLES">MANUAL - REVERSIÓN DE SALDOS POA</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_DE_USUARIO_REGISTRO_DE_REQUERIMIENTOS_E_IMPRESION_POA.pdf" download  title="IMPRESION POA">MANUAL - REGISTRO FORM. N° 3 / IMPRESIÓN POA</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_CERTIFICACION_POA.pdf" download  title="CERTIFICACION POA">MANUAL - CERTIFICACIÓN POA</a></li>
-                    </ul>*/
-                    
-                    $tabla.='
-                    
-                </div>
-            </div>
-
-        </div>
-        
-        <script>
-            function show() {
-                document.getElementById("modal").style.display = "block";
-            }
-            function show2() {
-                document.getElementById("modal2").style.display = "block";
-            }
-
-            function hide() {
-                document.getElementById("modal").style.display = "none";
-                window.location.reload();
-            }
-        </script>';
-
-            $data['formulario']=$tabla;
-
+            $data['formulario']=$this->dashboard->form_login();
             $this->load->view('admin/login',$data);
-           // $var = $this->password_decod('DQRROg51B2cGJVBIWjRQNQVjA2BWaFRmAC0-');
-            //echo $var;
-
         }
     }
 
@@ -491,7 +189,7 @@ class User extends CI_Controller{
     public function get_captcha(){
       if($this->input->is_ajax_request()){
           $post = $this->input->post();
-          $captcha= $this->generar_captcha(array(0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R'),4);
+          $captcha= $this->dashboard->generar_captcha(array(0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R'),4);
          
           $result = array(
           'respuesta' => 'correcto',
@@ -504,18 +202,6 @@ class User extends CI_Controller{
       }else{
         show_404();
       }
-    }
-
-
-    //// GENERAR CAPTCHA
-    function generar_captcha($chars,$length){
-        $captcha=null;
-        for ($i=0; $i <$length ; $i++) { 
-            $rand= rand(0,count($chars)-1);
-            $captcha .=$chars[$rand];
-        }
-
-        return $captcha;
     }
 
 
@@ -935,40 +621,7 @@ class User extends CI_Controller{
         return $tabla;
     }
 
-    public function mensaje_sistema2() {
-        $conf = $this->model_configuracion->get_configuracion_session();
-        $tabla = '';
 
-        if (!empty($conf)) {
-            // 1. Definimos los parámetros según el tipo de mensaje
-            $tipos = [
-                1 => ['clase' => 'danger',  'icono' => 'fa-ban',      'titulo' => 'ATENCIÓN'],
-                2 => ['clase' => 'warning', 'icono' => 'fa-warning',  'titulo' => 'ADVERTENCIA'],
-                3 => ['clase' => 'success', 'icono' => 'fa-check',    'titulo' => 'ÉXITO']
-            ];
-
-            $t = $conf[0]['tp_msn'];
-            // Si el tipo no existe en el array, usamos 'warning' por defecto
-            $config = isset($tipos[$t]) ? $tipos[$t] : $tipos[2];
-
-            // 2. Construimos un único bloque de HTML dinámico
-            $tabla .= '
-            <div class="alert-modern alert-modern-'.$config['clase'].' fade-in-alert">
-                <i class="fa '.$config['icono'].' alert-bg-icon"></i>
-                <div class="alert-content-wrapper">
-                    <div class="alert-icon-main">
-                        <i class="fa '.$config['icono'].' fa-2x"></i>
-                    </div>
-                    <div class="alert-text-container">
-                    <b>comunicado :</b><br>
-                        <a class="alert-link-modern"><b>'.$conf[0]['conf_mensaje'].'</b></a>
-                    </div>
-                </div>
-            </div>';
-        }
-
-        return $tabla;
-    }
 
     /*------------- MENU PRINCIPAL -------------*/
     public function menu_principal_roles(){
@@ -1063,23 +716,7 @@ class User extends CI_Controller{
                     }
                 }
             }
-          /*  elseif($this->tp_adm==3){
-                $vector[0]=
-                    '<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/consulta/mis_operaciones"  onclick="reporte_internos()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/impresora.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">RESUMEN POA '.$this->gestion.'</h1>
-                        </div>
-                        </a>
-                    </div>';
-            }
-            else{
-                foreach ($menus as $fila) {
-                    $vector[$n] = $this->html_menu_opciones($fila['mod_id']);
-                    $n++;
-                }
-            }*/
+
         }
         else{
             if($fun_id==399){
@@ -1088,7 +725,7 @@ class User extends CI_Controller{
                       NO EXISTEN MODULOS HABILITADOS PARA LA GESTI&Oacute;N '.$this->gestion.'
                     </div>
                     <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/admin/dm/9/" onclick="mantenimiento()" class="jarvismetro-tile big-cubes bg-color-greenLight">
+                        <a href="'.base_url().'index.php/Configuracion" onclick="mantenimiento()" class="jarvismetro-tile big-cubes bg-color-greenLight">
                         <div class="well1" align="center">
                             <img class="img-circle" src="'.base_url().'assets/img/mantenimiento1.png"  style="margin-left:0px; width: 95px"/>
                             <h1 style="font-size: 11px;">MANTENIMIENTO</h1>
@@ -1228,7 +865,7 @@ class User extends CI_Controller{
                 $mod=$this->model_configuracion->get_modulos(9);
                 $enlace = '
                     <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/admin/dm/9/" onclick="mantenimiento()" class="jarvismetro-tile big-cubes bg-color-greenLight">
+                        <a href="'.base_url().'index.php/Configuracion" onclick="mantenimiento()" class="jarvismetro-tile big-cubes bg-color-greenLight">
                         <div class="well1" align="center">
                             <img class="img-circle" src="'.base_url().'assets/img/mantenimiento1.png"  style="margin-left:0px; width: 95px"/>
                             <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
@@ -1250,143 +887,10 @@ class User extends CI_Controller{
         return $enlace;
     }
 
-    /// DASHBOARD SEGUIMIENTO POA (UNIDAD ADMINISTRATIVA)
+    /// DASHBOARD SEGUIMIENTO POA (UNIDAD ADMINISTRATIVA / ESTABLECIMIENTO DE SALUD)
     public function dashboard_seguimientopoa(){
-
         if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
-            if($this->session->userdata('tp_usuario')==0){ /// Unidad Administrativa
-                $responsable=$this->session->userdata('funcionario');
-                $link_form1='seguimiento_poa';
-                $com_id=$this->session->userData('com_id');
-            }
-            else{ /// Establecimiento de Salud
-                $establecimiento=$this->model_seguimientopoa->get_unidad_programado_gestion($this->session->userData('act_id'));
-                $responsable=$establecimiento[0]['tipo'].' '.$establecimiento[0]['act_descripcion'].' '.$establecimiento[0]['abrev'];
-                $link_form1='seguimiento_establecimientos';
-                $com_id=$establecimiento[0]['com_id'];
-            }
-
-            $formulario='';
-            $formulario.='
-                <div class="jumbotron fade-in-anim">
-                <div class="row box-green1">
-                    <div class="col-md-8">
-                        <h2 class="no-margin"><b>BIENVENIDO: '.$responsable.'</b></h2>
-                        <hr style="border-top: 1px solid rgba(255,255,255,0.2);">
-                        <h4><i class="fa fa-user"></i> <b>PERFIL:</b> SEGUIMIENTO AL POA</h4>
-                        <h4><i class="fa fa-calendar"></i> <b>MES / GESTI&Oacute;N:</b> '.$this->verif_mes[2].' / '.$this->session->userdata("gestion").'</h4>
-                        <h4><i class="fa fa-clock-o"></i> <b>TRIMESTRE:</b> '.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</h4>
-                    </div>
-                    <div class="col-md-4" align="center">
-                        <img src="'.base_url('assets/img_v1.1/moni.png').'" class="img-responsive" style="width:75%; filter: drop-shadow(2px 4px 6px black);">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal de carga (se mantiene oculto) -->
-            <div id="overlay-loading" style="display:none;">
-                <div class="loading-content">
-                    <i class="fa fa-refresh fa-spin fa-4x spinner-custom"></i>
-                    <h2 class="loading-text"><b>CARGANDO FORMULARIO</b></h2>
-                    <p class="pulse" style="color: #bdc3c7; margin-top: 10px;">Preparando Formulario de Evaluación POA...</p>
-                </div>
-            </div>
-
-            <!-- Sección de botones con movimiento y un pequeño retraso -->
-            <section id="widget-grid" class="well fade-in-anim delay-1">
-                '.$this->mensaje_sistema2().'
-
-                <div class="row">
-                   <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/'.$link_form1.'" id="myBtn1" 
-                           class="jarvismetro-tile big-cubes bg-color-greenLight" 
-                           data-toggle="tooltip" data-placement="bottom" title="Ingresar al Registro de Ejecución de mis Actividades al Formulario de Seguimiento y Evaluación POA">
-                            <div class="well1" align="center">
-                                <img class="img-circle" src="'.base_url().'assets/img/trabajo_social.png" style="width: 95px"/>
-                                <h1 style="font-size: 11px;">FORMULARIO DE SEGUIMIENTO POA</h1>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/prog/rep_operacion_componente/'.$com_id.'" 
-                           class="jarvismetro-tile big-cubes bg-color-greenLight btn-reporte" 
-                           data-toggle="tooltip" data-placement="bottom" title="Ver Mis Actividades Programados en mi POA en formato PDF">
-                            <div class="well1" align="center">
-                                <img class="img-circle" src="'.base_url().'assets/img/impresora.png" style="width: 95px"/>
-                                <h1 style="font-size: 11px;">FORM. SPO N° 4 - ACTIVIDADES</h1>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/proy/orequerimiento_proceso/'.$com_id.'" 
-                           class="jarvismetro-tile big-cubes bg-color-greenLight btn-reporte" 
-                           data-toggle="tooltip" data-placement="bottom" title="Ver Mis Requerimientos Programados en mi POA en formato PDF">
-                            <div class="well1" align="center">
-                                <img class="img-circle" src="'.base_url().'assets/img/impresora.png" style="width: 95px"/>
-                                <h1 style="font-size: 11px;">FORM. SPO N° 5 - REQUERIMIENTOS</h1>
-                            </div>
-                        </a>
-                    </div>
-              </div>
-        </section>
-        <footer class="admin-footer fade-in-anim delay-1">
-            <div class="row">
-                <!-- Lado Izquierdo: Info Institucional -->
-                <div class="col-xs-12 col-md-8">
-                    <span class="footer-version">Siiplas v1.0</span>
-                    <span class="footer-sep">|</span>
-                    <span class="footer-org"><b>DEPARTAMENTO NACIONAL DE PLANIFICACIÓN - DNP</b></span>
-                </div>
-                
-                <!-- Lado Derecho: Créditos de Autor -->
-                <div class="col-xs-12 col-md-4 text-right">
-                    <div class="footer-author">
-                        <i class="fa fa-terminal"></i> <span>Developed by:</span> <strong>Wmendoza7</strong>
-                    </div>
-                </div>
-            </div>
-        </footer>
-
-
-
-        <div class="modal fade" id="modal_pdf" data-backdrop="static" data-keyboard="false" tabindex="-1">
-            <div class="modal-dialog modal-lg" style="width: 95%;">
-                <div class="modal-content">
-                    <div class="modal-header" style="background: #2c3e50; color: white;">
-                        <button type="button" class="close" data-dismiss="modal" style="color:white; opacity:1;">&times;</button>
-                        <h4 class="modal-title">
-                            <i class="fa fa-file-pdf-o"></i> 
-                            <span class="modal-title-text">REPORTE</span> <!-- Aquí se insertará el nombre -->
-                        </h4>
-                    </div>
-                    <div class="modal-body" style="padding: 0; position: relative; height: 80vh;">
-                        <!-- Loading y Iframe (Igual que el ejemplo anterior) -->
-                        <div id="loading_pdf" style="position: absolute; top:0; left:0; width:100%; height:100%; background: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10;">
-                            <!-- Animación de Barras de Documento -->
-                            <div class="loader-document">
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                            </div>
-                            
-                            <div class="loading-text-wrapper" style="text-align: center; margin-top: 25px;">
-                                <h3 class="shimmer-text"><b>GENERANDO DOCUMENTO DIGITAL</b></h3>
-                                <p style="color: #7f8c8d; font-size: 14px;">Por favor, espere mientras procesamos la información...</p>
-                            </div>
-                        </div>
-                        <iframe id="iframe_pdf" src="" width="100%" height="100%" frameborder="0"></iframe>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>';
-
-        
-        $data['dasboard']=$formulario;
+        $data['dasboard']=$this->dashboard->dashboard_seguimientopoa();
         $this->load->view('admin/dashboard_seguimiento',$data); 
 
         } else{
@@ -1395,161 +899,6 @@ class User extends CI_Controller{
         }
     }
 
-
-    /*----- MENU PRINCIPAL SEGUIMIENTO POA -----*/
-    public function menu_principal_roles_seguimientopoa($link_seguimiento,$id){
-        $vector;
-        $n = 0;
-        $vector[0]='<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/'.$link_seguimiento.'" id="myBtn3" onclick="evaluacion()"  class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/trabajo_social.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">FORMULARIO DE SEGUIMIENTO POA</h1>
-                        </div>
-                        </a>
-                    </div>';
-        $vector[1]='<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/reporte_segpoa/'.$id.'" id="myBtn3" onclick="evaluacion()"  class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/impresora.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">FORM. SPO N° 4</h1>
-                        </div>
-                        </a>
-                    </div>';
-        $vector[2]='<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/reporte_segpoa/'.$id.'" id="myBtn3" onclick="evaluacion()"  class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/impresora.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">FORM. SPO N° 5</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function evaluacion(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-        
-        return $vector;
-    }
-
-
-
-    public function dashboard_menu($opcion){
-        if($this->session->userdata('logged')){
-            $this->load->model('menu_modelo');
-            $dato_menu['se'] = '1900';//sesion
-            $dato_menu['ay'] = '1900';//ayuda
-            switch ($opcion) {
-                case 1:
-                    $enlaces = $this->menu_modelo->get_Modulos(1);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                  //  $data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'PROGRAMACION POA';
-                    break;
-                case 2:
-                    $enlaces = $this->menu_modelo->get_Modulos(2);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                  //  $data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'MODIFICACIONES DEL POA';
-                    break;
-                case 3:
-                $enlaces = $this->menu_modelo->get_Modulos(3);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                   // $data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'REGISTRO DE EJECUCIÒN';
-                    break;
-                case 4:
-
-                $enlaces = $this->menu_modelo->get_Modulos(4);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                   // $data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'ADMINISTRACI&Oacute;N DE PROYECTOS PLURIANUALES';
-                    break;
-                case 6:
-
-                    $enlaces = $this->menu_modelo->get_Modulos(6);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                    //$data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'SISTEMA DE INFORMACI&Oacute;N GEOGRAFICA';
-                    break;
-
-                case 7:
-
-                    $enlaces = $this->menu_modelo->get_Modulos(7);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                   // $data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'REPORTES';
-                    break;
-                case 9:
-
-                    $enlaces = $this->menu_modelo->get_Modulos(9);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                   // $data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'MANTENIMIENTO';
-                    break;
-
-                case 10:
-
-                    $enlaces = $this->menu_modelo->get_Modulos(10);
-                    //GUARDA LOS ENLACES PADRES
-                    $data['enlaces'] = $enlaces;
-                    for ($i = 0; $i < count($enlaces); $i++) {
-                        $subenlaces[$enlaces[$i]['o_child']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['o_child'], $this->session->userdata('user_name'));
-                    }
-                    $data['subenlaces'] = $subenlaces;
-                    //$data['datos'] = $this->model_pei->pei_mision_get();
-                    $data['titulo'] = 'REPORTES';
-                    break;
-
-            }
-            //$data['main_content'] = 'admin/menu_opcion';
-            //$this->load->view('includes/template', $data);
-            $this->load->view('includes/header');
-            $this->load->view('includes/menu_lateral',$data);
-            $this->load->view('admin/menu_opcion');
-            $this->load->view('includes/footer');
-        } else {
-            redirect('admin/dashboard');
-        }
-    }
 
     function __encrip_password($password){
         return md5($password);
@@ -1821,19 +1170,7 @@ class User extends CI_Controller{
 
     function mision(){
         echo "Trabanajo";
-/*        $this->load->model('menu_modelo');
-        $enlaces = $this->menu_modelo->get_Modulos(1);
-        $data['enlaces'] = $enlaces;
-        for ($i = 0; $i < count($enlaces); $i++) {
-            $subenlaces[$enlaces[$i]['idchild']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['idchild'], $this->session->userdata('user_name'));
-        }
-        $data['subenlaces'] = $subenlaces;
-        $data['datos'] = $this->model_pei->pei_mision_get();
-        $data['titulo'] = 'PROGRAMACI�N';
 
-        //load the view
-        $data['main_content'] = 'admin/marco_institucional/mision/mision';
-        $this->load->view('includes/template', $data);*/
     }
 
     function vision(){
@@ -1915,135 +1252,7 @@ class User extends CI_Controller{
         echo $salida;
     }
 
-    public function combo_clasificador($accion = ''){
-        $salida = "";
-        $accion = $_POST["accion"];
-
-        switch ($accion) {
-            case 'cl2':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM _clasificadorsectorial WHERE nivel=\'2\' AND codsec=\'' . $id_pais . '\'');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Sub Sector', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[5] . "'>" . mb_convert_encoding($sql_p[0] . " - " . $sql_p[9] . " - " . $sql_p[6], 'cp1252', 'UTF-8') . "</option>";
-                }
-
-                echo $salida;
-                //return $salida;
-                break;
-
-            case 'cl3':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM _clasificadorsectorial WHERE nivel=\'3\' AND codsubsec=\'' . $id_pais . '\'');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Actividad Economica', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[0] . "'>" . $sql_p[0] . " - " . $sql_p[9] . " - " . $sql_p[1] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-            case 'funcion':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM _finalidadfuncion WHERE  fifu_depende=\'' . $id_pais . '\'');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Funcion', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[0] . "'>" . $sql_p[0] . " - " . $sql_p[2] . " - " . $sql_p[4] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-            case 'clase_fn':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM _finalidadfuncion WHERE  fifu_depende=\'' . $id_pais . '\'');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[0] . "'>" . $sql_p[0] . " - " . $sql_p[2] . " - " . $sql_p[4] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-            ////////////////////// PEDES//////////////////////////////////
-
-            case 'pedes_2':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM pdes WHERE pdes_estado=\'1\' AND ('.$this->gestion.'>=pdes_gestion and '.$this->gestion.'<=pdes_gestion_final) AND pdes_depende=\'' . $id_pais . '\' ');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Meta', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[7] . "'>" . $sql_p[7] . " - " . $sql_p[2] . " - " . $sql_p[3] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-            case 'pedes_3':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM pdes WHERE pdes_estado=\'1\' AND ('.$this->gestion.'>=pdes_gestion and '.$this->gestion.'<=pdes_gestion_final) AND pdes_depende=\'' . $id_pais . '\' ');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Resultado', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[7] . "'>" . $sql_p[7] . " - " . $sql_p[2] . " - " . $sql_p[3] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-            case 'pedes_4':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT pdes_id FROM pdes WHERE pdes_estado=\'1\' AND ('.$this->gestion.'>=pdes_gestion and '.$this->gestion.'<=pdes_gestion_final) AND pdes_depende=\'' . $id_pais . '\' ');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Accion', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[7] . "'>" . $sql_p[7] . " - " . $sql_p[2] . " - " . $sql_p[3] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-            /////---------------------------------------------- PEI
-            case 'pei_2':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM pei WHERE pei_depende=\'' . $id_pais . '\' and pei_gestion='.$this->session->userdata("gestion").'');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Resultado de Mediano Plazo', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[7] . "'>" . $sql_p[7] . " - " . $sql_p[2] . " - " . $sql_p[3] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-            case 'pei_3':
-                $salida = "";
-                $id_pais = $_POST["elegido"];
-
-                $combog = pg_query('SELECT * FROM pei WHERE pei_depende=\'' . $id_pais . '\' and pei_gestion='.$this->session->userdata("gestion").'');
-                $salida .= "<option value=''>" . mb_convert_encoding('Seleccione Estrategia', 'cp1252', 'UTF-8') . "</option>";
-                while ($sql_p = pg_fetch_row($combog)) {
-                    $salida .= "<option value='" . $sql_p[7] . "'>" . $sql_p[7] . " - " . $sql_p[2] . " - " . $sql_p[3] . "</option>";
-                }
-                echo $salida;
-                //return $salida;
-                break;
-
-        }
-        /**/
-    }
+   
 
     function login_exit() {
         $this->load->view('admin/login');

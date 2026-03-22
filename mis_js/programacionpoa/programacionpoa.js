@@ -133,6 +133,7 @@ function abreVentana(PDF){
   //// VER POA
   $(function () {
     $(".enlace").on("click", function (e) {
+
         proy_id = $(this).attr('name');
         establecimiento = $(this).attr('id');
         
@@ -153,6 +154,7 @@ function abreVentana(PDF){
 
         request.done(function (response, textStatus, jqXHR) {
         if (response.respuesta == 'correcto') {
+
             $('#content1').fadeIn(1000).html(response.tabla);
             $('#caratula').fadeIn(1000).html(response.caratula);
         }
@@ -216,6 +218,7 @@ function abreVentana(PDF){
   $(function () {
       $(".verif_poa").on("click", function (e) {
         proy_id = $(this).attr('name');
+
           document.getElementById("proy_id").value=proy_id;
           
           establecimiento = $(this).attr('id');

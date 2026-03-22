@@ -9,7 +9,7 @@ $route['validatepsw'] = 'user/validate_credentials_psw';
 $route['solpassw/(:any)'] = 'user/respuesta_pass/$1';
 
 $route['admin/dashboard'] = 'user/dashboard_index';
-$route['admin/dm/(:any)'] = 'user/dashboard_menu/$1';
+//$route['admin/dm/(:any)'] = 'user/dashboard_menu/$1';
 $route['cambiar_session'] = 'user/cambiar_gestion';//cambiar contralador Administrador
 //$route['cambiar_session_uresponsable'] = 'user/cambiar_gestion_uresponsable';//cambiar Session U responsable
 $route['cambiar_session_trimestre'] = 'user/cambiar_trimestre';//cambiar trimestre
@@ -17,7 +17,7 @@ $route['cambiar_session_trimestre'] = 'user/cambiar_trimestre';//cambiar trimest
 /*PROGRAMACION*/
 $route['admin/combo_ubicacion'] = 'user/combo_ubicacion';
 $route['admin/combo_fase_etapas'] = 'user/combo_fases_etapas';
-$route['admin/combo_clasificador'] = 'user/combo_clasificador';
+//$route['admin/combo_clasificador'] = 'user/combo_clasificador';
 
 
 /*----------PROGRAMACION ESTRATEGICA------------*/
@@ -186,9 +186,10 @@ $route['prog/delete_operaciones_componente_pi'] = 'programacion/componente/elimi
 $route['prog/presentacion_poa/(:any)'] = 'programacion/creporte/presentacion_poa/$1';  //// Presentacion POA
 $route['prog/reporte_datos/(:any)'] = 'programacion/creporte/datos_generales/$1';  //// Identificacion del POA
 $route['prog/rep_operaciones/(:any)'] = 'programacion/creporte/programacion_fisica/$1';  //// Programacion Fisica
-$route['prog/rep_requerimientos/(:any)'] = 'programacion/creporte/programacion_financiera/$1';  //// Programacion Financiera
-$route['proy/orequerimiento_proceso/(:any)'] = 'programacion/creporte/reporte_formulario5/$1';  //// Reporte requerimiento por Unidad 2022
-$route['rep/rep_form5_consolidado/(:any)'] = 'programacion/creporte/reporte_formulario5_consolidado/$1';  //// Reporte requerimiento por Unidad 2022 (Consolidado + programas bolsas)
+//$route['prog/rep_requerimientos/(:any)'] = 'programacion/creporte/programacion_financiera/$1';  //// Programacion Financiera
+$route['prog/rep_formulario5_uresp/(:any)'] = 'programacion/creporte/reporte_formulario5/$1';  //// Reporte requerimiento por Unidad Responsable
+$route['prog/rep_consolidado_formulario5_bolsas_uresp/(:any)'] = 'programacion/creporte/reporte_formulario5_bolsas_consolidado/$1';  //// Reporte requerimiento consolidado Bolsas por Unidad Responsable
+//$route['rep/rep_form5_consolidado/(:any)'] = 'programacion/creporte/reporte_formulario5_consolidado/$1';  //// Reporte requerimiento por Unidad 2022 (Consolidado + programas bolsas)
 
 $route['proy/ptto_consolidado/(:any)'] = 'programacion/creporte/reporte_presupuesto_consolidado/$1';  //// Reporte requerimiento total Unidad/Establecimiento/Proyecto de Inversion
 $route['proy/ptto_consolidado_comparativo/(:any)'] = 'programacion/cppto_comparativo/reporte_presupuesto_consolidado_comparativo/$1';  //// Reporte Comparativo Total de Ppto Unidad/Establecimiento/Proyecto de Inversion

@@ -402,8 +402,8 @@ class Programacionpoa extends CI_Controller{
                           <a href="javascript:abreVentana(\''.site_url("").'/prog/rep_operacion_componente/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORM. 4"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°4</b></font></a>
                         </td>
                         <td align=center>';
-                          if(count($this->model_insumo->list_requerimientos_operacion_procesos($pr['com_id']))!=0){
-                            $tabla.='<a href="javascript:abreVentana(\''.site_url("").'/proy/orequerimiento_proceso/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORM. 5"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°5</b></font></a>';
+                          if(count($this->model_insumo->list_consolidado_partidas_componentes($pr['com_id']))!=0){
+                            $tabla.='<a href="javascript:abreVentana(\''.site_url("").'/prog/rep_formulario5_uresp/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORM. 5"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°5</b></font></a>';
                             $nro_ppto++;
                           } 
                         $tabla.='
@@ -412,7 +412,7 @@ class Programacionpoa extends CI_Controller{
                         if(count($programas_bolsas)!=0){
                           foreach($programas_bolsas as $row){
                             $get_prog_bolsa=$this->model_producto->verif_programaBolsa_prog($row['aper_id'],$pr['com_id']); // Verifica la Actividad de la Unidad Responsable del Programa Bolsa
-                            //$get_prog_bolsa=$this->model_insumo->verif_insumos_en_bolsas($pr['com_id']);
+
                             $tabla.='<td align=center>';
                             if(count($get_prog_bolsa)!=0){
                               $tabla.='<a href="javascript:abreVentana(\''.site_url("").'/proy/rep_form5_programa_bolsa/'.$row['aper_id'].'/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORM. 5"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°5</b></font></a>';

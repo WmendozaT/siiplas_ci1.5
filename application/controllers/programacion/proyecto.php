@@ -398,6 +398,7 @@ class Proyecto extends CI_Controller {
         }
 
         $tabla=$this->programacionpoa->mi_poa($proy_id); /// Mis Unidades Responsables
+        
         $result = array(
           'respuesta' => 'correcto',
           'tabla'=>$tabla,

@@ -468,20 +468,6 @@ class Creporte extends CI_Controller {
 
 
 
-
-
-
-    //// devuelve reporte de requerimientos en las bolsas
-    public function funcion_form5_bolsas($aper_id,$com_id){
-        $tabla='';
-        
-
-
-
-        return $tabla;
-    }
-
-
     //// REPORTE FORMULARIO POA N 5 ( REQUERIMIENTOS NORMAL) 2026
     public function reporte_formulario5($com_id){
         $componente=$this->model_componente->get_componente($com_id,$this->gestion);
@@ -538,7 +524,7 @@ class Creporte extends CI_Controller {
     }
 
 
-    //// REPORTE FORMULARIO POA N 5 PARA PROGRAMAS BOLSA 2026
+    //// REPORTE FORMULARIO POA N 5 PARA PROGRAMAS BIENES Y SERVICIOS Y FORTALECIMIENTO BOLSA 2026 POR SEPARADADO
     public function reporte_prog_bolsa_formulario5($aper_id,$com_id){
         //echo $aper_id.'---'.$com_id;
         $get_actividades_global=$this->model_producto->verif_get_uni_resp_programaBolsa_prog($aper_id,$com_id); /// datos del programa bolsa
@@ -593,8 +579,79 @@ class Creporte extends CI_Controller {
         else{
             echo "Errowr en la Informacion del Fornulario N° 4";
         }
-
     }
+
+
+    //// REPORTE FORMULARIO POA N 5 CONSOLIDADO DEL PROGRAMA BOLSA EN UNO SOLO
+    public function reporte_formulario5_bolsas_consolidado($com_id){
+        $componente=$this->model_componente->get_componente($com_id,$this->gestion);
+        //// funcion que devuelve 
+        $programas_bolsas=$this->model_proyecto->lista_programas_bosas_distrital($componente[0]['dist_id']);
+        $pie=$this->programacionpoa->pie_form($componente);
+        $data['pie_rep']='rep-'.$this->gestion;
+
+        $tabla='';
+
+        if(count($programas_bolsas)!=0){
+            foreach($programas_bolsas as $row){
+                $get_prog_bolsa=[];
+                $get_prog_bolsa[]=$row;
+                $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($row['aper_id'],$com_id); /// lista de requerimientos
+
+                if(count($lista_insumos)!=0){
+                    $requerimientos=$this->programacionpoa->list_requerimientos_reporte($lista_insumos);
+                    $lista_partidas=$this->model_insumo->list_consolidado_partidas_programas_boLsas_uresponsable($row['aper_id'],$com_id);
+                    $partidas=$this->consolidado_partida_reporte($lista_partidas,$componente[0]['tp_id']);
+                    $cabecera=$this->programacionpoa->cabecera($componente[0]['tp_id'],5,$get_prog_bolsa,$componente);
+
+                    $tabla.='
+                    <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
+                        <page_header>
+                        <br><div class="verde"></div>
+                        '.$cabecera.'
+                        </page_header>
+                        <page_footer>
+                        '.$pie.'
+                        </page_footer>
+                        '.$requerimientos.'
+                    </page>
+                    <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
+                        <page_header>
+                        <br><div class="verde"></div>
+                        '.$cabecera.'
+                        </page_header>
+                        <page_footer>
+                        '.$pie.'
+                        </page_footer>
+                        '.$partidas.'
+                    </page>';
+                } 
+            }                      
+        }
+
+        $data['informacion']=$tabla;
+        $this->load->view('admin/programacion/reportes/reporte_form5', $data);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     /*------- REPORTE CONSOLIDADO PRESUPUESTO POR PARTIDAS (2020) ------*/
