@@ -167,7 +167,7 @@ class User extends CI_Controller{
         redirect('admin/dashboard','refresh');
     }
 
-
+    //// view login
     public function index(){
         if ($this->session->userdata('is_logged_in')) {
             redirect('admin/dashboard');
@@ -904,52 +904,58 @@ class User extends CI_Controller{
         return md5($password);
     }
 
-    public function validate_credentials_psw(){
-      if ($this->input->post()) {
-          $post = $this->input->post();
-          $usuario = $this->security->xss_clean($post['user_namepws']); /// usuario
-          $email = $this->security->xss_clean($post['emailpws']); /// email
+    public function validate_credentials_psw() {
+        // 1. Solo permitir POST
+        if (!$this->input->post()) {
+            show_404();
+            return;
+        }
 
-            if (preg_match('/^[A-Za-z0-9.]+$/', $usuario) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $dominio = explode('@', $email)[1];
-                if (checkdnsrr($dominio, 'MX')) {
-                    $busca_responsable=$this->model_funcionario->fun_usuario($usuario);
-                    if(count($busca_responsable)!=0){
-                        $data_to_store = array( 
-                            'fun_id' => $busca_responsable[0]['fun_id'],
-                            'email' => $email,
-                            'sol_fecha' => date("d/m/Y H:i:s"),
-                            'num_ip' => $this->input->ip_address(), 
-                            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                          );
-                          $this->db->insert('solicitudes_psw', $data_to_store);
-                          $sol_id=$this->db->insert_id();
+        $post = $this->input->post();
+        $usuario = $this->security->xss_clean($post['user_namepws']);
+        $email = $this->security->xss_clean($post['emailpws']);
 
-                          if(count($this->model_funcionario->solicitud_contraseñas($sol_id))!=0){
-                            $this->session->set_flashdata('success','En unos minutos el Administrador del Sistema remitira su solicitud al correo electronico registrado !!!');
-                          }
-                          else{
-                            $this->session->set_flashdata('danger','Error al realizar la solicitud, contactese con el administrador !!!');
-                          }
-                    }
-                    else{
-                        $this->session->set_flashdata('danger','Usuario no valido !!!');
-                    }
-                    
+        // 2. Validación de formato inicial
+        if (!preg_match('/^[A-Za-z0-9.]+$/', $usuario) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->session->set_flashdata('danger', 'Formato de datos no válido.');
+            redirect('/', 'refresh');
+        }
 
-                } else {
-                    $this->session->set_flashdata('danger','ERROR !!!');
-                }
+        // 3. Validación de dominio de correo
+        $dominio = substr(strrchr($email, "@"), 1);
+        if (!checkdnsrr($dominio, 'MX')) {
+            $this->session->set_flashdata('danger', 'El dominio del correo no parece ser válido.');
+            redirect('/', 'refresh');
+        }
 
-                redirect('/','refresh');
+        // 4. Búsqueda del usuario
+        $busca_responsable = $this->model_funcionario->fun_usuario($usuario);
+        if (empty($busca_responsable)) {
+            $this->session->set_flashdata('danger', 'Usuario no registrado en el sistema.');
+            redirect('/', 'refresh');
+        }
 
-            }
+        // 5. Preparación de datos e inserción
+        $data_to_store = [
+            'fun_id'    => $busca_responsable[0]['fun_id'],
+            'email'     => $email,
+            'sol_fecha' => date("Y-m-d H:i:s"), // Formato estándar SQL recomendado
+            'num_ip'    => $this->input->ip_address(),
+            'nom_ip'    => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+        ];
 
-      } else {
-          show_404();
-      }
+        $this->db->insert('solicitudes_psw', $data_to_store);
+          $sol_id=$this->db->insert_id();
+
+          if(count($this->model_funcionario->solicitud_contraseñas($sol_id))!=0){
+            $this->session->set_flashdata('success', 'Solicitud enviada. En unos minutos el Administrador remitirá la información a su correo.');
+          }
+          else{
+            $this->session->set_flashdata('danger', 'Error interno al procesar la solicitud.');
+          }
+
+        redirect('/', 'refresh');
     }
-
 
 
     function validate_credentials(){
@@ -1163,82 +1169,23 @@ class User extends CI_Controller{
         //$this->load->view('menu',$data);
     }
 
-    function menu_enlace($sup){
+/*    function menu_enlace($sup){
         $this->load->model('menu_modelo');
         $data['enlaces'] = $this->menu_modelo->get_Enlaces(0);
-    }
+    }*/
 
+    /// mision institucional
     function mision(){
-        echo "Trabanajo";
-
+        redirect('admin/dashboard');
     }
 
+    /// vision institucional
     function vision(){
-
-        $this->load->model('menu_modelo');
-        $enlaces = $this->menu_modelo->get_Modulos(1);
-        $data['enlaces'] = $enlaces;
-        for ($i = 0; $i < count($enlaces); $i++) {
-            $subenlaces[$enlaces[$i]['idchild']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['idchild'], $this->session->userdata('user_name'));
-        }
-        $data['subenlaces'] = $subenlaces;
-        $data['datos'] = $this->model_pei->pei_mision_get();
-        $data['titulo'] = 'PROGRAMACI�N';
-        //load the view
-        $data['main_content'] = 'admin/marco_institucional/vision/vision';
-        $this->load->view('includes/template', $data);
-    }
-    /*------------------------------------------------------*/
-    /*  mision registrar o editar
-    /*------------------------------------------------------*/
-    function pei_accion($accion){
-        $json = array();
-        switch ($accion) {
-            case 'mision_editar':
-                $json['msj'] = 'mision editado';
-                $json['success'] = true;
-                //$data['material']=$this->model_pei->proveedores_editar();
-
-                echo json_encode($json);
-                break;
-            case 'mision_guardar':
-                $json['msj'] = 'mision Agregado';
-                $json['success'] = true;
-                $data['material'] = $this->model_pei->pei_mision_edit();
-                echo json_encode($json);
-                break;
-            case 'vision_editar':
-                $json['msj'] = 'vision editado';
-                $json['success'] = true;
-                //$data['material']=$this->model_pei->proveedores_editar();
-
-                echo json_encode($json);
-                break;
-            case 'vision_guardar':
-                $json['msj'] = 'vision Agregado';
-                $json['success'] = true;
-                $data['material'] = $this->model_pei->pei_vision_edit();
-                echo json_encode($json);
-                break;
-        }
-    }
-    /*------------------------------------------------------*/
-    /*  acerca de ..
-    /*------------------------------------------------------*/
-    function acerca() {
-        $this->load->model('menu_modelo');
-        $enlaces = $this->menu_modelo->get_Modulos(1);
-        $data['enlaces'] = $enlaces;
-        for ($i = 0; $i < count($enlaces); $i++) {
-            $subenlaces[$enlaces[$i]['idchild']] = $this->menu_modelo->get_Enlaces($enlaces[$i]['idchild'], $this->session->userdata('user_name'));
-        }
-        $data['subenlaces'] = $subenlaces;
-        $data['datos'] = $this->model_pei->pei_mision_get();
-        //load the view
-        $data['main_content'] = 'admin/pei/ayuda/acerca_de';
-        $this->load->view('includes/template', $data);
+        redirect('admin/dashboard');
     }
 
+
+    //// A eliminar
     public function combo_fases_etapas(){
         //echo "urbanizaciones";
         $salida = "";
@@ -1258,49 +1205,23 @@ class User extends CI_Controller{
         $this->load->view('admin/login');
     }
 
-    public function mes_texto($mes){
-        switch ($mes) {
-            case '1':
-                $texto = 'Enero';
-                break;
-            case '2':
-                $texto = 'Febrero';
-                break;
-            case '3':
-                $texto = 'Marzo';
-                break;
-            case '4':
-                $texto = 'Abril';
-                break;
-            case '5':
-                $texto = 'Mayo';
-                break;
-            case '6':
-                $texto = 'Junio';
-                break;
-            case '7':
-                $texto = 'Julio';
-                break;
-            case '8':
-                $texto = 'Agosto';
-                break;
-            case '9':
-                $texto = 'Septiembre';
-                break;
-            case '10':
-                $texto = 'Octubre';
-                break;
-            case '11':
-                $texto = 'Noviembre';
-                break;
-            case '12':
-                $texto = 'Diciembre';
-                break;
-            default:
-                $texto = 'Sin Mes asignado';
-                break;
-        }
-        return $texto;
+    public function mes_texto($mes) {
+        $meses = [
+            1  => 'Enero',
+            2  => 'Febrero',
+            3  => 'Marzo',
+            4  => 'Abril',
+            5  => 'Mayo',
+            6  => 'Junio',
+            7  => 'Julio',
+            8  => 'Agosto',
+            9  => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre'
+        ];
+
+        return $meses[(int)$mes];
     }
 
 

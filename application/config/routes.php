@@ -15,19 +15,19 @@ $route['cambiar_session'] = 'user/cambiar_gestion';//cambiar contralador Adminis
 $route['cambiar_session_trimestre'] = 'user/cambiar_trimestre';//cambiar trimestre
 
 /*PROGRAMACION*/
-$route['admin/combo_ubicacion'] = 'user/combo_ubicacion';
+//$route['admin/combo_ubicacion'] = 'user/combo_ubicacion';
 $route['admin/combo_fase_etapas'] = 'user/combo_fases_etapas';
 //$route['admin/combo_clasificador'] = 'user/combo_clasificador';
 
 
 /*----------PROGRAMACION ESTRATEGICA------------*/
-$route['admin/pei/mision'] = 'user/mision';		///// Mision Institucional
-$route['admin/pei/mision/accion/(:any)'] = 'user/pei_accion/$1';	//// Pei Accion
-$route['admin/pei/vision'] = 'user/vision';		///// Vision Institucional
-$route['admin/pei/ayuda/acerca'] = 'user/acerca';	//// Ayuda
+//$route['admin/pei/mision'] = 'user/mision';		///// Mision Institucional
+//$route['admin/pei/mision/accion/(:any)'] = 'user/pei_accion/$1';	//// Pei Accion
+//$route['admin/pei/vision'] = 'user/vision';		///// Vision Institucional
+//$route['admin/pei/ayuda/acerca'] = 'user/acerca';	//// Ayuda
 
 $route['mision'] = 'user/mision';
-//$route['vision'] = 'programacion/vision/vista_vision';
+$route['vision'] = 'user/vision';
 
 
 $route['seguimiento_a_unidades/(:any)'] = 'ejecucion/cseguimiento/imprime_seguimiento_a_unidades/$1';

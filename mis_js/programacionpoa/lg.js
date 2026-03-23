@@ -9,96 +9,112 @@
         });
     })
 
-    $(document).ready(function() {
-        $('#form').on('submit', function(event) {
-            event.preventDefault(); // Evitar el envío del formulario
+$(document).ready(function() {
+    $('#form').on('submit', function(event) {
+        // 1. Detenemos el envío automático siempre para validar primero
+        event.preventDefault(); 
 
-            // Mostrar el loading
-            $('#loading').show();
+        let valid = true;
 
-            // Validación de datos
-            let valid = true;
+        // Validar usuario
+        const userName = $('input[name="user_name"]').val();
+        if (userName.trim() === '') {
+            $('#usu').css('visibility', 'visible');
+            valid = false;
+        } else {
+            $('#usu').css('visibility', 'hidden');
+        }
 
-            // Validar usuario
-            const userName = $('input[name="user_name"]').val();
-            if (userName.trim() === '') {
-                $('#usu').css('visibility', 'visible');
-                valid = false;
-            } else {
-                $('#usu').css('visibility', 'hidden');
-            }
+        // Validar contraseña
+        const password = $('#password').val();
+        if (password.trim() === '') {
+            $('#pass').css('visibility', 'visible');
+            valid = false;
+        } else {
+            $('#pass').css('visibility', 'hidden');
+        }
 
-            // Validar contraseña
-            const password = $('#password').val();
-            if (password.trim() === '') {
-                $('#pass').css('visibility', 'visible');
-                valid = false;
-            } else {
-                $('#pass').css('visibility', 'hidden');
-            }
+        // Validar captcha
+        const captcha = $('#dat_captcha').val();
+        if (captcha.trim() === '' || captcha.length < 4) {
+            $('#cat').css('visibility', 'visible');
+            valid = false;
+        } else {
+            $('#cat').css('visibility', 'hidden');
+        }
 
-            // Validar captcha
-            const captcha = $('#dat_captcha').val();
-            if (captcha.trim() === '') {
-                $('#cat').css('visibility', 'visible');
-                valid = false;
-            } else {
-                $('#cat').css('visibility', 'hidden');
-            }
+        // 2. Solo si todo es válido, mostramos el loading y enviamos
+        if (valid) {
+            // Mostrar el overlay negro "bonito" que creamos
+            $('#loading-overlay').css('display', 'flex').hide().fadeIn(300);
+            
+            // Deshabilitar botón para evitar doble clic
+            $('#kc-login').prop('disabled', true).val('PROCESANDO...');
 
-            if (valid) {
-                // Simulación de envío de datos
-                this.submit(); // Enviar el formulario si es válido
-            } else {
-                $('#loading').hide(); // Ocultar loading si hay un error
-            }
-        });
+            // Enviamos el formulario programáticamente
+            this.submit(); 
+        } else {
+            // Si no es válido, nos aseguramos que el loading esté oculto
+            $('#loading-overlay').hide();
+            return false;
+        }
     });
+});
 
-        $(document).ready(function() {
-        $('#formpws').on('submit', function(event) {
-            event.preventDefault(); // Evitar el envío del formulario
 
-            // Mostrar el loading
-            $('#loadingpws').show();
+       $(document).ready(function() {
+            $('#formpws').on('submit', function(event) {
+                // 1. Detenemos el envío para validar
+                event.preventDefault(); 
 
-            // Validación de datos
-            let valid = true;
-            const alphanumericRegex = /^[A-Za-z0-9.]+$/; // Regex para letras y números
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Expresión regular para validación
+                let valid = true;
+                const alphanumericRegex = /^[A-Za-z0-9.]+$/; 
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            // Validar usuario
-            const userName = $('input[name="user_namepws"]').val().trim();
-            if (!userName) {
-                $('#usupsw').text('Campo obligatorio').css('visibility', 'visible');
-                valid = false;
-            } else if (!alphanumericRegex.test(userName)) {
-                $('#usupsw').text('Solo letras y números permitidos').css('visibility', 'visible');
-                valid = false;
-            } else {
-                $('#usupsw').css('visibility', 'hidden');
-            }
+                // Validar usuario
+                const userName = $('input[name="user_namepws"]').val().trim();
+                if (!userName) {
+                    $('#usupsw').html('<b><i class="fas fa-exclamation-circle"></i> Campo obligatorio</b>').css('visibility', 'visible');
+                    valid = false;
+                } else if (!alphanumericRegex.test(userName)) {
+                    $('#usupsw').html('<b><i class="fas fa-exclamation-triangle"></i> Solo letras, números y puntos</b>').css('visibility', 'visible');
+                    valid = false;
+                } else {
+                    $('#usupsw').css('visibility', 'hidden');
+                }
 
-            // Validar contraseña
-              const email = $('#emailpws').val().trim();
+                // Validar Email
+                const email = $('#emailpws').val().trim();
                 if (!email) {
-                    $('#email').text('Email requerido').css('visibility', 'visible');
+                    $('#email').html('<b><i class="fas fa-exclamation-circle"></i> Email requerido</b>').css('visibility', 'visible');
                     valid = false;
                 } else if (!emailRegex.test(email)) {
-                    $('#email').text('Formato inválido (ej: usuario@dominio.com)').css('visibility', 'visible');
+                    $('#email').html('<b><i class="fas fa-envelope"></i> Formato inválido</b>').css('visibility', 'visible');
                     valid = false;
                 } else {
                     $('#email').css('visibility', 'hidden');
                 }
 
-            if (valid) {
-                // Simulación de envío de datos
-                this.submit(); // Enviar el formulario si es válido
-            } else {
-                $('#loadingpws').hide(); // Ocultar loading si hay un error
-            }
+                // 2. Si todo es válido, lanzamos el loading "bonito"
+                if (valid) {
+                    // Personalizamos el texto del overlay antes de mostrarlo
+                    $('.loader-text').text('VALIDANDO SOLICITUD');
+                    $('.loader-subtext').text('Buscando cuenta vinculada al correo...');
+                    
+                    // Mostrar overlay negro con desenfoque
+                    $('#loading-overlay').css('display', 'flex').hide().fadeIn(300);
+                    
+                    // Bloqueamos el botón de envío del modal
+                    $(this).find('input[type="submit"], button').prop('disabled', true).val('ENVIANDO...');
+
+                    // Enviamos el formulario al servidor
+                    this.submit(); 
+                } else {
+                    // Aseguramos que el overlay esté oculto si hay error de validación
+                    $('#loading-overlay').hide();
+                }
+            });
         });
-    });
 
         $(document).ready(function(e) {
           $('#refreshs').click(function(){

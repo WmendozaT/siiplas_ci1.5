@@ -54,91 +54,89 @@ class Dashboard extends CI_Controller{
 
             $tabla='
             <style>
-                .caja {
-                font-family: sans-serif;
-                font-size: 28px;
-                font-weight: 100;
-                color: #000000;
-                background: #d1d9dc;
-                margin: 0 0 15px;
-                overflow: hidden;
-                padding: 3px;
-                }
+            /* --- Elementos Base y Carga --- */
+            .caja {
+                font-family: sans-serif; font-size: 28px; font-weight: 100;
+                color: #000; background: #d1d9dc; margin: 0 0 15px;
+                padding: 3px; overflow: hidden; text-align: center;
+            }
 
-                #loading {
-                    display: none;
-                    position: fixed;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 24px;
-                    z-index: 1000;
-                }
+            /* --- Pantalla de Carga (Overlay Negro) --- */
+            #loading-overlay {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+                z-index: 99999; display: none; align-items: center;
+                justify-content: center; text-align: center; color: white;
+                font-family: "Segoe UI", Tahoma, sans-serif;
+            }
+            .spinner-modern {
+                width: 70px; height: 70px; margin: 0 auto 20px;
+                border: 5px solid rgba(255, 255, 255, 0.1);
+                border-top: 5px solid #146f64; border-radius: 50%;
+                animation: spin 1s linear infinite; box-shadow: 0 0 15px rgba(20, 111, 100, 0.5);
+            }
+            .loader-text { font-size: 22px; letter-spacing: 2px; font-weight: bold; margin: 0; }
+            .loader-subtext { font-size: 14px; color: #aaa; margin-top: 10px; }
 
-                #loadingpws {
-                    display: none;
-                    position: fixed;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 24px;
-                    z-index: 1000;
-                }
+            /* --- Modales SIIPLAS (Estáticos) --- */
+            .modal-siiplas-overlay {
+                display: none; position: fixed; z-index: 10000;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); align-items: center; 
+                justify-content: center; padding: 20px;
+            }
+            .modal-siiplas-content {
+                background: #fff; width: 95%; max-width: 800px; min-height: 500px;
+                border-radius: 10px; display: flex; flex-direction: column;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.5); overflow: hidden;
+            }
+            .modal-siiplas-header {
+                background: #146f64; color: #fff; padding: 20px;
+                display: flex; justify-content: space-between; align-items: center;
+            }
+            .modal-siiplas-body { padding: 25px; flex-grow: 1; overflow-y: auto; }
+            .modal-siiplas-footer { padding: 15px; background: #f4f4f4; text-align: right; }
 
-                .modal {
-                    display: none;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.6);
-                }
+            /* --- Tablas y Acciones --- */
+            .tabla-archivos { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            .tabla-archivos th, .tabla-archivos td {
+                text-align: left; padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle;
+            }
+            .tabla-archivos tr:hover { background-color: #f9f9f9; }
 
-                .modal2 {
-                    display: none;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 250%;
-                    height: 150%;
-                }
+            .btn-accion {
+                padding: 6px 12px; border-radius: 4px; text-decoration: none;
+                font-size: 13px; font-weight: bold; display: inline-block; transition: 0.3s; margin: 2px;
+            }
+            .btn-vista { background: #e3f2fd; color: #1976d2 !important; border: 1px solid #1976d2; }
+            .btn-vista:hover { background: #1976d2; color: #fff !important; }
+            .btn-bajar, .btn-descarga { background: #146f64; color: #fff !important; }
+            .btn-bajar:hover, .btn-descarga:hover { background: #0d4d45; }
 
-                .modal-content {
-                    background: white;
-                    width: 400px;
-                    margin: 50px auto;
-                    padding: 30px;
-                    text-align: center;
-                    border-radius: 8px;
-                }
+            /* --- Botones Especiales --- */
+            .btn-cerrar-modal { background: none; border: none; color: white; font-size: 28px; cursor: pointer; }
+            .btn-cerrar-final {
+                background: #666; color: white; border: none; padding: 10px 20px;
+                border-radius: 5px; cursor: pointer; font-weight: bold;
+            }
+            .btn-disabled { background: #eee; color: #bbb; cursor: not-allowed; }
 
-                .modal-content2 {
-                    background: white;
-                    width: 600px;
-                    margin: 50px auto;
-                    padding: 30px;
-                    border-radius: 18px;
-                }
-
-                .open-btn {
-                    background: #4CAF50;
-                    color: white;
-                    font-size: 16px;
-                }
-
-                .close-btn {
-                    background: #f44336;
-                    color: white;
-                }
+            /* --- Animaciones --- */
+            @keyframes spin { 100% { transform: rotate(360deg); } }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            .loader-container { animation: fadeIn 0.5s; }
             </style>';
-            $tabla.='
+        $tabla.='
         <div id="kc-content-wrapper">
         <input name="base" type="hidden" value="'.base_url().'">
         <div class="background-siat-login overflow-hidden d-flex justify-content-center align-items-center" style="height: 100vh;">
             <div class="container px-md-5 text-center text-lg-start my-5 ">
             <div>
-              <a href="#" style="font-size:11px;color: hsl(150, 80%, 90%)" onclick="show2()"><b>ABRIR ARCHIVOS ADJUNTOS</b></a>
+            <a href="javascript:void(0)" 
+               style="font-size:11px; color: hsl(150, 80%, 90%); text-decoration: none;" 
+               onclick="abrirModalEstatico()">
+               <b><i class="fas fa-paperclip"></i> ABRIR ARCHIVOS ADJUNTOS</b>
+            </a>
             </div>
                 <div class="row gx-lg-5 align-items-center mb-sm-0">
                     <div class="col-lg-6 mb-sm-0 mb-lg-0 text-center mt-lg-0" style="z-index: 10">
@@ -166,9 +164,6 @@ class Dashboard extends CI_Controller{
                     <br/>
                         <div class="card bg-card">
                             <div class="card-body px-4 py-4 px-md-5">
-
-                                
-                                <div id="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
                                 <form role="form" action="'.base_url().'index.php/admin/validate" method="post" id="form" class="login-form">
                                     <input type="hidden" name="tp" id="tp" value="0">
                                     <div align=center>
@@ -253,7 +248,11 @@ class Dashboard extends CI_Controller{
                                     </div>
                                 </form>
                                 <br>
-                                <a href="#" style="color:blue; font-size:11px;" onclick="show()">Olvidaste tu Contraseña?</a>
+                                <a href="javascript:void(0)" 
+                                   style="color: #146f64; font-size: 11px; text-decoration: none; font-weight: bold;" 
+                                   onclick="abrirModalRecuperar()">
+                                   <i class="fas fa-key"></i> ¿Olvidaste tu Contraseña?
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -262,83 +261,155 @@ class Dashboard extends CI_Controller{
             </div>
         </div>
 
-            <div id="modal" class="modal">
-                <div class="modal-content">
-                <a href="#" onclick="hide()" align=right>Cerrar (x)</a>
-                <hr>
-                    <h2>RECUPERAR CONTRASEÑA</h2>
-                    <p>Registrar los siguientes campos.</p>
-
-                    <div id="loadingpws" ><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
-                    <form role="form" action="'.base_url().'index.php/validatepsw" method="post" id="formpws" class="login-form">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <div class="form-floating mb-2">
-                                    <input tabindex="1" type="text" class="form-control form-input-bg" name="user_namepws" placeholder="USUARIO" minlength="5" maxlength="20" autocomplete="off" style="text-transform:uppercase;" oninput="this.value = this.value.toUpperCase();">
-                                    <label for="user_namepws">Usuario SIIPLAS</label>
-                                    <div id="usupsw" class="text-danger text-start" style="font-size:9px;visibility: hidden;">
-                                       <b> Este campo es requerido</b>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <input id="deviceId" class="dOt" name="deviceId">
-
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <div class="form-floating mb-2">
-                                    <input tabindex="3" id="emailpws" class="form-control form-input-bg" name="emailpws" type="text" autocomplete="off" placeholder="CORREO ELECTRONICO" minlength="6" maxlength="50"/>
-                                    <label for="emailpws">Correo Electronico</label>
-                                    <div id="email" class="text-danger text-start" style="font-size:9px; visibility: hidden;" style="font-size:8px;">
-                                      <b>  Este campo es requerido</b>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2 mt-2">
-                            <input tabindex="4" class="btn btn-lg mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" style="width: 100%;" name="login" id="kc-login" type="submit" value="Enviar"/>
-                        </div>
-                    </form>
+            <div id="loading-overlay" style="display: none;">
+                <div class="loader-container">
+                    <div class="spinner-modern"></div>
+                    <h2 class="loader-text">INGRESANDO AL SISTEMA</h2>
+                    <p class="loader-subtext">Por favor, espere un momento...</p>
                 </div>
             </div>
 
-            <div id="modal2" class="modal">
-                <div class="modal-content2">
-                <div style="text-align:right"><a href="#" onclick="hide()">Cerrar (x)</a></div>
-                
-                    <h2>LISTA DE ARCHIVOS 2025</h2>
-                    <ul class="custom-list" align=left>
-                        <li>📋 <a href="'.base_url().'assets/video/Resoluaciones_Directorio_MARZO_JUNIO_2025.xlsx" download  title="RESOLUCIONES DE DIRECTORIO">Matriz de Seguimiento a Resoluciones de Directorio</a></li>
-                        <li>📋 <a href="'.base_url().'assets/video/MPP_SOA.pdf" download  title="MPP SOA CNS">Manual de Procesos y Procedimientos del SOA CNS</a></li>
-                    </ul>
+           <div id="modalRecuperar" class="modal-siiplas-overlay">
+                <div class="modal-siiplas-content" style="max-width: 500px; min-height: auto;"> <!-- Más pequeño que el de archivos -->
+                    <div class="modal-siiplas-header">
+                        <h4 style="margin:0;">RECUPERAR CONTRASEÑA</h4>
+                        <button class="btn-cerrar-modal" onclick="cerrarRecuperar()">&times;</button>
+                    </div>
+                    
+                    <div class="modal-siiplas-body">
+                        <p class="text-muted" style="font-size: 14px;">Por favor, registre sus datos para validar la cuenta.</p>
 
-                    <h2>MANUALES DE USUARIO SIIPLAS</h2>
-                    <ul class="custom-list" align=left>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_ACTUALIZACION_DE_CREDENCIALES_SIIPLAS.pdf" download  title="ACTUALIZACION DE CREDENCIALES">MANUAL - ACTUALIZACION DE CREDENCIALES SIIPLAS</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_DE_USUARIO-CONSULTAS_POA_V2.pdf" download  title="CONSULTA POA">MANUAL - CONSULTA POA SIIPLAS</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_REVERSION_DE_SALDOS_DISPONIBLES.pdf" download  title="REVERSION DE SALDOS DISPONIBLES">MANUAL - REVERSIÓN DE SALDOS POA</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_DE_USUARIO_REGISTRO_DE_REQUERIMIENTOS_E_IMPRESION_POA.pdf" download  title="IMPRESION POA">MANUAL - REGISTRO FORM. N° 3 / IMPRESIÓN POA</a></li>
-                        <li><a href="'.base_url().'assets/video/MANUALES_USUARIO/MANUAL_CERTIFICACION_POA.pdf" download  title="CERTIFICACION POA">MANUAL - CERTIFICACIÓN POA</a></li>
-                    </ul>
+                        <form role="form" action="'.base_url().'index.php/validatepsw" method="post" id="formpws" class="login-form">
+                            
+                            <div class="form-floating mb-3">
+                                <input tabindex="1" type="text" class="form-control" name="user_namepws" id="user_namepws" placeholder="USUARIO" minlength="5" maxlength="20" autocomplete="off" style="text-transform:uppercase;">
+                                <label for="user_namepws">Usuario SIIPLAS</label>
+                                <div id="usupsw" class="text-danger text-start" style="font-size:10px; visibility: hidden;">
+                                   <b><i class="fas fa-exclamation-circle"></i> Este campo es requerido</b>
+                                </div>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input tabindex="2" id="emailpws" class="form-control" name="emailpws" type="email" autocomplete="off" placeholder="CORREO ELECTRÓNICO">
+                                <label for="emailpws">Correo Electrónico Registrado</label>
+                                <div id="email_err" class="text-danger text-start" style="font-size:10px; visibility: hidden;">
+                                  <b><i class="fas fa-exclamation-circle"></i> Ingrese un correo válido</b>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn-cerrar-final" style="background: #146f64; font-weight: bold;">
+                                    <i class="fas fa-paper-plane"></i> ENVIAR SOLICITUD
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="modal-siiplas-footer">
+                        <button class="btn btn-sm btn-secondary" onclick="cerrarRecuperar()">Cancelar</button>
+                    </div>
                 </div>
             </div>
+
+            <div id="modalSiiplas" class="modal-siiplas-overlay">
+                <div class="modal-siiplas-content">
+                    <div class="modal-siiplas-header">
+                        <h4 style="margin:0;">Repositorio de Documentos y Manuales</h4>
+                        <!-- Único botón para cerrar -->
+                        <button class="btn-cerrar-modal" onclick="cerrarModalEstatico()">&times;</button>
+                    </div>
+                    <div class="modal-siiplas-body">
+                        <p style="color: #666; font-size: 14px;">Lista de archivos disponibles para el sistema <b>SIIPLAS v2.0</b>:</p>
+                        
+                        <table class="tabla-archivos">
+                            <thead>
+                                <tr style="color: #146f64; border-bottom: 2px solid #146f64;">
+                                    <th>Descripción del Documento</th>
+                                    <th style="text-align:center;">Formato</th>
+                                    <th style="text-align:center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Fila de ejemplo 1 (PDF) -->
+                                <tr>
+                                    <td>Manual de Usuario - solicitud de Modificación y Certificación POA </td>
+                                    <td style="text-align:center;"><small>PDF</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/FORMULARIOSPOA/Manual_sol_poa.pdf" download class="btn-accion btn-descarga" title="Descargar">💾 Descargar</a>
+                                    </td>
+                                </tr>
+                                <!-- Fila de ejemplo 2 (Excel) -->
+                                <tr>
+                                    <td>Formulario de Solicitud de Modificación POA</td>
+                                    <td style="text-align:center;"><small>XLSX</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/FORMULARIOSPOA/FORM_MOD_4_Y_5_2026.xlsx" download class="btn-accion btn-descarga">💾 Descargar</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Formulario de Solicitud de Certificación POA</td>
+                                    <td style="text-align:center;"><small>XLSX</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/FORMULARIOSPOA/FORM_SOL_POA_5_2026.xlsx" download class="btn-accion btn-descarga">💾 Descargar</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Formulario de Reversión de Saldos de Certificación POA </td>
+                                    <td style="text-align:center;"><small>WORD</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/FORMULARIOSPOA/FORM_JUST_SALDOS_CPOAS_2026.docx" download class="btn-accion btn-descarga">💾 Descargar</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Formulario de Modificacion y Eliminación de Certificación POA </td>
+                                    <td style="text-align:center;"><small>WORD</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/FORMULARIOSPOA/FORM_JUST_EDICION_CPOAS_2026.docx" download class="btn-accion btn-descarga">💾 Descargar</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-siiplas-footer">
+                        <button class="btn-cerrar-final" onclick="cerrarModalEstatico()">Finalizar</button>
+                    </div>
+                </div>
+            </div>
+
 
         </div>
         
         <script>
-            function show() {
-                document.getElementById("modal").style.display = "block";
+        function abrirModalRecuperar() {
+            // Asegúrate de que el ID coincida con el div del modal de recuperación
+            const modal = document.getElementById("modalRecuperar");
+            
+            if (modal) {
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden"; // Bloquea el scroll del login
             }
-            function show2() {
-                document.getElementById("modal2").style.display = "block";
-            }
+        }
 
-            function hide() {
-                document.getElementById("modal").style.display = "none";
-                window.location.reload();
+        function cerrarRecuperar() {
+            const modal = document.getElementById("modalRecuperar");
+            
+            if (modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto"; // Devuelve el scroll
             }
+        }
+
+        function abrirModalEstatico() {
+            document.getElementById("modalSiiplas").style.display = "flex";
+            // Evita que la página haga scroll al abrir el modal
+            document.body.style.overflow = "hidden";
+        }
+
+        function cerrarModalEstatico() {
+            document.getElementById("modalSiiplas").style.display = "none";
+            // Devuelve el scroll a la página
+            document.body.style.overflow = "auto";
+        }
         </script>';
 
         return $tabla;
@@ -350,25 +421,7 @@ class Dashboard extends CI_Controller{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*----- dashboard seguimiento -----*/
+    /*----- dashboard seguimiento Administracion/Establecimiento-----*/
     public function dashboard_seguimientopoa(){
 
             if($this->session->userdata('tp_usuario')==0){ /// Unidad Administrativa

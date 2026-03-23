@@ -32,12 +32,12 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Descarga de Archivos / Documentos">Descargas <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="<?php echo base_url(); ?>assets/video/configurar_csv.mp4" style="cursor: pointer;" download>Configurar equipo a .CSV</a></li>
-                <li class="divider"></li>
                 <li class="dropdown-header">Archivos/Tutoriales</li>
-                <li><a href="<?php echo base_url(); ?>assets/video/SEGUIMIENTO_POA.pdf" style="cursor: pointer;" download>Manual Notificacion POA</a></li>
-                <li><a href="<?php echo base_url(); ?>assets/video/SEGUIMIENTO_POA_2021_ES.pdf" style="cursor: pointer;" download>Seguimiento POA</a></li>
-                <li><a href="<?php echo base_url(); ?>assets/video/plantilla_migracion_poa.xlsx" style="cursor: pointer;" download>Plantilla de Migracion POa 2022</a></li>
+                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_MOD_4_Y_5_2026.xlsx" style="cursor: pointer;" download>Formulario de Solicitud de Modificacion POA</a></li>
+                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_SOL_POA_5_2026.xlsx" style="cursor: pointer;" download>Formulario de Solicitud de Certificación POA</a></li>
+                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_JUST_SALDOS_CPOAS_2026.docx" style="cursor: pointer;" download>Formulario de Reversion de Saldos POA</a></li>
+                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_JUST_EDICION_CPOAS_2026.docx" style="cursor: pointer;" download>Formulario de Modificación de Certificación POA</a></li>
+                <li class="divider"></li>
               </ul>
             </li>
           </ul>
