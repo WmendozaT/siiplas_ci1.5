@@ -157,7 +157,7 @@ $route['exportar_consulta_ppto_poa/(:any)'] = 'reportes_cns/crep_consultafinanci
 $route['rep/exportar_requerimientos_institucional/(:any)'] = 'reportes_cns/exporting_datos/requerimientos_institucional/$1'; ///// Exportar Requerimientos Institucional
 $route['rep/exportar_requerimientos_distrital/(:any)'] = 'reportes_cns/exporting_datos/requerimientos_distrital/$1/$2/$3'; ///// Exportar Requerimientos por Regional / Distrital 2023
 $route['rep/exportar_poa_oregional/(:any)']='reportes_cns/exporting_datos/ver_poa_oregional_distrital/$1/$2';// Consolidado operaciones por Objetivo Regional 2020-2021 (Distrital)
-$route['rep/exportar_requerimientos_servicio/(:any)'] = 'reportes_cns/exporting_datos/requerimientos_servicio/$1'; ///// Exportar Requerimientos por Unidad Reponsable (Ejecucion Presupuestaria) (Excel)
+$route['rep/exportar_poa_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/exportar_poa_uresponsable/$1/$2'; ///// Exportar POa 2026 (Excel)
 $route['rep/exportar_form4_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/form4_x_unidad_responsable/$1'; ///// Exportar formulario 4 por Unidad Reponsable (Formulario 4) (Excel)
 $route['rep/consolidado_requerimientos_mas_programas_bolsas_unidad/(:any)'] = 'reportes_cns/exporting_datos/consolidado_requerimientos_mas_programas_bolsas_unidad/$1'; ///// Exportar Requerimientos consolidado (mas bolsas) por Unidad Reponsable (Ejecucion Presupuestaria) (Excel)
 
@@ -213,8 +213,8 @@ $route['prog/delete_prod'] = 'programacion/producto/delete_operacion';  //// Eli
 $route['prog/delete_operaciones'] = 'programacion/producto/delete_operaciones'; //// ELIMINA OPERACIONES SELECCIONADOS
 $route['prog/combo_acciones'] = 'programacion/producto/combo_acciones_estrategicos';// COMBO ACCIONES OPERATIVAS
 $route['prog/rep_operacion_componente/(:any)'] = 'programacion/producto/reporte_operacion_componente/$1';  //// Reporte Operaciones por componente 2019-2020
-$route['prog/exportar_productos/(:any)'] = 'programacion/producto/exportar_productos/$1';  //// Exportar lista de Productos
-$route['prog/exportar_productos_req/(:any)'] = 'programacion/producto/exportar_productos_requerimientos/$1';  //// Exportar lista de Productos - Requerimientos
+//$route['prog/exportar_productos/(:any)'] = 'programacion/producto/exportar_productos/$1';  //// Exportar lista de Productos
+//$route['prog/exportar_productos_req/(:any)'] = 'programacion/producto/exportar_productos_requerimientos/$1';  //// Exportar lista de Productos - Requerimientos
 
 $route['prog/update_codigo/(:any)'] = 'programacion/producto/update_codigo/$1';  //// Actualizar Codigos de Operacion
 

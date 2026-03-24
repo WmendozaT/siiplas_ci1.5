@@ -296,230 +296,6 @@
       echo $tabla;
     }
 
-
-
-    // /*--- EXPORTAR LISTADO DE PARTIDAS ASIGNADAS PPTO (REGIONAL - DISTRITAL)---*/
-    // public function consolidado_partidas_reg_dist_asignadas_institucional(){
-    //   $titulo='CUADRO COMPARATIVO PARTIDAS ASIGNADAS - INSTITUCIONAL';
-    //   $tabla='';
-    //   $detalle=$this->model_ptto_sigep->lista_detalle_regional_distrital_consolidado_partidas_asignadas_nacional(4);
-    //   $tabla.='
-    //     <style>
-    //       table{font-size: 9px;
-    //         width: 100%;
-    //         max-width:1550px;
-    //         overflow-x: scroll;
-    //       }
-    //       th{
-    //         padding: 1.4px;
-    //         text-align: center;
-    //         font-size: 10px;
-    //       }
-    //       td{
-    //         font-size: 9.5px;
-    //       }
-    //     </style>
-    //     <table border="1" cellpadding="0" cellspacing="0" class="tabla">
-    //       <thead>
-    //       <tr>
-    //         <th style="height:30px;">REGIONAL</th>
-    //         <th>DISTRITAL</th>
-    //         <th>PARTIDA</th>
-    //         <th></th>
-    //         <th>PPTO. ASIGNADO '.$this->gestion.' GASTO CORRIENTE</th>
-    //         <th>PPTO. ASIGNADO '.$this->gestion.' INVERSION</th>
-    //         <th>PPTO. PROG. POA '.$this->gestion.'</th>
-    //         <th>PPTO. CERT. POA '.$this->gestion.'</th>
-    //       </tr>
-    //       </thead>
-    //       <tbody>';
-    //   foreach ($detalle as $row){
-    //     $par_asig_pi=$this->model_ptto_sigep->get_detalle_regional_distrital_consolidado_partidas_asignadas_nacional_pi($row['dep_id'],$row['dist_id'],$row['par_id']);
-    //     $part_prog=$this->model_insumo->get_partida_programado_certificado_regional_distrital($row['dep_id'],$row['dist_id'],$row['par_id']);
-    //     $monto_prog=0;$monto_cert=0;
-    //     if(count($part_prog)!=0){ /// gc
-    //       $monto_prog=$part_prog[0]['ppto_programado'];
-    //       $monto_cert=$part_prog[0]['ppto_certificado'];
-    //     }
-
-    //     $ppto_asig_pi=0;
-    //     if(count($par_asig_pi)!=0){
-    //       $ppto_asig_pi=$par_asig_pi[0]['ppto_partida_asignado_gestion'];
-    //     }
-    //     $tabla.='
-    //     <tr>
-    //       <td>'.mb_convert_encoding(strtoupper($row['dep_departamento']), 'cp1252', 'UTF-8').'</td>
-    //       <td>'.mb_convert_encoding(strtoupper($row['dist_distrital']), 'cp1252', 'UTF-8').'</td>
-    //       <td style="text-align:center; font-size:11px">'.$row['partida'].'</td>
-    //       <td>'.mb_convert_encoding($row['par_nombre'], 'cp1252', 'UTF-8').'</td>
-    //       <td align="right">'.round($row['ppto_partida_asignado_gestion'],2).'</td>
-    //       <td align="right">'.round($ppto_asig_pi,2).'</td>
-    //       <td align="right">'.round($monto_prog,2).'</td>
-    //       <td align="right">'.round($monto_cert,2).'</td>
-    //     </tr>';
-    //   }
-    //   $tabla.='
-    //     </tbody>
-    //   </table>';
-
-      
-    //   date_default_timezone_set('America/Lima');
-    //   $fecha = date("d-m-Y H:i:s");
-    //   header('Content-type: application/vnd.ms-excel');
-    //   header("Content-Disposition: attachment; filename=CONSOLIDADO_".$titulo."_$fecha.xls"); //Indica el nombre del archivo resultante
-    //   header("Pragma: no-cache");
-    //   header("Expires: 0");
-    //   echo "";
-    //   ini_set('max_execution_time', 0); 
-    //   ini_set('memory_limit','3072M');
-    //   echo $tabla;
-    // }
-
-    // /*--- EXPORTAR LISTADO DE PARTIDAS ASIGNADAS PPTO (INSTITUCIONAL)---*/
-    // public function consolidado_partidas_asignadas_institucional(){
-    //   $titulo='CUADRO COMPARATIVO PARTIDAS ASIGNADAS - INSTITUCIONAL';
-    //   $tabla='';
-    //   $detalle=$this->model_ptto_sigep->lista_detalle_consolidado_partidas_asignadas_nacional(4);
-    //   $tabla.='
-    //     <style>
-    //       table{font-size: 9px;
-    //         width: 100%;
-    //         max-width:1550px;
-    //         overflow-x: scroll;
-    //       }
-    //       th{
-    //         padding: 1.4px;
-    //         text-align: center;
-    //         font-size: 10px;
-    //       }
-    //       td{
-    //         font-size: 9.5px;
-    //       }
-    //     </style>
-    //     <table border="1" cellpadding="0" cellspacing="0" class="tabla">
-    //       <thead>
-    //       <tr>
-    //         <th style="height:30px;">PARTIDA</th>
-    //         <th></th>
-    //         <th>PPTO. ASIGNADO '.$this->gestion.'</th>
-    //         <th>PPTO. PROG. POA '.$this->gestion.'</th>
-    //         <th>PPTO. CERT. POA '.$this->gestion.'</th>
-    //       </tr>
-    //       </thead>
-    //       <tbody>';
-    //   foreach ($detalle as $row){
-    //     $part_prog=$this->model_insumo->get_partida_programado_certificado_institucional($row['par_id']);
-    //     $monto_prog=0;$monto_cert=0;
-    //     if(count($part_prog)!=0){
-    //       $monto_prog=$part_prog[0]['ppto_programado'];
-    //       $monto_cert=$part_prog[0]['ppto_certificado'];
-    //     }
-    //     $tabla.='
-    //     <tr>
-    //       <td style="text-align:center; font-size:11px">'.$row['partida'].'</td>
-    //       <td>'.mb_convert_encoding($row['par_nombre'], 'cp1252', 'UTF-8').'</td>
-    //       <td align="right">'.round($row['ppto_partida_asignado_gestion'],2).'</td>
-    //       <td align="right">'.round($monto_prog,2).'</td>
-    //       <td align="right">'.round($monto_cert,2).'</td>
-    //     </tr>';
-    //   }
-    //   $tabla.='
-    //     </tbody>
-    //   </table>';
-
-    //   date_default_timezone_set('America/Lima');
-    //   $fecha = date("d-m-Y H:i:s");
-    //   header('Content-type: application/vnd.ms-excel');
-    //   header("Content-Disposition: attachment; filename=CONSOLIDADO_PARTIDAS_".$titulo."_$fecha.xls"); //Indica el nombre del archivo resultante
-    //   header("Pragma: no-cache");
-    //   header("Expires: 0");
-    //   echo "";
-    //   ini_set('max_execution_time', 0); 
-    //   ini_set('memory_limit','3072M');
-    //   echo $tabla;
-    // }
-
-
-    // /*--- EXPORTAR LISTADO DE PARTIDAS ASIGNADAS PPTO (UNIDAD / INVERSION)---*/
-    // public function consolidado_partidas_asignadas_unidad(){
-    //   $titulo='UNIDAD_ORGANIZACIONAL';
-    //   $tabla='';
-    //   $detalle=$this->model_ptto_sigep->lista_detalle_consolidado_partidas_asignadas_unidades(4);
-    //   $tabla.='
-    //     <style>
-    //       table{font-size: 9px;
-    //         width: 100%;
-    //         max-width:1550px;
-    //         overflow-x: scroll;
-    //       }
-    //       th{
-    //         padding: 1.4px;
-    //         text-align: center;
-    //         font-size: 10px;
-    //       }
-    //       td{
-    //         font-size: 9.5px;
-    //       }
-    //     </style>
-    //   <table border="1" cellpadding="0" cellspacing="0" class="tabla">
-    //     <thead>
-    //     <tr>
-    //       <th style="height:30px;">REGIONAL</th>
-    //       <th>DISTRITAL</th>
-    //       <th>PROGRAMA</th>
-    //       <th>UNIDAD ORGANIZACIONAL</th>
-    //       <th>PARTIDA</th>
-    //       <th></th>
-    //       <th>PPTO. ASIGNADO '.$this->gestion.'</th>
-    //       <th>PPTO. PROG. POA '.$this->gestion.'</th>
-    //       <th>PPTO. CERT. POA '.$this->gestion.'</th>
-    //     </tr>
-    //     </thead>
-    //     <tbody>';
-    //     foreach ($detalle as $row){
-    //       $part_prog=$this->model_insumo->get_partida_programado_certificado_unidad($row['aper_id'],$row['par_id']);
-          
-    //       $monto_prog=0;$monto_cert=0;
-    //       if(count($part_prog)!=0){
-    //         $monto_prog=$part_prog[0]['ppto_programado'];
-    //         $monto_cert=$part_prog[0]['ppto_certificado'];
-    //       }
-    //       $tabla.='
-    //       <tr>
-    //         <td>'.mb_convert_encoding(strtoupper($row['dep_departamento']), 'cp1252', 'UTF-8').'</td>
-    //         <td>'.mb_convert_encoding(strtoupper($row['dist_distrital']), 'cp1252', 'UTF-8').'</td>
-    //         <td>\''.$row['prog'].'\'</td>';
-    //         if($row['tp_id']==1){
-    //           $tabla.='<td>'.mb_convert_encoding(strtoupper($row['proy_sisin'].' '.$row['proy_nombre']), 'cp1252', 'UTF-8').'</td>';
-    //         }
-    //         else{
-    //           $tabla.='<td>'.mb_convert_encoding(strtoupper($row['act'].'-'.$row['tipo'].' '.$row['actividad']), 'cp1252', 'UTF-8').'</td>';
-    //         }
-    //         $tabla.='
-            
-    //         <td style="text-align:center; font-size:11px">'.$row['partida'].'</td>
-    //         <td>'.mb_convert_encoding($row['par_nombre'], 'cp1252', 'UTF-8').'</td>
-    //         <td align="right">'.round($row['ppto_partida_asignado_gestion'],2).'</td>
-    //         <td align="right">'.round($monto_prog,2).'</td>
-    //         <td align="right">'.round($monto_cert,2).'</td>
-    //       </tr>';
-    //     }
-    //   $tabla.='
-    //     </tbody>
-    //   </table>';
-
-    //   date_default_timezone_set('America/Lima');
-    //   $fecha = date("d-m-Y H:i:s");
-    //   header('Content-type: application/vnd.ms-excel');
-    //   header("Content-Disposition: attachment; filename=CONSOLIDADO_PARTIDAS_".$titulo."_$fecha.xls"); //Indica el nombre del archivo resultante
-    //   header("Pragma: no-cache");
-    //   header("Expires: 0");
-    //   ini_set('max_execution_time', 0); 
-    //   ini_set('memory_limit','3072M');
-    //   echo $tabla;
-    // }
-
-
     /*--- EXPORTAR REQUERIMIENTOS A DETALLE ---*/
     public function requerimientos_distrital($dep_id,$dist_id,$tp_id){
       date_default_timezone_set('America/Lima');
@@ -553,8 +329,230 @@
 
 
 
-    /*--- FORM 5 EJECUCION CERTIFICACION POA POR UNIDAD RESPONSABLE (EXCEL) ---*/
-    public function requerimientos_servicio($com_id){
+
+    function exportar_poa_uresponsable($com_id, $token = NULL) {
+    // En tu función principal
+    $data['form4'] = $this->exportar_form4_uresponsable($com_id);
+    // Pestaña 2 también debe ser una tabla para que se vea bien
+    $data['form5'] = '';
+
+    // 3. Manejo del Token para el Loading de JS
+    if($token != NULL) {
+        // Importante: El path "/" asegura que la cookie sea visible en todo el sitio
+        header("Set-Cookie: downloadToken=$token; path=/; SameSite=Lax");
+    }
+
+    // 4. Cabeceras para Excel (Formato XML Spreadsheet 2003)
+    header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+    header("Content-Disposition: attachment; filename=Reporte_POA_UResponsable.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    
+    // 5. Cargar la vista especial XML que definimos antes
+    $this->load->view('admin/reportes_cns/exportar_requerimientos/exportar_poa_uresponsable',$data); 
+
+    }
+
+
+public function exportar_form4_uresponsable($com_id){
+    $tabla='';
+    $formularioN4 = $this->model_producto->get_lista_form4_consolidado($com_id, 0);
+    
+    foreach($formularioN4 as $rowp){
+        $tabla .= '<Row ss:AutoFitHeight="1">'; // Autoajusta la altura si el texto es largo
+        
+        // Celdas de Códigos (Centradas)
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['og_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['or_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['prod_cod'].'</Data></Cell>';
+        
+        // Celdas de Texto Largo (Alineadas a la izquierda con ajuste de texto)
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_producto'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_resultado'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">hola</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_indicador'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        // Meta (Centrada)
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['prod_meta'],2).'</Data></Cell>';
+        
+        // Meses (Estrechos y Centrados)
+        for ($i=1; $i <=12 ; $i++) { 
+            $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['m'.$i],2).'</Data></Cell>';
+        }
+
+        // Fuente de Verificación
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_fuente_verificacion'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $tabla .= '</Row>';
+    }
+
+    return $tabla;
+}
+    ///// exportar form4 uresponsable 2026
+    public function exportar_form4_uresponsable2($com_id){
+        $componente=$this->model_componente->get_componente($com_id,$this->gestion);
+        $tabla='';
+        $tabla.='<Row ss:Height="35" ss:StyleID="header_style">
+              <Cell><Data ss:Type="String">PROG.</Data></Cell>
+              <Cell><Data ss:Type="String">COD. ACP.</Data></Cell>
+              <Cell><Data ss:Type="String">COD. OPE.</Data></Cell>
+              <Cell><Data ss:Type="String">COD. ACT.</Data></Cell> 
+              <Cell><Data ss:Type="String">ACTIVIDAD</Data></Cell>
+              <Cell><Data ss:Type="String">RESULTADO</Data></Cell>
+              <Cell><Data ss:Type="String">UNIDAD RESPONSABLE</Data></Cell>
+              <Cell><Data ss:Type="String">INDICADOR</Data></Cell>
+              <Cell><Data ss:Type="String">META</Data></Cell>
+              <Cell><Data ss:Type="String">ENE.</Data></Cell>
+              <Cell><Data ss:Type="String">FEB.</Data></Cell>
+              <Cell><Data ss:Type="String">MAR.</Data></Cell>
+              <Cell><Data ss:Type="String">ABR.</Data></Cell>
+              <Cell><Data ss:Type="String">MAY.</Data></Cell>
+              <Cell><Data ss:Type="String">JUN.</Data></Cell>
+              <Cell><Data ss:Type="String">JUL.</Data></Cell>
+              <Cell><Data ss:Type="String">AGO.</Data></Cell>
+              <Cell><Data ss:Type="String">SEPT.</Data></Cell>
+              <Cell><Data ss:Type="String">OCT.</Data></Cell>
+              <Cell><Data ss:Type="String">NOV.</Data></Cell>
+              <Cell><Data ss:Type="String">DIC.</Data></Cell>
+              <Cell><Data ss:Type="String">VERIFICACIÓN</Data></Cell>
+            </Row>';
+              $nro=0;
+              $formularioN4=$this->model_producto->get_lista_form4_consolidado($com_id,0);
+              foreach($formularioN4 as $rowp){
+                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
+                $color=''; $tp='';
+                if($rowp['indi_id']==1){
+                  if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+                    $color='#fbd5d5';
+                  }
+                }
+                elseif ($rowp['indi_id']==2) {
+                  $tp='%';
+                  if($rowp['mt_id']==3){
+                    if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+                      $color='#fbd5d5';
+                    }
+                  }
+                }
+
+                $color_or='';
+                if($rowp['or_id']==0){
+                  $color_or='#fbd5d5';
+                }
+
+
+                if($componente[0]['por_id']==0){
+                  $uresp=strtoupper($rowp['prod_unidades']);
+                }
+                else{
+                  $unidad=$this->model_componente->get_componente($rowp['uni_resp'],$this->gestion);
+                  
+                  $uresp='';
+                  if(count($unidad)!=0){
+                    $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
+                    $uresp=''.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'';
+                  }
+                }
+
+                $nro++;
+                $tipo_meta = ($tp == '%') ? 'String' : 'Number';
+                $uresp_clean = strip_tags($uresp);
+                $tabla.=
+                '<Row>
+                  <Cell><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>
+                  <Cell><Data ss:Type="number">'.$rowp['og_codigo'].'</Data></Cell>
+                  <Cell><Data ss:Type="number">'.$rowp['or_codigo'].'</Data></Cell>
+                  <Cell><Data ss:Type="number">'.$rowp['prod_cod'].'</Data></Cell>
+                  <Cell><Data ss:Type="number">'.htmlspecialchars($rowp['prod_producto']).'</Data></Cell>
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_resultado']).'</Data></Cell>
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($uresp_clean).'</Data></Cell>
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_indicador']).'</Data></Cell>
+                  <Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['prod_meta'],2).''.$tp.'</Data></Cell>';
+                  for ($i=1; $i <=12 ; $i++) { 
+                    $tabla.='<Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['m'.$i],2).''.$tp.'</Data></Cell>';
+                  }
+
+                  $tabla.='
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_fuente_verificacion']).'</Data></Cell>
+                </Row>';
+
+              }
+
+              ///------------------------------------------------------------------------
+              $formularioN4=$this->model_producto->get_lista_form4_consolidado($com_id,1);
+              foreach($formularioN4 as $rowp){
+                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
+                $color='#E8FCFB'; $tp='';
+                if($rowp['indi_id']==1){
+                  if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+                    $color='#fbd5d5';
+                  }
+                }
+                elseif ($rowp['indi_id']==2) {
+                  $tp='%';
+                  if($rowp['mt_id']==3){
+                    if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+                      $color='#fbd5d5';
+                    }
+                  }
+                }
+
+                $color_or='';
+                if($rowp['or_id']==0){
+                  $color_or='#fbd5d5';
+                }
+
+
+                $unidad=$this->model_componente->get_componente($rowp['uni_resp'],$this->gestion);
+                  
+                $uresp='';
+                  if(count($unidad)!=0){
+                    $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
+                    $uresp=''.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'';
+                  }
+
+                $nro++;
+                $tipo_meta = ($tp == '%') ? 'String' : 'Number';
+                $uresp_clean = strip_tags($uresp);
+                $tabla.=
+                '<Row>
+                  <Cell><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>
+                  <Cell><Data ss:Type="Number">'.$rowp['og_codigo'].'</Data></Cell>
+                  <Cell><Data ss:Type="Number">'.$rowp['or_codigo'].'</Data></Cell>
+                  <Cell><Data ss:Type="Number">'.$rowp['prod_cod'].'</Data></Cell>
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_producto']).'</Data></Cell>
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_resultado']).'</Data></Cell>
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($uresp).'</Data></Cell>
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_indicador']).'</Data></Cell>
+                  <Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['prod_meta'],2).''.$tp.'</Data></Cell>';
+                  for ($i=1; $i <=12 ; $i++) { 
+                    $tabla.='<Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['m'.$i],2).''.$tp.'</Data></Cell>';
+                  }
+
+                  $tabla.='
+                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_fuente_verificacion']).'</Data></Cell>
+                </Row>';
+              }
+              $tabla.='
+         
+            </Row>';
+
+      return $tabla;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+/*    public function requerimientos_servicio($com_id){
       date_default_timezone_set('America/Lima');
       $fecha = date("d-m-Y H:i:s");
 
@@ -573,13 +571,13 @@
       ini_set('max_execution_time', 0); 
       ini_set('memory_limit','3072M');
       echo $tabla;
-    }
+    }*/
 
 
 
 
      /*----- LISTA DE REQUERIMIENTOS POR UNIDAD RESPONSABLE (2023) ----*/
-    public function lista_ejecucion_requerimientos_uresponsable($requerimientos,$proyecto,$componente){
+/*    public function lista_ejecucion_requerimientos_uresponsable($requerimientos,$proyecto,$componente){
         $tit='PROYECTO DE INVERSI&Oacute;N';
         $tit_proy=$proyecto[0]['proy_sisin'].'.-'.$proyecto[0]['proy_nombre'];
         if($proyecto[0]['tp_id']==4){
@@ -689,7 +687,7 @@
         </table>';
 
       return $tabla;
-    }
+    }*/
 
   /// ---------------------------------------------
 

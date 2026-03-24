@@ -1635,7 +1635,7 @@ class Programacionpoa extends CI_Controller{
 
 
   /*----- REPORTE FORMULARIO 4 (2023 - Gasto Corriente) ----*/
-  public function rep_formulario_N4_v1($com_id,$componente,$proyecto){
+/*  public function rep_formulario_N4_v1($com_id,$componente,$proyecto){
     $tabla='';
      $tabla.='<table cellpadding="0" cellspacing="0" class="tabla" border=0.09 style="width:100%;" align=center>
               <thead>
@@ -1750,7 +1750,7 @@ class Programacionpoa extends CI_Controller{
             </table>';
 
     return $tabla;
-  }
+  }*/
 
 
 

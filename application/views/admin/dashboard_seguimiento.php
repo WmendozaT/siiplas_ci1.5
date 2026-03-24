@@ -119,6 +119,34 @@
                 });
             });
         });
+
+
+        ////
+        function exportarExcelConLoading(id) {
+            var $btn = $('#btn_exportar_excel');
+            var $txt = $('#txt_btn_excel');
+            var token = new Date().getTime(); // Token único
+
+            // 1. Estado "Cargando"
+            $btn.prop('disabled', true).addClass('btn-warning').removeClass('btn-success');
+            $txt.html('<i class="fa fa-spinner fa-spin"></i> Generando archivo...');
+
+            // 2. Redirección para iniciar descarga enviando el token
+            window.location.href = "<?php echo base_url(); ?>index.php/rep/exportar_poa_uresponsable/" + id + "/" + token;
+
+            // 3. Revisar cada segundo si la cookie del token ya existe
+            var checkDownload = setInterval(function() {
+                var cookieValue = document.cookie.split('; ').find(row => row.startsWith('downloadToken='));
+                
+                if (cookieValue && cookieValue.split('=')[1] == token) {
+                    // 4. Finalizar Loading
+                    clearInterval(checkDownload);
+                    document.cookie = "downloadToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // Borrar cookie
+                    $btn.prop('disabled', false).addClass('btn-success').removeClass('btn-warning');
+                    $txt.text('Exportar POA.xls');
+                }
+            }, 1000);
+        }
     </script>
 </body>
 </html>

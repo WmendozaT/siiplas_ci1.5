@@ -573,6 +573,9 @@ class Dashboard extends CI_Controller{
                         <iframe id="iframe_pdf" src="" width="100%" height="100%" frameborder="0"></iframe>
                     </div>
                     <div class="modal-footer">
+                        <button type="button" id="btn_exportar_excel" class="btn btn-success" onclick="exportarExcelConLoading('.$com_id.')">
+                            <i class="fa fa-file-excel-o"></i> <span id="txt_btn_excel">Exportar POA.xls</span>
+                        </button>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
                     </div>
                 </div>

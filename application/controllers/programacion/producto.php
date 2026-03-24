@@ -1628,16 +1628,11 @@ class Producto extends CI_Controller {
     }
 
 
-    /*------ REPORTE OPERACIONES POR COMPONENTE(2019 - 2020 - 2021) ----*/
+    /*------ REPORTE FORM4 ----*/
     public function reporte_operacion_componente($com_id){
       $data['componente'] = $this->model_componente->get_componente_pi($com_id); //// DATOS COMPONENTE
       if(count($data['componente'])!=0){
-        if($this->gestion>2020){
-          redirect(site_url("").'/prog/reporte_form4/'.$com_id.''); /// Reporte Form4 2021
-        }
-        else{
-          $this->reporte_poa_2020($com_id); /// Reporte POA 2019-2020
-        }
+        redirect(site_url("").'/prog/reporte_form4/'.$com_id.''); /// Reporte Form4 2021
       }
       else{
         echo "Error !!!";
@@ -1646,7 +1641,7 @@ class Producto extends CI_Controller {
 
 
     /*------ Para reporte poa 2019-2020 -----*/
-    public function reporte_poa_2020($com_id){
+/*    public function reporte_poa_2020($com_id){
       $data['componente'] = $this->model_componente->get_componente_pi($com_id); //// DATOS COMPONENTE
       $data['mes'] = $this->mes_nombre();
       $data['fase']=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']); /// DATOS FASE
@@ -1671,11 +1666,11 @@ class Producto extends CI_Controller {
         $data['operaciones']=$this->componente_operaciones($com_id); /// Reporte Gasto Corriente, Proyecto de Inversion 2020
         $this->load->view('admin/programacion/producto/reporte_productos2020', $data);
       }
-    }
+    }*/
 
 
     /*----- TITULO SERVICIO OPERACION (2020 - Operaciones) tp:1 (pdf), 2:(Excel) -----*/
-    public function cabecera_2020($com_id,$tp){
+/*    public function cabecera_2020($com_id,$tp){
       $obj_est=$this->model_producto->list_oestrategico($com_id); /// Objetivos Estrategicos
       $componente = $this->model_componente->get_componente_pi($com_id); //// DATOS COMPONENTE
       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']); /// DATOS FASE
@@ -1772,7 +1767,7 @@ class Producto extends CI_Controller {
                     </tr>
                 </table>';
       return $tabla;
-    }
+    }*/
 
 
     /*----- SERVICIO ACTIVIDAD (2020 - Operaciones, Proyectos de Inversion) - REPORTE ----*/
