@@ -1629,7 +1629,7 @@ class Producto extends CI_Controller {
 
 
     /*------ REPORTE FORM4 ----*/
-    public function reporte_operacion_componente($com_id){
+/*    public function reporte_operacion_componente($com_id){
       $data['componente'] = $this->model_componente->get_componente_pi($com_id); //// DATOS COMPONENTE
       if(count($data['componente'])!=0){
         redirect(site_url("").'/prog/reporte_form4/'.$com_id.''); /// Reporte Form4 2021
@@ -1637,7 +1637,7 @@ class Producto extends CI_Controller {
       else{
         echo "Error !!!";
       }
-    }
+    }*/
 
 
     /*------ Para reporte poa 2019-2020 -----*/

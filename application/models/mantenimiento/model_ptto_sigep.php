@@ -20,6 +20,66 @@ class Model_ptto_sigep extends CI_Model{
         return $query->result_array();
     }
 
+    /// GET LISTA PPTO X PARTIDAS ASIGNADOS Y PROGRAMADOS 2026
+    public function get_lista_ppto_partidas_UOrganizacional($aper_id){
+        $sql = "
+        SELECT 
+            COALESCE(asig.dep_id, prog.dep_id) AS dep_id,
+            COALESCE(asig.dist_id, prog.dist_id) AS dist_id,
+            COALESCE(asig.par_id, prog.par_id) AS par_id,
+            COALESCE(asig.partida, prog.codigo::VARCHAR) AS codigo_partida,
+            COALESCE(asig.par_nombre, prog.partida_nombre, 'SIN ASIGNAR') AS partida,
+            
+            COALESCE(asig.ppto_asignado1, 0) AS ppto_asignado,
+            COALESCE(prog.ppto_programado1, 0) AS ppto_programado,
+            (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) AS saldo_poa,
+            
+            CASE 
+                WHEN (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) < 0 THEN 3
+                WHEN (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) > 0 THEN 1
+                ELSE 0 
+            END AS estado_poa,
+            
+            COALESCE(asig.ppto_asignado_revertido2, 0) AS ppto_asignado_revertido,
+            COALESCE(prog.ppto_programado_revertido2, 0) AS ppto_programado_revertido,
+            (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) AS saldo_revertido,
+            
+            CASE 
+                WHEN (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) < 0 THEN 3
+                WHEN (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) > 0 THEN 1
+                ELSE 0 
+            END AS estado_revertido
+
+        FROM (
+            SELECT 
+                pg.par_id, pg.partida, par.par_nombre, 
+                pg.importe AS ppto_asignado1, pg.ppto_saldo_ncert AS ppto_asignado_revertido2,
+                proy.dep_id, proy.dist_id
+            FROM ptto_partidas_sigep pg
+            INNER JOIN partidas par ON par.par_id = pg.par_id
+            INNER JOIN aperturaproyectos ap ON ap.aper_id = pg.aper_id 
+            INNER JOIN _proyectos proy ON proy.proy_id = ap.proy_id
+            WHERE pg.aper_id = ".$aper_id." AND pg.estado != 3 AND pg.g_id = ".$this->gestion."
+        ) asig
+        FULL OUTER JOIN (
+            SELECT 
+                i.par_id, par.par_codigo AS codigo, par.par_nombre AS partida_nombre, 
+                proy.dep_id, proy.dist_id,
+                SUM(CASE WHEN i.ins_tipo_modificacion = 0 THEN i.ins_costo_total ELSE 0 END) AS ppto_programado1,
+                SUM(CASE WHEN i.ins_tipo_modificacion = 1 THEN i.ins_costo_total ELSE 0 END) AS ppto_programado_revertido2
+            FROM insumos i
+            INNER JOIN partidas par ON par.par_id = i.par_id
+            INNER JOIN aperturaproyectos ap ON ap.aper_id = i.aper_id
+            INNER JOIN _proyectos proy ON proy.proy_id = ap.proy_id
+            WHERE i.aper_id = ".$aper_id." AND i.aper_id != 0 AND i.ins_tipo_modificacion IN (0, 1)
+            GROUP BY i.par_id, par.par_codigo, par.par_nombre, proy.dep_id, proy.dist_id
+        ) prog ON asig.par_id = prog.par_id
+        ORDER BY codigo_partida ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
 
     /// lista de Regionales incluyendo Oficina Nacional
     public function list_regionales(){
@@ -1019,7 +1079,7 @@ class Model_ptto_sigep extends CI_Model{
 
 
     /*---- Get Partida Programado - gasto corriente (Partida -> Unidad)---*/
-    public function get_partida_programado_poa($aper_id,$par_id){
+/*    public function get_partida_programado_poa($aper_id,$par_id){
         $sql = 'select i.aper_id,i.par_id,par.par_codigo as codigo,par.par_nombre, SUM(i.ins_costo_total) as ppto_programado
                 from insumos i
                 Inner Join partidas as par On par.par_id=i.par_id
@@ -1028,11 +1088,11 @@ class Model_ptto_sigep extends CI_Model{
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*--------- Get Partida Asignado (Partida -> Unidad)------------*/
-    public function get_partida_asignado_sigep($aper_id,$par_id){
+/*    public function get_partida_asignado_sigep($aper_id,$par_id){
         $sql = '
                 select pg.aper_id,pg.par_id, p.par_codigo as codigo, p.par_nombre as nombre, SUM(pg.importe) as ppto_asignado,pg.ppto_saldo_ncert
                 from ptto_partidas_sigep pg
@@ -1041,14 +1101,14 @@ class Model_ptto_sigep extends CI_Model{
                 group by pg.aper_id,pg.par_id, p.par_codigo, p.par_nombre,pg.ppto_saldo_ncert';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 
 
  
     /*========= SUMA DE CODIGO DE PARTIDA (ASIG, PROG) uni org 2023 =========*/
-    public function sum_codigos_partidas_asig_prog($aper_id,$tp){
+/*    public function sum_codigos_partidas_asig_prog($aper_id,$tp){
         if($tp==1){
             $sql = 'select pg.aper_id,SUM(cast(pg.partida as int)) as sum_cod_partida 
                     from ptto_partidas_sigep pg 
@@ -1073,13 +1133,13 @@ class Model_ptto_sigep extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 
 
     /*============ PARTIDAS UNIDAD EJECUTORA POR REGIONAL (vigente)============*/
-    public function partidas_accion_region($dep_id,$aper_id,$tp){
+/*    public function partidas_accion_region($dep_id,$aper_id,$tp){
         if($tp==1){ /// asignado
             $sql = 'select pg.sp_id,p.dep_id,pg.par_id,pg.partida as codigo,par.par_nombre as nombre,SUM(pg.importe) as ppto_asignado ,pg.ppto_saldo_ncert as ppto_revertido
                     from ptto_partidas_sigep pg 
@@ -1105,10 +1165,10 @@ class Model_ptto_sigep extends CI_Model{
     
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*-------- Get sumatoria ppto poa programado de los items que fueron registrados por REVERSION -------*/
-    public function get_ppto_poa_partida_x_reversion($aper_id,$par_id){
+/*    public function get_ppto_poa_partida_x_reversion($aper_id,$par_id){
         $sql = 'select p.dep_id,p.dist_id,i.aper_id,i.par_id, par.par_codigo as codigo, par.par_nombre as nombre, SUM(i.ins_costo_total) as monto_programado_revertido
                     from insumos i
                     Inner Join partidas as par On par.par_id=i.par_id
@@ -1121,7 +1181,7 @@ class Model_ptto_sigep extends CI_Model{
     
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*-------- Get Partida insumos programados por partida -------*/
     public function get_lista_insumos_por_partida($aper_id,$par_id){
@@ -1151,7 +1211,7 @@ class Model_ptto_sigep extends CI_Model{
 
 
     /*---------- Get ppto asignado x Partida unidad (vigente)-------------*/
-    public function get_ppto_partida_asig_unidad($dep_id,$aper_id,$par_id){
+/*    public function get_ppto_partida_asig_unidad($dep_id,$aper_id,$par_id){
         $sql = 'select p.dep_id,pg.par_id,pg.partida as codigo,par.par_nombre as nombre,SUM(pg.importe) as ppto_asignado ,pg.ppto_saldo_ncert as ppto_revertido
                     from ptto_partidas_sigep pg 
                     Inner Join aperturaproyectos as ap On ap.aper_id=pg.aper_id 
@@ -1162,7 +1222,7 @@ class Model_ptto_sigep extends CI_Model{
                     order by pg.partida';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 /*============ MODULO DE MODIFICACIONES =============*/
@@ -1355,13 +1415,13 @@ class Model_ptto_sigep extends CI_Model{
     
 
     /*-------- SUMA SALDOS REVERTIDOS POR PARTIDA Y CITE --------*/
-    public function suma_saldo_revertido($sp_id){
+/*    public function suma_saldo_revertido($sp_id){
         $sql = 'select SUM(monto_revertido) saldo
                 from saldo_partida
                 where sp_id='.$sp_id.' and saldo_estado!=\'3\'';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*-------- LISTA DE SALDOS REVERTIDOS POR PARTIDA Y CITE --------*/
@@ -1414,13 +1474,13 @@ class Model_ptto_sigep extends CI_Model{
     }
 
     /*-------- LISTA DE SALDOS PARTIDAS REVERTIDOS POR UNIDAD --------*/
-    public function lista_monto_partidas_revertidos_unidad($proy_id){
+/*    public function lista_monto_partidas_revertidos_unidad($proy_id){
         $sql = 'select *
                 from lista_partidas_revertidas('.$this->gestion.')
                 where proy_id='.$proy_id.'';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*-------- GET SALDO REVERTIDO PROGRAMADO POR PARTIDA - UNIDAD --------*/
     public function get_ppto_partida_revertido_unidad($par_id,$aper_id){

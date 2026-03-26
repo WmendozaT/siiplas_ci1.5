@@ -469,7 +469,7 @@ class Model_insumo extends CI_Model{
     }
 
     // lista de requerimientos alineados a PROGRAMAS BOLSAS por actividad (antiguo)
-    function lista_requerimientos_inscritos_en_programas_bosas2($prod_id,$com_id){
+/*    function lista_requerimientos_inscritos_en_programas_bosas2($prod_id,$com_id){
          $sql = 'select p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre
                 from _productos p
                 Inner Join _insumoproducto as ip On p.prod_id=ip.prod_id
@@ -481,7 +481,7 @@ class Model_insumo extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /// lista consolidado de requerimientos (todos) en prog bolsas
     function lista_requerimientos_inscritos_en_programas_bosas($aper_id,$com_id){
@@ -572,8 +572,8 @@ class Model_insumo extends CI_Model{
     }
 
 
-    /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2022 -----*/
-    function list_consolidado_partidas_componentes($com_id){
+    /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2026 -----*/
+    function list_consolidado_partidas_uResponsable($com_id){
 
             $sql = 'SELECT 
                         c.com_id, 

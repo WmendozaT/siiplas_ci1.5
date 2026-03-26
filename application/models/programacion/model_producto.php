@@ -150,7 +150,7 @@ class model_producto extends CI_Model {
 
 
 
-    /*----- GET UNIDAD RESPONSABLE POR programa (PROG BOLSA) -----*/
+    /*----- GET UNIDAD RESPONSABLE POR programa (PROG BOLSA revisar) -----*/
     function verif_get_uni_resp_programaBolsa_prog($aper_id,$com_id){
         $sql = '
             select prod.*,p.*,dist.*,dep.*,ua.*,te.*,apg.*,pfe.*
@@ -205,71 +205,111 @@ class model_producto extends CI_Model {
 
 
 
-    /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL O BOLSAS 2024 (Gasto Corriente) -----*/
-    function get_lista_form4_consolidado($com_id,$tp){
-        /// tp: 0 (listado normal de actividades)
-        /// tp: 1 (Listado de Actividades Bolsas por unidad responsable)
+    /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL y Bolsa x UNI RESP -----*/
+    function get_lista_form4_uresp_consolidado($com_id){
+        $sql = "
+        SELECT 
+        -- Lógica de Apertura Programática
+        COALESCE(apg_bolsa.aper_programa, apg_normal.aper_programa) AS aper_programa,
+        
+        -- Datos del Producto
+        c.com_componente,p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
+        p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
+        
+        -- Lógica de Unidades Responsables (Bolsas)
+        CASE 
+            WHEN p.uni_resp = 0 THEN ''
+            WHEN p.uni_resp = ".$com_id." THEN CONCAT(uresp.proy_nombre, '.', uresp.abrev, ' - ', uresp.tipo_subactividad, ' ', uresp.com_componente)
+            ELSE p.prod_unidades 
+        END AS prod_unidades,
 
-        if($tp==0){ /// listado normal POA (Actividades)
-            $sql = '
-                    SELECT 
-                        apg.aper_programa, p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
-                        p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
-                        p.prod_unidades, p.prod_ponderacion, p.estado, p.prod_mod, p.prod_resultado, p.acc_id, 
-                        p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id, p.or_id, 
-                        i.indi_descripcion, i.indi_abreviacion,
-                        ore.or_id, ore.or_codigo, 
-                        og.og_id, og.og_codigo, 
-                        prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
-                        prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
-                        prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
-                        prog.g_id
-                    FROM _productos p
-                    INNER JOIN indicador i ON i.indi_id = p.indi_id
-                    INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-                    -- Usamos DISTINCT o limitamos la relación si solo necesitas los datos del objetivo
-                    INNER JOIN (
-                        SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
-                    ) opm ON ore.pog_id = opm.pog_id
-                    INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-                    INNER JOIN aperturaprogramatica apg ON apg.aper_id = og.aper_id
-                    INNER JOIN vista_temporalidad_form4_programado prog ON prog.prod_id = p.prod_id
-                    WHERE p.com_id = '.$com_id.' 
-                      AND p.estado != 3
-                    ORDER BY p.prod_cod ASC'; 
-        }
-        else{ /// listado POa bolsas
-            $sql = '
-            SELECT 
-                apg.aper_programa, p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
-                p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
-                p.prod_unidades, p.prod_ponderacion, p.estado, p.prod_mod, p.prod_resultado, p.acc_id, 
-                p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id, p.or_id, 
-                i.indi_descripcion, i.indi_abreviacion,
-                ore.or_id, ore.or_codigo, 
-                og.og_id, og.og_codigo, 
-                prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
-                prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
-                prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
-                prog.g_id
-            FROM _productos p
-            INNER JOIN indicador i ON i.indi_id = p.indi_id
-            INNER JOIN _componentes c ON p.com_id = c.com_id
-            INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
-            INNER JOIN aperturaprogramatica apg ON apg.aper_id = pfe.aper_id
-            INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-            -- Reducimos la tabla de objetivos mensuales a valores únicos para evitar duplicados
-            INNER JOIN (
-                SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
-            ) opm ON ore.pog_id = opm.pog_id
-            INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-            -- Tu nueva vista optimizada con SUM()
-            INNER JOIN vista_temporalidad_form4_programado prog ON prog.prod_id = p.prod_id
-            WHERE p.uni_resp = '.$com_id.' 
-              AND prog.g_id = '.$this->gestion.' 
-              AND p.estado != 3
-            ORDER BY apg.aper_programa, p.prod_cod ASC'; 
-        }
+        p.estado, p.prod_mod, p.prod_resultado, 
+        p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id,p.or_id, 
+        
+        -- Datos de Indicador y Objetivos
+        i.indi_descripcion, i.indi_abreviacion,
+        ore.or_codigo, -- Eliminamos ore.or_id porque ya está p.or_id arriba
+        og.og_id, og.og_codigo, 
+        
+        -- Temporalidad (Meses)
+        prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
+        prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
+        prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
+        prog.g_id,prog.total_anual
+    FROM _productos p
+    INNER JOIN indicador i ON i.indi_id = p.indi_id
+    INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+    INNER JOIN (
+        SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
+    ) opm ON ore.pog_id = opm.pog_id
+    INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+    INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
+
+    LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id
+    LEFT JOIN _componentes c ON p.com_id = c.com_id
+    LEFT JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
+    LEFT JOIN aperturaprogramatica apg_bolsa ON apg_bolsa.aper_id = pfe.aper_id
+    LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
+    WHERE p.estado != 3 
+      AND (
+          p.com_id = ".$com_id."  -- Caso Normal
+          OR 
+          (p.uni_resp = ".$com_id."  AND prog.g_id = ".$this->gestion.") -- Caso Bolsas
+      )
+    ORDER BY 1, p.prod_cod ASC;"; 
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
+    /*----- GET LISTA DE ACTIVIDADES PROGRAMA BIENES Y SERVICIOS Y FORTALECIMIENTO -----*/
+    function get_lista_form4_uresp_consolidado_programa_bolsas($com_id){
+        $sql = "
+        SELECT 
+            COALESCE(apg_bolsa.aper_programa, apg_normal.aper_programa) AS aper_programa,
+            c.com_componente, p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
+            p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
+            
+            -- CORRECCIÓN: Si existe relación con la vista de unidad responsable, mostramos el detalle concatenado
+            CASE 
+                WHEN p.uni_resp = 0 THEN ''
+                WHEN uresp.com_id IS NOT NULL THEN 
+                    CONCAT(uresp.proy_nombre, '.', uresp.abrev, ' - ', uresp.tipo_subactividad, ' ', uresp.com_componente)
+                ELSE 
+                    p.prod_unidades 
+            END AS prod_unidades,
+                    
+            p.estado, p.prod_mod, p.prod_resultado, 
+            p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id, p.or_id, 
+            i.indi_descripcion, i.indi_abreviacion,
+            ore.or_codigo, og.og_id, og.og_codigo, 
+            
+            prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
+            prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
+            prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
+            prog.g_id, prog.total_anual
+        FROM _productos p
+        INNER JOIN indicador i ON i.indi_id = p.indi_id
+        INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+        INNER JOIN (
+            SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
+        ) opm ON ore.pog_id = opm.pog_id
+        INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+        INNER JOIN vista_temporalidad_form4_programado prog ON prog.prod_id = p.prod_id
+
+        LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id
+        LEFT JOIN _componentes c ON p.com_id = c.com_id
+        LEFT JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
+        LEFT JOIN aperturaprogramatica apg_bolsa ON apg_bolsa.aper_id = pfe.aper_id
+
+        -- Join clave: relacionamos la unidad responsable del producto con la vista de proyectos
+        LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
+
+        WHERE p.com_id = ".$com_id." 
+          AND p.estado != 3
+        ORDER BY 1, p.prod_cod ASC;"; 
         
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -279,14 +319,15 @@ class model_producto extends CI_Model {
 
 
 
+
     /// Migracion de temporalidad form 4 
-    function list_temporalidad_total_form4(){
+/*    function list_temporalidad_total_form4(){
         $sql = 'select *
                 from prod_programado_mensual'; 
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 
@@ -304,7 +345,7 @@ class model_producto extends CI_Model {
 
 
     /*--------- ULTIMO PRODUCTO (2021-2022) ----------*/
-    function ult_operacion($com_id){
+/*    function ult_operacion($com_id){
         $sql = 'select p.*
                 from _productos as p
                 Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=p.prod_id
@@ -312,7 +353,7 @@ class model_producto extends CI_Model {
                 ORDER BY p.prod_cod desc LIMIT 1'; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     function list_prod($com_id){
@@ -388,7 +429,7 @@ class model_producto extends CI_Model {
 
 
     /*=== LISTA DE OPERACIONES (2020) REPORTE - GASTO CORRIENTE ===*/
-    function list_operaciones_pi($com_id){
+/*    function list_operaciones_pi($com_id){
         $sql = 'SELECT 
                     p.prod_id, p.com_id, p.prod_producto, p.prod_ppto, p.indi_id, p.prod_indicador, 
                     p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, p.prod_unidades, 
@@ -418,7 +459,7 @@ class model_producto extends CI_Model {
                 ORDER BY p.prod_cod, oe.obj_codigo ASC'; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     //// Vigente

@@ -97,22 +97,35 @@ class Model_componente extends CI_Model{
         return $query->num_rows();
     }
     /*================================================================================================*/
-    /*======================= COMPONENTE (Operaciones) =============================*/
+    /*====== GET COMPONENTE -> PROY - APER 2026 ========*/
     public function get_componente($com_id,$gestion){
-        $sql = 'select *
-                from _componentes as c
-                Inner Join funcionario as f On f.fun_id=c.resp_id
-                Inner Join unidadorganizacional as u On u.uni_id=c.uni_id
-                Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-                Inner Join _proyectos as p On pfe.proy_id=p.proy_id
-                Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                Inner Join _departamentos as d On d.dep_id=p.dep_id
-                Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-                Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-                where c.com_id='.$com_id.' and apg.aper_gestion='.$gestion.' and apg.aper_estado!=\'3\' and pfe.pfec_estado=\'1\''; 
+        $sql = ' SELECT 
+                    c.com_id, c.com_componente, 
+                    sa.serv_id, sa.serv_cod, sa.serv_descripcion, 
+                    tpsa.tipo_subactividad, 
+                    pfe.pfec_id, 
+                    p.proy_id,p.proy_nombre, p.proy_estado, p.proy_pr, p.tp_id, p.dep_id, p.proy_sisin,
+                    d.dep_cod,d.dep_departamento, 
+                    p.dist_id, ds.dist_distrital, p.por_id, ds.abrev, ds.da, ds.ue,ds.dist_cod, 
+                    te.tipo, 
+                    apg.aper_id, apg.aper_gestion, apg.aper_proy_estado, apg.aper_programa, apg.aper_proyecto, apg.aper_actividad, apg.aper_descripcion
+                FROM _componentes c
+                /* 1. Filtros directos de la tabla principal y su relación inmediata */
+                INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id AND pfe.pfec_estado = 1
+                INNER JOIN aperturaprogramatica apg ON apg.aper_id = pfe.aper_id 
+                    AND apg.aper_gestion = 2026 
+                    AND apg.aper_estado != 3
+                /* 2. Relaciones de catálogo y descripción */
+                INNER JOIN servicios_actividad sa ON sa.serv_id = c.serv_id
+                INNER JOIN tipo_subactividad tpsa ON tpsa.tp_sact = c.tp_sact
+                /* 3. Relaciones de jerarquía de proyecto */
+                INNER JOIN _proyectos p ON pfe.proy_id = p.proy_id
+                INNER JOIN _distritales ds ON ds.dist_id = p.dist_id
+                INNER JOIN _departamentos d ON d.dep_id = p.dep_id
+                /* 4. Relaciones de unidad/establecimiento */
+                INNER JOIN unidad_actividad ua ON ua.act_id = p.act_id
+                INNER JOIN v_tp_establecimiento te ON te.te_id = ua.te_id
+                WHERE c.com_id = '.$com_id.' and apg.aper_gestion='.$gestion.''; 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
@@ -130,7 +143,7 @@ class Model_componente extends CI_Model{
     }
     
     /*================== COMPONENTE X (Proy Inversion) =================*/
-    public function get_componente_pi($com_id){
+/*    public function get_componente_pi($com_id){
         $sql = 'select *
                 from _componentes as c
                 Inner Join funcionario as f On f.fun_id=c.resp_id
@@ -138,7 +151,7 @@ class Model_componente extends CI_Model{
                 where c.com_id='.$com_id.''; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
     /*=====================================================================*/
     /*============================ BORRA DATOS F/E PTTO =================================*/
     public function delete_comp($id_c){ 

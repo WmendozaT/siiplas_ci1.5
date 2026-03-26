@@ -483,7 +483,7 @@ class Dashboard extends CI_Controller{
                     </div>
 
                     <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/prog/rep_operacion_componente/'.$com_id.'" 
+                        <a href="'.base_url().'index.php/prog/reporte_form4_uresponsable/'.$com_id.'" 
                            class="jarvismetro-tile big-cubes bg-color-greenLight btn-reporte" 
                            data-toggle="tooltip" data-placement="bottom" title="Ver Mis Actividades Programados en mi POA en formato PDF">
                             <div class="well" align="center">
@@ -496,7 +496,7 @@ class Dashboard extends CI_Controller{
                     if(count($this->model_insumo->list_consolidado_partidas_componentes($com_id))!=0){
                         $formulario.='
                         <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                            <a href="'.base_url().'index.php/prog/rep_formulario5_uresp/'.$com_id.'" 
+                            <a href="'.base_url().'index.php/prog/reporte_form5_uresponsable/'.$com_id.'" 
                                class="jarvismetro-tile big-cubes bg-color-greenLight btn-reporte" 
                                data-toggle="tooltip" data-placement="bottom" title="Ver Mis Requerimientos Programados en mi POA en formato PDF">
                                 <div class="well" align="center">

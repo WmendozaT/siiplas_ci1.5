@@ -27,7 +27,7 @@ CREATE INDEX idx_componentes_id ON _componentes (com_id);
 
 
 
-CREATE OR REPLACE VIEW public.vista_temporalidad_form4_programado AS 
+CREATE OR REPLACE VIEW public.vista_temporalidad_form4_programado_uresp AS 
  SELECT 
     prod_id,
     g_id,
@@ -43,13 +43,33 @@ CREATE OR REPLACE VIEW public.vista_temporalidad_form4_programado AS
     SUM(CASE WHEN m_id = 10 THEN pg_fis ELSE 0 END) AS mes10,
     SUM(CASE WHEN m_id = 11 THEN pg_fis ELSE 0 END) AS mes11,
     SUM(CASE WHEN m_id = 12 THEN pg_fis ELSE 0 END) AS mes12,
+    -- Sumatoria total del producto en la gestión
+    SUM(pg_fis) AS total_anual,
     COUNT(*) AS n
  FROM prod_programado_mensual
  GROUP BY prod_id, g_id;
 
-ALTER TABLE public.vista_temporalidad_form4_programado
+ALTER TABLE public.vista_temporalidad_form4_programado_uresp
   OWNER TO postgres;
-
 
   CREATE INDEX idx_prod_prog_mensual_opt ON prod_programado_mensual (prod_id, g_id);
   CREATE INDEX idx_productos_com_id ON _productos (com_id, estado);
+
+
+  ------------ para ver la unidad responsable alineado al programa bolsa
+  CREATE VIEW vista_ver_uresp_proyecto AS
+SELECT 
+    c.com_id,
+    pfe.pfec_id,
+    p.proy_nombre, 
+    ds.abrev, 
+    tpsa.tipo_subactividad, 
+    c.com_componente,
+    pfe.pfec_estado
+FROM _componentes c
+INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
+INNER JOIN _proyectos p ON pfe.proy_id = p.proy_id
+INNER JOIN _distritales ds ON ds.dist_id = p.dist_id
+INNER JOIN tipo_subactividad tpsa ON tpsa.tp_sact = c.tp_sact;
+
+

@@ -356,7 +356,8 @@
 
 public function exportar_form4_uresponsable($com_id){
     $tabla='';
-    $formularioN4 = $this->model_producto->get_lista_form4_consolidado($com_id, 0);
+    $formularioN4 = $this->model_producto->get_lista_form4_consolidado($com_id, 0); /// poa normal
+    $formularioN4_bolsa=$this->model_producto->get_lista_form4_consolidado($com_id,1); /// poa bolsa
     
     foreach($formularioN4 as $rowp){
         $tabla .= '<Row ss:AutoFitHeight="1">'; // Autoajusta la altura si el texto es largo

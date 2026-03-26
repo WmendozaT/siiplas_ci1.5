@@ -57,7 +57,7 @@ class Model_proyecto extends CI_Model{
         public function get_aper_programa($aper_id){
         $sql = '
             select *
-            from lista_poa_pinversion_nacional('.$this->gestion.')
+            from lista_poa_nacional('.$this->gestion.')
             where aper_id='.$aper_id.'';
 
         /*$sql = '
