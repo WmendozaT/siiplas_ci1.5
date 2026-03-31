@@ -56,26 +56,23 @@ class Model_proyecto extends CI_Model{
     /*--------------- GET APERTURA PROGRAMATICA ----------*/
         public function get_aper_programa($aper_id){
         $sql = '
-            select *
-            from lista_poa_nacional('.$this->gestion.')
+            SELECT *
+            from fnlista_poa_nacional('.$this->gestion.')
             where aper_id='.$aper_id.'';
-
-        /*$sql = '
-            select *
-            from aperturaprogramatica
-            where aper_id='.$aper_id.' and aper_gestion='.$this->gestion.'';*/
         $query = $this->db->query($sql);
         return $query->result_array();
     }
     
-/*    public function get_aper_programa($aper_id){
+    /*-- Lista GET de Programas Bolsa por Distrital --*/
+    public function lista_programas_bolsas_distrital($dist_id){ /// 
         $sql = '
-            select *
-            from aperturaprogramatica
-            where aper_id='.$aper_id.' and aper_gestion='.$this->gestion.'';
+            SELECT poa.*
+            from fnlista_poa_nacional('.$this->gestion.') poa
+            where poa.dist_id='.$dist_id.' and poa.por_id=\'1\'
+            order by poa.aper_programa asc';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
     public function update_proyecto($data,$data1,$id,$cod,$id_aper){
         $this->db->where('proy_id', $id);
@@ -1748,18 +1745,6 @@ class Model_proyecto extends CI_Model{
     }
 
 
-
-    /////// ===== 2023
-    /*-- Lista de Programas Bolsa por Distrital --*/
-    public function lista_programas_bosas_distrital($dist_id){ /// 
-        $sql = '
-            select poa.*
-            from lista_poa_gastocorriente_nacional('.$this->gestion.') poa
-            where poa.dist_id='.$dist_id.' and poa.por_id=\'1\'
-            order by poa.aper_programa asc';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
 
 
         /////// ===== 2023

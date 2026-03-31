@@ -10,13 +10,13 @@ class model_producto extends CI_Model {
         $this->dist_tp = $this->session->userData('dist_tp'); /// dist_tp->1 Regional, dist_tp->0 Distritales
     }
 
-    function temporalidad_form4(){
+/*    function temporalidad_form4(){
         $sql = 'select *
                 from vista_productos_temporalizacion_programado_dictamen
                 where g_id='.$this->gestion.''; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*----- LISTA DE FORMULARIO 4 (2022) para el SEguimiento POA -----*/
     function list_operaciones_subactividad($com_id){
@@ -75,7 +75,7 @@ class model_producto extends CI_Model {
     }
 
     /*----- LISTA DE UNIDADES RESPONSABLES REGIONAL PARA FILTRAR AL PROG 770 (2023) -----*/
-    function list_uresponsables_regional($dist_id){
+/*    function list_uresponsables_regional($dist_id){
             
         if($dist_id==3){
             $sql = '
@@ -101,10 +101,10 @@ class model_producto extends CI_Model {
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*----- GET UNIDAD RESP POR ACTIVIDAD (PROG 770) -----*/
-    function get_uni_resp_prog770($com_id,$uni_resp){
+/*    function get_uni_resp_prog770($com_id,$uni_resp){
         $sql = '
         select *
                 from _productos
@@ -112,7 +112,7 @@ class model_producto extends CI_Model {
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*----- GET UNIDAD RESPONSABLE POR ACTIVIDAD (PROG BOLSA) -----*/
@@ -133,10 +133,10 @@ class model_producto extends CI_Model {
     }
 
     
-    /*----- GET UNIDAD RESPONSABLE POR programa (PROG BOLSA) -----*/
+    /*----- GET UNIDAD RESPONSABLE POR programa (PROG BOLSA) 2026 -----*/
     function verif_programaBolsa_prog($aper_id,$com_id){
         $sql = '
-            select *
+            SELECT *
             from _productos prod
             Inner Join _insumoproducto as ins On ins.prod_id=prod.prod_id
             Inner Join _componentes as c On prod.com_id=c.com_id
@@ -151,7 +151,7 @@ class model_producto extends CI_Model {
 
 
     /*----- GET UNIDAD RESPONSABLE POR programa (PROG BOLSA revisar) -----*/
-    function verif_get_uni_resp_programaBolsa_prog($aper_id,$com_id){
+/*    function verif_get_uni_resp_programaBolsa_prog($aper_id,$com_id){
         $sql = '
             select prod.*,p.*,dist.*,dep.*,ua.*,te.*,apg.*,pfe.*
             from _productos prod
@@ -168,7 +168,7 @@ class model_producto extends CI_Model {
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*-----GET RELACION PROG 770 - PROD PARA BUSCAR LA UNIDAD RESPONSABLE (2023) -----*/
@@ -218,7 +218,6 @@ class model_producto extends CI_Model {
         
         -- Lógica de Unidades Responsables (Bolsas)
         CASE 
-            WHEN p.uni_resp = 0 THEN ''
             WHEN p.uni_resp = ".$com_id." THEN CONCAT(uresp.proy_nombre, '.', uresp.abrev, ' - ', uresp.tipo_subactividad, ' ', uresp.com_componente)
             ELSE p.prod_unidades 
         END AS prod_unidades,
@@ -355,9 +354,9 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }*/
 
-
-    function list_prod($com_id){
-        $sql = 'select *
+    //// lista de productos
+    function lista_productos($com_id){
+        $sql = 'SELECT *
             from _productos as p
             Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
             Inner Join indicador as tp On p.indi_id=tp.indi_id
@@ -463,22 +462,22 @@ class model_producto extends CI_Model {
 
 
     //// Vigente
-    function producto_programado($prod_id,$gestion){
+/*    function producto_programado($prod_id,$gestion){
         $sql = 'select *
                 from vista_productos_temporalizacion_programado_dictamen
                 where prod_id='.$prod_id.' and g_id='.$gestion.''; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
-    function producto_ejecutado($prod_id,$gestion){
+/*    function producto_ejecutado($prod_id,$gestion){
         $sql = 'select *
                 from vista_productos_temporalizacion_ejecutado_dictamen
                 where prod_id='.$prod_id.' and g_id='.$gestion.''; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*------- SUMA TOTAL EVALUADO -------*/
     function suma_total_evaluado($prod_id){

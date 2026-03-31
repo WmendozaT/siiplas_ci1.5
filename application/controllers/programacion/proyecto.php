@@ -47,6 +47,8 @@ class Proyecto extends CI_Controller {
       $data['estilo']=$this->programacionpoa->estilo_tabla();
       $data['listado']=$this->listado_programacion();
       $this->load->view('admin/programacion/proy_anual/top/list_proy', $data);
+
+     // echo $this->programacionpoa->mi_poa(3924);
     }
 
 
@@ -201,7 +203,7 @@ class Proyecto extends CI_Controller {
                       </center>
                       </td>';
             $tabla .='<td bgcolor="#5B9360"><center><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default enlace" name="'.$row['proy_id'].'" id="'.strtoupper($row['tipo']).' '.strtoupper($row['proy_nombre']).' - '.strtoupper($row['abrev']).'"><img src="'.base_url().'assets/ifinal/doc.jpg" WIDTH="38" HEIGHT="38" title="VER POA '.$this->gestion.'"/></a></center></td>';
-            $tabla .='<td bgcolor="#5B9360"><center><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" class="btn btn-default" title="CONSOLIDADO POA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="38" HEIGHT="38" title="VER POA '.$this->gestion.'"/></a></center></td>';
+            $tabla .='<td bgcolor="#5B9360"><center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" class="btn btn-default" title="CONSOLIDADO POA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="38" HEIGHT="38" title="VER POA '.$this->gestion.'"/></a></center></td>';
             $tabla.= '<td bgcolor="#5B9360">';
               if(count($fase)!=0){
                 $tabla .= '<center><a href="'.site_url("").'/prog/list_serv/'.$row['proy_id'].'" title="PROGRAMACION F&Iacute;SICA - FINANCIERA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/bien.png" WIDTH="38" HEIGHT="38"/></a></center>';
@@ -213,7 +215,7 @@ class Proyecto extends CI_Controller {
 
             $tabla .= '<td aling="center" bgcolor="#F7F9BC">';
               if($this->conf_form4==1 || $this->fun_id==401 || $this->fun_id==399){
-                $tabla .= '<center><a href="'.site_url("").'/proy/update_unidad/'.$row['proy_id'].'" title="MODIFICAR DATOS DE LA UNIDAD" class="btn btn-default"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="38" HEIGHT="38"/></a></center>';
+                $tabla .= '<center><a href="'.site_url("").'/proy/update_unidad/'.$row['proy_id'].'" title="MODIFICAR" class="btn btn-default"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="38" HEIGHT="38"/></a></center>';
               }
               else{
                 $tabla .= '<center><a href="#" title="OPCION NO VALIDA" class="btn btn-warning"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="38" HEIGHT="38"/></a></center>';
@@ -253,7 +255,7 @@ class Proyecto extends CI_Controller {
             $tabla .= '<td title="POA '.$estado.'"><center>'.$nro.'</center></td>';
             $tabla .= '<td title="REPORTE FORMULARIO 3">';
               if($row['te_id']!=14 & $row['te_id']!=17 & $row['te_id']!=18 & $row['te_id']!=20){
-                $tabla .= '<center><a href="javascript:abreVentana(\''.site_url("").'/as/rep_list_foda/'.$row['proy_id'].'\');" title="REPORTE FORMULARIO N 3" class="btn btn-success">FORM N 3</a></center>';
+                $tabla .= '<center><a href="javascript:abreVentana_poa(\''.site_url("").'/as/rep_list_foda/'.$row['proy_id'].'\');" title="REPORTE FORMULARIO N 3" class="btn btn-success">FORM N 3</a></center>';
               }
             $tabla .= '</td>';
             $tabla .= '<td><center><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-success enlace" name="'.$row['proy_id'].'" id="'.strtoupper($row['tipo']).' '.strtoupper($row['proy_nombre']).' '.strtoupper($row['abrev']).'">VER POA</a></center></td>';
@@ -272,7 +274,7 @@ class Proyecto extends CI_Controller {
             
             $tabla .= '<td>';
               if($row['aper_proy_estado']==4){
-                 $tabla.='<center><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" title="REPORTE CONSOLIDADO POA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></center>';
+                 $tabla.='<center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" title="REPORTE CONSOLIDADO POA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></center>';
               }
             $tabla.='</td>';
             $tabla.='<td><center>'.$row['aper_programa'].''.$row['aper_proyecto'].''.$row['aper_actividad'].'</center></td>';
@@ -353,7 +355,7 @@ class Proyecto extends CI_Controller {
             $tabla .= '<td><center><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-success enlace" name="'.$row['proy_id'].'" id="'.strtoupper($row['proy_nombre']).')">VER POA</a></center></td>';
             $tabla .= '<td>';
               if($row['aper_proy_estado']==4){
-                 $tabla.='<center><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" title="REPORTE POA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></center>';
+                 $tabla.='<center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" title="REPORTE POA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></center>';
               }
             $tabla.='</td>';
             $tabla .= '<td>';
@@ -394,7 +396,7 @@ class Proyecto extends CI_Controller {
         if($proyecto[0]['tp_id']==4){
           $titulo_poa=$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'];
           $caratula_poa='
-          <a href="javascript:abreVentana(\''.site_url("").'/proy/presentacion/'.$proy_id.'\');" title="CARATULA POA"  class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="45" HEIGHT="45"/><br>CARATULA POA</a>';  
+          <a href="javascript:abreVentana_poa(\''.site_url("").'/proy/presentacion/'.$proy_id.'\');" title="CARATULA POA"  class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="45" HEIGHT="45"/><br>CARATULA POA</a>';  
         }
 
         $tabla=$this->programacionpoa->mi_poa($proy_id); /// Mis Unidades Responsables
@@ -527,7 +529,7 @@ class Proyecto extends CI_Controller {
     }
 
 
-    /*------ POA APROBADO (2020) ------*/
+    /*------ POA APROBADO (2026) ------*/
     public function list_proyectos_aprobados(){
       $data['menu']=$this->programacionpoa->menu(2);
       $data['res_dep']=$this->programacionpoa->tp_resp();

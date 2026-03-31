@@ -493,7 +493,7 @@ class Dashboard extends CI_Controller{
                         </a>
                     </div>';
 
-                    if(count($this->model_insumo->list_consolidado_partidas_componentes($com_id))!=0){
+                    if(count($this->model_insumo->list_consolidado_partidas_uResponsable($com_id))!=0){
                         $formulario.='
                         <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
                             <a href="'.base_url().'index.php/prog/reporte_form5_uresponsable/'.$com_id.'" 
@@ -509,7 +509,7 @@ class Dashboard extends CI_Controller{
                     if(count($this->model_insumo->verif_insumos_en_bolsas($com_id))!=0){
                         $formulario.='
                         <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                            <a href="'.base_url().'index.php/prog/rep_consolidado_formulario5_bolsas_uresp/'.$com_id.'" 
+                            <a href="'.base_url().'index.php/prog/reporte_form5_uresponsable_programa_bolsa_consoldado/'.$com_id.'" 
                                class="jarvismetro-tile big-cubes bg-color-greenLight btn-reporte" 
                                data-toggle="tooltip" data-placement="bottom" title="Ver Mis Requerimientos Programados en mi POA en formato PDF - en los Programas de Bienes y Servicios y Fortalecimiento">
                                 <div class="well" align="center">

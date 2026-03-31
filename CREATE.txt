@@ -73,3 +73,66 @@ INNER JOIN _distritales ds ON ds.dist_id = p.dist_id
 INNER JOIN tipo_subactividad tpsa ON tpsa.tp_sact = c.tp_sact;
 
 
+
+===============================
+
+CREATE OR REPLACE FUNCTION public.fnlista_poa_nacional(IN gestion integer)
+  RETURNS TABLE(dep_id numeric, dep_departamento character varying, dep_cod character varying, dist_id integer, dist_distrital character varying, dist_cod character varying, abrev character varying, da character varying, ue character varying, aper_programa character varying, aper_proyecto character varying, aper_actividad character varying, proy_id numeric, proy_estado integer, por_id integer, act_descripcion character varying, tipo character varying, proy_sisin character varying, proy_nombre character varying, aper_id numeric, aper_proy_estado integer, pfec_id numeric, pfec_estado integer, aper_gestion integer, tp_id numeric) AS
+$BODY$
+select d.dep_id,d.dep_departamento,d.dep_cod,ds.dist_id,ds.dist_distrital,ds.dist_cod,ds.abrev,ds.da,ds.ue,apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,p.proy_id,p.proy_estado,p.por_id,ua.act_descripcion,te.tipo,p.proy_sisin,p.proy_nombre,apg.aper_id,apg.aper_proy_estado,pfe.pfec_id,pfe.pfec_estado,apg.aper_gestion,p.tp_id
+from _proyectofaseetapacomponente pfe
+Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+Inner Join _proyectos as p On p.proy_id=pfe.proy_id
+Inner Join _departamentos as d On d.dep_id=p.dep_id
+Inner Join _distritales as ds On ds.dist_id=p.dist_id
+Inner Join unidad_actividad as ua On ua.act_id=p.act_id
+Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
+where p.estado!=3 and apg.aper_gestion=gestion and apg.aper_estado!=3 and pfe.pfec_estado=1
+order by p.dep_id,p.dist_id,apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,p.tp_id asc;
+
+$BODY$
+  LANGUAGE sql VOLATILE
+  COST 100
+  ROWS 1000;
+ALTER FUNCTION public.fnlista_poa_nacional(integer)
+  OWNER TO postgres;
+
+
+-----------------------------------
+
+CREATE OR REPLACE VIEW public.vista_lista_UnidadesResponsables AS 
+ SELECT 
+    pfe.pfec_id,
+    pfe.proy_id,
+    c.com_id,
+    c.com_componente,
+    c.com_ponderacion,
+    sa.serv_id,
+    sa.serv_cod,
+    sa.serv_descripcion,
+    tpsa.tipo_subactividad,
+    apg.aper_id,
+    apg.aper_programa,
+    apg.aper_proyecto,
+    apg.aper_actividad,
+    apg.aper_gestion
+ FROM _proyectofaseetapacomponente pfe
+ JOIN _componentes c ON c.pfec_id = pfe.pfec_id
+ JOIN servicios_actividad sa ON sa.serv_id = c.serv_id
+ JOIN tipo_subactividad tpsa ON tpsa.tp_sact = c.tp_sact
+ JOIN aperturaprogramatica apg ON apg.aper_id = pfe.aper_id
+ WHERE pfe.pfec_estado = 1 
+   AND c.estado <> 3 
+   AND apg.aper_estado <> 3;
+
+
+
+      CREATE INDEX IF NOT EXISTS idx_componentes_pfec_id ON _componentes(pfec_id);
+CREATE INDEX IF NOT EXISTS idx_componentes_serv_id ON _componentes(serv_id);
+CREATE INDEX IF NOT EXISTS idx_pfe_aper_id ON _proyectofaseetapacomponente(aper_id);
+
+-- Índices para mejorar los filtros WHERE
+CREATE INDEX IF NOT EXISTS idx_pfe_estado ON _proyectofaseetapacomponente(pfec_estado) WHERE pfec_estado = 1;
+CREATE INDEX IF NOT EXISTS idx_componentes_estado ON _componentes(estado) WHERE estado <> 3;
+
+

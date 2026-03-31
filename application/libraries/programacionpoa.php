@@ -363,10 +363,9 @@ class Programacionpoa extends CI_Controller{
     /*------ GET POA -----*/
     public function mi_poa($proy_id){
       $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
-      $programas_bolsas=$this->model_proyecto->lista_programas_bosas_distrital($proyecto[0]['dist_id']);
+      $programas_bolsas=$this->model_proyecto->lista_programas_bolsas_distrital($proyecto[0]['dist_id']);
       $tabla='';
         $tabla.='
-         <form >
         <section class="col col-12">
           <input id="searchTerm" type="text" onkeyup="doSearch()" class="form-control" placeholder="BUSCADOR...." style="width:45%;"/><br>
         </section>
@@ -375,11 +374,11 @@ class Programacionpoa extends CI_Controller{
               <tr>
                 <th>#<br>'.$proyecto[0]['aper_id'].'</th>
                 <th>UNIDAD RESPONSABLE </th>
-                <th colspan=2><b>POA PROG. '.$proyecto[0]['aper_programa'].'</b><br>'.$proyecto[0]['aper_descripcion'].'</th>';
+                <th colspan=2><b>POA PROG. '.$proyecto[0]['aper_programa'].'</b><br>'.$proyecto[0]['proy_nombre'].'</th>';
                 
                 if(count($programas_bolsas)!=0){
                   foreach($programas_bolsas  as $row){
-                    $tabla.='<th><b>POA PROG. '.$row['aper_programa'].'</b><br>'.$row['aper_descripcion'].'</th>';
+                    $tabla.='<th><b>POA PROG. '.$row['aper_programa'].'</b><br>'.$row['proy_nombre'].'</th>';
                   }
                 }
 
@@ -388,20 +387,20 @@ class Programacionpoa extends CI_Controller{
               </thead>
               <tbody>';
               $nroc=0; $nro_ppto=0;
-                $unidades=$this->model_componente->lista_subactividad($proy_id);
+                $unidades=$this->model_componente->lista_UnidadesResponsables($proy_id);
                 foreach($unidades as $pr){
-                  if(count($this->model_producto->list_prod($pr['com_id']))!=0){
+                  if(count($this->model_producto->productos_nro($pr['com_id']))!=0){
                     $nroc++;
                     $tabla.=
                       '<tr>
                         <td>'.$nroc.'</td>
                         <td>'.$pr['serv_cod'].' '.$pr['tipo_subactividad'].' '.$pr['serv_descripcion'].'</td>
                         <td align=center>
-                          <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORM. 4"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°4</b></font></a>
+                          <a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORMULARIO SPO N° 4 - ACTIVIDADES"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°4</b></font></a>
                         </td>
                         <td align=center>';
                           if(count($this->model_insumo->list_consolidado_partidas_uResponsable($pr['com_id']))!=0){
-                            $tabla.='<a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORM. 5"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°5</b></font></a>';
+                            $tabla.='<a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORMULARIO SPO N° 5 - REQUERIMIENTOS"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°5</b></font></a>';
                             $nro_ppto++;
                           } 
                         $tabla.='
@@ -413,7 +412,7 @@ class Programacionpoa extends CI_Controller{
 
                             $tabla.='<td align=center>';
                             if(count($get_prog_bolsa)!=0){
-                              $tabla.='<a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable_programa_bolsa/'.$row['aper_id'].'/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORM. 5"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°5</b></font></a>';
+                              $tabla.='<a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form5_uresponsable_programa_bolsa/'.$row['aper_id'].'/'.$pr['com_id'].'\');" class="btn btn-default" title="REPORTE FORMULARIO SPO N° 5 - REQUERIMIENTOS PROGRAMAS BOLSA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°5</b></font></a>';
                             }
                             $tabla.='</td>';
                           }
@@ -429,14 +428,13 @@ class Programacionpoa extends CI_Controller{
                     $tabla.='
                     <tr bgcolor="#d6ecb3">
                       <td colspan=3 title="'.$proyecto[0]['aper_id'].'">('.$proyecto[0]['aper_id'].') <b>CONSOLIDADO TOTAL POA - PRESUPUESTO APROBADO TOTAL POR PARTIDAS </b></td> 
-                      <td align=center><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_ptto_consolidado_comparativo_programa/'.$proy_id.'\');"  title="REPORTE CONSOLIDADO DE PPTO." class="btn btn-default" ><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></td>
+                      <td align=center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_ptto_consolidado_comparativo_programa/'.$proy_id.'\');"  title="CONSOLIDADO POA - PRESUPUESTO" class="btn btn-default" ><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></td>
                       <td colspan='.count($programas_bolsas).'></td>
                     </tr>';
                   }
               $tabla.='
               
-            </table>
-          </form>';
+            </table>';
 
    
 
@@ -447,7 +445,7 @@ class Programacionpoa extends CI_Controller{
 
 
     /*------ GET POA PARA AJUSTE -----*/
-    public function mi_poa_ajuste($proy_id){
+/*    public function mi_poa_ajuste($proy_id){
       $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
       $tabla='';
       $tabla.=' <table class="table table-bordered">
@@ -464,9 +462,9 @@ class Programacionpoa extends CI_Controller{
                   </thead>
                   <tbody>';
                   $nroc=0; $nro_ppto=0;
-                    $procesos=$this->model_componente->lista_subactividad($proy_id);
+                    $procesos=$this->model_componente->lista_UnidadesResponsables($proy_id);
                     foreach($procesos as $pr){
-                      if(count($this->model_producto->list_prod($pr['com_id']))!=0){
+                      if(count($this->model_producto->productos_nro($pr['com_id']))!=0){
                         $nroc++;
                         $tabla.=
                           '<tr>
@@ -516,7 +514,7 @@ class Programacionpoa extends CI_Controller{
                 </table>';
 
       return $tabla;
-    }
+    }*/
 
 
 
@@ -1117,7 +1115,7 @@ class Programacionpoa extends CI_Controller{
 
 
 
-  //// Cabecera Reporte form 3, 4 y 5
+  //// Cabecera Reporte BOLSA
   public function cabecera_bolsa($datos_prog_bolsa,$datos_uniresp){
     $estado='';
       if($datos_prog_bolsa[0]['aper_proy_estado']==1){
@@ -1226,7 +1224,7 @@ class Programacionpoa extends CI_Controller{
                   </td>
                   <td style="width:80%;">
                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                          <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;<b>'.$datos_prog_bolsa[0]['prog'].''.$datos_prog_bolsa[0]['proy'].''.$datos_prog_bolsa[0]['act'].' - '.strtoupper ($datos_prog_bolsa[0]['proy_nombre']).' '.$datos_prog_bolsa[0]['abrev'].'</b></td></tr>
+                          <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;<b>'.$datos_prog_bolsa[0]['aper_programa'].''.$datos_prog_bolsa[0]['aper_proyecto'].''.$datos_prog_bolsa[0]['aper_actividad'].' - '.strtoupper ($datos_prog_bolsa[0]['proy_nombre']).' '.$datos_prog_bolsa[0]['abrev'].'</b></td></tr>
                       </table>
                   </td>
                 </tr>
@@ -1438,7 +1436,7 @@ class Programacionpoa extends CI_Controller{
                   </tr>
                 </table><br>';
                  if($proyecto[0]['tn_id']==0){
-                    $UnidadesResponsables=$this->model_componente->lista_subactividad($proyecto[0]['proy_id']);
+                    $UnidadesResponsables=$this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
                      $tabla.="
                       <table border=0 style='width:100%;' align=center>
                         <tr>
@@ -1447,7 +1445,7 @@ class Programacionpoa extends CI_Controller{
                             <ul>";
                             $cont=0;
                               foreach($UnidadesResponsables as $row){
-                                if(count($this->model_producto->list_prod($row['com_id']))!=0){
+                                if(count($this->model_producto->productos_nro($row['com_id']))!=0){
                                   $tabla.="<li style='font-family: Arial;height: 12px; font-size: 12.2px; text-align:justify'>".$row['tipo_subactividad'].' '.$row['serv_descripcion']."</li>";
                                 }
                               }
@@ -1554,7 +1552,7 @@ class Programacionpoa extends CI_Controller{
       $lista_form4_uresp=$this->model_producto->get_lista_form4_uresp_consolidado($componente[0]['com_id']); //// lista form4 + bolsas
     }
     else{
-      $lista_form4_uresp=$this->model_producto->get_lista_form4_uresp_consolidado_programa_bolsas($componente[0]['com_id']); //// lista form4 + bolsas
+      $lista_form4_uresp=$this->model_producto->get_lista_form4_uresp_consolidado_programa_bolsas($componente[0]['com_id']); //// lista form4 de bolsas
     }
     
     $tabla='';

@@ -416,7 +416,7 @@ class Model_ptto_sigep extends CI_Model{
 
     /*-------- Partidas por Apertura (VIGENTE mod techo) --------*/
     public function partidas_proyecto($aper_id){
-        $sql = ' select pg.sp_id, pg.par_id,pg.partida,p.par_nombre,pg.importe,pg.ppto_saldo_ncert,pg.ppto_saldo_observacion
+        $sql = ' SELECT pg.sp_id, pg.par_id,pg.partida,p.par_nombre,pg.importe,pg.ppto_saldo_ncert,pg.ppto_saldo_observacion
                  from ptto_partidas_sigep pg
                  Inner Join partidas as p On p.par_id=pg.par_id
                  where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.'

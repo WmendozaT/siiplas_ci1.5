@@ -130,6 +130,19 @@ class Model_componente extends CI_Model{
         return $query->result_array();
     }
 
+    /*====== LISTA UNIDADES RESPONSABLES 2026 ======*/
+    public function lista_UnidadesResponsables($proy_id){
+        $sql = 'SELECT *
+                from vista_lista_UnidadesResponsables
+                where proy_id='.$proy_id.'
+                order by com_id asc'; 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
+
     /*====== GET COMPONENTE PARA SEGUIMIENTO POA (NUEVA GESTION) ======*/
     public function get_servicio_siguiente_gestion($serv_id,$dist_id,$gestion){
         $sql = 'select *
@@ -180,7 +193,7 @@ class Model_componente extends CI_Model{
     }
     /*======================================================================================*/
 
-    public function list_componentes_total($proy_id){
+/*    public function list_componentes_total($proy_id){
         $sql = 'select c.proy_id,c.pfec_id,c.com_id,c.com_componente,nc.prod, t.total
                 from vista_componentes_dictamen c
                 Inner Join (select com_id,count(com_id) as prod
@@ -193,7 +206,7 @@ class Model_componente extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 
@@ -223,8 +236,8 @@ class Model_componente extends CI_Model{
         return $query->result_array();
     }
 
-    /*--- Lista de Unidades Operativas por Gerencias de Area ---*/
-    function lista_subactividad($proy_id){
+    /*--- Lista de Unidades Operativas por Gerencias de Area (a eliminar) ---*/
+/*    function lista_subactividad($proy_id){
         if($this->gestion==2023){ /// excluyendo a todos los servicios
             $sql = 'select *
                 from vista_subactividades
@@ -238,7 +251,7 @@ class Model_componente extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*--- Lista de Subactividad alineados a Actividad por Regional---*/
     function lista_poa_subactividad($dep_id){

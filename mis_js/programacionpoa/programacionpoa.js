@@ -1,12 +1,80 @@
 base = $('[name="base"]').val();
 
+function abreVentana_poa(url) {
+    var elemento = window.event ? window.event.target.closest('a') : null;
+    var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";
+    var ancho = 1000;
+    var alto = 800;
+    var posicion_x = (screen.width / 2) - (ancho / 2);
+    var posicion_y = (screen.height / 2) - (alto / 2);
 
-function abreVentana(PDF){             
-  var direccion;
-  direccion = '' + PDF;
-  window.open(direccion, "REPORTE PROGRAMACIÓN POA" , "width=800,height=700,scrollbars=NO") ; 
+    // 1. Abrimos la ventana vacía primero
+    var nuevaVentana = window.open('', '_blank', "width=" + ancho + ",height=" + alto + ",menubar=0,toolbar=0,directories=0,scrollbars=no,resizable=no,left=" + posicion_x + ",top=" + posicion_y);
+
+    // 2. Inyectamos un HTML de carga estético mientras llega la respuesta del servidor
+    nuevaVentana.document.write(`
+        <html>
+            <head>
+                <title>Cargando Reporte POA...</title>
+                <style>
+                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+                    .loader-container { text-align: center; }
+                    .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #5B9360; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    h2 { color: #333; }
+                </style>
+            </head>
+            <body>
+                <div class="loader-container">
+                    <div class="spinner"></div>
+                    <h2>Generando ${tituloFinal}</h2>
+                    <p>Por favor, espere un momento.</p>
+                </div>
+            </body>
+        </html>
+    `);
+
+    // 3. Redirigimos la ventana a la URL real del reporte
+    nuevaVentana.location.href = url;
 }
 
+/*function abreVentana(url) {
+    // 0. Detectamos el título del elemento que hizo clic
+    var elemento = window.event ? window.event.target.closest('a') : null;
+    var tituloFinal = (elemento && elemento.title) ? elemento.title : "Cargando Reporte...";
+
+    var ancho = 1000;
+    var alto = 800;
+    var posicion_x = (screen.width / 2) - (ancho / 2);
+    var posicion_y = (screen.height / 2) - (alto / 2);
+
+    var nuevaVentana = window.open('', '_blank', "width=" + ancho + ",height=" + alto + ",menubar=0,toolbar=0,directories=0,scrollbars=no,resizable=no,left=" + posicion_x + ",top=" + posicion_y);
+
+    nuevaVentana.document.write(`
+        <html>
+            <head>
+                <title>${tituloFinal}</title>
+                <style>
+                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+                    .loader-container { text-align: center; }
+                    .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #5B9360; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    h2 { color: #333; }
+                </style>
+            </head>
+            <body>
+                <div class="loader-container">
+                    <div class="spinner"></div>
+                    <h2>${tituloFinal}</h2>
+                    <p>Por favor, espere un momento.</p>
+                </div>
+            </body>
+        </html>
+    `);
+
+    nuevaVentana.location.href = url;
+}
+*/
   function confirmar(){
     if(confirm('¿Estas seguro de Eliminar ?'))
       return true;
