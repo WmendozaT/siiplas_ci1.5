@@ -970,7 +970,7 @@ class Modificacionpoa extends CI_Controller{
     public function lista_unidades_responsables($proyecto){
       $tabla='';
       if($proyecto[0]['por_id']==1){
-        $tabla.=$this->unidades_responsables_progBolsas($proyecto);
+        $tabla.=$this->unidades_responsables_progBolsas($proyecto); /// actividades de la bolsa
       }
       else{
         $tabla.=$this->unidades_responsables($proyecto);  
@@ -981,7 +981,7 @@ class Modificacionpoa extends CI_Controller{
 
 
     /*------ Lista de Unidades Responsables (Programas Bolsas) ------*/
-        public function unidades_responsables_progBolsas($proyecto){
+      public function unidades_responsables_progBolsas($proyecto){
       $saldos_revertidos_partidas=$this->model_ptto_sigep->lista_monto_partidas_revertidos_unidad($proyecto[0]['proy_id']);
       $tabla='';
       if(count($proyecto)!=0){

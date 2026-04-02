@@ -518,9 +518,25 @@ class Model_modificacion extends CI_Model{
     }
 
 
-    /*----- Lista de Partidas Padres Asignados (2023) vigente -----*/
+    /*----- Lista de Partidas Padres Asignados (2026) vigente -----*/
     public function list_part_padres_asig($aper_id){
         $sql = '
+            SELECT DISTINCT 
+                par.par_id, 
+                par.par_codigo, 
+                par.par_nombre
+            FROM partidas par 
+            INNER JOIN partidas p ON p.par_depende = par.par_codigo
+            INNER JOIN ptto_partidas_sigep pg ON pg.par_id = p.par_id
+            WHERE par.par_depende = 0
+              AND par.par_id != 0
+              AND pg.aper_id = '.$aper_id.'
+              AND pg.estado != 3 
+              AND pg.g_id = '.$this->gestion.'
+            ORDER BY par.par_id ASC';
+
+
+        /*$sql = '
             select par.par_id,par.par_codigo,par.par_nombre
             from partidas par 
             Inner Join 
@@ -534,7 +550,7 @@ class Model_modificacion extends CI_Model{
             where par.par_depende=\'0\' and par.par_id!=\'0\' and sig.aper_id='.$aper_id.'
 
             group by par.par_id,par.par_codigo,par.par_nombre
-            order by par.par_id asc';
+            order by par.par_id asc';*/
         
         $query = $this->db->query($sql);
         return $query->result_array();

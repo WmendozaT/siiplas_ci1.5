@@ -57,8 +57,8 @@ class Cmod_fisica extends CI_Controller {
     }
 
 
-    /*--- LISTA SUBACTIVIDADES (2020-2021) ---*/
-    public function mis_subactividades($proy_id){
+    /*--- LISTA UNIDADES RESPONSABLES 2026 ---*/
+    public function mis_UnidadesResponsables($proy_id){
       $data['menu']=$this->modificacionpoa->menu(3); //// genera menu
       $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id);
       if(count($data['proyecto'])!=0){
@@ -71,22 +71,20 @@ class Cmod_fisica extends CI_Controller {
           <h1> <b>'.$data['proyecto'][0]['tipo_adm'].' : </b><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' '.$data['proyecto'][0]['abrev'].'</small>';
         }
         
-        $componente=$this->model_componente->componentes_id($data['fase'][0]['id'],$data['proyecto'][0]['tp_id']);
+        $mis_UnidadesResponsables=$this->model_componente->lista_UnidadesResponsables($proy_id);
         $tabla='';
-        $tabla.='<table id="dt_basic4" class="table table table-bordered" width="100%">
+        $tabla.='<table class="table table table-bordered" width="50%">
                 <thead>
                   <tr style="height:25px;">
                     <th style="width:1%;"></th>
                     <th style="width:5%;">Modificar Formulario</th>
                     <th style="width:15%;">UNIDAD RESPONSABLE</th>
-                    <th style="width:10%;">RESPONSABLE</th>
-                    <th style="width:5%;">PONDERACI&Oacute;N</th>
                     <th style="width:5%;">NRO. REGISTROS</th>
                   </tr>
                 </thead>
                 <tbody>';
                 $nro=0;
-                foreach($componente as $row){
+                foreach($mis_UnidadesResponsables as $row){
                   $nro++;
                   $tabla.='
                   <tr>
@@ -101,9 +99,7 @@ class Cmod_fisica extends CI_Controller {
                       $tabla.='
                     </td>
                     <td>'.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</td>
-                    <td>'.$row['fun_nombre'].' '.$row['fun_paterno'].' '.$row['fun_materno'].'</td>
-                    <td align=center>'.round($row['com_ponderacion'],2).' %</td>
-                    <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->list_prod($row['com_id'])).'</font></td>
+                    <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>
                   </tr>';
                 }
         $tabla.='</tbody>
@@ -146,7 +142,7 @@ class Cmod_fisica extends CI_Controller {
           /*---------------------------------------------------------------*/
 
           if(count($this->model_modfisica->get_cite_fis($cite_id))==1){
-            redirect(site_url("").'/mod/lista_operaciones/'.$cite_id.'');
+            redirect(site_url("").'/mod/lista_UnidadesResponsables/'.$cite_id.'');
           }
           else{
             $this->session->set_flashdata('danger','ERROR AL REGISTRAR CITE');
@@ -164,8 +160,8 @@ class Cmod_fisica extends CI_Controller {
     }
 
 
-    /*------ LISTA DE FORMULARIO N° 4 (2020 - 2021) -------*/
-    public function list_operaciones($cite_id){
+    /*------ LISTA DE FORMULARIO N° 4 (2026) -------*/
+    public function lista_UnidadesResponsables($cite_id){
       $data['cite']=$this->model_modfisica->get_cite_fis($cite_id);
       if(count($data['cite'])!=0){
         $data['menu']=$this->modificacionpoa->menu(3); //// genera menu

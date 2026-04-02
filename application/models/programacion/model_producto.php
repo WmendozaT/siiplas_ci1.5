@@ -397,9 +397,48 @@ class model_producto extends CI_Model {
 
 
 
-    /*=== LISTA DE OPERACIONES (2020 - 2022) REPORTE - GASTO CORRIENTE ajustando ===*/
+    /*=== LISTA DE ACTIVIDADES (NORMAL) SIN TEMPORALIDAD 2026 ===*/
     function lista_form4_x_unidadresponsable($com_id){
-        $sql = 'select p.prod_id,p.com_id,p.prod_priori,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
+        $sql = 'SELECT 
+                    -- Datos del Producto (Columnas necesarias)
+                    p.prod_id, p.prod_cod, p.prod_producto, p.prod_priori, p.prod_ppto, 
+                    p.prod_indicador, p.prod_meta, p.prod_unidades, p.prod_resultado,
+                    p.prod_observacion, p.uni_resp, p.estado,
+                    
+                    -- Indicador
+                    i.indi_descripcion, i.indi_abreviacion,
+                    
+                    -- Objetivos
+                    ore.or_id, ore.or_codigo, 
+                    og.og_id, og.og_codigo,
+                    
+                    -- Estructura Organizacional
+                    c.com_id, sa.serv_descripcion, tpsa.tipo_subactividad,
+                    ua.act_descripcion, ds.abrev, te.tipo
+                    
+                FROM _productos p
+                INNER JOIN indicador i ON i.indi_id = p.indi_id
+                INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+                -- Acceso directo a objetivo_gestion si la relación lo permite, 
+                -- de lo contrario, mantenemos la cadena pero sin columnas extra de OPM
+                INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
+                INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+
+                INNER JOIN _componentes c ON p.uni_resp = c.com_id
+                INNER JOIN servicios_actividad sa ON sa.serv_id = c.serv_id
+                INNER JOIN tipo_subactividad tpsa ON tpsa.tp_sact = c.tp_sact
+
+                INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
+                INNER JOIN _proyectos proy ON pfe.proy_id = proy.proy_id
+                INNER JOIN unidad_actividad ua ON ua.act_id = proy.act_id
+                INNER JOIN v_tp_establecimiento te ON te.te_id = ua.te_id
+                INNER JOIN _distritales ds ON ds.dist_id = proy.dist_id
+
+                WHERE p.com_id = '.$com_id.' 
+                  AND p.estado != 3
+                ORDER BY p.prod_cod ASC'; 
+
+        /*$sql = 'select p.prod_id,p.com_id,p.prod_priori,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
                 p.prod_resultado,p.acc_id,p.prod_cod,p.uni_resp,p.prod_observacion,p.mt_id,p.or_id,i.indi_descripcion,i.indi_abreviacion,
                 ore.or_id,ore.or_codigo,og.og_id,og.og_codigo,c.com_id,sa.serv_descripcion,tpsa.tipo_subactividad,ua.act_descripcion,ds.abrev,te.tipo
                 from _productos p
@@ -419,7 +458,7 @@ class model_producto extends CI_Model {
                 Inner Join _distritales as ds On ds.dist_id=proy.dist_id
 
                 where p.com_id='.$com_id.' and p.estado!=\'3\'
-                order by p.prod_cod asc'; 
+                order by p.prod_cod asc'; */
 
         $query = $this->db->query($sql);
         return $query->result_array();

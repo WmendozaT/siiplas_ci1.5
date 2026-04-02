@@ -21,25 +21,6 @@
 		<script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
 		<!--para las alertas-->
     	<meta name="viewport" content="width=device-width">
-		<style>
-			.table1{
-	          display: inline-block;
-	          width:100%;
-	          max-width:1550px;
-	          overflow-x: scroll;
-	          }
-			table{font-size: 10px;
-            width: 100%;
-            max-width:1550px;;
-			overflow-x: scroll;
-            }
-            th{
-              padding: 1.4px;
-              text-align: center;
-              font-size: 10px;
-              background-color: #dedada;
-            }
-		</style>
 	</head>
 	<body class="">
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
@@ -49,24 +30,6 @@
 			<!-- pulled right: nav area -->
 			<div id="logo-group">
 				<!-- <span id="logo"> <img src="<?php echo base_url(); ?>assets/img/logo.png" alt="SmartAdmin"> </span> -->
-			</div>
-			<div class="col-md-4 " style="font-size:18px;margin-top:10px;margin-bottom:-10px;">
-				<span>
-					&nbsp;&nbsp;&nbsp; 
-					<div class="badge bg-color-blue">
-						<span style="font-size:15px;"><b>Fecha Sesi&oacute;n: <?php echo $this->session->userdata('desc_mes').' / '.$this->session->userdata('gestion');?></b></span>
-					</div>
-				</span>
-				<div class="project-context hidden-xs">
-					<span class="project-selector dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="font-size:19px;">
-						<i class="fa fa-lg fa-fw fa-calendar txt-color-blue"></i>
-					</span>
-					<ul class="dropdown-menu">
-						<li>
-							<a href="<?php echo base_url();?>index.php/cambiar_gestion">Cambiar Gestión</a>
-						</li>
-					</ul>
-				</div>
 			</div>
 			<div class="pull-right">
 				<!-- collapse menu button -->
@@ -136,7 +99,7 @@
 				</span>
 				<!-- breadcrumb -->
 				<ol class="breadcrumb">
-					<li>Modificaciones</li><li>Modificaci&oacute;n POA</li><li>Mis Subactividades</li>
+					<li>Modificaciones</li><li>Modificaci&oacute;n POA</li><li>Mis Unidades Responsables</li>
 				</ol>
 			</div>
 			<!-- END RIBBON -->
@@ -145,9 +108,7 @@
 			<div class="row">
 				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-10">
 					<section id="widget-grid" class="well">
-						<div class="">
-							<?php echo $titulo_proy;?>
-						</div>
+						<?php echo $titulo_proy;?>
 					</section>
 				</article>
 				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-2">
@@ -159,27 +120,11 @@
                 </article>
 			</div>
 			<div class="row">
-				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-1">
+				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-3">
 				</article>
-				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-10">
-					<h2 class="alert alert-success"><center>MODIFICACI&Oacute;N POA (OPERACIONES) - <?php echo $this->session->userData('gestion') ?> </center></h2>
-					<!-- Widget ID (each widget will need unique ID)-->
-					<div class="jarviswidget jarviswidget-color-darken" >
-						<header>
-							<span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-							<h2 class="font-md"><strong>SUBACTIVIDADES</strong></h2>               
-						</header>
-						<div>
-							<div class="widget-body no-padding">
-								<div class="table-responsive">
-									<?php echo $componentes;?>
-								</div>
-							</div>
-							<!-- end widget content -->
-						</div>
-						<!-- end widget div -->
-					</div>
-					<!-- end widget -->
+				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-6">
+					<h2 class="alert alert-success"><center>MODIFICACI&Oacute;N POA (ACTIVIDADES) - <?php echo $this->session->userData('gestion') ?> </center></h2>
+					<div class="well"><?php echo $componentes;?></div>
 				</article>
 			</div>
 			<!-- END MAIN CONTENT -->
@@ -294,12 +239,7 @@
 		<script src="<?php echo base_url();?>/assets/js/demo.min.js"></script>
 		<!-- MAIN APP JS FILE -->
 		<script src="<?php echo base_url();?>/assets/js/app.min.js"></script>
-		<script src="<?php echo base_url();?>/assets/js/speech/voicecommand.min.js"></script>
-		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
+
 		<script type="text/javascript">
 		// DO NOT REMOVE : GLOBAL FUNCTIONS!
 		$(document).ready(function() {
@@ -394,6 +334,6 @@
 	    });
         </script>
 		<!-- ============================================================================== -->
-		<script src = "<?php echo base_url(); ?>mis_js/programacion/programacion/tablas.js"></script>
+
 	</body>
 </html>

@@ -329,12 +329,12 @@
 
 
 
-
+    ////= Exportar Formulario N° 4 por Unidad Responsable 2026
     function exportar_poa_uresponsable($com_id, $token = NULL) {
     // En tu función principal
     $data['form4'] = $this->exportar_form4_uresponsable($com_id);
     // Pestaña 2 también debe ser una tabla para que se vea bien
-    $data['form5'] = '';
+    $data['form5'] = $this->exportar_form5_uresponsable($com_id);
 
     // 3. Manejo del Token para el Loading de JS
     if($token != NULL) {
@@ -353,12 +353,39 @@
 
     }
 
-
-public function exportar_form4_uresponsable($com_id){
+  ////= (Archivo) Exportar Formulario N° 4 por Unidad Responsable 2026
+  public function exportar_form4_uresponsable($com_id){
     $tabla='';
-    $formularioN4 = $this->model_producto->get_lista_form4_consolidado($com_id, 0); /// poa normal
-    $formularioN4_bolsa=$this->model_producto->get_lista_form4_consolidado($com_id,1); /// poa bolsa
-    
+    $formularioN4 = $this->model_producto->get_lista_form4_uresp_consolidado($com_id); /// poa normal + Bolsa
+
+    $tabla.='
+          <Row ss:Height="30">
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACP.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. OPE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACT.</Data></Cell> 
+          <Cell ss:StyleID="header"><Data ss:Type="String">ACTIVIDAD</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">RESULTADO</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">UNIDAD RESPONSABLE</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">INDICADOR</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">META</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">ENE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">FEB.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">MAR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">ABR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">MAY.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">JUN.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">JUL.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">AGO.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">SEPT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">OCT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">NOV.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">DIC.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">VERIFICACIÓN</Data></Cell>
+      </Row>';
+
+    $nro=0;
     foreach($formularioN4 as $rowp){
         $tabla .= '<Row ss:AutoFitHeight="1">'; // Autoajusta la altura si el texto es largo
         
@@ -371,7 +398,7 @@ public function exportar_form4_uresponsable($com_id){
         // Celdas de Texto Largo (Alineadas a la izquierda con ajuste de texto)
         $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_producto'], ENT_XML1, 'UTF-8').'</Data></Cell>';
         $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_resultado'], ENT_XML1, 'UTF-8').'</Data></Cell>';
-        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">hola</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_unidades'], ENT_XML1, 'UTF-8').'</Data></Cell>';
         $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_indicador'], ENT_XML1, 'UTF-8').'</Data></Cell>';
         
         // Meta (Centrada)
@@ -389,162 +416,97 @@ public function exportar_form4_uresponsable($com_id){
     }
 
     return $tabla;
-}
-    ///// exportar form4 uresponsable 2026
-    public function exportar_form4_uresponsable2($com_id){
-        $componente=$this->model_componente->get_componente($com_id,$this->gestion);
-        $tabla='';
-        $tabla.='<Row ss:Height="35" ss:StyleID="header_style">
-              <Cell><Data ss:Type="String">PROG.</Data></Cell>
-              <Cell><Data ss:Type="String">COD. ACP.</Data></Cell>
-              <Cell><Data ss:Type="String">COD. OPE.</Data></Cell>
-              <Cell><Data ss:Type="String">COD. ACT.</Data></Cell> 
-              <Cell><Data ss:Type="String">ACTIVIDAD</Data></Cell>
-              <Cell><Data ss:Type="String">RESULTADO</Data></Cell>
-              <Cell><Data ss:Type="String">UNIDAD RESPONSABLE</Data></Cell>
-              <Cell><Data ss:Type="String">INDICADOR</Data></Cell>
-              <Cell><Data ss:Type="String">META</Data></Cell>
-              <Cell><Data ss:Type="String">ENE.</Data></Cell>
-              <Cell><Data ss:Type="String">FEB.</Data></Cell>
-              <Cell><Data ss:Type="String">MAR.</Data></Cell>
-              <Cell><Data ss:Type="String">ABR.</Data></Cell>
-              <Cell><Data ss:Type="String">MAY.</Data></Cell>
-              <Cell><Data ss:Type="String">JUN.</Data></Cell>
-              <Cell><Data ss:Type="String">JUL.</Data></Cell>
-              <Cell><Data ss:Type="String">AGO.</Data></Cell>
-              <Cell><Data ss:Type="String">SEPT.</Data></Cell>
-              <Cell><Data ss:Type="String">OCT.</Data></Cell>
-              <Cell><Data ss:Type="String">NOV.</Data></Cell>
-              <Cell><Data ss:Type="String">DIC.</Data></Cell>
-              <Cell><Data ss:Type="String">VERIFICACIÓN</Data></Cell>
-            </Row>';
-              $nro=0;
-              $formularioN4=$this->model_producto->get_lista_form4_consolidado($com_id,0);
-              foreach($formularioN4 as $rowp){
-                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-                $color=''; $tp='';
-                if($rowp['indi_id']==1){
-                  if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                    $color='#fbd5d5';
-                  }
-                }
-                elseif ($rowp['indi_id']==2) {
-                  $tp='%';
-                  if($rowp['mt_id']==3){
-                    if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                      $color='#fbd5d5';
-                    }
-                  }
-                }
-
-                $color_or='';
-                if($rowp['or_id']==0){
-                  $color_or='#fbd5d5';
-                }
+  }
 
 
-                if($componente[0]['por_id']==0){
-                  $uresp=strtoupper($rowp['prod_unidades']);
-                }
-                else{
-                  $unidad=$this->model_componente->get_componente($rowp['uni_resp'],$this->gestion);
-                  
-                  $uresp='';
-                  if(count($unidad)!=0){
-                    $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
-                    $uresp=''.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'';
-                  }
-                }
+  ////= (Archivo) Exportar Formulario N° 5 por Unidad Responsable 2026
+  public function exportar_form5_uresponsable($com_id){
+    $tabla='';
 
-                $nro++;
-                $tipo_meta = ($tp == '%') ? 'String' : 'Number';
-                $uresp_clean = strip_tags($uresp);
-                $tabla.=
-                '<Row>
-                  <Cell><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>
-                  <Cell><Data ss:Type="number">'.$rowp['og_codigo'].'</Data></Cell>
-                  <Cell><Data ss:Type="number">'.$rowp['or_codigo'].'</Data></Cell>
-                  <Cell><Data ss:Type="number">'.$rowp['prod_cod'].'</Data></Cell>
-                  <Cell><Data ss:Type="number">'.htmlspecialchars($rowp['prod_producto']).'</Data></Cell>
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_resultado']).'</Data></Cell>
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($uresp_clean).'</Data></Cell>
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_indicador']).'</Data></Cell>
-                  <Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['prod_meta'],2).''.$tp.'</Data></Cell>';
-                  for ($i=1; $i <=12 ; $i++) { 
-                    $tabla.='<Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['m'.$i],2).''.$tp.'</Data></Cell>';
-                  }
+    $formularioN5=$this->model_insumo->list_requerimientos_uresponsable($com_id); /// list form 5
+    $formularioN5_bolsa=$this->model_insumo->lista_total_requerimientos_inscritos_en_programas_bolsas_uresponsable($com_id); /// lista form 5 de las bolsas
 
-                  $tabla.='
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_fuente_verificacion']).'</Data></Cell>
-                </Row>';
+    $tabla.='
+          <Row ss:Height="30">
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PARTIDA.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">DETALLE REQUERIMIENTO</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">UNIDAD MEDIDA</Data></Cell> 
+          <Cell ss:StyleID="header"><Data ss:Type="String">CANTIDAD</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PRECIO UNITARIO</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COSTO TOTAL</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">TOTAL CERTIFICADO</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">ENE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">FEB.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">MAR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">ABR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">MAY.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">JUN.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">JUL.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">AGO.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">SEPT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">OCT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">NOV.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">DIC.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">OBSERVACIÓN</Data></Cell>
+      </Row>';
 
-              }
+    $nro=0;
+    foreach($formularioN5 as $rowp){
+        $tabla .= '<Row ss:AutoFitHeight="1">'; // Autoajusta la altura si el texto es largo
+        
+        // Celdas de Códigos (Centradas)
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['prod_cod'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['par_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['ins_detalle'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['ins_unidad_medida'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_cant_requerida'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_costo_unitario'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_costo_total'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_monto_certificado'].'</Data></Cell>';
+        
+        // Meses (Estrechos y Centrados)
+        for ($i=1; $i <=12 ; $i++) { 
+            $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['mes_'.$i],2).'</Data></Cell>';
+        }
 
-              ///------------------------------------------------------------------------
-              $formularioN4=$this->model_producto->get_lista_form4_consolidado($com_id,1);
-              foreach($formularioN4 as $rowp){
-                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-                $color='#E8FCFB'; $tp='';
-                if($rowp['indi_id']==1){
-                  if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                    $color='#fbd5d5';
-                  }
-                }
-                elseif ($rowp['indi_id']==2) {
-                  $tp='%';
-                  if($rowp['mt_id']==3){
-                    if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                      $color='#fbd5d5';
-                    }
-                  }
-                }
-
-                $color_or='';
-                if($rowp['or_id']==0){
-                  $color_or='#fbd5d5';
-                }
-
-
-                $unidad=$this->model_componente->get_componente($rowp['uni_resp'],$this->gestion);
-                  
-                $uresp='';
-                  if(count($unidad)!=0){
-                    $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
-                    $uresp=''.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'';
-                  }
-
-                $nro++;
-                $tipo_meta = ($tp == '%') ? 'String' : 'Number';
-                $uresp_clean = strip_tags($uresp);
-                $tabla.=
-                '<Row>
-                  <Cell><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>
-                  <Cell><Data ss:Type="Number">'.$rowp['og_codigo'].'</Data></Cell>
-                  <Cell><Data ss:Type="Number">'.$rowp['or_codigo'].'</Data></Cell>
-                  <Cell><Data ss:Type="Number">'.$rowp['prod_cod'].'</Data></Cell>
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_producto']).'</Data></Cell>
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_resultado']).'</Data></Cell>
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($uresp).'</Data></Cell>
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_indicador']).'</Data></Cell>
-                  <Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['prod_meta'],2).''.$tp.'</Data></Cell>';
-                  for ($i=1; $i <=12 ; $i++) { 
-                    $tabla.='<Cell><Data ss:Type="'.$tipo_meta.'">'.round($rowp['m'.$i],2).''.$tp.'</Data></Cell>';
-                  }
-
-                  $tabla.='
-                  <Cell><Data ss:Type="String">'.htmlspecialchars($rowp['prod_fuente_verificacion']).'</Data></Cell>
-                </Row>';
-              }
-              $tabla.='
-         
-            </Row>';
-
-      return $tabla;
+        // Observacion
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['ins_observacion'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $tabla .= '</Row>';
     }
 
+    foreach($formularioN5_bolsa as $rowp){
+        $tabla .= '<Row ss:AutoFitHeight="1">'; // Autoajusta la altura si el texto es largo
+        
+        // Celdas de Códigos (Centradas)
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['prod_cod'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['par_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['ins_detalle'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['ins_unidad_medida'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_cant_requerida'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_costo_unitario'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_costo_total'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['ins_monto_certificado'].'</Data></Cell>';
+        
+        // Meses (Estrechos y Centrados)
+        for ($i=1; $i <=12 ; $i++) { 
+            $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['mes_'.$i],2).'</Data></Cell>';
+        }
 
+        // Observacion
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['ins_observacion'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $tabla .= '</Row>';
+    }
 
-
+    return $tabla;
+  }
 
 
 

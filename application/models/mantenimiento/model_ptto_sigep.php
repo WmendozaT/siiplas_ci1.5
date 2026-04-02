@@ -1449,13 +1449,25 @@ class Model_ptto_sigep extends CI_Model{
 
     /*-------- LISTA DE PARTIDAS PADRES (REVERTIDOS) --------*/
     public function lista_partidas_padres_revertidos($aper_id){
-        $sql = 'select pr.aper_id,pr.proy_id,par_padre.par_depende,par_padre.par_codigo,par_padre.par_nombre
+        $sql = 'SELECT DISTINCT 
+                    pr.aper_id,
+                    pr.proy_id,
+                    par_padre.par_depende,
+                    par_padre.par_codigo,
+                    par_padre.par_nombre
+                FROM lista_partidas_revertidas('.$this->gestion.') pr
+                INNER JOIN partidas par ON par.par_id = pr.par_id
+                INNER JOIN partidas par_padre ON par_padre.par_codigo = par.par_depende
+                WHERE pr.aper_id = '.$aper_id.'
+                ORDER BY par_padre.par_depende ASC';
+
+        /*$sql = 'select pr.aper_id,pr.proy_id,par_padre.par_depende,par_padre.par_codigo,par_padre.par_nombre
                 from lista_partidas_revertidas('.$this->gestion.') pr
                 Inner Join partidas as par On par.par_id=pr.par_id
                 Inner Join partidas as par_padre On par_padre.par_codigo=par.par_depende
                 where pr.aper_id='.$aper_id.'
                 group by pr.aper_id,pr.proy_id,par_padre.par_depende,par_padre.par_codigo,par_padre.par_nombre
-                order by par_padre.par_depende asc';
+                order by par_padre.par_depende asc';*/
         $query = $this->db->query($sql);
         return $query->result_array();
     }
@@ -1473,14 +1485,14 @@ class Model_ptto_sigep extends CI_Model{
         return $query->result_array();
     }
 
-    /*-------- LISTA DE SALDOS PARTIDAS REVERTIDOS POR UNIDAD --------*/
-/*    public function lista_monto_partidas_revertidos_unidad($proy_id){
-        $sql = 'select *
+    /*-------- LISTA DE SALDOS PARTIDAS REVERTIDOS POR UNIDAD RESPONSABLE 2026--------*/
+    public function lista_monto_partidas_revertidos_unidad($proy_id){
+        $sql = 'SELECT *
                 from lista_partidas_revertidas('.$this->gestion.')
                 where proy_id='.$proy_id.'';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
     /*-------- GET SALDO REVERTIDO PROGRAMADO POR PARTIDA - UNIDAD --------*/
     public function get_ppto_partida_revertido_unidad($par_id,$aper_id){

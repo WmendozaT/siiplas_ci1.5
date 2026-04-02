@@ -436,10 +436,11 @@ class Model_insumo extends CI_Model{
                 i.ins_observacion,
                 i.ins_monto_certificado,
                 i.ins_tipo_modificacion,
+                i.aper_id,
                 par.par_id,
                 par.par_codigo,
                 par.par_nombre,
-
+                apg.aper_programa,
                 COALESCE(prog.mes1, 0) AS mes_1,
                 COALESCE(prog.mes2, 0) AS mes_2,
                 COALESCE(prog.mes3, 0) AS mes_3,
@@ -456,6 +457,7 @@ class Model_insumo extends CI_Model{
             INNER JOIN _insumoproducto AS ip ON p.prod_id = ip.prod_id
             INNER JOIN insumos AS i ON i.ins_id = ip.ins_id
             INNER JOIN partidas AS par ON par.par_id = i.par_id
+            INNER JOIN aperturaprogramatica AS apg ON apg.aper_id = i.aper_id
             LEFT JOIN vista_temporalidad_insumo2 AS prog ON prog.ins_id = i.ins_id 
             WHERE p.com_id = '.$com_id.'
               AND p.estado != 3 
@@ -468,22 +470,9 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    // lista de requerimientos alineados a PROGRAMAS BOLSAS por actividad (antiguo)
-/*    function lista_requerimientos_inscritos_en_programas_bosas2($prod_id,$com_id){
-         $sql = 'select p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre
-                from _productos p
-                Inner Join _insumoproducto as ip On p.prod_id=ip.prod_id
-                Inner Join insumos as i On i.ins_id=ip.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where p.prod_id='.$prod_id.' and p.uni_resp='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
-                group by p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre
-                order by p.prod_cod,par.par_codigo,i.ins_id asc';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
 
-    /// lista consolidado de requerimientos (todos) en prog bolsas
+    /// lista de requerimientos (todos) en prog bolsas separado por cada programa
     function lista_requerimientos_inscritos_en_programas_bosas($aper_id,$com_id){
         $sql = 'SELECT p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre,
                 COALESCE(prog.mes1, 0) AS mes_1,
@@ -507,6 +496,36 @@ class Model_insumo extends CI_Model{
                 group by p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre,
                 prog.mes1,prog.mes2,prog.mes3,prog.mes4,prog.mes5,prog.mes6,prog.mes7,prog.mes8,prog.mes9,prog.mes10,prog.mes11,prog.mes12
                 order by p.prod_cod,par.par_codigo,i.ins_id asc';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    /// lista total de requerimientos que estan en los prog bolsas (para exportar en excel)
+    function lista_total_requerimientos_inscritos_en_programas_bolsas_uresponsable($com_id){
+        $sql = 'SELECT apg.aper_programa, apg.aper_descripcion,p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre,
+                COALESCE(prog.mes1, 0) AS mes_1,
+                COALESCE(prog.mes2, 0) AS mes_2,
+                COALESCE(prog.mes3, 0) AS mes_3,
+                COALESCE(prog.mes4, 0) AS mes_4,
+                COALESCE(prog.mes5, 0) AS mes_5,
+                COALESCE(prog.mes6, 0) AS mes_6,
+                COALESCE(prog.mes7, 0) AS mes_7,
+                COALESCE(prog.mes8, 0) AS mes_8,
+                COALESCE(prog.mes9, 0) AS mes_9,
+                COALESCE(prog.mes10, 0) AS mes_10,
+                COALESCE(prog.mes11, 0) AS mes_11,
+                COALESCE(prog.mes12, 0) AS mes_12
+                from _productos p
+                Inner Join _insumoproducto as ip On p.prod_id=ip.prod_id
+                Inner Join insumos as i On i.ins_id=ip.ins_id
+                Inner Join partidas as par On par.par_id=i.par_id
+                INNER JOIN aperturaprogramatica AS apg ON apg.aper_id = i.aper_id
+                LEFT JOIN vista_temporalidad_insumo2 AS prog ON prog.ins_id = i.ins_id
+                where p.uni_resp='.$com_id.' and p.estado!=3 and i.ins_estado!=3 and i.aper_id!=0 and i.ins_gestion='.$this->gestion.'
+                group by apg.aper_programa, apg.aper_descripcion,p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre,
+                prog.mes1,prog.mes2,prog.mes3,prog.mes4,prog.mes5,prog.mes6,prog.mes7,prog.mes8,prog.mes9,prog.mes10,prog.mes11,prog.mes12
+                order by i.aper_id,p.prod_cod,par.par_codigo,i.ins_id asc';
 
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -662,7 +681,31 @@ class Model_insumo extends CI_Model{
 
     /// lista de requerimientos por cada formulario N° 4
     function lista_insumos_prod($prod_id){
-        $sql = 'select prod.prod_id,prod.prod_cod,par.par_codigo,i.ins_id,i.ins_detalle,i.ins_unidad_medida,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,ins_monto_certificado,ins_observacion,i.ins_tipo_modificacion,i.ins_ejec_cpoa
+        $sql = 'SELECT 
+                prod.prod_id, 
+                prod.prod_cod, 
+                par.par_codigo, 
+                i.ins_id, 
+                i.ins_detalle, 
+                i.ins_unidad_medida, 
+                i.ins_cant_requerida, 
+                i.ins_costo_unitario, 
+                i.ins_costo_total, 
+                i.ins_monto_certificado, 
+                i.ins_observacion, 
+                i.ins_tipo_modificacion, 
+                i.ins_ejec_cpoa
+            FROM _productos prod
+            INNER JOIN _insumoproducto ip ON ip.prod_id = prod.prod_id
+            INNER JOIN insumos i ON i.ins_id = ip.ins_id
+            INNER JOIN partidas par ON par.par_id = i.par_id
+            WHERE prod.prod_id = '.$prod_id.' 
+              AND i.ins_estado != 3 
+              AND i.aper_id != 0
+            ORDER BY par.par_codigo, i.ins_id ASC';
+
+
+        /*$sql = 'select prod.prod_id,prod.prod_cod,par.par_codigo,i.ins_id,i.ins_detalle,i.ins_unidad_medida,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,ins_monto_certificado,ins_observacion,i.ins_tipo_modificacion,i.ins_ejec_cpoa
                 from _productos prod
                 Inner Join (
                 select prod_id,ins_id,tp_ins
@@ -674,7 +717,7 @@ class Model_insumo extends CI_Model{
                 Inner Join partidas as par On par.par_id=i.par_id
                 where ip.prod_id='.$prod_id.' and i.ins_estado!=\'3\' and i.aper_id!=\'0\'
                 group by prod.prod_id,prod.prod_cod,par.par_codigo,i.ins_id,i.ins_detalle,i.ins_unidad_medida,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,ins_monto_certificado,ins_observacion
-                order by par.par_codigo,i.ins_id asc';
+                order by par.par_codigo,i.ins_id asc';*/
         
         $query = $this->db->query($sql);
         return $query->result_array();

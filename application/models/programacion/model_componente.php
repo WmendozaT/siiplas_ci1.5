@@ -53,7 +53,7 @@ class Model_componente extends CI_Model{
     }
 
     /*=========== LISTA DE COMPONENTES ================*/
-    public function componentes_id($id_f, $tp_id){
+/*    public function componentes_id($id_f, $tp_id){
         $sql = 'select c.*,f.fun_id as resp_id,f.fun_id as resp_id, f.fun_nombre,f.fun_paterno,f.fun_materno,u.*,sa.*,tpsa.*
                 from _componentes as c
                 Inner Join funcionario as f On f.fun_id=c.resp_id
@@ -64,7 +64,7 @@ class Model_componente extends CI_Model{
                 ORDER BY serv_cod asc';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     public function componentes_fun_id($id_f,$fun_id){
         $sql = 'select c.*,f.fun_id as resp_id,f.fun_id as resp_id, f.fun_nombre,f.fun_paterno,f.fun_materno,u.*,sa.*,tpsa.*

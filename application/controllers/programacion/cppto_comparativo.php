@@ -267,8 +267,8 @@ class Cppto_comparativo extends CI_Controller {
                   <thead>
                       <tr style="font-size: 8px;height:12px;" bgcolor="#eceaea" align=center>
                           <th style="width:5%;"style="height:11px;">N°</th>
-                          <th style="width:10%;">C&Oacute;DIGO</th>
-                          <th style="width:30%;">DETALLE PARTIDA</th>
+                          <th style="width:7%;">C&Oacute;DIGO</th>
+                          <th style="width:25%;">DETALLE PARTIDA</th>
                           <th style="width:12%;">PPTO. ASIGNADO '.$this->gestion.'</th>
                           <th style="width:12%;">PPTO. PROGRAMADO POA '.$this->gestion.'</th>
                           <th style="width:12%;">SALDO POA</th>
@@ -308,9 +308,9 @@ class Cppto_comparativo extends CI_Controller {
 
                     $partidas.='
                     <tr style="font-size: 8px;">
-                      <td style="height:10px;"text-align:center">'.$nro.'</td>
-                      <td style="text-align:center"><b>'.$row['codigo_partida'].'</b></td>
-                      <td>'.$row['partida'].'</td>
+                      <td style="width:5%;;height:10px;";text-align:center">'.$nro.'</td>
+                      <td style="width:7%;text-align:center"><b>'.$row['codigo_partida'].'</b></td>
+                      <td style="width:25%;">'.$row['partida'].'</td>
                       <td style="text-align:right">'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>
                       <td style="text-align:right">'.number_format($row['ppto_programado'], 2, ',', '.').'</td>
                       <td style="text-align:right; background-color:'.$text_color.'"><b>'.number_format($row['saldo_poa'], 2, ',', '.').'</b></td>

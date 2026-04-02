@@ -225,6 +225,7 @@ $route['prog/valida_act'] = 'programacion/actividades/valida_actividad';  ///// 
 $route['prog/valida_update_act'] = 'programacion/actividades/valida_update_actividad';  ///// valida update Actividad
 $route['prog/delete_act'] = 'programacion/actividades/delete_actividad';	//// Elimina Actividad
 
+//// Reportes POA
 $route['prog/reporte_form4_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario4_unidadResponsable/$1';  //// Reporte Form 4 Unidad Responsable 2026
 $route['prog/reporte_form5_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario5/$1';  //// Reporte requerimiento por Unidad Responsable
 $route['prog/reporte_form5_uresponsable_programa_bolsa/(:any)'] = 'programacion/creporte/reporte_prog_bolsa_formulario5/$1/$2';  //// Reporte requerimiento por ID PRODUCTO
@@ -529,7 +530,7 @@ $route['mod_ppto/actualizar_modppto/(:any)'] = 'modificaciones/cmod_presupuestar
 
 
 /*------------- MODIFICAR REQUERIMIENTOS (2020)------------*/
-$route['mod/form5/(:any)'] = 'modificaciones/cmod_insumo/cite_servicios/$1'; //// Lista cite de Unidades Responsables
+$route['mod/form5/(:any)'] = 'modificaciones/cmod_insumo/cite_UnidadResponsable/$1'; //// Lista cite de Unidades Responsables
 $route['mod/list_requerimientos/(:any)'] = 'modificaciones/cmod_insumo/mis_requerimientos/$1'; //// Lista de Requerimientos
 $route['mod/del_select_ins/(:any)'] = 'modificaciones/cmod_insumo/elimina_requerimientos_producto_actividad/$1'; //// Elimina Requerimientos Seleccionados (2020)
 $route['mod/rep_mod_financiera/(:any)'] = 'modificaciones/cmod_insumo/reporte_modificacion_financiera/$1';  ///// Reporte Modificaciones Financiera 2020
@@ -539,9 +540,9 @@ $route['mod/ver_mod_poa/(:any)'] = 'modificaciones/cmod_insumo/ver_modificacion_
 $route['mod/delete_insumos_eliminados/(:any)'] = 'modificaciones/cmod_insumo/limpiar_insumos_eliminados/$1';  ///// Limpiar de la Base de Datos sobre items eliminados
 $route['mod/cite_historial_modf5/(:any)'] = 'modificaciones/cmod_insumo/historial_modificaciones_cite/$1';  ///// Historial Cite modificaciones
 
-/*------------- MODIFICAR OPERACIONES (2020-2021)------------*/
-$route['mod/list_componentes/(:any)'] = 'modificaciones/cmod_fisica/mis_subactividades/$1'; //// Lista de Subactividades 2020-2021
-$route['mod/lista_operaciones/(:any)'] = 'modificaciones/cmod_fisica/list_operaciones/$1'; //// la lista de operaciones 2020
+/*------------- MODIFICAR ACTIVIDADES (2020-2021)------------*/
+$route['mod/list_componentes/(:any)'] = 'modificaciones/cmod_fisica/mis_UnidadesResponsables/$1'; //// Lista de Unidades Responsables
+$route['mod/lista_UnidadesResponsables/(:any)'] = 'modificaciones/cmod_fisica/lista_UnidadesResponsables/$1'; //// la lista de Unidades Responsables 2026
 $route['mod/update_ope/(:any)'] = 'modificaciones/cmod_fisica/update_operacion/$1/$2'; //// 
 $route['mod/update_codigo/(:any)'] = 'modificaciones/cmod_fisica/update_codigo/$1';  //// Actualizar Codigos de Operacion
 $route['mod/reporte_modfis/(:any)'] = 'modificaciones/cmod_fisica/reporte_modificacion_fisica/$1';  ///// Reporte de Modificacion Fisica

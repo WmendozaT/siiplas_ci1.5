@@ -35,8 +35,8 @@ class Cmod_insumo extends CI_Controller {
         }
     }
 
-    /*----- cite Servicios de Unidad  ------*/
-    public function cite_servicios($proy_id){
+    /*----- cite Modificacion POA x Unidad  ------*/
+    public function cite_UnidadResponsable($proy_id){
       /// tp 0: Modificacion POA
       /// tp 1: Modificacion POA (Reversion de saldos)
       $data['menu']=$this->menu(3); //// genera menu
@@ -147,14 +147,13 @@ class Cmod_insumo extends CI_Controller {
       }
     }
 
-    /*----- LISTA REQUERIMIENTOS 2024 ------*/
+    /*----- LISTA REQUERIMIENTOS 2026 ------*/
     public function mis_requerimientos($cite_id){
       $data['menu']=$this->menu(3); //// genera menu
       $data['cite'] = $this->model_modrequerimiento->get_cite_insumo($cite_id);
 
       if(count($data['cite'])!=0){
         $proyecto = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']); /// Proyecto de Inversion
-        //$data['tp_mod']=$data['cite'][0]['tipo_modificacion'];
         $data['cabecera']=$this->cabecera_formulario_mod5($data['cite'],$proyecto);
         $data['opciones']=$this->opciones_formulario_mod5($data['cite'],$proyecto);
         $data['style']=$this->style();
@@ -2177,7 +2176,7 @@ class Cmod_insumo extends CI_Controller {
           /// -------------------------------------                           
 
           $lista_partidas=$this->partidas_dependientes($insumo); /// Lista de Insumos dependientes
-          $lista_prod_act=$this->list_operaciones($cite,$insumo); /// Lista de Actividades (Form 4)
+          $lista_prod_act=$this->lista_form4_x_unidadresponsable($cite,$insumo); /// Lista de Actividades (Form 4)
 
           $saldo=$monto_asig-$monto_prog;
 
@@ -2262,15 +2261,15 @@ class Cmod_insumo extends CI_Controller {
 
 
 
-    /*--- LISTA DE FORMULARIO N° 4 (MOD) ---*/
-    function list_operaciones($cite,$insumo){
+    /*--- LISTA DE FORMULARIO N° 4 (MOD) A REVISAR---*/
+    function lista_form4_x_unidadresponsable($cite,$insumo){
       $tabla='';
 
-        $operaciones=$this->model_producto->lista_form4_x_unidadresponsable($cite[0]['com_id']);
+        $form4=$this->model_producto->lista_form4_x_unidadresponsable($cite[0]['com_id']);
         $tabla.='<option value="">Seleccione Actividad</option>';
 
-        if($cite[0]['por_id']==0){
-          foreach($operaciones as $row){
+        if($cite[0]['por_id']==0){ //// alineacion normal
+          foreach($form4 as $row){
             if($row['prod_id']==$insumo[0]['prod_id']){
               $tabla.='<option value="'.$row['prod_id'].'" selected>'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].'</option>';
             }
@@ -2280,7 +2279,8 @@ class Cmod_insumo extends CI_Controller {
           } 
         }
         else{
-          foreach($operaciones as $row){
+
+          foreach($form4 as $row){ //// alineacion de actividades del programa bolsa
             $unidad=$this->model_componente->get_componente($row['uni_resp'],$this->gestion);
             $uresp=$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'];
             if(count($unidad)!=0){
