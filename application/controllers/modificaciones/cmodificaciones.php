@@ -73,154 +73,6 @@ class Cmodificaciones extends CI_Controller {
     }
 
 
-   
-    /*-------- GET OPCIONES DE MODIFICACION POA --------*/
-/*    public function get_opciones_modpoa(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $unidades=$this->model_componente->lista_subactividad($proy_id);
-        $saldos_revertidos_partidas=$this->model_ptto_sigep->lista_monto_partidas_revertidos_unidad($proy_id);
-        $tabla=''; 
-
-        if($this->tp_adm==1){ /// Administrador
-          $dim=3;
-          if(count($saldos_revertidos_partidas)==0){
-            $dim=4;
-          }
-
-          $tabla.='
-            <a onclick="cargar_informacion_form4()" class="ruta" title="MODIFICACION DEL FORMULARIO N° 4 (ACTIVIDADES)" >
-              <div class="well well-sm col-sm-'.$dim.'">
-                <div class="well well-sm bg-color-teal txt-color-white text-center">
-                  <h5 style="font-weight: bold;font-style: italic;color: white">MODIFICAR FORM. N° 4 - '.$this->gestion.'</h5>
-                  <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                </div>
-              </div>
-            </a>
-            <a onclick="cargar_informacion_form5()" class="ruta" title="MODIFICACION DEL FORMULARIO N° 5 (REQUERIMIENTOS)" >
-              <div class="well well-sm col-sm-'.$dim.'">
-                <div class="well well-sm bg-color-teal txt-color-white text-center">
-                  <h5 style="font-weight: bold;font-style: italic;color: white">MODIFICAR FORM. N° 5 - '.$this->gestion.'</h5>
-                  <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                </div>
-              </div>
-            </a>';
-
-            if(count($saldos_revertidos_partidas)!=0){
-              $tabla.='
-              <a onclick="cargar_informacion_form5_revertido()" class="ruta" title="MODIFICACION DEL FORMULARIO N° 5 (REQUERIMIENTOS) SALDOS REVERTIDOS" >
-                <div class="well well-sm col-sm-'.$dim.'">
-                  <div class="well well-sm bg-color-blue txt-color-white text-center">
-                    <h5 style="font-weight: bold;font-style: italic;color: white">MOD. FORM. N° 5 (SALDOS REVERTIDOS) - '.$this->gestion.'</h5>
-                    <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                  </div>
-                </div>
-              </a>';
-            }
-
-            $tabla.='
-            <a onclick="cargar_informacion_techo()" class="ruta" title="MODIFICACION DEL TECHO PRESUPUESTARIO" >
-              <div class="well well-sm col-sm-'.$dim.'">
-                <div class="well well-sm bg-color-yellow txt-color-white text-center">
-                  <h5 style="font-weight: bold;font-style: italic;color: white">MODIFICAR TECHO PPTARIO - '.$this->gestion.'</h5>
-                  <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                </div>
-              </div>
-            </a>';
-        }
-        else{ /// responsables regionales
-          $dim=4;
-          if(count($saldos_revertidos_partidas)==0){
-            $dim=6;
-          }
-
-            if($this->conf_mod_ope==1){ /// conf mod actividades
-              $tabla.='
-              <a onclick="cargar_informacion_form4()" class="ruta" title="MODIFICACION DEL FORMULARIO N° 4 (ACTIVIDADES)" >
-                <div class="well well-sm col-sm-'.$dim.'">
-                  <div class="well well-sm bg-color-teal txt-color-white text-center">
-                    <h5 style="font-weight: bold;font-style: italic;color: white">MODIFICAR FORMULARIO N° 4 - '.$this->gestion.'</h5>
-                    <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                  </div>
-                </div>
-              </a>';
-            }
-
-            if($this->conf_mod_req==1){ /// conf mod requerimientos
-              $tabla.='
-              <a onclick="cargar_informacion_form5()" class="ruta" title="MODIFICACION DEL FORMULARIO N° 5 (REQUERIMIENTOS)" >
-                <div class="well well-sm col-sm-'.$dim.'">
-                  <div class="well well-sm bg-color-teal txt-color-white text-center">
-                    <h5 style="font-weight: bold;font-style: italic;color: white">MODIFICAR FORMULARIO N° 5 - '.$this->gestion.'</h5>
-                    <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                  </div>
-                </div>
-              </a>';
-            }
-
-            if(count($saldos_revertidos_partidas)!=0){ /// conf requerimientos por reversion de presupuesto
-              $tabla.='
-              <a onclick="cargar_informacion_form5_revertido()" class="ruta" title="MODIFICACION DEL FORMULARIO N° 5 (REQUERIMIENTOS) SALDOS REVERTIDOS" >
-                <div class="well well-sm col-sm-'.$dim.'">
-                  <div class="well well-sm bg-color-blue txt-color-white text-center">
-                    <h5 style="font-weight: bold;font-style: italic;color: white">MOD. FORM. N° 5 (SALDOS REVERTIDOS) - '.$this->gestion.'</h5>
-                    <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                  </div>
-                </div>
-              </a>';
-            }
-
-            $tabla.='
-            <a onclick="cargar_ppto_reversion()" class="ruta" title="REGISTRAR SALDOS REVERTIDOS" >
-              <div class="well well-sm col-sm-'.$dim.'">
-                <div class="well well-sm bg-color-yellow txt-color-white text-center">
-                  <h5 style="font-weight: bold;font-style: italic;color: white">ASIGNAR PPTO POR REVERSIÓN DE SALDOS - '.$this->gestion.'</h5>
-                  <i class="glyphicon glyphicon-list-alt" aria-hidden="true" id="graf"></i>
-                </div>
-              </div>
-            </a>';
-        }
-
-        $tabla.='
-          <script>
-            function cargar_informacion_form4(){
-              document.getElementById("loading").style.display = "block";
-              window.location="'.site_url("").'/mod/list_componentes/'.$proy_id.'"
-            }
-            function cargar_informacion_form5(){
-              document.getElementById("loading").style.display = "block";
-              window.location="'.site_url("").'/mod/form5/'.$proy_id.'/0"
-            }
-            function cargar_informacion_form5_revertido(){
-              document.getElementById("loading").style.display = "block";
-              window.location="'.site_url("").'/mod/form5/'.$proy_id.'/1"
-            }
-            function cargar_informacion_techo(){
-              document.getElementById("loading").style.display = "block";
-              window.location="'.site_url("").'/mod/cite_techo/'.$proy_id.'"
-            }
-            function cargar_ppto_reversion(){
-              document.getElementById("loading").style.display = "block";
-              window.location="'.site_url("").'/mod/add_ppto_reversion/'.$proy_id.'"
-            }
-          </script>
-          <br>
-          <div id="loading" style="display: none; text-align:center; color:blue"><b>CARGANDO INFORMACION .....</b></div>';
-
-        $result = array(
-          'respuesta' => 'correcto',
-          'tabla'=>$tabla,
-        );
-          
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }*/
-
-
-
     /*--- EXPORTAR CONSOLIDADO DE MODIFICACION POA INSTITUCIONAL ---*/
     public function consolidado_modificacion_requerimientos_institucional(){
       date_default_timezone_set('America/Lima');
@@ -246,53 +98,186 @@ class Cmodificaciones extends CI_Controller {
 
 
 
-  /*--- LISTA DE CITES FORM 4-FORM 5 (2020-2021) ---*/
-  public function lista_cites($proy_id){
+  /*--- LISTA DE CITES FORM 4-FORM 5 (2026) ---*/
+    public function lista_cites($proy_id){
     $data['menu']=$this->menu(3); //// genera menu
-    $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id);
-    if(count($data['proyecto'])!=0){
-      $data['fase'] = $this->model_faseetapa->get_id_fase($proy_id);
-      $titulo='<h1> PROYECTO : <small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['proy_sisin'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['proy_nombre'].'</small></h1>';
-      if($data['proyecto'][0]['tp_id']==4){
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
-        $titulo='<h1> '.$proyecto[0]['tipo_adm'].' : <small>'.$proyecto[0]['aper_programa'].' '.$proyecto[0]['aper_proyecto'].' '.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'].'</small></h1>';
-      }
+    $UniOrg=$this->model_proyecto->get_UnidadOrganizacional($proy_id);
+    if(count($UniOrg)!=0){
 
-      $data['titulo']=$titulo;
-      $data['requerimientos']=$this->list_cites_generados($proy_id,1);
-      $data['operaciones']=$this->list_cites_generados($proy_id,2);
-      $data['techo']=$this->list_cites_generados($proy_id,3);
-      
-      if($data['fase'][0]['pfec_estado']==1){
-        $this->load->view('admin/modificacion/list_cites', $data);
+
+      $tabla='';
+      $tabla.='
+      <style>
+      .table1{
+            display: inline-block;
+            width:100%;
+            max-width:1550px;
+            overflow-x: scroll;
+            }
+      table{font-size: 9px;
+            width: 100%;
+            max-width:1550px;;
+            overflow-x: scroll;
+            }
+            th{
+              padding: 1.4px;
+              text-align: center;
+              font-size: 9px;
+              background-color: #fafafa;
+            }
+            td{
+              font-size: 9px;
+            }
+    </style>
+      <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+              <section id="widget-grid" class="well">
+               <h1> '.$UniOrg[0]['aper_programa'].' '.$UniOrg[0]['aper_proyecto'].' '.$UniOrg[0]['aper_actividad'].' - '.$UniOrg[0]['proy_nombre'].' '.$UniOrg[0]['abrev'].'</h1>;
+              </section>
+            </article>
+            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+              <div class="well well-sm well-light">
+                <h3>HISTORIAL DE MODIFICACIONES POA - GESTI&Oacute;N '.$this->gestion.'</h3>
+                <div class="row">
+                  <article class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                  <div class="jarviswidget jarviswidget-color-darken" >
+                    <header>
+                      <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+                      <h2 class="font-md"><strong>FORMULARIO N° 5 (Requerimientos)</strong></h2>  
+                    </header>
+                    <div>
+                      <div class="widget-body no-padding">
+                        <table id="dt_basic2" class="table table-bordered" style="width:100%;">
+                          <thead>
+                            <tr style="height:40px;">
+                              <th style="width:1%;">#</th>
+                              <th style="width:10%;">NRO CITE</th>
+                              <th style="width:10%;">FECHA CITE </th>
+                              <th style="width:10%;">C&Oacute;DIGO </th>
+                              <th style="width:15%;">UNIDAD RESPONSABLE</th>
+                              <th style="width:5%;"></th>
+                              <th style="width:5%;"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            '.$this->list_cites_generados($proy_id,1).' 
+                          </tbody>
+                          <tr bgcolor="#fafafa">
+                            <td></td>
+                            <td colspan="5"><b>CONSOLIDADO MODIFICACIONES</b></td>
+                            <td><center><a href="'.base_url().'index.php/mod/consolidado_mod_requerimiento/'.$UniOrg[0]['proy_id'].'" class="btn btn-default" title="EXPORTAR CONSOLIDADO MODIFICACIONES.XLS" target="_blank"><img src="'.base_url().'assets/ifinal/excel.jpg'.'" width="30" height="30"/></a></center></td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  </article>
+                  <article class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                  <div class="jarviswidget jarviswidget-color-darken" >
+                    <header>
+                      <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+                      <h2 class="font-md"><strong>FORMULARIO N° 4</strong></h2>  
+                    </header>
+                    <div>
+                      <div class="widget-body no-padding">
+                        <table id="dt_basic1" class="table table-bordered" style="width:100%;">
+                          <thead>
+                            <tr style="height:40px;">
+                              <th style="width:1%;">#</th>
+                              <th style="width:10%;">NRO CITE</th>
+                              <th style="width:10%;">FECHA CITE </th>
+                              <th style="width:10%;">C&Oacute;DIGO </th>
+                              <th style="width:20%;">SUBACTIVIDAD/UNIDAD RESPONSABLE</th>
+                              <th style="width:5%;"></th>
+                              <th style="width:5%;"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            '.$this->list_cites_generados($proy_id,2).'
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  </article>
+                  <article class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
+                  <div class="jarviswidget jarviswidget-color-darken" >
+                    <header>
+                      <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+                        <h2 class="font-md"><strong>TECHO</strong></h2>  
+                      </header>
+                    <div>
+                      <div class="widget-body no-padding">
+                        <table id="dt_basic3" class="table table-bordered" style="width:100%;">
+                          <thead>
+                            <tr style="height:40px;">
+                              <th style="width:1%;">#</th>
+                              <th style="width:10%;">NRO CITE</th>
+                              <th style="width:10%;">FECHA CITE </th>
+                              <th style="width:10%;">TIPO DE MODIFICACION </th>
+                              <th style="width:5%;"></th>
+                              <th style="width:5%;"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            '.$this->list_cites_generados($proy_id,3).'
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  </article>
+                </div>
+              </div>
+            </article>
+
+            <div id="screen-blocker" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; cursor: wait;">
+                <style>
+                    /* Estilos específicos para el spinner sin afectar al resto de la página */
+                    .loader-wrapper { 
+                        position: absolute; 
+                        top: 50%; 
+                        left: 50%; 
+                        transform: translate(-50%, -50%); 
+                        text-align: center; 
+                    }
+                    .spinner-custom { 
+                        border: 8px solid #f3f3f3; 
+                        border-top: 8px solid #5B9360; /* Color verde sugerido */
+                        border-radius: 50%; 
+                        width: 60px; 
+                        height: 60px; 
+                        animation: spin-custom 1s linear infinite; 
+                        margin: 0 auto 15px; 
+                    }
+                    @keyframes spin-custom { 
+                        0% { transform: rotate(0deg); } 
+                        100% { transform: rotate(360deg); } 
+                    }
+                    .loading-text { 
+                        font-family: Arial, sans-serif; 
+                        color: #333; 
+                        font-weight: bold; 
+                        font-size: 16px; 
+                    }
+                </style>
+                
+                <div class="loader-wrapper">
+                    <div class="spinner-custom"></div>
+                    <div class="loading-text">Cargando Listado, espere por favor...</div>
+                </div>
+            </div> ';
+
+            $data['vista']=$tabla;
+            $this->load->view('admin/modificacion/list_cites', $data);
+
       }
       else{
         redirect(site_url("").'/mod/list_top');
       }
       
     }
-    else{
-      redirect(site_url("").'/mod/list_top');
-    }
-    
-  }
 
 
-
-
-
-    /*----- PONDERACION OPERACIONES ------*/
-    function pondera_poa_operaciones($com_id){
-      $productos=$this->model_producto->list_prod($com_id);
-      $pcion=(100/count($productos));
-      foreach($productos as $row){
-        $update_prod = array(
-          'prod_ponderacion' => $pcion
-        );
-        $this->db->where('prod_id', $row['prod_id']);
-        $this->db->update('_productos', $update_prod);
-      }
-    }
 
     /*----- UPDATE ESTADO ACTIVO DE LA MODIFICACION ------*/
     function update_activo_modificacion($cite_id){
@@ -303,7 +288,9 @@ class Cmodificaciones extends CI_Controller {
       $this->db->update('cite_mod_requerimientos', $this->security->xss_clean($update_cite));
     }
 
-    /*--- LISTA DE MODIFCACIONES (FORMULARIO 4 - FORMULARIO 5 - TECHO PRESUPUESTARIO) 2023 ---*/
+
+
+    /*--- LISTA DE MODIFCACIONES (FORMULARIO 4 - FORMULARIO 5 - TECHO PRESUPUESTARIO) 2026 ---*/
     public function list_cites_generados($proy_id,$tp){
       $tabla='';
       // === LIST CITES REQUERIMIENTOS 
@@ -352,76 +339,33 @@ class Cmodificaciones extends CI_Controller {
       }
       // ----- LIST CITES FORM 4
       elseif($tp==2){
-        $cites=$this->model_modfisica->list_cites_Operaciones_proy($proy_id);
+        $cites=$this->model_modfisica->list_cites_modpoa_form4($proy_id);
         
-          if(count($cites)!=0){
-            $nro=0;
-              foreach($cites  as $cit){
-
-                if($cit['tp_reporte']==0){
-                  $ca=$this->model_modfisica->operaciones_adicionados($cit['cite_id']);
-                  $cm=$this->model_modfisica->operaciones_modificados($cit['cite_id']);
-                  $cd=$this->model_modfisica->operaciones_eliminados($cit['cite_id']);
-
-                  if(count($ca)!=0 || count($cm)!=0 || count($cd)!=0){
-                    $nro++;
-                    $tabla .='<tr>';
-                      $tabla .='<td align="center">'.$nro.'</td>';
-                      $tabla .='<td><b>'.$cit['cite_nota'].'</b></td>';
-                      $tabla .='<td align="center">'.date('d/m/Y',strtotime($cit['cite_fecha'])).'</td>';
-                      $tabla .='<td></td>';
-                      $tabla .='<td>'.$cit['com_componente'].'</td>';
-                      $tabla .='<td align=center><a href="javascript:abreVentana(\''.site_url("").'/mod/reporte_modfis/'.$cit['cite_id'].'\');" title="REPORTE CITES - MODIFICACION DE OPERACIONES"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/></a></td>';
-                      $tabla .='<td align=center>';
-                      if($this->conf_mod_ope==1 || $this->tp_adm==1){
-                          $tabla .='<a href="'.base_url().'index.php/mod/lista_operaciones/'.$cit['cite_id'].'" id="myBtn'.$cit['cite_id'].'" title="MODIFICAR CITE"><img src="'.base_url().'assets/ifinal/form1.jpg" width="30" height="30"/></a><br>
-                                  <img id="load'.$cit['cite_id'].'" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="20" height="20" title="ESPERE UN MOMENTO, LA PAGINA SE ESTA CARGANDO..">';
-                      }
-                        /*if($this->tp_adm==1){
-                        $tabla .='<a href="'.base_url().'index.php/mod/cites_mod_ope/'.$cit['ope_id'].'" id="myBtn'.$cit['ope_id'].'" title="MODIFICAR CITE"><img src="'.base_url().'assets/ifinal/form1.jpg" width="30" height="30"/></a><br>
-                                  <img id="load'.$cit['ope_id'].'" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="20" height="20" title="ESPERE UN MOMENTO, LA PAGINA SE ESTA CARGANDO..">';
-                        }*/ 
-                      $tabla .='</td>';
-                    $tabla .='</tr>';
-                    $tabla.=' <script>
-                                  document.getElementById("myBtn'.$cit['cite_id'].'").addEventListener("click", function(){
-                                  this.disabled = true;
-                                  document.getElementById("load'.$cit['cite_id'].'").style.display = "block";
-                                });
-                              </script>';
-                  }
-                }
-                else{
-                  $nro++;
-                    $tabla .='<tr>';
-                      $tabla .='<td align="center">'.$nro.'</td>';
-                      $tabla .='<td><b>'.$cit['cite_nota'].'</b></td>';
-                      $tabla .='<td align="center">'.date('d/m/Y',strtotime($cit['cite_fecha'])).'</td>';
-                      $tabla .='<td></td>';
-                      $tabla .='<td>'.$cit['com_componente'].'</td>';
-                      $tabla .='<td align=center><a href="javascript:abreVentana(\''.site_url("").'/mod/reporte_modfis/'.$cit['cite_id'].'\');" title="REPORTE CITES - MODIFICACION DE OPERACIONES"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/></a></td>';
-                      $tabla .='<td align=center>';
-                      if($this->conf_mod_ope==1 || $this->tp_adm==1){
-                          $tabla .='<a href="'.base_url().'index.php/mod/lista_operaciones/'.$cit['cite_id'].'" id="myBtn'.$cit['cite_id'].'" title="MODIFICAR CITE"><img src="'.base_url().'assets/ifinal/form1.jpg" width="30" height="30"/></a><br>
-                                  <img id="load'.$cit['cite_id'].'" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="20" height="20" title="ESPERE UN MOMENTO, LA PAGINA SE ESTA CARGANDO..">';
-                      }
-                        /*if($this->tp_adm==1){
-                        $tabla .='<a href="'.base_url().'index.php/mod/cites_mod_ope/'.$cit['ope_id'].'" id="myBtn'.$cit['ope_id'].'" title="MODIFICAR CITE"><img src="'.base_url().'assets/ifinal/form1.jpg" width="30" height="30"/></a><br>
-                                  <img id="load'.$cit['ope_id'].'" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="20" height="20" title="ESPERE UN MOMENTO, LA PAGINA SE ESTA CARGANDO..">';
-                        }*/ 
-                      $tabla .='</td>';
-                    $tabla .='</tr>';
-                    $tabla.=' <script>
-                                  document.getElementById("myBtn'.$cit['cite_id'].'").addEventListener("click", function(){
-                                  this.disabled = true;
-                                  document.getElementById("load'.$cit['cite_id'].'").style.display = "block";
-                                });
-                              </script>';
-                }
-
-              }
+        $nro=0;
+          foreach($cites as $cit){
+              $nro++;
+              $citeId = $cit['cite_id'];
+              $urlReporte = site_url("mod/reporte_modfis/".$citeId);
+              $urlModificar = base_url("index.php/mod/lista_mod_form4/".$citeId);
+              
+              $tabla .= '<tr>';
+              $tabla .= '<td align="center">'.$nro.'</td>';
+              $tabla .= '<td><b>'.htmlspecialchars($cit['cite_nota']).'</b></td>';
+              $tabla .= '<td align="center">'.date('d/m/Y', strtotime($cit['cite_fecha'])).'</td>';
+              $tabla .= '<td></td>';
+              $tabla .= '<td>'.htmlspecialchars($cit['com_componente']).'</td>';
+              $tabla .= '<td align="center"><a href="javascript:abreVentana(\''.$urlReporte.'\');" title="REPORTE"><img src="'.base_url('assets/ifinal/requerimiento.png').'" width="25" height="25"/></a></td>';
+              $tabla .= '<td align="center">';
+              
+              if($this->conf_mod_ope == 1 || $this->tp_adm == 1){
+    $tabla .= '<a href="'.$urlModificar.'" class="btn-modificar" data-id="'.$citeId.'" title="MODIFICAR CITE">
+                <img src="'.base_url('assets/ifinal/form1.jpg').'" width="30" height="30"/>
+              </a>';
+}
+              
+              $tabla .= '</td>';
+              $tabla .= '</tr>';
           }
- 
       }
       // ----- LIST DE CITES TECHO PRESUPUESTARIO
       else{

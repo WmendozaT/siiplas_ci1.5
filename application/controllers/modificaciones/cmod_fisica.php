@@ -161,32 +161,29 @@ class Cmod_fisica extends CI_Controller {
 
 
     /*------ LISTA DE FORMULARIO N° 4 (2026) -------*/
-    public function lista_UnidadesResponsables($cite_id){
-      $data['cite']=$this->model_modfisica->get_cite_fis($cite_id);
+    public function lista_formularioN4($cite_id){
+      $data['cite']=$this->model_modfisica->get_cite_fis($cite_id); //// cite modificacion
       if(count($data['cite'])!=0){
         $data['menu']=$this->modificacionpoa->menu(3); //// genera menu
-        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']);
-        $data['datos_cite']=$this->modificacionpoa->datos_cite($data['cite']); /// DATOS CITE
+       // $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']);
+      
         $data['titulo']=$this->modificacionpoa->titulo_cabecera($data['cite'],0);
         $data['indi'] = $this->model_proyecto->indicador(); /// indicador
         $data['metas'] = $this->model_producto->tp_metas(); /// tp metas
 
         if($data['cite'][0]['tp_id']==1){
           $data['list_oregional']=$this->lista_oregional_pi($data['cite'][0]['proy_id']);
-          $data['objetivos']=$this->model_objetivoregion->get_unidad_pregional_programado($data['proyecto'][0]['proy_id']);
+        //  $data['objetivos']=$this->model_objetivoregion->get_unidad_pregional_programado($data['cite'][0]['proy_id']);
         }
         else{
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['cite'][0]['proy_id']);
-          $data['objetivos']=$this->model_objetivoregion->list_proyecto_oregional($data['proyecto'][0]['proy_id']);
-          $data['list_oregional']=$this->lista_oregional($data['proyecto'][0]['proy_id']);
+          //$data['objetivos']=$this->model_objetivoregion->list_proyecto_oregional($data['cite'][0]['proy_id']);
+          $data['list_oregional']=$this->lista_oregional($data['cite'][0]['proy_id']);
          }
-        
-        $data['nro'] = $this->model_producto->list_prod($data['cite'][0]['com_id']); // Lista de productos para el codigo
-        //$data['verif_mod']=$this->modificacionpoa->verif_cite($cite_id); /// Verificando modficaciones para la impresion
-        $data['formulario_N4']=$this->modificacionpoa->mis_formulario4($data['cite']); /// Lista Operaciones
+
+//echo $data['cite'][0]['proy_id'];
+        $data['formulario_N4']=$this->modificacionpoa->mod_mis_formulariosN4($data['cite']); /// Lista de Actividades
         $this->load->view('admin/modificacion/moperaciones/productos/list_productos', $data);
-
-
+         
 /*
          $cite_id = 496; /// Cite Id
           $prod_id = 61387; /// Prod Id
@@ -226,30 +223,12 @@ class Cmod_fisica extends CI_Controller {
     }
 
 
-    /*---- GET DATOS PRODUCTO FORM 4 ----*/
+    /*---- GET DATOS FORM 4 PARA MODIFICAR ----*/
     public function get_form4_mod(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $prod_id = $this->security->xss_clean($post['prod_id']);
         $producto=$this->model_producto->get_producto_id($prod_id); /// Get producto
-
-        $componente = $this->model_componente->get_componente($producto[0]['com_id'],$this->gestion);
-        $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
-
-        $temporalidad=$this->model_producto->producto_programado($prod_id,$this->gestion); /// Temporalidad
-        
-        $sum_temp=0;
-        $sum=$this->model_producto->meta_prod_gest($prod_id);
-        if(count($sum)!=0){
-          $sum_temp=$sum[0]['meta_gest'];
-        }
-
-        if(count($temporalidad)!=0){
-          for ($i=1; $i <=12 ; $i++) { 
-            $this->prog_mes[$i]= $temporalidad[0][$this->temp[$i]];
-          }
-        }
 
         for ($i=1; $i <=12 ; $i++) { 
           if($i<$this->verif_mes[1]){ /// Meses ejecutados
@@ -260,8 +239,8 @@ class Cmod_fisica extends CI_Controller {
 
 
         $uresponsable='';
-        if($proyecto[0]['por_id']==1){
-          $unidades=$this->model_producto->list_uresponsables_regional($proyecto[0]['dist_id']);
+        if($producto[0]['por_id']==1){
+          $unidades=$this->model_producto->list_uresponsables_regional_alineacion_prog_bolsas($producto[0]['dist_id']);
           $uresponsable.='
               <section class="col col-4">
                 <label class="label"><b>UNIDAD RESPONSABLE</b></label>
@@ -269,13 +248,10 @@ class Cmod_fisica extends CI_Controller {
                   <option value="">Seleccione Unidad Responsable</option>';
                   foreach($unidades as $row){
                     if($row['com_id']==$producto[0]['uni_resp']){
-                      $uresponsable.='<option value="'.$row['com_id'].'" selected>'.$row['tipo'].' '.$row['actividad'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</option>';
+                      $uresponsable.='<option value="'.$row['com_id'].'" selected>'.$row['aper_programa'].' '.$row['proy_nombre'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['com_componente'].'</option>';
                     }
                     else{
-                      $uresponsable.='<option value="'.$row['com_id'].'" >'.$row['tipo'].' '.$row['actividad'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</option>';
-                      /*if(count($this->model_producto->get_uni_resp_prog770($producto[0]['com_id'],$row['com_id']))==0){
-                        $uresponsable.='<option value="'.$row['com_id'].'" >'.$row['tipo'].' '.$row['actividad'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</option>';
-                      }*/
+                      $uresponsable.='<option value="'.$row['com_id'].'" >'.$row['aper_programa'].' '.$row['proy_nombre'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['com_componente'].'</option>';
                     }
                   }       
                 $uresponsable.='
@@ -294,17 +270,37 @@ class Cmod_fisica extends CI_Controller {
                 </section>';
         }
 
+
+        $form2=$this->model_objetivoregion->list_proyecto_oregional($producto[0]['proy_id']);
+        $alineacion_form2='';
+        $alineacion_form2.='
+                <label class="label"><b>ALINEACIÓN OPERACIÓN REGIONAL</b></label>
+                <select class="form-control" id="mor_id" name="mor_id" title="SELECCIONE ALINEACIÓN REGIONAL">
+                    <option value="">SELECCIONE ALINEACIÓN OPERACIÓN</option>';
+                    foreach($form2 as $row){ 
+                      if($row['or_id']==$producto[0]['or_id']){
+                        $alineacion_form2.=' <option value='.$row['or_id'].' selected>'.$row['og_codigo'].'.'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';
+                      }
+                      else{
+                        $alineacion_form2.=' <option value='.$row['or_id'].'>'.$row['og_codigo'].'.'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';
+                      }
+                     
+                  }
+                $alineacion_form2.='
+                </select>';
+
         if(count($producto)!=0){
           $result = array(
             'respuesta' => 'correcto',
             'producto'=>$producto,
-            'temp'=>$this->prog_mes,
             'uresponsable'=>$uresponsable,
+            'alineacion_form2'=>$alineacion_form2,
+           // 'indicador'=>$indicador,
+           // 'tp_meta'=>$tp_meta,
             'mes'=>$this->temp,
             'mes_actual'=>$this->verif_mes[1],
             'trimestre'=>$this->tmes,
             'temp_eval'=>$this->prog_mes_eval,
-            'sum_temp'=>$sum_temp,
           );
         }
         else{
@@ -443,7 +439,7 @@ class Cmod_fisica extends CI_Controller {
                  // if(count($this->model_seguimientopoa->get_seguimiento_poa_mes($prod_id,$i))==0){
           
                     
-$this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
+              $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
                    /* if($post['mm'.$i]!=0){
                       $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
                     }*/
@@ -468,8 +464,6 @@ $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
             }
           } 
 
-
-
             $this->copia_operacion($cite,$prod_id,2); /// historial de modificaciones para el reporte
 
             /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
@@ -479,7 +473,7 @@ $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
 
           /*-------------- Redireccionando a lista de Operaciones -------*/
           $this->session->set_flashdata('success','LA ACTIVIDAD SE MODIFICO CORRECTAMENTE :)');
-          redirect(site_url("").'/mod/lista_operaciones/'.$cite_id.'');
+          redirect(site_url("").'/mod/lista_mod_form4/'.$cite_id.'');
         }
 
       } else {
@@ -850,6 +844,46 @@ $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
 
     /*----- REPORTE CITE - MODIFICACION FISICA ----*/
     public function reporte_modificacion_fisica($cite_id){
+      $data['cite']=$this->model_modfisica->get_cite_fis($cite_id);
+      if(count($data['cite'])!=0){
+            $tabla='';
+            $cabecera_modpoa=$this->modificacionpoa->cabecera_modpoa($data['cite'],1);
+            
+            if($data['cite'][0]['tp_reporte']==0){ /// rep anterior
+              $items_modificados=$this->modificacionpoa->items_modificados_form4($cite_id); /// anterior reporte
+            }
+            else{ /// reporte nuevo 2023
+             $items_modificados=$this->modificacionpoa->items_modificados_form4_historial($data['cite'],1); //// Nuevo Reporte
+            }
+
+            $pie_mod=$this->modificacionpoa->pie_modpoa($data['cite'],$data['cite'][0]['cite_codigo']);
+            
+            $tabla.='
+            <page orientation="paysage"  backtop="73mm" backbottom="28mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
+              <page_header>
+              <br><div class="verde"></div>
+                  '.$cabecera_modpoa.'
+              </page_header>
+
+              <page_footer>
+               '.$pie_mod.'
+              </page_footer>
+              '.$items_modificados.'
+            </page> ';
+
+            $data['informacion']=$tabla;
+
+            $data['pie_rep']='MOD_POA_FORM4_'.$data['cite'][0]['cite_nota'].' de '.date('d-m-Y',strtotime($data['cite'][0]['cite_fecha'])).' - '.$data['cite'][0]['tipo_subactividad'].' '.$data['cite'][0]['com_componente'].' | '.$data['cite'][0]['aper_programa'].' '.$data['cite'][0]['proy_nombre'].' '.$data['cite'][0]['abrev'].'/'.$this->gestion.'';
+            $this->load->view('admin/modificacion/moperaciones/reporte_modificacion_poa_form4', $data); 
+      }
+        else{
+          echo "Error !!!";
+        }
+    }
+
+
+
+    public function reporte_modificacion_fisica2($cite_id){
       $data['cite']=$this->model_modfisica->get_cite_fis($cite_id);
      //echo strtotime($data['cite'][0]['cite_fecha'])."---".$this->fecha_entrada;
         if(count($data['cite'])!=0){

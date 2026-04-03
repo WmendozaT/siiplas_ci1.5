@@ -74,34 +74,41 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }
 
-    /*----- LISTA DE UNIDADES RESPONSABLES REGIONAL PARA FILTRAR AL PROG 770 (2023) -----*/
-/*    function list_uresponsables_regional($dist_id){
+    /*----- LISTA DE UNIDADES RESPONSABLES REGIONAL PARA alinear a programas BOLSA -----*/
+    function list_uresponsables_regional_alineacion_prog_bolsas($dist_id){
             
-        if($dist_id==3){
-            $sql = '
-            select poa.aper_id,poa.proy_id,poa.tipo, poa.actividad,poa.abrev,c.com_id,tpsa.tipo_subactividad,sa.serv_descripcion
-            from lista_poa_gastocorriente_nacional('.$this->gestion.') poa
-            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-            Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
-            Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-            where dist_id='.$dist_id.' and c.estado!=\'3\'
-            order by poa.aper_programa,poa.aper_proyecto,poa.aper_actividad asc'; 
-        }
-        else{
-            $sql = '
-            select poa.aper_id,poa.proy_id,poa.tipo, poa.actividad,poa.abrev,c.com_id,tpsa.tipo_subactividad,sa.serv_descripcion
-            from lista_poa_gastocorriente_nacional('.$this->gestion.') poa
-            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-            Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
-            Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-            where dist_id='.$dist_id.' and c.estado!=\'3\' and poa.aper_programa!=\'098\' and poa.aper_programa!=\'099\' and poa.aper_programa!=\'720\' and poa.aper_programa!=\'770\' and poa.aper_programa!=\'960\' 
-            order by poa.aper_programa,poa.aper_proyecto,poa.aper_actividad asc'; 
-        }
-        
+        $sql = "
+            SELECT 
+            poa.aper_id, 
+            poa.proy_id, 
+            poa.aper_programa, 
+            poa.proy_nombre, 
+            poa.abrev, 
+            c.com_id, 
+            -- Lógica para intercambiar el Tipo si el programa es 742 o 751
+            CASE 
+                WHEN poa.aper_programa IN ('742', '751') THEN poa.tipo 
+                ELSE tpsa.tipo_subactividad 
+            END AS tipo_subactividad,
+            -- Lógica para intercambiar el Componente si el programa es 742 o 751
+            CASE 
+                WHEN poa.aper_programa IN ('742', '751') THEN poa.proy_nombre 
+                ELSE c.com_componente 
+            END AS com_componente
+        FROM fnlista_poa_nacional(".$this->gestion.") poa
+        INNER JOIN _componentes c ON c.pfec_id = poa.pfec_id
+        INNER JOIN servicios_actividad sa ON sa.serv_id = c.serv_id
+        INNER JOIN tipo_subactividad tpsa ON tpsa.tp_sact = c.tp_sact
+        WHERE poa.dist_id = ".$dist_id."
+          AND poa.tp_id = 4 
+          AND c.estado != 3 
+          AND poa.aper_programa NOT IN ('771', '98', '99', '720')
+        ORDER BY poa.aper_programa, poa.aper_proyecto, poa.aper_actividad ASC;"; 
+                
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
     /*----- GET UNIDAD RESP POR ACTIVIDAD (PROG 770) -----*/
 /*    function get_uni_resp_prog770($com_id,$uni_resp){
@@ -205,7 +212,7 @@ class model_producto extends CI_Model {
 
 
 
-    /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL y Bolsa x UNI RESP -----*/
+    /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL + prog Bolsa x UNI RESP (consolidado para resporte)-----*/
     function get_lista_form4_uresp_consolidado($com_id){
         $sql = "
         SELECT 
@@ -235,21 +242,21 @@ class model_producto extends CI_Model {
         prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
         prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
         prog.g_id,prog.total_anual
-    FROM _productos p
-    INNER JOIN indicador i ON i.indi_id = p.indi_id
-    INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-    INNER JOIN (
-        SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
-    ) opm ON ore.pog_id = opm.pog_id
-    INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-    INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
+        FROM _productos p
+        INNER JOIN indicador i ON i.indi_id = p.indi_id
+        INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+        INNER JOIN (
+            SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
+        ) opm ON ore.pog_id = opm.pog_id
+        INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+        INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
-    LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id
-    LEFT JOIN _componentes c ON p.com_id = c.com_id
-    LEFT JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
-    LEFT JOIN aperturaprogramatica apg_bolsa ON apg_bolsa.aper_id = pfe.aper_id
-    LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
-    WHERE p.estado != 3 
+        LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id
+        LEFT JOIN _componentes c ON p.com_id = c.com_id
+        LEFT JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
+        LEFT JOIN aperturaprogramatica apg_bolsa ON apg_bolsa.aper_id = pfe.aper_id
+        LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
+        WHERE p.estado != 3 
       AND (
           p.com_id = ".$com_id."  -- Caso Normal
           OR 
@@ -368,27 +375,36 @@ class model_producto extends CI_Model {
     }
 
     /*========== META GESTION ACTUAL PRODUCTO ==========*/
-    public function meta_prod_gest($id_prod){
+/*    public function meta_prod_gest($id_prod){
         $sql = 'SELECT SUM(pg_fis) as meta_gest
             from prod_programado_mensual
             where prod_id='.$id_prod.' AND g_id='.$this->session->userdata("gestion").''; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
     /*====================================================*/
-    /*========== LISTA DE PRODUCTOS ANUAL ================*/
+
+    /* ----- GET FORM 4 -----*/
     function get_producto_id($id_prod){
-        $sql = 'select *
-                from _productos p
-                Inner Join indicador as tp On p.indi_id=tp.indi_id
-                Inner Join meta_relativo as mr On mr.mt_id=p.mt_id
-                Inner Join _componentes as c On c.com_id=p.com_id
-                Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-                Inner Join _proyectos as proy On proy.proy_id=pfe.proy_id
-                
-                Inner Join _distritales as dist On dist.dist_id=proy.dist_id
-                where p.prod_id='.$id_prod.' and p.estado!=\'3\' and pfe.pfec_estado=\'1\' and apg.aper_gestion='.$this->gestion.''; 
+        $sql = '
+        SELECT 
+            p.prod_id, p.com_id, p.prod_cod,p.prod_producto, p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta, 
+            p.prod_fuente_verificacion, p.prod_unidades, p.prod_resultado, p.prod_priori, p.or_id,
+            p.uni_resp,
+            c.com_componente,
+            tp.indi_descripcion,
+            p.mt_id,
+            mr.mt_tipo, mr.mt_descripcion,
+            prog.*, 
+            poa.* -- Recomendación: Listar solo las columnas necesarias de la función
+        FROM _productos p
+        INNER JOIN indicador tp ON p.indi_id = tp.indi_id
+        INNER JOIN meta_relativo mr ON p.mt_id = mr.mt_id
+        INNER JOIN _componentes c ON p.com_id = c.com_id
+        INNER JOIN vista_temporalidad_form4_programado_uresp prog ON p.prod_id = prog.prod_id
+        INNER JOIN fnlista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
+        WHERE p.prod_id = '.$id_prod.' 
+          AND p.estado != 3;'; 
         $query = $this->db->query($sql);
         return $query->result_array();
 
@@ -397,68 +413,32 @@ class model_producto extends CI_Model {
 
 
 
-    /*=== LISTA DE ACTIVIDADES (NORMAL) SIN TEMPORALIDAD 2026 ===*/
+    /*=== LISTA DE ACTIVIDADES (NORMAL) ===*/
     function lista_form4_x_unidadresponsable($com_id){
-        $sql = 'SELECT 
-                    -- Datos del Producto (Columnas necesarias)
-                    p.prod_id, p.prod_cod, p.prod_producto, p.prod_priori, p.prod_ppto, 
-                    p.prod_indicador, p.prod_meta, p.prod_unidades, p.prod_resultado,
-                    p.prod_observacion, p.uni_resp, p.estado,
-                    
-                    -- Indicador
-                    i.indi_descripcion, i.indi_abreviacion,
-                    
-                    -- Objetivos
-                    ore.or_id, ore.or_codigo, 
-                    og.og_id, og.og_codigo,
-                    
-                    -- Estructura Organizacional
-                    c.com_id, sa.serv_descripcion, tpsa.tipo_subactividad,
-                    ua.act_descripcion, ds.abrev, te.tipo
-                    
+        $sql = '
+            SELECT  p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
+                p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion,p.prod_unidades,
+
+                p.estado, p.prod_mod, p.prod_resultado, 
+                p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id,p.or_id, 
+                
+                i.indi_descripcion, i.indi_abreviacion,
+                ore.or_codigo, 
+                og.og_id, og.og_codigo, 
+                prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
+                prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
+                prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
+                prog.g_id,prog.total_anual
                 FROM _productos p
                 INNER JOIN indicador i ON i.indi_id = p.indi_id
                 INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-                -- Acceso directo a objetivo_gestion si la relación lo permite, 
-                -- de lo contrario, mantenemos la cadena pero sin columnas extra de OPM
-                INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
+                INNER JOIN (
+                    SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
+                ) opm ON ore.pog_id = opm.pog_id
                 INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-
-                INNER JOIN _componentes c ON p.uni_resp = c.com_id
-                INNER JOIN servicios_actividad sa ON sa.serv_id = c.serv_id
-                INNER JOIN tipo_subactividad tpsa ON tpsa.tp_sact = c.tp_sact
-
-                INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id
-                INNER JOIN _proyectos proy ON pfe.proy_id = proy.proy_id
-                INNER JOIN unidad_actividad ua ON ua.act_id = proy.act_id
-                INNER JOIN v_tp_establecimiento te ON te.te_id = ua.te_id
-                INNER JOIN _distritales ds ON ds.dist_id = proy.dist_id
-
-                WHERE p.com_id = '.$com_id.' 
-                  AND p.estado != 3
+                INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
+                where p.com_id='.$com_id.' and p.estado!=3
                 ORDER BY p.prod_cod ASC'; 
-
-        /*$sql = 'select p.prod_id,p.com_id,p.prod_priori,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
-                p.prod_resultado,p.acc_id,p.prod_cod,p.uni_resp,p.prod_observacion,p.mt_id,p.or_id,i.indi_descripcion,i.indi_abreviacion,
-                ore.or_id,ore.or_codigo,og.og_id,og.og_codigo,c.com_id,sa.serv_descripcion,tpsa.tipo_subactividad,ua.act_descripcion,ds.abrev,te.tipo
-                from _productos p
-                Inner Join indicador as i On i.indi_id=p.indi_id
-                Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
-
-                Inner Join _componentes as c On p.uni_resp=c.com_id
-                Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-
-                Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-                Inner Join _proyectos as proy On pfe.proy_id=proy.proy_id
-                Inner Join unidad_actividad as ua On ua.act_id=proy.act_id
-                Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                Inner Join _distritales as ds On ds.dist_id=proy.dist_id
-
-                where p.com_id='.$com_id.' and p.estado!=\'3\'
-                order by p.prod_cod asc'; */
 
         $query = $this->db->query($sql);
         return $query->result_array();

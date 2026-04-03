@@ -130,9 +130,9 @@
 			<div class="row">
 				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-8">
 					<section id="widget-grid" class="well">
-						<div class="" title="<?php echo $proyecto[0]['proy_id']?>">
+						<div class="" title="<?php echo $cite[0]['proy_id']?>">
 							<input type="hidden" name="com_id" id="com_id" value="<?php echo $cite[0]['com_id'];?>"> 
-							<?php echo $datos_cite;?>
+					
 							<?php echo $titulo;?>
 							<a href="#" data-toggle="modal" data-target="#modal_nuevo_form" class="btn btn-default nuevo_form" title="NUEVO REGISTRO" class="btn btn-success" ><i class="fa fa-pencil-square-o"></i> NUEVO REGISTRO</a>
 						</div>
@@ -218,8 +218,7 @@
 	                        <label class="label"><b>C&Oacute;DIGO</b></label>
 	                        <label class="input">
 	                          <i class="icon-append fa fa-tag"></i>
-	                          <input type="hidden" name="cod" id="cod" value="<?php echo (count($nro)+1);?>">
-	                          <input type="text" title="C&Oacute;DIGO ACTIVIDAD POR DEFECTO" disabled="true" value="<?php echo (count($nro)+1);?>">
+	                          <input type="number" name="cod" id="cod" value="0">
 	                        </label>
 	                      </section>
 	                      <section class="col col-5">
@@ -486,6 +485,10 @@
                         <?php } ?>        
                     </select>
                   </section>
+
+                 <!--  <section class="col col-2">
+                    <div id="indi"></div>
+                  </section> -->
                 </div>
 
                 <div class="row">
@@ -503,13 +506,6 @@
                       <textarea rows="2" name="mverificacion" id="mverificacion" title="REGISTRE MEDIO DE VERIFICACIÓN"></textarea>
                     </label>
                   </section>
-                  <!-- <section class="col col-4">
-                    <label class="label"><b>UNIDAD / SERVICIO RESPONSABLE</b></label>
-                    <label class="textarea">
-                      <i class="icon-append fa fa-tag"></i>
-                      <textarea rows="2" name="munidad" id="munidad" title="REGISTRE UNIDAD RESPONSABLE"></textarea>
-                    </label>
-                  </section> -->
                   <div id="resp"></div>
                 </div>
 
@@ -536,15 +532,8 @@
                       </select>
                     </section>
 
-                    <section class="col col-5">
-                      <label class="label"><b>ALINEACIÓN OPERACI&Oacute;N REGIONAL</b></label>
-                      <select class="form-control" id="mor_id" name="mor_id" title="SELECCIONE ALINEACIÓN REGIONAL">
-                          <option value="">SELECCIONE ALINEACIÓN OPERACIÓN</option>
-                          <?php 
-                            foreach($objetivos as $row){ ?>
-                            <option value="<?php echo $row['or_id'];?>"><?php echo $row['og_codigo'].'.'.$row['or_codigo'].'. .- '.$row['or_objetivo'];?></option>
-                          <?php } ?>        
-                      </select>
+                    <section class="col col-2">
+                      <div id="alineacion_form2"></div>
                     </section>
 
                     <div id="mtrep" style="display:none;" >
@@ -564,7 +553,7 @@
                   </div>
               <br>
               <div id="matit"></div>
-              <header><b>DISTRIBUCI&Oacute;N F&Iacute;SICA : <?php echo $this->session->userdata('gestion')?></b><br>
+              <header><b>DISTRIBUCI&Oacute;N POA - <?php echo $this->session->userdata('gestion')?></b><br>
               <label class="label"><div id="ff"></div></label>
               </header>
               <br>

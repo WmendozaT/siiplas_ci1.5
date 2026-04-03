@@ -20,37 +20,9 @@
 		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS"/>
 		<script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
 		<!--para las alertas-->
-    	<meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width">
 		<!--fin de stiloh-->
-		<script>
-	  	function abreVentana(PDF){
-			var direccion;
-			direccion = '' + PDF;
-			window.open(direccion, "Reporte de Cites Generados" , "width=800,height=650,scrollbars=SI") ;
-		}                                                  
-        </script>
-		<style>
-			.table1{
-	          display: inline-block;
-	          width:100%;
-	          max-width:1550px;
-	          overflow-x: scroll;
-	          }
-			table{font-size: 9px;
-            width: 100%;
-            max-width:1550px;;
-			overflow-x: scroll;
-            }
-            th{
-              padding: 1.4px;
-              text-align: center;
-              font-size: 9px;
-              background-color: #fafafa;
-            }
-            td{
-              font-size: 9px;
-            }
-		</style>
+
 	</head>
 	<body class="">
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
@@ -122,7 +94,7 @@
 				</span>
 				<!-- breadcrumb -->
 				<ol class="breadcrumb">
-					<li>Modificaciones</li><li>Modificaci&oacute;n POA</li><li>Cites Generados</li>
+					<li>Modificaciones</li><li>Modificaci&oacute;n POA</li><li>Mis Modificaciones POA</li>
 				</ol>
 			</div>
 
@@ -130,106 +102,7 @@
 			<div id="content">
 				<section id="widget-grid" class="">
 					<div class="row">
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-							<section id="widget-grid" class="well">
-								<?php echo $titulo;?>
-							</section>
-						</article>
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-							<div class="well well-sm well-light">
-								<h3>HISTORIAL DE MODIFICACIONES POA - GESTI&Oacute;N <?php echo $this->session->userData('gestion') ?></h3>
-								<div class="row">
-									<article class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
-									<div class="jarviswidget jarviswidget-color-darken" >
-		                <header>
-		                  <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-		                  <h2 class="font-md"><strong>FORMULARIO N° 5</strong></h2>  
-		                </header>
-										<div>
-											<div class="widget-body no-padding">
-												<table id="dt_basic2" class="table table-bordered" style="width:100%;">
-													<thead>
-														<tr style="height:40px;">
-															<th style="width:1%;">#</th>
-															<th style="width:10%;">NRO CITE</th>
-															<th style="width:10%;">FECHA CITE </th>
-															<th style="width:10%;">C&Oacute;DIGO </th>
-															<th style="width:15%;">SUBACTIVIDAD/UNIDAD RESPONSABLE</th>
-															<th style="width:5%;"></th>
-															<th style="width:5%;"></th>
-														</tr>
-													</thead>
-													<tbody>
-														<?php echo $requerimientos;?>
-													</tbody>
-													<tr bgcolor="#fafafa">
-														<td></td>
-														<td colspan="5"><b>CONSOLIDADO MODIFICACIONES</b></td>
-														<td><center><a href="<?php echo base_url().'index.php/mod/consolidado_mod_requerimiento/'.$proyecto[0]['proy_id'];?>" class="btn btn-default" title="EXPORTAR CONSOLIDADO MODIFICACIONES.XLS" target="_blank"><img src="<?php echo base_url().'assets/ifinal/excel.jpg' ?>" width="30" height="30"/></a></center></td>
-													</tr>
-												</table>
-											</div>
-										</div>
-									</div>
-									</article>
-									<article class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
-									<div class="jarviswidget jarviswidget-color-darken" >
-		                <header>
-		                  <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-		                  <h2 class="font-md"><strong>FORMULARIO N° 4</strong></h2>  
-		                </header>
-										<div>
-											<div class="widget-body no-padding">
-												<table id="dt_basic1" class="table table-bordered" style="width:100%;">
-													<thead>
-														<tr style="height:40px;">
-															<th style="width:1%;">#</th>
-															<th style="width:10%;">NRO CITE</th>
-															<th style="width:10%;">FECHA CITE </th>
-															<th style="width:10%;">C&Oacute;DIGO </th>
-															<th style="width:20%;">SUBACTIVIDAD/UNIDAD RESPONSABLE</th>
-															<th style="width:5%;"></th>
-															<th style="width:5%;"></th>
-														</tr>
-													</thead>
-													<tbody>
-														<?php echo $operaciones;?>
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-									</article>
-									<article class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
-									<div class="jarviswidget jarviswidget-color-darken" >
-		                <header>
-		                  <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-		                    <h2 class="font-md"><strong>TECHO</strong></h2>  
-		                  </header>
-										<div>
-											<div class="widget-body no-padding">
-												<table id="dt_basic3" class="table table-bordered" style="width:100%;">
-													<thead>
-														<tr style="height:40px;">
-															<th style="width:1%;">#</th>
-															<th style="width:10%;">NRO CITE</th>
-															<th style="width:10%;">FECHA CITE </th>
-															<th style="width:10%;">TIPO DE MODIFICACION </th>
-															<th style="width:5%;"></th>
-															<th style="width:5%;"></th>
-														</tr>
-													</thead>
-													<tbody>
-														<?php echo $techo;?>
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-									</article>
-								</div>
-							</div>
-						</article>
+						<?php echo $vista;?>
 					</div>
 				</section>
 			</div>
@@ -306,6 +179,23 @@
 				$('.ui-dialog :button').blur();
 				$('#tabs').tabs();
 			})
+		</script>
+		<script>
+		document.addEventListener('click', function(e) {
+		    // Buscamos si el clic fue en el botón de modificar (o su imagen interna)
+		    const btn = e.target.closest('.btn-modificar');
+		    
+		    if (btn) {
+		        // Bloqueamos el puntero para evitar múltiples clics
+		        btn.style.pointerEvents = 'none';
+		        
+		        // Mostramos el bloqueo de pantalla completo
+		        const blocker = document.getElementById('screen-blocker');
+		        if (blocker) {
+		            blocker.style.display = 'block';
+		        }
+		    }
+		});
 		</script>
 	</body>
 </html>

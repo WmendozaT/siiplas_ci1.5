@@ -345,7 +345,7 @@ class Model_objetivoregion extends CI_Model{
 
     /*----- LISTA VINCULO PROYECTO - OBJETIVO REGIONAL -----*/
     public function list_proyecto_oregional($proy_id){
-        $sql = 'select *
+        $sql = 'SELECT *
                 from proy_oregional por
                 Inner Join objetivo_regional_programado as orp On orp.por_id=por.por_id
                 Inner Join objetivos_regionales as obr On obr.or_id=orp.or_id

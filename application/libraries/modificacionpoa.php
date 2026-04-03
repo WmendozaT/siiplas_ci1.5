@@ -243,7 +243,7 @@ class Modificacionpoa extends CI_Controller{
         $tit='<font color=blue><b>'.$cite[0]['cite_codigo'].'</b></font>';
       }
       else{
-        $tit=' <font color=#a87830><b>DEBE CERRAR LA MODIFICACI&Oacute;N DEL REQUERIMIENTO !!</b></font>';
+        $tit=' <font color=#a87830><b>DEBE CERRAR LA MODIFICACI&Oacute;N !!</b></font>';
       }
 
       $tabla.='<h1><b> CITE Nro. : <small>'.$cite[0]['cite_nota'].'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;FECHA : <small>'.date('d/m/Y',strtotime($cite[0]['cite_fecha'])).'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;C&Oacute;DIGO : '.$tit.'</b></h1>';
@@ -251,25 +251,33 @@ class Modificacionpoa extends CI_Controller{
     }
 
 
-    /*------ TITULO CABECERA (2023) (FORMULARIO N° 4)-----*/
+    /*------ TITULO CABECERA (2026) (FORMULARIO N° 4)-----*/
     public function titulo_cabecera($cite,$tp){
+      if($cite[0]['cite_estado']!=0){
+        $estado_cite='<font color=blue><b>'.$cite[0]['cite_codigo'].'</b></font>';
+      }
+      else{
+        $estado_cite=' <font color="red"><b>DEBE CERRAR LA MODIFICACI&Oacute;N !!</b></font>';
+      }
+
       $tabla='';
+      $tabla.='<h1><b> CITE Nro. : <small>'.$cite[0]['cite_nota'].'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;FECHA : <small>'.date('d/m/Y',strtotime($cite[0]['cite_fecha'])).'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;C&Oacute;DIGO : '.$estado_cite.'</b></h1>';
+
+      
       if($cite[0]['tp_id']==1){ /// Proyecto de Inversion
-        $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// Proyecto de Inversion
-        $tabla.=' <h1> <b>PROYECTO : </b><small>'.$proyecto[0]['proy_sisin'].' - '.$proyecto[0]['proy_nombre'].'</small> / <b>UNIDAD RESPONSABLE : </b><small>'.$cite[0]['serv_cod'].' '.$cite[0]['tipo_subactividad'].' '.$cite[0]['serv_descripcion'].'</small></h1>';
+        $tabla.=' <h1> <b>PROYECTO : </b><small>'.$cite[0]['proy_sisin'].' - '.$cite[0]['proy_nombre'].'</small> / <b>UNIDAD RESPONSABLE : </b><small>'.$cite[0]['serv_cod'].' '.$cite[0]['tipo_subactividad'].' '.$cite[0]['com_componente'].'</small></h1>';
       }
       else{ /// Gasto Corriente
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cite[0]['proy_id']);
-        $tabla.='<h1 title='.$proyecto[0]['aper_id'].'><small>'.$proyecto[0]['aper_programa'].' '.$proyecto[0]['aper_proyecto'].' '.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'].'</small> / <small>'.$cite[0]['tipo_subactividad'].' '.$cite[0]['serv_descripcion'].'</small></h1>';
+        $tabla.='<h1 title='.$cite[0]['aper_id'].'><small>'.$cite[0]['aper_programa'].' '.$cite[0]['aper_proyecto'].' '.$cite[0]['aper_actividad'].' - '.$cite[0]['tipo'].' '.$cite[0]['act_descripcion'].' '.$cite[0]['abrev'].'</small> / <small>'.$cite[0]['tipo_subactividad'].' '.$cite[0]['com_componente'].'</small></h1>';
       }
 
       //// ------ Monto Presupuesto Programado-Asignado POA
         if($cite[0]['tipo_modificacion']==0){
-          $monto=$this->ppto($proyecto);
+          $monto=$this->ppto($cite);
           $tabla.='<h1><b> PPTO. ASIGNADO : <small>'.number_format($monto[1], 2, ',', '.').'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;PPTO PROGRAMADO : <small>'.number_format($monto[2], 2, ',', '.').'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;SALDO : <small>'.number_format($monto[3], 2, ',', '.').'</small></b></h1>';
         }
         else{
-          $monto=$this->ppto_revertido($proyecto);
+          $monto=$this->ppto_revertido($cite);
           $tabla.='<h1><b> PPTO. ASIGNADO (REVERTIDO) : <small>'.number_format($monto[1], 2, ',', '.').'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;PPTO PROGRAMADO (REVERTIDO) : <small>'.number_format($monto[2], 2, ',', '.').'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;SALDO : <small>'.number_format($monto[3], 2, ',', '.').'</small></b></h1>';
         }
 
@@ -291,8 +299,8 @@ class Modificacionpoa extends CI_Controller{
     /*--- MONTO PRESUPUESTO ASIGNADO - PROGRAMADO (TOTAL UNIDAD)(2023) ---*/
     public function ppto($proyecto){
       $monto_a=0;$monto_p=0;$monto_saldo=0;
-      $monto_asig=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],1);
-      $monto_prog=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],2);
+      $monto_asig=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],1);
+      $monto_prog=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],2);
       if(count($monto_asig)!=0){
         $monto_a=$monto_asig[0]['monto'];
       }
@@ -327,10 +335,16 @@ class Modificacionpoa extends CI_Controller{
     }
 
 
-     /*------ LISTA FORMULARIO N° 4 (2020) (VISTA) ------*/
-    public function mis_formulario4($cite){
-      $proy_id=$cite[0]['proy_id'];
-      $productos = $this->model_producto->lista_form4_x_unidadresponsable($cite[0]['com_id'],$this->gestion); // Lista de Operaciones
+     /*------ LISTA FORMULARIO N° 4 (2026) (VISTA) ------*/
+    public function mod_mis_formulariosN4($cite){
+      if($cite[0]['por_id']==0){
+        $form4 = $this->model_producto->lista_form4_x_unidadresponsable($cite[0]['com_id']); // Lista de Actividades
+      }
+      else{
+        $form4 = $this->model_producto->get_lista_form4_uresp_consolidado_programa_bolsas($cite[0]['com_id']); // Lista de Actividades que estan en programas bolsa
+      }
+
+      
       $tabla ='';
       $tabla .='
         <input type="hidden" name="base" value="'.base_url().'">
@@ -346,7 +360,7 @@ class Modificacionpoa extends CI_Controller{
               <th style="width:10%;"><b>RESULTADO</b></th>
               <th style="width:5%;"><b>TIP. IND.</b></th>
               <th style="width:10%;"><b>INDICADOR</b></th>
-              <th style="width:5%;"><b>LINEA BASE '.($this->gestion-1).'</b></th>
+              <th style="width:10%;"><b>UNIDAD RESPONSABLE</b></th>
               <th style="width:5%;"><b>META</b></th>
               <th style="width:2.5%;"><b>ENE.</b></th>
               <th style="width:2.5%;"><b>FEB.</b></th>
@@ -366,19 +380,13 @@ class Modificacionpoa extends CI_Controller{
           </thead>
           <tbody>';
           $cont = 0;
-          foreach($productos as $rowp){
+          foreach($form4 as $rowp){
             $cont++;
-            $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-            //$monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
-            $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
-            /*$ptto=0;
-            if(count($monto)!=0){
-              $ptto=$monto[0]['total'];
-            }*/
+         //   $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
 
             $color=''; $titulo=''; $por='';
             if($cite[0]['tp_id']==1){
-              if(($sum[0]['meta_gest']+$rowp['prod_linea_base'])!=$rowp['prod_meta'] || $rowp['or_id']==0){
+              if(($rowp['total_anual']+$rowp['prod_linea_base'])!=$rowp['prod_meta'] || $rowp['or_id']==0){
                 $color='#fbd5d5';
                 $titulo='ERROR EN LA DISTRIBUCION O FALTA DE ALINEACION';
               }
@@ -387,45 +395,59 @@ class Modificacionpoa extends CI_Controller{
               if($rowp['indi_id']==2){ // Relativo
                 $por='%';
                 if($rowp['mt_id']==3){
-                  if($sum[0]['meta_gest']!=$rowp['prod_meta'] || $rowp['or_id']==0){
+                  if($rowp['total_anual']!=$rowp['prod_meta'] || $rowp['or_id']==0){
                     $color='#fbd5d5';
                     $titulo='ERROR EN LA DISTRIBUCION O FALTA DE ALINEACION';
                   }
                 }
               }
               else{ // Absoluto
-                if($sum[0]['meta_gest']!=$rowp['prod_meta'] || $rowp['or_id']==0){
+                if($rowp['total_anual']!=$rowp['prod_meta'] || $rowp['or_id']==0){
                   $color='#fbd5d5';
                   $titulo='ERROR EN LA DISTRIBUCION O FALTA DE ALINEACION';
                 }
               }
             }
 
+
+            $base_url = base_url();
+            $img_path = $base_url . 'assets/ifinal/';
+            $prod_id  = $rowp['prod_id'];
+            $cite_id  = $cite[0]['cite_id'];
+            $es_admin = ($this->fun_id == 399);
+
+            // 2. Definición de componentes (Templates)
+            $btn_modificar = "<a href='#' data-toggle='modal' data-target='#modal_mod_form4' class='btn btn-default mod_form4' name='{$prod_id}' title='MODIFICAR ACTIVIDAD'><img src='{$img_path}modificar.png' WIDTH='33' HEIGHT='34'/></a>";
+            $btn_eliminar = "<a href='#' data-toggle='modal' data-target='#modal_mdel_ff' class='btn btn-default mdel_ff' title='ELIMINAR FORM 4' name='{$prod_id}' id='{$cite_id}'><img src='{$img_path}eliminar.png' WIDTH='35' HEIGHT='35'/>" . ($es_admin ? "<br>Adm." : "") . "</a>";
+            $label_priorizado = "<br><img src='{$img_path}ok.png' WIDTH='37' HEIGHT='30'/><br><font size=1 color=green><b>PRIORIZADO</b></font>";
+
             $tabla .='
               <tr bgcolor="'.$color.'" class="modo1" title='.$titulo.'>
                 <td align="center" title='.$rowp['prod_id'].'><font color="blue" size="2"><b>'.$rowp['prod_cod'].'</b></font></td>
                 <td align="center">';
-                  if($rowp['prod_priori']==0){
-                    $tabla.='
-                    <a href="#" data-toggle="modal" data-target="#modal_mod_form4" class="btn btn-default mod_form4" name="'.$rowp['prod_id'].'" title="MODIFICAR ACTIVIDAD"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="33" HEIGHT="34"/></a>';
-                    if($this->tmes==1){
-                      if(count($this->model_producto->insumo_producto($rowp['prod_id']))==0){
-                        $tabla.='<a href="#" data-toggle="modal" data-target="#modal_mdel_ff" class="btn btn-default mdel_ff" title="ELIMINAR FORM 4"  name="'.$rowp['prod_id'].'" id="'.$cite[0]['cite_id'].'"><img src="'.base_url().'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
-                      }
+
+                if ($rowp['prod_priori'] == 0) {
+                    // Caso: No priorizado
+                    $tabla .= $btn_modificar;
+
+                    // Lógica de eliminación
+                    if ($this->tmes == 1) {
+                        // Solo si no tiene insumos (Optimización: llamar al modelo solo si tmes == 1)
+                        if (empty($this->model_producto->insumo_producto($prod_id))) {
+                            $tabla .= $btn_eliminar;
+                        }
+                    } elseif ($es_admin) {
+                        $tabla .= $btn_eliminar;
                     }
-                    elseif($this->fun_id==399){
-                      $tabla.='<a href="#" data-toggle="modal" data-target="#modal_mdel_ff" class="btn btn-default mdel_ff" title="ELIMINAR FORM 4"  name="'.$rowp['prod_id'].'" id="'.$cite[0]['cite_id'].'"><img src="'.base_url().'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/><br>Adm.</a>';
+                } else {
+                    // Caso: Priorizado
+                    if ($es_admin) {
+                        $tabla .= $btn_modificar;
                     }
-                    
-                  }
-                  else{
-                    if($this->fun_id==399){
-                      $tabla.='
-                      <a href="#" data-toggle="modal" data-target="#modal_mod_form4" class="btn btn-default mod_form4" name="'.$rowp['prod_id'].'" title="MODIFICAR ACTIVIDAD"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="33" HEIGHT="34"/></a>';
-                    }
-                    $tabla.='<br><img src="'.base_url().'assets/ifinal/ok.png" WIDTH="37" HEIGHT="30"/><br><font size=1 color=green><b>PRIORIZADO</b></font>';
-                  }
-                  $tabla.='
+                    $tabla .= $label_priorizado;
+                }
+
+                $tabla .= '
                 </td>
                 <td style="width:2%;text-align=center" bgcolor="#c1e1fb"><b><font size=5 color=blue>'.$rowp['og_codigo'].'</font></b></td>
                 <td style="width:2%;text-align=center" bgcolor="#c1e1fb"><b><font size=5 color=blue>'.$rowp['or_codigo'].'</font></b></td>
@@ -434,27 +456,12 @@ class Modificacionpoa extends CI_Controller{
                 <td style="width:10%;">'.$rowp['prod_resultado'].'</td>
                 <td style="width:5%;">'.$rowp['indi_abreviacion'].'</td>
                 <td style="width:10%;">'.$rowp['prod_indicador'].'</td>
-                <td style="width:5%;" align=right>'.round($rowp['prod_linea_base'],2).'</td>
+                <td style="width:10%;">'.$rowp['prod_unidades'].'</td>
                 <td style="width:5%;" align=right><b>'.round($rowp['prod_meta'],2).''.$por.'</b></td>';
-              if(count($programado)!=0){
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).' '.$por.'</td>';
-                $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).' '.$por.'</td>';
-              }
-              else{
                 for ($i=1; $i <=12 ; $i++) { 
-                  $tabla.='<td style="width:2.5%;" bgcolor="#f1bac6" align=right>0</td>';
+                  $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($rowp['m'.$i],2).' '.$por.'</td>';
                 }
-              }
+              
               $tabla.='<td style="width:8%;" bgcolor="#e5fde5" >'.$rowp['prod_fuente_verificacion'].'</td>';
               $tabla.='<td style="width:5%;" align="center"><font color="blue" size="2"><b>'.count($this->model_producto->insumo_producto($rowp['prod_id'])).'</b></font></td>';
             $tabla .='</tr>';
@@ -533,18 +540,18 @@ class Modificacionpoa extends CI_Controller{
 
               $nro=0;
               foreach($listado as $rowp){
-                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-                $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
+               // $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
+               // $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
                 $color=''; $tp='';
                 if($rowp['indi_id']==1){
-                  if(($sum[0]['meta_gest'])!=$rowp['prodh_meta']){
+                  if(($rowp['total_anual'])!=$rowp['prodh_meta']){
                     $color='#fbd5d5';
                   }
                 }
                 elseif ($rowp['indi_id']==2) {
                   $tp='%';
                   if($rowp['mt_id']==3){
-                    if(($sum[0]['meta_gest'])!=$rowp['prodh_meta']){
+                    if($rowp['total_anual']!=$rowp['prodh_meta']){
                       $color='#fbd5d5';
                     }
                   }
@@ -581,8 +588,10 @@ class Modificacionpoa extends CI_Controller{
                   <td style="width: 8%; text-align: left;">'.$rowp['prodh_indicador'].'</td>
                   <td style="width: 2%; text-align: right;">'.round($rowp['prodh_linea_base'],2).'</td>
                   <td style="width: 3%; text-align: right;" bgcolor="#eceaea"><b>'.round($rowp['prodh_meta'],2).' '.$tp.'</b></td>';
-
-                  if(count($programado)!=0){
+                  for ($i=1; $i <=12 ; $i++) { 
+                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($rowp['mes'.$i],2).''.$tp.'</td>';
+                  }
+                  /*if(count($programado)!=0){
                     $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
                     $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
                     $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
@@ -600,7 +609,7 @@ class Modificacionpoa extends CI_Controller{
                     for ($i=1; $i <=12 ; $i++) { 
                       $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
                     }
-                  }
+                  }*/
 
                   $tabla.='
                   <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
@@ -2195,7 +2204,7 @@ class Modificacionpoa extends CI_Controller{
           </td>
           <td style="width:80%;">
             <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-              <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$cite[0]['tipo_subactividad'].' '.$cite[0]['serv_descripcion'].'</td></tr>
+              <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$cite[0]['tipo_subactividad'].' '.$cite[0]['com_componente'].'</td></tr>
             </table>
           </td>
         </tr>';

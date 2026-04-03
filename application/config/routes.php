@@ -542,7 +542,7 @@ $route['mod/cite_historial_modf5/(:any)'] = 'modificaciones/cmod_insumo/historia
 
 /*------------- MODIFICAR ACTIVIDADES (2020-2021)------------*/
 $route['mod/list_componentes/(:any)'] = 'modificaciones/cmod_fisica/mis_UnidadesResponsables/$1'; //// Lista de Unidades Responsables
-$route['mod/lista_UnidadesResponsables/(:any)'] = 'modificaciones/cmod_fisica/lista_UnidadesResponsables/$1'; //// la lista de Unidades Responsables 2026
+$route['mod/lista_mod_form4/(:any)'] = 'modificaciones/cmod_fisica/lista_formularioN4/$1'; //// la lista de Unidades Responsables 2026
 $route['mod/update_ope/(:any)'] = 'modificaciones/cmod_fisica/update_operacion/$1/$2'; //// 
 $route['mod/update_codigo/(:any)'] = 'modificaciones/cmod_fisica/update_codigo/$1';  //// Actualizar Codigos de Operacion
 $route['mod/reporte_modfis/(:any)'] = 'modificaciones/cmod_fisica/reporte_modificacion_fisica/$1';  ///// Reporte de Modificacion Fisica

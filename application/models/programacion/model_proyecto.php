@@ -53,8 +53,19 @@ class Model_proyecto extends CI_Model{
         return $insert; 
     }
 
+
+    /*--------------- GET UNIDAD ORGANIZACIONAL 2026 ----------*/
+    public function get_UnidadOrganizacional($proy_id){
+        $sql = '
+            SELECT *
+            from fnlista_poa_nacional('.$this->gestion.')
+            where proy_id='.$proy_id.'';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     /*--------------- GET APERTURA PROGRAMATICA ----------*/
-        public function get_aper_programa($aper_id){
+    public function get_aper_programa($aper_id){
         $sql = '
             SELECT *
             from fnlista_poa_nacional('.$this->gestion.')

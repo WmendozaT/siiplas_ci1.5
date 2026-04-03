@@ -898,18 +898,18 @@ class Model_ptto_sigep extends CI_Model{
     }
 
     /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO POR UNIDAD/PROYECTO (2025) VIGENTE-----*/
-    public function suma_ptto_accion($aper_id,$tp){
+    public function suma_ptto_UnidadOrganizacional($aper_id,$tp){
         // 1 : PTO ASIGNADO
         // 2 : PTO PROGRAMADO
         if($tp==1){
-            $sql = 'select pg.aper_id,SUM(pg.importe) as monto,SUM(pg.ppto_saldo_ncert) saldo
+            $sql = 'SELECT pg.aper_id,SUM(pg.importe) as monto,SUM(pg.ppto_saldo_ncert) saldo
                     from ptto_partidas_sigep pg
                     Inner Join partidas as p On p.par_id=pg.par_id
                     where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.'
                     group by pg.aper_id';
         }
         else{
-            $sql = 'select i.aper_id, SUM(i.ins_costo_total) as monto
+            $sql = 'SELECT i.aper_id, SUM(i.ins_costo_total) as monto
                     from insumos i
                     where i.aper_id='.$aper_id.' and i.ins_tipo_modificacion=\'0\'
                     group by i.aper_id';
@@ -1461,13 +1461,6 @@ class Model_ptto_sigep extends CI_Model{
                 WHERE pr.aper_id = '.$aper_id.'
                 ORDER BY par_padre.par_depende ASC';
 
-        /*$sql = 'select pr.aper_id,pr.proy_id,par_padre.par_depende,par_padre.par_codigo,par_padre.par_nombre
-                from lista_partidas_revertidas('.$this->gestion.') pr
-                Inner Join partidas as par On par.par_id=pr.par_id
-                Inner Join partidas as par_padre On par_padre.par_codigo=par.par_depende
-                where pr.aper_id='.$aper_id.'
-                group by pr.aper_id,pr.proy_id,par_padre.par_depende,par_padre.par_codigo,par_padre.par_nombre
-                order by par_padre.par_depende asc';*/
         $query = $this->db->query($sql);
         return $query->result_array();
     }

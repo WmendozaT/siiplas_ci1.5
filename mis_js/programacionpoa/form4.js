@@ -903,8 +903,8 @@ $(document).ready(function() {
 
         request.done(function (response, textStatus, jqXHR) {
         if (response.respuesta == 'correcto') {
-          //alert(response.trimestre+'---'+response.mes_actual)
-          //alert(response.producto[0]['indi_id'])
+        //  alert(response.alineacion_form2)
+
             document.getElementById("mcod").value = response.producto[0]['prod_cod']; 
             document.getElementById("mprod").value = response.producto[0]['prod_producto']; 
             document.getElementById("mresultado").value = response.producto[0]['prod_resultado'];
@@ -917,25 +917,19 @@ $(document).ready(function() {
             document.getElementById("mtp_met").value = response.producto[0]['mt_id'];
 
             document.getElementById("mindicador").value = response.producto[0]['prod_indicador'];
-           // document.getElementById("munidad").value = response.producto[0]['prod_unidades'];
-            document.getElementById("mor_id").value = response.producto[0]['or_id'];
 
             $('#resp').html(response.uresponsable);
+            $('#alineacion_form2').html(response.alineacion_form2);
+           // $('#indi').html(response.indicador);
+           // $('#tp_meta').html(response.tp_meta);
 
            if(response.trimestre==1){
-            //document.getElementById("mprod").disabled = false;
-            //document.getElementById("mresultado").disabled = false;
-            //document.getElementById("mverificacion").disabled = false;
-
             document.getElementById("mtipo_i").disabled = false;
             document.getElementById("mlbase").disabled = false;
             document.getElementById("mtp_met").disabled = false;
            }
            else{ 
-            //document.getElementById("mprod").disabled = true;
-            //document.getElementById("mresultado").disabled = true;
-            //document.getElementById("mverificacion").disabled = true;
-            
+
             document.getElementById("mtipo_i").disabled = true;
             document.getElementById("mlbase").disabled = true;
             document.getElementById("mtp_met").disabled = true;
@@ -945,14 +939,6 @@ $(document).ready(function() {
            for (var i = 1; i <=12; i++) {
              document.getElementById("mm"+i).disabled = false;
                 $('#e'+i).html('<font color=green><b>'+(response.mes[i].toUpperCase())+'</b></font>');
-            /*if(response.temp_eval[i]==0){
-                document.getElementById("mm"+i).disabled = false;
-                $('#e'+i).html('<font color=green><b>'+(response.mes[i].toUpperCase())+'</b></font>');
-              }
-              else{
-                document.getElementById("mm"+i).disabled = true;
-                $('#e'+i).html('<font color=red><b>'+(response.mes[i].toUpperCase())+' (x)</b></font>');
-              }*/
            }
 
            /// MUESTYRA LA TEMPORALIDAD
@@ -968,10 +954,10 @@ $(document).ready(function() {
            else{ //// META ACUMULADO
 
             for (var i = 1; i <=12; i++) {
-              document.getElementById("mm"+i).value = parseInt(response.temp[i]);
+              document.getElementById("mm"+i).value = parseInt(response.producto[0]['mes'+i]);
             }
 
-            $('[name="mtotal"]').val((parseInt(response.sum_temp)).toFixed(0));
+            $('[name="mtotal"]').val((parseInt(response.producto[0]['total_anual'])).toFixed(0));
             document.getElementById("mtrep").style.display = 'none';
             
             prog = parseFloat($('[name="mtotal"]').val());
@@ -1009,6 +995,9 @@ $(document).ready(function() {
                       required: true,
                     },
                     mprod: { //// prod
+                        required: true,
+                    },
+                    mcod: { //// prod
                         required: true,
                     },
                     mresultado: { //// resultado
@@ -1083,10 +1072,13 @@ $(document).ready(function() {
     
 
     /// Tipo de indicador (Modificacion POA)
+
+
     $(document).ready(function () {
-      $("#mtipo_i").change(function () {            
+      $("#mtipo_i").change(function () { 
+
         var tp_id = $(this).val();
-       
+        
           if(tp_id==2){
             $('#mtrep').slideDown();
           }
