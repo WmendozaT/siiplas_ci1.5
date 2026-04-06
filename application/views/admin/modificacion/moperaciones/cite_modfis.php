@@ -195,7 +195,7 @@
 	            </div><!-- /.modal-content -->
 	        </div><!-- /.modal-dialog -->
 	    </div>
-
+		<?php echo $loading;?>
 		<!-- END PAGE FOOTER -->
 		<script>
 			if (!window.jQuery) {
@@ -248,90 +248,78 @@
 		</script>
 		<!-- MODIFICAR COMPONENTE -->
         <script type="text/javascript">
-        function validarFormatoFecha(campo) {
-	      var RegExPattern = /^\d{1,2}\/\d{1,2}\/\d{2,4}$/;
-	      if ((campo.match(RegExPattern)) && (campo!='')) {
-	            return true;
-	      } else {
-	            return false;
-	      }
-		}
-		function existeFecha(fecha){
-	      var fechaf = fecha.split("/");
-	      var day = fechaf[0];
-	      var month = fechaf[1];
-	      var year = fechaf[2];
-	      var date = new Date(year,month,'0');
-	      if((day-0)>(date.getDate()-0)){
-	            return false;
-	      }
-	      return true;
-		}
-        $(function () {
-			$(".nuevo_ff").on("click", function (e) {
-				com_id = $(this).attr('name'); 
-		        document.getElementById("com_id").value=com_id;
+       	$(function () {
+		    // 1. Al abrir el modal: Solo asignar el ID
+		    $(".nuevo_ff").on("click", function (e) {
+			    // Asegurarnos de que el overlay esté oculto al abrir el modal
+			    $("#loading-overlay").hide(); 
+			    $("#add_form").prop('disabled', false); // Rehabilitar botón por si acaso
+			    
+			    var com_id = $(this).attr('name'); 
+			    $("#com_id").val(com_id);
+			});
+
+		    // 2. Configuración única de validación
+		    var $validator = $("#form_nuevo").validate({
+		        rules: {
+		            cite: { required: true },
+		            fm: { required: true }
+		        },
+		        messages: {
+		            cite: "<font color=red>REGISTRE CITE</font>",
+		            fm: "<font color=red>SELECCIONE FECHA</font>",		                    
+		        },
+		        highlight: function (element) {
+		            $(element).closest('.section').addClass('has-error');
+		        },
+		        unhighlight: function (element) {
+		            $(element).closest('.section').removeClass('has-error');
+		        },
+		        errorElement: 'span',
+		        errorClass: 'help-block'
+		    });
+
+		    // 3. Evento de click en el botón de envío (fuera de .nuevo_ff)
 		    $("#add_form").on("click", function () {
-		    	var $validator = $("#form_nuevo").validate({
-		                rules: {
-		                    cite: { //// Cite
-		                        required: true,
-		                    },
-		                    fm: { //// Fecha de Solicitud
-		                        required: true,
-		                    }
-		                },
-		                messages: {
-		                    cite: "<font color=red>REGISTRE CITE</font>",
-		                    fm: "<font color=red>SELECCIONE FECHA</font>",		                    
-		                },
-		                highlight: function (element) {
-		                    $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-		                },
-		                unhighlight: function (element) {
-		                    $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-		                },
-		                errorElement: 'span',
-		                errorClass: 'help-block',
-		                errorPlacement: function (error, element) {
-		                    if (element.parent('.input-group').length) {
-		                        error.insertAfter(element.parent());
-		                    } else {
-		                        error.insertAfter(element);
-		                    }
+		        if ($("#form_nuevo").valid()) {
+		            var fecha = $("#fm").val();
+
+		            if (!validarFormatoFecha(fecha)) {
+		                alertify.error("El formato de la fecha es incorrecto.");
+		                return;
+		            }
+
+		            if (!existeFecha(fecha)) {
+		                alertify.error("La fecha introducida no existe.");
+		                return;
+		            }
+
+		            alertify.confirm("¿DESEA INGRESAR A REALIZAR LA MODIFICACIÓN DE OPERACIONES?", function (a) {
+		                if (a) {
+							    $("#loading-overlay").css("display", "flex"); // Usar flex en lugar de show() para centrar
+							    $("#add_form").prop('disabled', true);
+							    $("#form_nuevo").submit();
+							} else {
+		                    alertify.error("OPCIÓN CANCELADA");
 		                }
 		            });
-
-		        var $valid = $("#form_nuevo").valid();
-		        if (!$valid) {
-		            $validator.focusInvalid();
-		        } else {
-		        	
-		            proy_id = document.getElementById('proy_id').value;
-		            com_id = document.getElementById('com_id').value;
-		            cite = document.getElementById('cite').value;
-		            fecha = document.getElementById('fm').value;
-		            if(validarFormatoFecha(fecha)){
-					      if(existeFecha(fecha)){
-					            alertify.confirm("DESEA INGRESAR A REALIZAR LA MODIFICACI\u00D3N DE OPERACIONES ?", function (a) {
-				                    if (a) {
-				                        document.getElementById("load").style.display = 'block';
-				                        document.getElementById('add_form').disabled = true;
-				                        document.forms['form_nuevo'].submit();
-				                    } else {
-				                        alertify.error("OPCI\u00D3N CANCELADA");
-				                    }
-				                });
-					      }else{
-					            alertify.error("La fecha introducida no existe.");
-					      }
-					}else{
-					      alertify.error("El formato de la fecha es incorrecto.");
-					}
 		        }
 		    });
-		    });
-	    });
+		});
+
+		// Funciones de fecha simplificadas
+		function validarFormatoFecha(campo) {
+		    return /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(campo);
+		}
+
+		function existeFecha(fecha) {
+		    var fechaf = fecha.split("/");
+		    var d = parseInt(fechaf[0], 10);
+		    var m = parseInt(fechaf[1], 10);
+		    var y = parseInt(fechaf[2], 10);
+		    var date = new Date(y, m - 1, d);
+		    return date && (date.getMonth() + 1) == m && date.getDate() == d;
+		}
         </script>
 		<!-- ============================================================================== -->
 

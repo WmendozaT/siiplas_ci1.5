@@ -236,7 +236,7 @@ class Modificacionpoa extends CI_Controller{
 //////////////// FORMULARIO N° 4 
 
     /*------ VERIFICANDO CODIGO DE MODIFICACION POA (2020)-----*/
-    public function datos_cite($cite){
+/*    public function datos_cite($cite){
       $tabla='';
 
       if($cite[0]['cite_estado']!=0){
@@ -248,7 +248,7 @@ class Modificacionpoa extends CI_Controller{
 
       $tabla.='<h1><b> CITE Nro. : <small>'.$cite[0]['cite_nota'].'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;FECHA : <small>'.date('d/m/Y',strtotime($cite[0]['cite_fecha'])).'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;C&Oacute;DIGO : '.$tit.'</b></h1>';
       return $tabla;
-    }
+    }*/
 
 
     /*------ TITULO CABECERA (2026) (FORMULARIO N° 4)-----*/
@@ -1146,7 +1146,7 @@ class Modificacionpoa extends CI_Controller{
 
 
 
-    /*----- LISTA REQUERIMIENTOS POR SUBACTIVIDAD AUXILIAR (2022) en casos de que sean muchos requerimientos ------*/
+    /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE AUXILIAR (2026) en casos de que sean muchos requerimientos ------*/
     public function modificar_requerimientos_auxiliar($cite){
       $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cite[0]['proy_id']); /// PROYECTO
       if($proyecto[0]['por_id']==0){
@@ -1188,135 +1188,79 @@ class Modificacionpoa extends CI_Controller{
                     <th style="width:5%;" style="background-color: #0AA699;color: #FFFFFF">OCT.</th>
                     <th style="width:5%;" style="background-color: #0AA699;color: #FFFFFF">NOV.</th>
                     <th style="width:5%;" style="background-color: #0AA699;color: #FFFFFF">DIC.</th>
-                    <th style="width:8%;">OBSERVACIONES</th>';
-                    if($this->tp_adm==1 & $cite[0]['proy_id']==2651){
-                      $tabla.='
-                      <th style="width:10%;"></th>';
-                    }
-                    $tabla.='
+                    <th style="width:8%;">OBSERVACIONES</th>
                     <th style="width:2%;">DELETE</th>
                   </tr>
                 </thead>
                 <tbody>';
                 $cont = 0;
+                $total = 0;
+
                 foreach ($lista_insumos as $row) {
-                  $color_tr=''; $dis=''; $title='title="REQUERIMIENTO"';
-                  $monto_cert=0;$valor_mod=0; $valor_delete=0;
-                  $tp_mod_registro='<div style="color:blue"><b>REG. x POA</b></div>';
-                  $tp_mod_color='';
-                  if($row['ins_tipo_modificacion']==1){
-                    $tp_mod_registro='<div style="color:F5AB39"><b>REG. x REV.</b></div>';
-                    $tp_mod_color='';
-                  }
+                    $cont++;
+                    $total += $row['ins_costo_total'];
+                    
+                    // Lógica de colores y estados
+                    $color_tr = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 'style="background-color:#f9d8e0;"' : '';
+                    $valor_mod = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 1 : 0;
+                    $valor_delete = ($row['ins_monto_certificado'] != 0) ? 1 : 0;
 
+                    // Etiqueta de tipo de registro
+                    $tp_label = ($row['ins_tipo_modificacion'] == 1) 
+                        ? '<span class="label label-warning">REG. x REV.</span>' 
+                        : '<span class="label label-primary">REG. x POA</span>';
 
-                  if($row['ins_monto_certificado']!=0){
-                    if($row['ins_monto_certificado']==$row['ins_costo_total']){
-                      $color_tr='#f9d8e0';
-                      $valor_mod=1;
-                      $valor_delete=1;
-                    }
-                    elseif ($row['ins_monto_certificado']<$row['ins_costo_total']) {
-                      $valor_delete=1;
-                    }
-                  }
-
-                  $cont++;
-                    $tabla .='<tr bgcolor='.$color_tr.'>';
-                    $tabla .='<td title='.$row['ins_id'].'>'.$tp_mod_registro.'</td>';
-                    $tabla .='<td align=center bgcolor="#ecf9f7" title="CODIGO ACTIVIDAD"><font size=5 color=blue><br><b>'.$row['prod_cod'].'</b></font></td>';
-                    $tabla .='<td align=center>';
-                      if($valor_mod==0 & $valor_delete==0){
-                        if($row['ins_id']!=652774 || $this->fun_id==399){
-                                $tabla.=' <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn-default mod_ff" name="'.$row['ins_id'].'" id="btn_m" title="MODIFICAR REQUERIMIENTO - '.$row['ins_id'].'" disabled="true"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="30" HEIGHT="30"/></a><br>
-                                  <a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-xs del_ff" title="ELIMINAR REQUERIMIENTO"  name="'.$row['ins_id'].'" >
-                                    <img src="'.base_url().'assets/img/delete.png" width="30" height="30"/>
-                                  </a>';
+                    // Construcción de Botones
+                    $botones = '';
+                    if ($valor_mod == 0 && $valor_delete == 0) {
+                        if ($this->fun_id == 399) {
+                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR"><img src="'.base_url('assets/ifinal/modificar.png').'" width="33"></a> ';
+                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default btn-xs del_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="ELIMINAR"><img src="'.base_url('assets/img/delete.png').'" width="33"></a>';
                         }
-                      }
-                      elseif($valor_mod==0 & $valor_delete==1){
-                        $tabla.='
-                            <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$row['ins_id'].'" title="MODIFICAR REQUERIMIENTO - '.$row['ins_id'].'"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a><br>
-                            <a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default certpoas" name="'.$row['ins_id'].'" title="VER MIS CERTIFICACIONES POA- '.$row['ins_id'].'"><img src="'.base_url().'assets/img/ifinal/doc.jpg" WIDTH="35" HEIGHT="35"/></a>';
-                      }
-                      else{
-                        $tabla.='<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default certpoas" name="'.$row['ins_id'].'" title="VER MIS CERTIFICACIONES POA- '.$row['ins_id'].'"><img src="'.base_url().'assets/img/ifinal/doc.jpg" WIDTH="35" HEIGHT="35"/></a><br>';
-                      }
-
-                      /*$ins_certificado=$this->model_certificacion->verif_insumo_certificados($row['ins_id']);
-                      if(count($ins_certificado)!=0){
-                        $tabla.='<a href="javascript:abreVentana(\''. site_url("").'/cert/rep_cert_poa/'.$ins_certificado[0]['cpoa_id'].'\');" title="CERTIFICADO POA APROBADO"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="30" HEIGHT="30"/><br>CERT. POA</a>';
-                      } */
-                    $tabla.='</td>';
-                    $tabla .='<td style="width:5%;">'.$row['par_codigo'].'</td>'; /// partida
-                    $tabla .= '<td style="width:15%;">'.$row['ins_detalle'].'</td>'; /// detalle requerimiento
-                    $tabla .= '<td style="width:10%;">'.$row['ins_unidad_medida'].'</td>'; /// Unidad
-                    $tabla .= '<td style="width:5%;">'.$row['ins_cant_requerida'].'</td>'; /// cantidad
-                    $tabla .= '<td style="width:5%;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>';
-                    $tabla .= '<td style="width:5%;">'.number_format($row['ins_costo_total'], 2, ',', '.').'</td>';
-                    $tabla .= '<td style="width:5%;" bgcolor="#f1dfb9">'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</td>';
-                    for ($i=1; $i <=13 ; $i++) { 
-                      $tabla.='<td>0</td>';
+                    } elseif ($valor_mod == 0 && $valor_delete == 1) {
+                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" ><img src="'.base_url('assets/ifinal/modificar.png').'" width="33"></a> ';
+                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="33"></a>';
+                    } else {
+                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="33"></a>';
                     }
-                   
-                    $tabla .= ' 
-                      <td style="width:8%;">'.$row['ins_observacion'].'</td>';
-                      if($this->tp_adm==1 & $cite[0]['proy_id']==2651){
-                        $tabla.='
-                        <td style="width:10%;">';
-                          $uresponsables = $this->model_modrequerimiento->list_uresponsables(); // Lista de productos
-                            $tabla .='<select class="form-control" style="width:100%;" onchange="doSelectAlert(event,this.value,'.$row['ins_id'].');">
-                              <option value="0">Seleccione unidad ..</option>';
-                              foreach($uresponsables as $pr){
-                                if($pr['com_id']==$row['serv_id']){
-                                  $tabla .="<option value=".$pr['com_id']." selected>".$pr['tipo_subactividad']." ".$pr['serv_descripcion']."</option>";
-                                }
-                                else{
-                                  $tabla .="<option value=".$pr['com_id'].">".$pr['tipo_subactividad']." ".$pr['serv_descripcion']."</option>"; 
-                                }
-                              }
-                            $tabla.='</select>';
-                        $tabla.='
-                        </td>';
-                      }
-                      $tabla.='
-                      <td style="width:2%;" bgcolor="#f3cbcb">';
-                        if($valor_mod==0 & $valor_delete==0){
-                          $tabla.='<center><input type="checkbox" name="ins[]" value="'.$row['ins_id'].'" onclick="scheck'.$cont.'(this.checked);"/></center>';
-                        }
-                      $tabla.='
-                      </td>';
+
+                    $tabla .= '
+                    <tr '.$color_tr.'>
+                        <td>'.$tp_label.'</td>
+                        <td class="text-center" style="background-color:#ecf9f7; color:blue; font-weight:bold; font-size:16px;">'.$row['prod_cod'].'</td>
+                        <td class="text-center">'.$botones.'</td>
+                        <td>'.$row['par_codigo'].'</td>
+                        <td>'.$row['ins_detalle'].'</td>
+                        <td>'.$row['ins_unidad_medida'].'</td>
+                        <td class="text-right">'.$row['ins_cant_requerida'].'</td>
+                        <td class="text-right">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
+                        <td class="text-right"><b>'.number_format($row['ins_costo_total'], 2, ',', '.').'</b></td>
+                        <td class="text-right" style="background-color:#f1dfb9;">'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</td>';
                         
-                  $tabla .= '</tr>';
-                  $total=$total+$row['ins_costo_total'];
-                  ?>
-                  <script>
-                    function scheck<?php echo $cont;?>(estaChequeado) {
-                      val = parseInt($('[name="tot"]').val());
-                      if (estaChequeado == true) {
-                        val = val + 1;
-                      } else {
-                        val = val - 1;
-                      }
-                      $('[name="tot"]').val((val).toFixed(0));
-                    }
-                  </script>
-                  <?php
+                        for ($i=1; $i <=13 ; $i++) { $tabla .= '<td>0</td>'; }
+
+                    $tabla .= '
+                        <td>'.$row['ins_observacion'].'</td>
+                        <td class="text-center" style="background-color:#f3cbcb;">';
+                        if ($valor_mod == 0 && $valor_delete == 0) {
+                            $tabla .= '<input type="checkbox" class="check-insumo" name="ins[]" value="'.$row['ins_id'].'">';
+                        }
+                    $tabla .= '</td></tr>';
                 }
-                $tabla.='
-                </tbody>
+              $tabla.='
+              </tbody>
                   <tr class="modo1">
                     <td colspan="8">proy: '.$cite[0]['proy_id'].' | aper: '.$cite[0]['aper_id'].' <b>TOTAL</b> </td>
-                    <td><font color="blue" size=1>'.number_format($total, 2, ',', '.') .'</font></td>
-                    <td colspan="16"></td>
+                    <td><font color="blue" size=2><b>'.number_format($total, 2, ',', '.') .'</b></font></td>
+                    <td colspan="15"></td>
                   </tr>
-              </table>';
+            </table>';
 
       return $tabla;
     }
 
 
-    /*----- LISTA REQUERIMIENTOS POR SUBACTIVIDAD COMPLETO (2022) ------*/
+    /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE COMPLETO (2026) ------*/
     public function modificar_requerimientos($cite){
       $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']);
 
@@ -1386,17 +1330,12 @@ class Modificacionpoa extends CI_Controller{
                     $tabla .='<td align=center bgcolor="#ecf9f7" title="CODIGO ACTIVIDAD"><font size=3 color=blue><br>'.$row['prod_cod'].'</font></td>';
                     $tabla .='<td align=center>';
                       if($valor_mod==0 & $valor_delete==0){
-                         if($row['ins_id']!=652774 || $this->fun_id==399){
+                         if($this->fun_id==399){
                                 $tabla.=' <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$row['ins_id'].'" title="MODIFICAR REQUERIMIENTO - '.$row['ins_id'].'"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a><br>
                                   <a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR REQUERIMIENTO"  name="'.$row['ins_id'].'" >
                                     <img src="'.base_url().'assets/img/delete.png" width="35" height="35"/>
                                   </a>';
                         }
-                        
-                        /*$tabla.=' <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$row['ins_id'].'" title="MODIFICAR REQUERIMIENTO - '.$row['ins_id'].'"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a><br>
-                                  <a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR REQUERIMIENTO"  name="'.$row['ins_id'].'" >
-                                    <img src="'.base_url().'assets/img/delete.png" width="35" height="35"/>
-                                  </a>';*/
                       }
                       elseif($valor_mod==0 & $valor_delete==1){
                         $tabla.='
@@ -1406,11 +1345,6 @@ class Modificacionpoa extends CI_Controller{
                       else{
                         $tabla.='<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default certpoas" name="'.$row['ins_id'].'" title="VER MIS CERTIFICACIONES POA- '.$row['ins_id'].'"><img src="'.base_url().'assets/img/ifinal/doc.jpg" WIDTH="35" HEIGHT="35"/></a><br>';
                       }
-
-                     /* $ins_certificado=$this->model_certificacion->verif_insumo_certificados($row['ins_id']);
-                      if(count($ins_certificado)!=0){
-                        $tabla.='<a href="javascript:abreVentana(\''. site_url("").'/cert/rep_cert_poa/'.$ins_certificado[0]['cpoa_id'].'\');" title="CERTIFICADO POA APROBADO"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="30" HEIGHT="30"/><br>CERT. POA</a>';
-                      }*/
                     $tabla.='</td>';
                     $tabla .='<td style="width:5%;">'.$row['par_codigo'].'</td>'; /// partida
                     $tabla .= '<td style="width:15%;">'.$row['ins_detalle'].'</td>'; /// detalle requerimiento
@@ -2492,7 +2426,57 @@ class Modificacionpoa extends CI_Controller{
 
 
 
+    //// loading
+    public function loading($titulo){
 
+      $tabla='<div id="loading-overlay">
+                  <div class="loader-content">
+                      <div class="spinner-custom"></div>
+                      <h2 style="color: white;">'.$titulo.'</h2>
+                      <p style="color: white;">Por favor, no cierre la ventana...</p>
+                  </div>
+              </div>
+
+                <style>
+                #loading-overlay {
+                    position: fixed; /* Se mantiene fijo aunque hagas scroll */
+                    top: 0;
+                    left: 0;
+                    width: 125vw;    /* 120% del ancho de la ventana */
+                    height: 125vh;   /* 120% del alto de la ventana */
+                    background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
+                    z-index: 999999; /* Valor extremadamente alto para estar sobre todo */
+                    display: none;   /* Se activa con JS */
+                    justify-content: center;
+                    align-items: center;
+                    color: white;
+                    text-align: center;
+                    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                }
+
+                .loader-content h2 {
+                    margin-top: 20px;
+                    letter-spacing: 2px;
+                    font-weight: bold;
+                }
+
+                .spinner-custom {
+                    width: 80px;
+                    height: 80px;
+                    border: 8px solid rgba(255, 255, 255, 0.1);
+                    border-top: 8px solid #3276b1; /* Color azul de SmartAdmin */
+                    border-radius: 50%;
+                    animation: spin-loading 1s linear infinite;
+                    display: inline-block;
+                }
+
+                @keyframes spin-loading {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                </style>';
+      return $tabla;
+    }
 
 
 

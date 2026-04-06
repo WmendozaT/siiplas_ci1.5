@@ -48,7 +48,21 @@ class Model_modrequerimiento extends CI_Model{
 
     /*---- GET DATOS CITE----*/
     function get_cite_insumo($cite_id){
-        $sql = 'select *
+        $sql = 'SELECT ci.cite_id, ci.com_id, ci.cite_codigo, ci.cite_nota, ci.cite_fecha, ci.tp_reporte,
+                    ci.cite_estado, ci.cite_activo, ci.tipo_modificacion,ci.prod_id,ci.fun_id,ci.cite_observacion,
+                    f.fun_nombre, f.fun_paterno, f.fun_materno,f.fun_cargo,
+                    c.com_componente,
+                    tpsa.tipo_subactividad,
+                    poa.*
+                        from cite_mod_requerimientos ci
+                        Inner Join funcionario as f On ci.fun_id=f.fun_id
+                        Inner Join _componentes as c On ci.com_id=c.com_id
+                        Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
+                INNER JOIN fnlista_poa_nacional(2026) poa ON c.pfec_id = poa.pfec_id
+                where ci.cite_id = '.$cite_id.'' ;
+
+
+/*        $sql = 'select *
                 from cite_mod_requerimientos ci
                 Inner Join funcionario as f On ci.fun_id=f.fun_id
                 Inner Join _componentes as c On ci.com_id=c.com_id
@@ -61,12 +75,12 @@ class Model_modrequerimiento extends CI_Model{
                 Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
                 Inner Join _distritales as d On d.dist_id=p.dist_id
                 Inner Join _departamentos as dep On dep.dep_id=p.dep_id
-                where ci.cite_id='.$cite_id.' and pfe.pfec_estado=\'1\' and pfe.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'' ;
+                where ci.cite_id='.$cite_id.' and pfe.pfec_estado=\'1\' and pfe.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'' ;*/
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
-    /*---- LISTA DE REQUERIMIENTOS ----*/
+    /*---- LISTA DE REQUERIMIENTOS SIN TEMPORALIDAD----*/
     function lista_requerimientos($com_id,$tp_mod){
         $sql = 'SELECT 
                     i.*, 
@@ -639,7 +653,7 @@ class Model_modrequerimiento extends CI_Model{
     }
 
     /*-------- Lista de Unidades Reponsables para alinear a bienes y servicios --------*/
-    public function list_uresponsables(){
+/*    public function list_uresponsables(){
         $sql = 'select c.*,tpsa.*,sa.*
                 from _proyectos as p
                 Inner Join _proyectofaseetapacomponente as pfe On pfe.proy_id=p.proy_id
@@ -651,7 +665,7 @@ class Model_modrequerimiento extends CI_Model{
                 ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*-------- Lista Requerimientos Modificados a Nivel Nacional --------*/
     public function lista_requerimientos_modificados_nacional(){

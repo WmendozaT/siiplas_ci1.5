@@ -47,52 +47,8 @@ class Cmod_insumo extends CI_Controller {
       if(count($data['proyecto'])!=0){
         $data['titulo']='<h1><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['proy_nombre'].' '.$data['proyecto'][0]['abrev'].'</small></h1>';
         $data['tabla']=$this->modificacionpoa->lista_unidades_responsables($data['proyecto']);
-        $data['loading']='<div id="loading-overlay">
-                              <div class="loader-content">
-                                  <div class="spinner-custom"></div>
-                                  <h2 style="color: white;">INGRESANDO A FORMULARIO DE MODIFICACIÓN POA</h2>
-                                  <p style="color: white;">Por favor, no cierre la ventana...</p>
-                              </div>
-                          </div>
+        $data['loading']=$this->modificacionpoa->loading('INGRESANDO A FORMULARIO DE MODIFICACIÓN POA');
 
-                            <style>
-                            #loading-overlay {
-                                position: fixed; /* Se mantiene fijo aunque hagas scroll */
-                                top: 0;
-                                left: 0;
-                                width: 125vw;    /* 120% del ancho de la ventana */
-                                height: 125vh;   /* 120% del alto de la ventana */
-                                background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
-                                z-index: 999999; /* Valor extremadamente alto para estar sobre todo */
-                                display: none;   /* Se activa con JS */
-                                justify-content: center;
-                                align-items: center;
-                                color: white;
-                                text-align: center;
-                                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-                            }
-
-                            .loader-content h2 {
-                                margin-top: 20px;
-                                letter-spacing: 2px;
-                                font-weight: bold;
-                            }
-
-                            .spinner-custom {
-                                width: 80px;
-                                height: 80px;
-                                border: 8px solid rgba(255, 255, 255, 0.1);
-                                border-top: 8px solid #3276b1; /* Color azul de SmartAdmin */
-                                border-radius: 50%;
-                                animation: spin-loading 1s linear infinite;
-                                display: inline-block;
-                            }
-
-                            @keyframes spin-loading {
-                                0% { transform: rotate(0deg); }
-                                100% { transform: rotate(360deg); }
-                            }
-                            </style>';
         $this->load->view('admin/modificacion/requerimientos/cite_servicio', $data); 
       }
       else{
@@ -192,16 +148,17 @@ class Cmod_insumo extends CI_Controller {
         $data['cabecera']=$this->cabecera_formulario_mod5($data['cite'],$proyecto);
         $data['opciones']=$this->opciones_formulario_mod5($data['cite'],$proyecto);
         $data['style']=$this->style();
+        $data['loading']=$this->modificacionpoa->loading('ACTUALIZANDO LISTADO');
       
           if(count($this->model_modrequerimiento->lista_requerimientos($data['cite'][0]['com_id'],$data['cite'][0]['tipo_modificacion']))>50){
             
-            $data['tabla']=$this->modificacionpoa->modificar_requerimientos_auxiliar($data['cite']);  /// 2025 -> cargado rapido sin temporalidad
+            $data['tabla']=$this->modificacionpoa->modificar_requerimientos_auxiliar($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
             /*if($this->fun_id==598){ /// exclusivo doctor muruchi
               $data['tabla']=$this->modificacionpoa->modificar_requerimientos($data['cite']);  /// 2023
             }*/
           }
           else{
-            $data['tabla']=$this->modificacionpoa->modificar_requerimientos($data['cite']);  /// 2022
+            $data['tabla']=$this->modificacionpoa->modificar_requerimientos($data['cite']);  /// 2026
           }
 
           $data['part_padres'] = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);//partidas padres
@@ -217,18 +174,24 @@ class Cmod_insumo extends CI_Controller {
       }
     }
 
+
+
+
+
+
+
+
+
+
   /*----- CABECERA FORMULARIO ------*/
   public function cabecera_formulario_mod5($cite,$proyecto){
     $monto=$this->modificacionpoa->ppto($proyecto);
     $tabla='';
     $tabla.='
       <section id="widget-grid" class="well" title="'.$proyecto[0]['proy_id'].'">
-        <div>
-          '.$this->modificacionpoa->datos_cite($cite).'
           '.$this->modificacionpoa->titulo_cabecera($cite,1).'';
           $tabla.='
           <a href="'.site_url("").'/rep/exportar_requerimientos_servicio/'.$cite[0]['com_id'].'" target=_blank class="btn btn-default" title="EXPORTAR FORM. N5"><img src="'.base_url().'assets/Iconos/page_excel.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>DESCARGAR INFORMACION (EXCEL)</b></a>
-        </div>
       </section>';
     return $tabla;
   }
@@ -384,7 +347,7 @@ class Cmod_insumo extends CI_Controller {
 
       $tabla.='   
       <style>
-        table{font-size: 10px;
+        table{font-size: 12px;
             width: 100%;
             max-width:1550px;;
             overflow-x: scroll;
@@ -392,7 +355,7 @@ class Cmod_insumo extends CI_Controller {
         th{
             padding: 1.4px;
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
         }
             #mdialTamanio{
             width: 80% !important;
@@ -2147,17 +2110,17 @@ class Cmod_insumo extends CI_Controller {
     }
 
 
-    /*---- GET DATOS REQUERIMIENTO ----*/
+    /*---- GET DATOS REQUERIMIENTO 2026 ----*/
     public function get_requerimiento(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $ins_id = $this->security->xss_clean($post['ins_id']);
         $cite_id = $this->security->xss_clean($post['cite_id']);
         $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); /// Datos Cite
-        $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); ////// DATOS DEL PROYECTO
-        $fase = $this->model_faseetapa->get_id_fase($cite[0]['proy_id']); /// FASE ACTIVA
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); ////// DATOS DEL PROYECTO
 
-        $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos requerimientos productos
+
+        $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos requerimientos 
 
         if($insumo[0]['ins_tipo_modificacion']==0){
           $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Asignado)
@@ -2215,13 +2178,6 @@ class Cmod_insumo extends CI_Controller {
 
           $saldo=$monto_asig-$monto_prog;
 
-         // $par_padre=$this->model_partidas->get_partida_padre($insumo[0]['par_depende']); /// lista de partidas padres
-          $prog=$this->model_insumo->list_temporalidad_insumo($insumo[0]['ins_id']); /// Temporalidad Requerimiento 2020
-
-          if(count($prog)==0){
-            $prog = array('programado_total' => '0','mes1' => '0','mes2' => '0','mes3' => '0','mes4' => '0','mes5' => '0','mes6' => '0','mes7' => '0','mes8' => '0','mes9' => '0','mes10' => '0','mes11' => '0','mes12' => '0');
-          }
-
           $monto_certificado=0;
             $m_certificado=$this->model_certificacion->get_insumo_monto_certificado($insumo[0]['ins_id']);
             if (count($m_certificado)!=0) {
@@ -2250,8 +2206,7 @@ class Cmod_insumo extends CI_Controller {
               'lista_prod_act'=> $lista_prod_act,
               'monto_saldo' => $saldo+$insumo[0]['ins_costo_total'],
               'saldo_dif' => $saldo,
-              //'ppdre' => $par_padre,
-              'prog' => $prog,
+
               'verif_mes' => $verf,
               'trimestre' => $verf,
               'monto_certificado'=>$monto_certificado,

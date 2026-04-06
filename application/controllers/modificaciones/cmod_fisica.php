@@ -60,53 +60,101 @@ class Cmod_fisica extends CI_Controller {
     /*--- LISTA UNIDADES RESPONSABLES 2026 ---*/
     public function mis_UnidadesResponsables($proy_id){
       $data['menu']=$this->modificacionpoa->menu(3); //// genera menu
-      $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id);
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
+      $data['loading']=$this->modificacionpoa->loading('INGRESANDO A FORMULARIO DE MODIFICACIÓN POA');
       if(count($data['proyecto'])!=0){
-        $data['fase'] = $this->model_faseetapa->get_id_fase($proy_id);
-        $titulo='
-          <h1> PROYECTO DE INVERSI&Oacute;N : <small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['proy_sisin'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['proy_nombre'].'</small>';
-        if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
-          $titulo='
-          <h1> <b>'.$data['proyecto'][0]['tipo_adm'].' : </b><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' '.$data['proyecto'][0]['abrev'].'</small>';
-        }
+        $data['titulo_proy']='
+          <h1><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['proy_nombre'].' '.$data['proyecto'][0]['abrev'].'</small>';
         
         $mis_UnidadesResponsables=$this->model_componente->lista_UnidadesResponsables($proy_id);
         $tabla='';
-        $tabla.='<table class="table table table-bordered" width="50%">
-                <thead>
-                  <tr style="height:25px;">
-                    <th style="width:1%;"></th>
-                    <th style="width:5%;">Modificar Formulario</th>
-                    <th style="width:15%;">UNIDAD RESPONSABLE</th>
-                    <th style="width:5%;">NRO. REGISTROS</th>
-                  </tr>
-                </thead>
-                <tbody>';
-                $nro=0;
-                foreach($mis_UnidadesResponsables as $row){
-                  $nro++;
-                  $tabla.='
-                  <tr>
-                    <td>'.$nro.'</td>
-                    <td align=center>';
-                      if($this->conf_mod_ope==1 || $this->tp_adm==1){
-                        $tabla.='
-                        <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default nuevo_ff" title="MODIFICAR OPERACIONES" name="'.$row['com_id'].'">
-                          <img src="'.base_url().'assets/ifinal/mod_money.png" width="35" height="35"/>
-                        </a>';
-                      }
-                      $tabla.='
-                    </td>
-                    <td>'.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</td>
-                    <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>
-                  </tr>';
-                }
-        $tabla.='</tbody>
-              </table>';        
+        $tabla = '
+          <table class="table table-bordered" style="width:100%;">
+            <thead>
+                <tr>
+                    <th style="width:1%;">#</th>
+                    <th style="width:10%;" class="text-center">Modificar</th>
+                    <th>UNIDAD RESPONSABLE</th>
+                    <th style="width:15%;" class="text-center">NRO. REGISTROS</th>
+                </tr>
+            </thead>
+            <tbody>';
 
+            foreach ($mis_UnidadesResponsables as $nro => $row) {
+                // Si no puedes cambiar el SQL, guarda el conteo en una variable
+                // Pero lo ideal es que $row['total_productos'] ya venga del modelo
+                $total_regs = count($this->model_producto->lista_productos($row['com_id']));
+                
+                $btn_modificar = '';
+                if ($this->conf_mod_ope == 1 || $this->tp_adm == 1) {
+                    $btn_modificar = '
+                        <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-link nuevo_ff" title="MODIFICAR" name="'.$row['com_id'].'">
+                            <img src="'.base_url('assets/ifinal/mod_money.png').'" width="30" height="30"/>
+                        </a>';
+                }
+
+                $tabla .= '
+                    <tr>
+                        <td>'.($nro + 1).'</td>
+                        <td class="text-center">'.$btn_modificar.'</td>
+                        <td><strong>'.$row['tipo_subactividad'].'</strong> '.$row['serv_descripcion'].'</td>
+                        <td class="text-center" style="background-color: #bee6e1; color: blue; font-weight: bold;">
+                            '.$total_regs.'
+                        </td>
+                    </tr>';
+            }
+
+            $tabla .= '
+              </tbody>
+            </table>';        
+
+        // $data['loading']='<div id="loading-overlay">
+        //                       <div class="loader-content">
+        //                           <div class="spinner-custom"></div>
+        //                           <h2 style="color: white;">INGRESANDO A FORMULARIO DE MODIFICACIÓN POA</h2>
+        //                           <p style="color: white;">Por favor, no cierre la ventana...</p>
+        //                       </div>
+        //                   </div>
+
+        //                     <style>
+        //                     #loading-overlay {
+        //                         position: fixed; /* Se mantiene fijo aunque hagas scroll */
+        //                         top: 0;
+        //                         left: 0;
+        //                         width: 125vw;    /* 120% del ancho de la ventana */
+        //                         height: 125vh;   /* 120% del alto de la ventana */
+        //                         background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
+        //                         z-index: 999999; /* Valor extremadamente alto para estar sobre todo */
+        //                         display: none;   /* Se activa con JS */
+        //                         justify-content: center;
+        //                         align-items: center;
+        //                         color: white;
+        //                         text-align: center;
+        //                         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        //                     }
+
+        //                     .loader-content h2 {
+        //                         margin-top: 20px;
+        //                         letter-spacing: 2px;
+        //                         font-weight: bold;
+        //                     }
+
+        //                     .spinner-custom {
+        //                         width: 80px;
+        //                         height: 80px;
+        //                         border: 8px solid rgba(255, 255, 255, 0.1);
+        //                         border-top: 8px solid #3276b1; /* Color azul de SmartAdmin */
+        //                         border-radius: 50%;
+        //                         animation: spin-loading 1s linear infinite;
+        //                         display: inline-block;
+        //                     }
+
+        //                     @keyframes spin-loading {
+        //                         0% { transform: rotate(0deg); }
+        //                         100% { transform: rotate(360deg); }
+        //                     }
+        //                     </style>';
         $data['componentes']=$tabla;
-        $data['titulo_proy']=$titulo;
         $this->load->view('admin/modificacion/moperaciones/cite_modfis', $data);  
       }
       else{

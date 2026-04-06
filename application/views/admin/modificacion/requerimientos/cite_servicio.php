@@ -368,92 +368,22 @@ function asignarEventoEnvio() {
 
             alertify.confirm("DESEA INGRESAR A REALIZAR LA MODIFICACI\u00D3N DE REQUERIMIENTOS ?", function (a) {
                 if (a) {
-    // 1. Mostrar el overlay de pantalla completa
-    // Usamos .css('display', 'flex') para que los elementos se centren
-    $("#loading-overlay").css("display", "flex");
+					    // 1. Mostrar el overlay de pantalla completa
+					    // Usamos .css('display', 'flex') para que los elementos se centren
+					    $("#loading-overlay").css("display", "flex");
 
-    // 2. Deshabilitar el botón del modal para evitar clics extra
-    $("#add_form").prop("disabled", true);
+					    // 2. Deshabilitar el botón del modal para evitar clics extra
+					    $("#add_form").prop("disabled", true);
 
-    // 3. Enviar el formulario
-    document.getElementById('form_nuevo').submit();
-} else {
-                    alertify.error("OPCI\u00D3N CANCELADA");
-                }
-            });
-        }
-    });
-}
-/*		function update_temp(com_id,tipo,prod_id) {
-			document.getElementById("com_id").value=com_id;
-		  document.getElementById("tp_mod").value=tipo;
-		  document.getElementById("prod_id").value=prod_id;
-
-		  if(tipo==0){
-		    	$('#titulo_form').html('<center><b>REGISTRE NOTA CITE</b></center>');
-		    }
-		    else{
-		    	$('#titulo_form').html('<center><b>REGISTRE NOTA CITE</b><br><div style=color:#BDAA1F;><b>REVERSION DE SALDOS</b></div></center>');
-		    }
-
-		    $("#add_form").on("click", function () {
-		    	var $validator = $("#form_nuevo").validate({
-              rules: {
-                cite: { //// Cite
-                    required: true,
-                },
-                fm: { //// Fecha de Solicitud
-                    required: true,
-                }
-              },
-              messages: {
-                cite: "<font color=red>REGISTRE CITE</font>",
-                fm: "<font color=red>SELECCIONE FECHA</font>",		                    
-              },
-              highlight: function (element) {
-                $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-              },
-              unhighlight: function (element) {
-                $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-              },
-              errorElement: 'span',
-              errorClass: 'help-block',
-              errorPlacement: function (error, element) {
-                if (element.parent('.input-group').length) {
-                    error.insertAfter(element.parent());
-                } else {
-                    error.insertAfter(element);
-                }
-              }
-            });
-
-		        var $valid = $("#form_nuevo").valid();
-		        if (!$valid) {
-		            $validator.focusInvalid();
-		        } else {
-		        	fecha = document.getElementById('fm').value;
-		            if(validarFormatoFecha(fecha)){
-					      if(existeFecha(fecha)){
-		            	alertify.confirm("DESEA INGRESAR A REALIZAR LA MODIFICACI\u00D3N DE REQUERIMIENTOS ?", function (a) {
-                    if (a) {
-                        document.getElementById("load").style.display = 'block';
-                        document.getElementById('add_form').disabled = true;
-                        document.forms['form_nuevo'].submit();
-                    } else {
-                        alertify.error("OPCI\u00D3N CANCELADA");
-                    }
-	                });
-					      }else{
-					         alertify.error("La fecha introducida no existe.");
-					      }
-					}else{
-					      alertify.error("El formato de la fecha es incorrecto.");
+					    // 3. Enviar el formulario
+					    document.getElementById('form_nuevo').submit();
+					} else {
+					          alertify.error("OPCI\u00D3N CANCELADA");
+					        }
+					      });
+					    }
+					  });
 					}
-		        }
-		    });
-
-  }*/
-
 
 		//// Lista de requerimientos alineados a cada actividad
 		$(function () {

@@ -5,11 +5,11 @@ aper_id = $('[name="aper_id"]').val();
 cite_id = $('[name="cite_id"]').val();
 
 
-  function abreVentana(PDF){             
+/*  function abreVentana(PDF){             
     var direccion;
     direccion = '' + PDF;
     window.open(direccion, "REPORTE FORMULARIO N° 5" , "width=800,height=700,scrollbars=NO") ; 
-  }
+  }*/
 
   function abreVentana_comparativo(PDF){             
     var direccion;
@@ -65,8 +65,12 @@ $(document).ready(function() {
   /* END COLUMN FILTER */   
 })
 
-
-
+  //// Para eliminar los items seleccionados del formulario de modificacion poa
+  $(document).on('change', '.check-insumo', function() {
+    var totalSeleccionados = $('.check-insumo:checked').length;
+    $('[name="tot"]').val(totalSeleccionados);
+  });
+  //// ------------------
 
 
 $(function () {
@@ -402,12 +406,12 @@ function valida_eliminar(){
 });
 
 
- /*------ MODIFICAR REQUERIMIENTO -----*/
+ /*------ MODIFICAR REQUERIMIENTO 2026 -----*/
   $(function () {
       $(".mod_ff").on("click", function (e) {
         ins_id = $(this).attr('name');
-        document.getElementById("ins_id").value=ins_id;
-        cite_id=document.getElementById("cite_id").value;
+        cite_id = $(this).attr('id');
+        alert(ins_id)
     
         var url = base+"index.php/modificaciones/cmod_insumo/get_requerimiento";
 
@@ -425,7 +429,7 @@ function valida_eliminar(){
           request.done(function (response, textStatus, jqXHR) {
 
           if (response.respuesta == 'correcto') {
-
+alert(response.respuesta)
             $( "#costou" ).prop( "disabled", false );
 
             if(response.verif_cert==1){
@@ -623,75 +627,59 @@ function valida_eliminar(){
   });
 
 
-//// ELIMINAR REQUERIMIENTOS POA
-$(function () {
-    function reset() { 
-        $("#toggleCSS").attr("href", base+"assets/themes_alerta/alertify.default.css");
-        alertify.set({
-            labels: {
-                ok: "ACEPTAR",
-                cancel: "CANCELAR"
-            },
-            delay: 5000,
-            buttonReverse: false,
-            buttonFocus: "ok"
-        });
-    }
+//// ELIMINAR REQUERIMIENTOS POA 2026
+    $(function () {
+        // Función de configuración de Alertify
+        function reset_alertify() { 
+            alertify.set({
+                labels: { ok: "ACEPTAR", cancel: "CANCELAR" },
+                delay: 5000,
+                buttonFocus: "ok"
+            });
+        }
 
-    $(".del_ff").on("click", function (e) {
-        reset();
-        var ins_id = $(this).attr('name'); // ins id
-      //  var cite_id = "<?php echo $cite[0]['cite_id'];?>"; // cite id
-        //alert(ins_id)
-        var request;
-        alertify.confirm("ESTA SEGURO DE ELIMINAR EL REQUERIMIENTO ?", function (a) {
-          if (a) {
-            var url = base+"index.php/modificaciones/cmod_insumo/delete_requerimiento";
-              if (request) {
-                  request.abort();
-              }
-              request = $.ajax({
-                  url: url,
-                  type: "POST",
-                  dataType: "json",
-                data: "ins_id="+ins_id+"&cite_id="+cite_id
-              });
+        // Delegación de evento para que funcione en tablas dinámicas
+        $(document).on("click", ".del_ff", function (e) {
+            e.preventDefault();
+            reset_alertify();
 
-              request.done(function (response, textStatus, jqXHR) { 
-                reset();
-                if (response.respuesta == 'correcto') {
-                    alertify.alert("EL REQUERIMIENTO SE ELIMINO CORRECTAMENTE ", function (e) {
-                        if (e) {
-                            window.location.reload(true);
+            var ins_id = $(this).attr('name');
+            var cite_id = $(this).attr('id'); // cite id
+
+            alertify.confirm("¿ESTÁ SEGURO DE ELIMINAR EL REQUERIMIENTO?", function (a) {
+                if (a) {
+                    // 1. Mostrar tu Loading Overlay Personalizado
+                    $("#loading-overlay").css("display", "flex");
+                    $(".loader-content h2").text("ELIMINANDO REQUERIMIENTO...");
+
+                    // 2. Petición AJAX
+                    $.ajax({
+                        url: base + "index.php/modificaciones/cmod_insumo/delete_requerimiento",
+                        type: "POST",
+                        dataType: "json",
+                        data: { ins_id: ins_id, cite_id: cite_id }, // Enviado como objeto, más limpio
+                        success: function (response) {
+                            if (response.respuesta == 'correcto') {
+                                alertify.success("ELIMINADO CON ÉXITO");
+                                // Recarga suave para actualizar totales
+                                location.reload();
+                            } else {
+                                $("#loading-overlay").hide(); // Ocultar si hay error para dejar ver el mensaje
+                                alertify.error("ERROR AL ELIMINAR: " + (response.mensaje || "Consulte al administrador"));
+                            }
+                        },
+                        error: function (jqXHR, textStatus) {
+                            $("#loading-overlay").hide();
+                            console.error("Error AJAX: " + textStatus);
+                            alertify.error("ERROR DE CONEXIÓN AL SERVIDOR");
                         }
                     });
                 } else {
-                    alertify.alert("ERROR AL ELIMINAR REQUERIMIENTO !!!", function (e) {
-                        if (e) {
-                            window.location.reload(true);
-                        }
-                    });
+                    alertify.error("Opción cancelada");
                 }
             });
-              request.fail(function (jqXHR, textStatus, thrown) {
-                  console.log("ERROR: " + textStatus);
-              });
-              request.always(function () {
-                  //console.log("termino la ejecuicion de ajax");
-              });
-
-              e.preventDefault();
-
-          } else {
-              alertify.error("Opcion cancelada");
-          }
-      });
-      return false;
+        });
     });
-
-});
-
-
 
 
 /////// FUNCIONES EXTRAS ======================

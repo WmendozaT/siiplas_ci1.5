@@ -140,26 +140,22 @@
 
 							<div id="tabs-a">
 								<div class="row">
-									<div>
-										<div class="jarviswidget jarviswidget-color-darken">
-			                              <header>
-			                                  <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-			                                  <h2 class="font-md"><strong></strong></h2>  
-			                              </header>
-											<div>
-												<div class="widget-body no-padding">
-													<form id="del_req" name="del_req" novalidate="novalidate" action="<?php echo site_url().'/modificaciones/cmod_insumo/delete_select_requerimientos'?>" method="post">
-														<input type="hidden" name="cite_id" id="cite_id" value="<?php echo $cite[0]['cite_id'];?>">
-														<?php echo $tabla;?>
-														<input type="hidden" name="tot" id="tot" value="0">
-								                    </form>
-												</div>
-												<!-- end widget content -->
+									<div class="jarviswidget jarviswidget-color-darken">
+		                              <header>
+		                                  <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+		                                  <h2 class="font-md"><strong></strong></h2>  
+		                              </header>
+										<div>
+											<div class="widget-body no-padding">
+												<form id="del_req" name="del_req" novalidate="novalidate" action="<?php echo site_url().'/modificaciones/cmod_insumo/delete_select_requerimientos'?>" method="post">
+													<input type="hidden" name="cite_id" id="cite_id" value="<?php echo $cite[0]['cite_id'];?>">
+													<?php echo $tabla;?>
+													<input type="hidden" name="tot" id="tot" value="0">
+							                    </form>
 											</div>
-											<!-- end widget div -->
+											<!-- end widget content -->
 										</div>
-										<!-- end widget -->
-								
+										<!-- end widget div -->
 									</div>
 								</div>
 							</div>
@@ -740,7 +736,7 @@
 	            </div>
 	        </div>
 	    </div>
-
+		<?php echo $loading;?>
 		<!-- END PAGE FOOTER -->
 		<script>
 			if (!window.jQuery) {
@@ -799,6 +795,7 @@
 		<script src = "<?php echo base_url(); ?>mis_js/programacion/programacion/tablas.js"></script>
 		
 		<script type="text/javascript">
+
 			$(document).ready(function() {
 				pageSetUp();
 				// menu

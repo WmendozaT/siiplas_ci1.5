@@ -477,7 +477,7 @@ function graf_regresion_anual(matriz) {
       spacing: [35, 20, 15, 45]    // Margen inferior aumentado
     },
     title: {
-      text: 'CUMPLIMIENTO AL POA - GESTION 2025',
+      text: 'CUMPLIMIENTO AL POA - GESTION 2026',
       align: 'center',
       style: {
         color: '#1e293b',

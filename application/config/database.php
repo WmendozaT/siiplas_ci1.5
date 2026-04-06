@@ -8,6 +8,12 @@ $db['default']['username'] = 'postgres';
 $db['default']['password'] = '123456';
 $db['default']['database'] = 'bd_poaweb56';
 
+
+/*$db['default']['hostname'] = 'localhost';
+$db['default']['username'] = 'postgres';
+$db['default']['password'] = '123456';
+$db['default']['database'] = 'bd_poaweb56';*/
+
 $db['default']['dbdriver'] = 'postgre';
 $db['default']['port'] = '5432';
 $db['default']['dbprefix'] = '';

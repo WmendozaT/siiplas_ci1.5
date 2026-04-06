@@ -531,7 +531,7 @@ $route['mod_ppto/actualizar_modppto/(:any)'] = 'modificaciones/cmod_presupuestar
 
 /*------------- MODIFICAR REQUERIMIENTOS (2020)------------*/
 $route['mod/form5/(:any)'] = 'modificaciones/cmod_insumo/cite_UnidadResponsable/$1'; //// Lista cite de Unidades Responsables
-$route['mod/list_requerimientos/(:any)'] = 'modificaciones/cmod_insumo/mis_requerimientos/$1'; //// Lista de Requerimientos
+$route['mod/list_requerimientos/(:any)'] = 'modificaciones/cmod_insumo/mis_requerimientos/$1'; //// Lista de Requerimientos 2026
 $route['mod/del_select_ins/(:any)'] = 'modificaciones/cmod_insumo/elimina_requerimientos_producto_actividad/$1'; //// Elimina Requerimientos Seleccionados (2020)
 $route['mod/rep_mod_financiera/(:any)'] = 'modificaciones/cmod_insumo/reporte_modificacion_financiera/$1';  ///// Reporte Modificaciones Financiera 2020
 $route['mod/update_cite/(:any)'] = 'modificaciones/cmod_insumo/modificar_cite/$1';  ///// Modificar Cite 

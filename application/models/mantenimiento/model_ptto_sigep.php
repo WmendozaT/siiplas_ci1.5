@@ -1079,29 +1079,29 @@ class Model_ptto_sigep extends CI_Model{
 
 
     /*---- Get Partida Programado - gasto corriente (Partida -> Unidad)---*/
-/*    public function get_partida_programado_poa($aper_id,$par_id){
-        $sql = 'select i.aper_id,i.par_id,par.par_codigo as codigo,par.par_nombre, SUM(i.ins_costo_total) as ppto_programado
+    public function get_partida_programado_poa($aper_id,$par_id){
+        $sql = 'SELECT i.aper_id,i.par_id,par.par_codigo as codigo,par.par_nombre, SUM(i.ins_costo_total) as ppto_programado
                 from insumos i
                 Inner Join partidas as par On par.par_id=i.par_id
-                where i.aper_id='.$aper_id.' and i.par_id='.$par_id.' and i.aper_id!=\'0\' and i.ins_tipo_modificacion=\'0\'
+                where i.aper_id='.$aper_id.' and i.par_id='.$par_id.' and i.aper_id!=0 and i.ins_tipo_modificacion=0
                 group by i.aper_id,i.par_id,par.par_codigo,par.par_nombre';
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
 
     /*--------- Get Partida Asignado (Partida -> Unidad)------------*/
-/*    public function get_partida_asignado_sigep($aper_id,$par_id){
+    public function get_partida_asignado_sigep($aper_id,$par_id){
         $sql = '
-                select pg.aper_id,pg.par_id, p.par_codigo as codigo, p.par_nombre as nombre, SUM(pg.importe) as ppto_asignado,pg.ppto_saldo_ncert
+                SELECT pg.aper_id,pg.par_id, p.par_codigo as codigo, p.par_nombre as nombre, SUM(pg.importe) as ppto_asignado,pg.ppto_saldo_ncert
                 from ptto_partidas_sigep pg
                 Inner Join partidas as p On p.par_id=pg.par_id
-                where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.' and pg.par_id='.$par_id.'
+                where pg.aper_id='.$aper_id.' and pg.estado!=3 and pg.g_id='.$this->gestion.' and pg.par_id='.$par_id.'
                 group by pg.aper_id,pg.par_id, p.par_codigo, p.par_nombre,pg.ppto_saldo_ncert';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
 
 
