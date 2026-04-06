@@ -26,24 +26,6 @@
             <div id="logo-group">
               <!-- <span id="logo"> <img src="<?php echo base_url(); ?>assets/img/logo.png" alt="SmartAdmin"> </span> -->
             </div>
-            <div class="col-md-4 " style="font-size:18px;margin-top:10px;margin-bottom:-10px;">
-              <span>
-                &nbsp;&nbsp;&nbsp; 
-                <div class="badge bg-color-blue">
-                  <span style="font-size:15px;"><b>Fecha Sesi&oacute;n: <?php echo $this->session->userdata('desc_mes').' / '.$this->session->userdata('gestion');?></b></span>
-                </div>
-              </span>
-              <div class="project-context hidden-xs">
-                <span class="project-selector dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="font-size:19px;">
-                  <i class="fa fa-lg fa-fw fa-calendar txt-color-blue"></i>
-                </span>
-                <ul class="dropdown-menu">
-                  <li>
-                    <a href="<?php echo base_url();?>index.php/cambiar_gestion">Cambiar Gestión</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
             <div class="pull-right">
                 <div id="hide-menu" class="btn-header pull-right">
                     <span> <a href="javascript:void(0);" data-action="toggleMenu" title="Collapse Menu"><i class="fa fa-reorder"></i></a> </span>
@@ -98,7 +80,7 @@
                 </span>
                 <!-- breadcrumb -->
                 <ol class="breadcrumb">
-                    <li>Modificaciones</li><li>...</li><li>Mis Componentes - Servicios</li><li>Modificaci&oacute;n F&iacute;sica</li>
+                    <li>Modificaciones</li><li>...</li><li>Modificaci&oacute;n POA</li>
                 </ol>
             </div>
             <!-- MAIN CONTENT -->
@@ -109,7 +91,7 @@
                         <article class="col-xs-12 col-sm-12 col-md-12 col-lg-10">
                             <section id="widget-grid" class="well">
                                 <div title="<?php echo $proyecto[0]['aper_id'];?>">
-                                    <?php echo $datos_cite;?>
+                    
                                     <?php echo $titulo;?>
                                 </div>
                             </section>

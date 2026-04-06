@@ -40,24 +40,59 @@ class Cmod_insumo extends CI_Controller {
       /// tp 0: Modificacion POA
       /// tp 1: Modificacion POA (Reversion de saldos)
       $data['menu']=$this->menu(3); //// genera menu
-      $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id);
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
       $data['tp_mod']=0;
       $data['titulo_cite']='';
 
       if(count($data['proyecto'])!=0){
-        if($data['proyecto'][0]['tp_id']==1){
-          $titulo='
-          <h1> PROYECTO DE INVERSI&Oacute;N : <small>'.$data['proyecto'][0]['proy_sisin'].' - '.$data['proyecto'][0]['proy_nombre'].'</small>';
-        }
-        else{
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
-          $titulo='
-          <h1> <b>GASTO CORRIENTE : </b><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' '.$data['proyecto'][0]['abrev'].'</small>';
-        }
-
-        $data['titulo']=$titulo;
+        $data['titulo']='<h1><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['proy_nombre'].' '.$data['proyecto'][0]['abrev'].'</small></h1>';
         $data['tabla']=$this->modificacionpoa->lista_unidades_responsables($data['proyecto']);
-       
+        $data['loading']='<div id="loading-overlay">
+                              <div class="loader-content">
+                                  <div class="spinner-custom"></div>
+                                  <h2 style="color: white;">INGRESANDO A FORMULARIO DE MODIFICACIÓN POA</h2>
+                                  <p style="color: white;">Por favor, no cierre la ventana...</p>
+                              </div>
+                          </div>
+
+                            <style>
+                            #loading-overlay {
+                                position: fixed; /* Se mantiene fijo aunque hagas scroll */
+                                top: 0;
+                                left: 0;
+                                width: 125vw;    /* 120% del ancho de la ventana */
+                                height: 125vh;   /* 120% del alto de la ventana */
+                                background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
+                                z-index: 999999; /* Valor extremadamente alto para estar sobre todo */
+                                display: none;   /* Se activa con JS */
+                                justify-content: center;
+                                align-items: center;
+                                color: white;
+                                text-align: center;
+                                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                            }
+
+                            .loader-content h2 {
+                                margin-top: 20px;
+                                letter-spacing: 2px;
+                                font-weight: bold;
+                            }
+
+                            .spinner-custom {
+                                width: 80px;
+                                height: 80px;
+                                border: 8px solid rgba(255, 255, 255, 0.1);
+                                border-top: 8px solid #3276b1; /* Color azul de SmartAdmin */
+                                border-radius: 50%;
+                                animation: spin-loading 1s linear infinite;
+                                display: inline-block;
+                            }
+
+                            @keyframes spin-loading {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                            </style>';
         $this->load->view('admin/modificacion/requerimientos/cite_servicio', $data); 
       }
       else{
@@ -91,7 +126,7 @@ class Cmod_insumo extends CI_Controller {
           }
       }
 
-      redirect(site_url("").'/mod/procesos/'.$componente[0]['proy_id'].'');
+      redirect(site_url("").'/mod/form5/'.$componente[0]['proy_id'].'');
     }
 
 

@@ -142,7 +142,7 @@ class Cmod_fisica extends CI_Controller {
           /*---------------------------------------------------------------*/
 
           if(count($this->model_modfisica->get_cite_fis($cite_id))==1){
-            redirect(site_url("").'/mod/lista_UnidadesResponsables/'.$cite_id.'');
+            redirect(site_url("").'/mod/lista_mod_form4/'.$cite_id.'');
           }
           else{
             $this->session->set_flashdata('danger','ERROR AL REGISTRAR CITE');
@@ -180,41 +180,55 @@ class Cmod_fisica extends CI_Controller {
           $data['list_oregional']=$this->lista_oregional($data['cite'][0]['proy_id']);
          }
 
-//echo $data['cite'][0]['proy_id'];
+         $data['loading']='<div id="loading-overlay">
+                              <div class="loader-content">
+                                  <div class="spinner-custom"></div>
+                                  <h2 style="color: white;">GUARDANDO ACTIVIDAD</h2>
+                                  <p style="color: white;">Por favor, no cierre la ventana...</p>
+                              </div>
+                          </div>
+
+                            <style>
+                            #loading-overlay {
+                                position: fixed; /* Se mantiene fijo aunque hagas scroll */
+                                top: 0;
+                                left: 0;
+                                width: 125vw;    /* 120% del ancho de la ventana */
+                                height: 125vh;   /* 120% del alto de la ventana */
+                                background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
+                                z-index: 999999; /* Valor extremadamente alto para estar sobre todo */
+                                display: none;   /* Se activa con JS */
+                                justify-content: center;
+                                align-items: center;
+                                color: white;
+                                text-align: center;
+                                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                            }
+
+                            .loader-content h2 {
+                                margin-top: 20px;
+                                letter-spacing: 2px;
+                                font-weight: bold;
+                            }
+
+                            .spinner-custom {
+                                width: 80px;
+                                height: 80px;
+                                border: 8px solid rgba(255, 255, 255, 0.1);
+                                border-top: 8px solid #3276b1; /* Color azul de SmartAdmin */
+                                border-radius: 50%;
+                                animation: spin-loading 1s linear infinite;
+                                display: inline-block;
+                            }
+
+                            @keyframes spin-loading {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                            </style>';
+
         $data['formulario_N4']=$this->modificacionpoa->mod_mis_formulariosN4($data['cite']); /// Lista de Actividades
         $this->load->view('admin/modificacion/moperaciones/productos/list_productos', $data);
-         
-/*
-         $cite_id = 496; /// Cite Id
-          $prod_id = 61387; /// Prod Id
-          $cite=$this->model_modfisica->get_cite_fis($cite_id); /// Datos cite
-          $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// Datos del Proyecto
-
-
-          if($this->copia_operacion($cite,$prod_id,3)){
-            $update_prod = array(
-              'prod_mod' => 2,
-              'estado' => 3,
-              'num_ip' => $this->input->ip_address(), 
-              'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-              'fun_id' => $this->fun_id,
-              );
-            $this->db->where('prod_id', $prod_id);
-            $this->db->update('_productos', $update_prod);
-
-            $result = array(
-              'respuesta' => 'correcto'
-            );
-          }
-          else{
-            $result = array(
-              'respuesta' => 'error'
-            );
-          }
-
-          echo json_encode($result);*/
-
-
       }
       else{
         $this->session->set_flashdata('danger','ERROR AL INGRESAR');
@@ -626,7 +640,7 @@ class Cmod_fisica extends CI_Controller {
 
           /*-------------- Redireccionando a lista de Operaciones -------*/
           $this->session->set_flashdata('success','LA ACTIVIDAD SE MODIFICO CORRECTAMENTE :)');
-          redirect(site_url("").'/mod/lista_operaciones/'.$cite_id.'');
+          redirect(site_url("").'/mod/lista_mod_form4/'.$cite_id.'');
         }
 
       } else {
@@ -781,7 +795,7 @@ class Cmod_fisica extends CI_Controller {
             else{
               $this->session->set_flashdata('danger','LA ACTIVIDAD NOSE REGISTRO CORRECTAMENTE, VERIFIQUE DATOS :(');
             }
-          redirect(site_url("").'/mod/lista_operaciones/'.$cite_id.'');
+          redirect(site_url("").'/mod/lista_mod_form4/'.$cite_id.'');
       }
       else{
         echo "string";
@@ -799,8 +813,10 @@ class Cmod_fisica extends CI_Controller {
       $this->db->update('cite_mod_fisica', $this->security->xss_clean($update_cite));
     }
 
-    /*---- Eliminar Operacion-Producto ---*/
-      function delete_operacion(){
+
+
+    /*---- ELIMINAR FORM 4 2026---*/
+      function delete_modFormN4(){
       if ($this->input->is_ajax_request() && $this->input->post()) {
           $post = $this->input->post();
           $cite_id = $post['cite_id']; /// Cite Id
@@ -1410,16 +1426,16 @@ class Cmod_fisica extends CI_Controller {
         'prodh_producto' => $producto[0]['prod_producto'],
         'indi_id' => $producto[0]['indi_id'],
         'prodh_indicador' => $producto[0]['prod_indicador'],
-        'prodh_formula' => $producto[0]['prod_formula'],
+      //  'prodh_formula' => $producto[0]['prod_formula'],
         'prodh_linea_base' => $producto[0]['prod_linea_base'],
         'prodh_meta' => $producto[0]['prod_meta'],
         'prod_fuente_verificacion' => $producto[0]['prod_fuente_verificacion'],
-        'pt_id' => $producto[0]['pt_id'],
+      //  'pt_id' => $producto[0]['pt_id'],
         'prod_resultado' => $producto[0]['prod_resultado'],
-        'acc_id' => $producto[0]['acc_id'],
+      //  'acc_id' => $producto[0]['acc_id'],
         'or_id' => $producto[0]['or_id'],
         'prod_cod' => $producto[0]['prod_cod'],
-        'prod_observacion' => $producto[0]['prod_observacion'],
+      //  'prod_observacion' => $producto[0]['prod_observacion'],
         'prodh_unidades' => $producto[0]['prod_unidades'],
         'huni_resp' => $producto[0]['uni_resp'],
         'mt_id' => $producto[0]['mt_id'],

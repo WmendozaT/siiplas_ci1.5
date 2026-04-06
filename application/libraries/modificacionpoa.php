@@ -591,26 +591,7 @@ class Modificacionpoa extends CI_Controller{
                   for ($i=1; $i <=12 ; $i++) { 
                     $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($rowp['mes'.$i],2).''.$tp.'</td>';
                   }
-                  /*if(count($programado)!=0){
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).''.$tp.'</td>';
-                  }
-                  else{
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
-                    }
-                  }*/
-
+                  
                   $tabla.='
                   <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
                  
@@ -995,7 +976,7 @@ class Modificacionpoa extends CI_Controller{
       $tabla='';
       if(count($proyecto)!=0){
         $componente=$this->model_componente->proyecto_componente($proyecto[0]['proy_id']);
-        $form4=$this->model_producto->lista_form4_x_unidadresponsable($componente[0]['com_id']);
+        $form4=$this->model_producto->get_lista_form4_uresp_consolidado_programa_bolsas($componente[0]['com_id']);
 
          $tabla.='
           <div class="well">
@@ -1021,38 +1002,62 @@ class Modificacionpoa extends CI_Controller{
               </thead>
               <tbody>';
               $num=0; $ponderacion=0; $sum=0;
-              foreach($form4 as $row){
-                $num++;
-                $tabla.='
-                <tr>
-                  <td style="font-size: 20px; text-align:center; color:blue" bgcolor="#d4f1fb" title="'.$row['prod_id'].'"><b>'.$row['prod_cod'].'</b></td>
-                  <td><b>'.$row['tipo'].' '.$row['act_descripcion'].' - '.$row['abrev'].'</b> - <font color=blue>'.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</font></td>
-                  <td>'.$row['prod_producto'].'</td>
-                  <td align=center>
-                    <a href="#" data-toggle="modal" data-target="#modal_ver" class="btn btn-default ver"  title="VER REQUERIMIENTOS ALINEADOS A LA ACTIVIDAD" name="'.$row['prod_id'].'" id="'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].' - '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'">
-                      <img src="'.base_url().'assets/ifinal/ver_proyecto.png" WIDTH="40" HEIGHT="40"/>
-                    </a>
-                  </td>
-                  <td align=center>';
-                    if($this->conf_mod_req==1 || $this->tp_adm==1){
-                      $tabla.='
-                      <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default nuevo_ff"  title="MODIFICAR REQUERIMIENTOS"  onclick="update_temp('.$componente[0]['com_id'].',0,'.$row['prod_id'].');">
-                        <img src="'.base_url().'assets/Iconos/application_form_add.png" WIDTH="30" HEIGHT="30"/>&nbsp;
-                        <b style="font-size:10px; color:blue">INGRESAR DATOS CITE</b>
-                      </a>';
-                    }
-                  $tabla.='</td>
-                  <td align=center>';
+              $url_base = base_url();
+              $img_ver  = $url_base . 'assets/ifinal/ver_proyecto.png';
+              $img_add  = $url_base . 'assets/Iconos/application_form_add.png';
+              $img_rev  = $url_base . 'assets/Iconos/application_form_magnify.png';
+              $has_saldos = (!empty($saldos_revertidos_partidas)); // Booleano rápido
+              $com_id   = $componente[0]['com_id'];
 
-                  if(count($saldos_revertidos_partidas)!=0){
-                  $tabla.='
-                        <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-warning nuevo_ff"  title="MODIFICAR REQUERIMIENTOS POR REVERSION DE SALDOS" onclick="update_temp('.$componente[0]['com_id'].',1,'.$row['prod_id'].');" >
-                        <img src="'.base_url().'assets/Iconos/application_form_magnify.png" WIDTH="30" HEIGHT="30"/>&nbsp;
-                        <b style="font-size:10px;">INGRESAR DATOS CITE</b>
-                      </a>';
+              foreach($form4 as $row) {
+                  $num++;
+                  $p_id = $row['prod_id'];
+                  $p_cod = $row['prod_cod'];
+                  $unidades = trim($row['prod_unidades']); // Limpiamos espacios en blanco
+
+                  // 2. Iniciamos la fila con ID para borrado dinámico
+                  $tabla .= '<tr id="tr_'.$p_id.'">
+                      <td style="font-size: 20px; text-align:center; color:blue" bgcolor="#d4f1fb" title="ID: '.$p_id.'"><b>'.$p_cod.'</b></td>
+                      <td style="color:blue"><b>'.$unidades.'</b></td>
+                      <td>'.$row['prod_producto'].'</td>';
+
+                  // --- CONDICIÓN MAESTRA: Si no hay unidades, las celdas de botones van vacías ---
+                  if (empty($unidades)) {
+                      $tabla .= '<td align="center">-</td><td align="center">-</td><td align="center">-</td>';
+                  } 
+                  else {
+                      // Celda: Ver Requerimientos
+                      $tabla .= '
+                      <td align="center">
+                          <a href="#" data-toggle="modal" data-target="#modal_ver" class="btn btn-default ver" title="VER REQUERIMIENTOS" name="'.$p_id.'" id="'.$p_cod.'.- '.$unidades.'">
+                              <img src="'.$img_ver.'" width="40" height="40"/>
+                          </a>
+                      </td>';
+
+                      // Celda: Modificar Requerimientos (Condicional Adm o Config)
+                      $tabla .= '<td align="center">';
+                      if (($p_cod != '' && $this->conf_mod_req == 1) || $this->tp_adm == 1) {
+                          $tabla .= '
+                              <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default nuevo_ff" title="MODIFICAR REQUERIMIENTOS" onclick="update_temp('.$com_id.', 0, '.$p_id.');">
+                                  <img src="'.$img_add.'" width="30" height="30"/>&nbsp;
+                                  <b style="font-size:10px; color:blue">INGRESAR DATOS CITE</b>
+                              </a>';
+                      }
+                      $tabla .= '</td>';
+
+                      // Celda: Saldos Revertidos
+                      $tabla .= '<td align="center">';
+                      if ($has_saldos) {
+                          $tabla .= '
+                              <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-warning nuevo_ff" title="REVERSIÓN DE SALDOS" onclick="update_temp('.$com_id.', 1, '.$p_id.');">
+                                  <img src="'.$img_rev.'" width="30" height="30"/>&nbsp;
+                                  <b style="font-size:10px;">INGRESAR DATOS CITE</b>
+                              </a>';
+                      }
+                      $tabla .= '</td>';
                   }
-                  $tabla.='</td>
-                </tr>';
+
+                  $tabla .= '</tr>';
               }
               $tabla.='
               </tbody>
@@ -1067,11 +1072,11 @@ class Modificacionpoa extends CI_Controller{
 
     /*------ Lista de Unidades Responsables (Gasto Corriente) ------*/
     public function unidades_responsables($proyecto){
-      $fase = $this->model_faseetapa->get_id_fase($proyecto[0]['proy_id']);
+
       $saldos_revertidos_partidas=$this->model_ptto_sigep->lista_monto_partidas_revertidos_unidad($proyecto[0]['proy_id']);
       $tabla='';
-        if(count($fase)!=0){
-            $componente=$this->model_componente->componentes_id($fase[0]['id'],$proyecto[0]['tp_id']);
+
+            $UniResponsables=$this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
             $tabla.='
               <div class="well">
               <table class="table table-bordered" width="100%">
@@ -1092,7 +1097,7 @@ class Modificacionpoa extends CI_Controller{
                 </thead>
                 <tbody>';
                 $num=0; $ponderacion=0; $sum=0;
-                foreach($componente as $row){
+                foreach($UniResponsables as $row){
                   $num++;
                   $tabla.='
                   <tr>
@@ -1134,13 +1139,7 @@ class Modificacionpoa extends CI_Controller{
                 </tbody>
               </table>
             </div>';
-        }
-        else{
-          $tabla.='<hr>
-                  <div class="alert alert-danger" role="alert">
-                    EL PROYECTO NO TIENE FASE ACTIVA PARA ESTA GESTIÓN '.$this->gestion.'  
-                  </div>';
-        }
+
 
       return $tabla;
     }

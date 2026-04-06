@@ -244,7 +244,7 @@
 	            </div><!-- /.modal-content -->
 	        </div><!-- /.modal-dialog -->
 	    </div>
-
+<?php echo $loading;?>
 		<script>
 			if (!window.jQuery) {
 				document.write('<script src="<?php echo base_url();?>/assets/js/libs/jquery-2.0.2.min.js"><\/script>');
@@ -314,7 +314,77 @@
 	      return true;
 		}
 
-		function update_temp(com_id,tipo,prod_id) {
+
+function update_temp(com_id, tipo, prod_id) {
+	$("#loading-overlay").hide(); // Ocultar overlay al iniciar
+    // Asignar valores a los campos ocultos
+    document.getElementById("com_id").value = com_id;
+    document.getElementById("tp_mod").value = tipo;
+    document.getElementById("prod_id").value = prod_id;
+
+    // Cambiar el título dinámicamente
+    var titulo = '<b>REGISTRE NOTA CITE</b>';
+    if (tipo != 0) {
+        titulo += '<br><div style="color:#BDAA1F;"><b>REVERSION DE SALDOS</b></div>';
+    }
+    $('#titulo_form').html('<center>' + titulo + '</center>');
+
+    // IMPORTANTE: Limpiar el botón de envío para evitar duplicados
+    $("#add_form").off("click"); 
+    
+    // Volver a asignar el evento de validación y envío
+    asignarEventoEnvio();
+}
+
+function asignarEventoEnvio() {
+    $("#add_form").on("click", function () {
+        // Configuración del validador
+        var $validator = $("#form_nuevo").validate({
+            rules: {
+                cite: { required: true },
+                fm: { required: true }
+            },
+            messages: {
+                cite: "<font color=red>REGISTRE CITE</font>",
+                fm: "<font color=red>SELECCIONE FECHA</font>",
+            },
+            errorPlacement: function (error, element) {
+                error.insertAfter(element.parent());
+            }
+        });
+
+        if ($("#form_nuevo").valid()) {
+            var fecha = document.getElementById('fm').value;
+            
+            if (!validarFormatoFecha(fecha)) {
+                alertify.error("El formato de la fecha es incorrecto.");
+                return;
+            }
+            
+            if (!existeFecha(fecha)) {
+                alertify.error("La fecha introducida no existe.");
+                return;
+            }
+
+            alertify.confirm("DESEA INGRESAR A REALIZAR LA MODIFICACI\u00D3N DE REQUERIMIENTOS ?", function (a) {
+                if (a) {
+    // 1. Mostrar el overlay de pantalla completa
+    // Usamos .css('display', 'flex') para que los elementos se centren
+    $("#loading-overlay").css("display", "flex");
+
+    // 2. Deshabilitar el botón del modal para evitar clics extra
+    $("#add_form").prop("disabled", true);
+
+    // 3. Enviar el formulario
+    document.getElementById('form_nuevo').submit();
+} else {
+                    alertify.error("OPCI\u00D3N CANCELADA");
+                }
+            });
+        }
+    });
+}
+/*		function update_temp(com_id,tipo,prod_id) {
 			document.getElementById("com_id").value=com_id;
 		  document.getElementById("tp_mod").value=tipo;
 		  document.getElementById("prod_id").value=prod_id;
@@ -382,7 +452,7 @@
 		        }
 		    });
 
-  }
+  }*/
 
 
 		//// Lista de requerimientos alineados a cada actividad

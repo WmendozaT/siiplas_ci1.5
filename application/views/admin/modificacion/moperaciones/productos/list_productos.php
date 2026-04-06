@@ -52,6 +52,7 @@
 		</style>
 	</head>
 	<body class="">
+
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
 		<!-- HEADER -->
 		<header id="header">
@@ -128,6 +129,7 @@
 			<!-- MAIN CONTENT -->
 			<div id="content">
 			<div class="row">
+
 				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-8">
 					<section id="widget-grid" class="well">
 						<div class="" title="<?php echo $cite[0]['proy_id']?>">
@@ -182,7 +184,6 @@
                   <h2 class="font-md"><strong>FORMULARIO N° 4 - <?php echo $this->session->userdata('gestion')?></strong></h2>  
               </header>
               <div>
-              	
                 <div class="widget-body no-padding">
                     <?php echo $formulario_N4;?>
                 </div>
@@ -198,8 +199,8 @@
 		</div>
 		<!-- END MAIN PANEL -->
 
-
-		<!-- NUEVO MODAL -->
+<?php echo $loading; ?>
+		<!-- NUEVO MODAL FORM 4 -->
 	  <div class="modal fade" id="modal_nuevo_form" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	    <div class="modal-dialog" id="mdialTamanio">
 	      <div class="modal-content">
@@ -225,7 +226,7 @@
 	                        <label class="label"><b>DESCRIPCIÓN ACTIVIDAD</b></label>
 	                        <label class="textarea">
 	                          <i class="icon-append fa fa-tag"></i>
-	                          <textarea rows="2" name="prod" id="prod" title="REGISTRAR OPERACIÓN"></textarea>
+	                          <textarea rows="2" name="prod" id="prod" title="REGISTRAR ACTIVIDAD"></textarea>
 	                        </label>
 	                      </section>
 	                      <section class="col col-4">
@@ -718,6 +719,7 @@
 	        </div>
 	    </div>
 	 <!--  =============== -->
+
 		<!-- PAGE FOOTER -->
 		<div class="page-footer">
 			<div class="row">
@@ -778,7 +780,24 @@
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
 		<script src="<?php echo base_url(); ?>mis_js/programacionpoa/form4.js"></script> 
 		<script src = "<?php echo base_url(); ?>mis_js/programacion/programacion/tablas.js"></script>
+
 		<script type="text/javascript">
+/*			$(document).ready(function() {
+				    // Al hacer clic en el botón de prueba
+				    $("#btn-test-loading").on("click", function() {
+				        // Mostramos el loading con FLEX para centrar contenido
+				        $("#loading-overlay").css("display", "flex");
+				        // Mostramos un botón auxiliar para poder cerrarlo y seguir editando
+				        $("#btn-cerrar-loading").show();
+				    });
+
+				    // Para cerrar el loading durante la edición
+				    $("#btn-cerrar-loading").on("click", function() {
+				        $("#loading-overlay").hide();
+				        $(this).hide();
+				    });
+				});*/
+
 			$(document).ready(function() {
 				pageSetUp();
 				$("#menu").menu();

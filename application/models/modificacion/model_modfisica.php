@@ -21,7 +21,7 @@ class Model_modfisica extends CI_Model{
              $sql = '
                 SELECT 
                     ci.cite_id, ci.com_id, ci.cite_codigo, ci.cite_nota, ci.cite_fecha, ci.tp_reporte,
-                    ci.cite_estado, ci.cite_activo, ci.tipo_modificacion, ci.fun_id,
+                    ci.cite_estado, ci.cite_activo, ci.tipo_modificacion, ci.fun_id,ci.cite_observacion,
                     f.fun_nombre, f.fun_paterno, f.fun_materno,f.fun_cargo,
                     c.com_componente,
                     tpsa.tipo_subactividad,
