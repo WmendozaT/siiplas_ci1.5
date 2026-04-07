@@ -180,22 +180,5 @@
 				$('#tabs').tabs();
 			})
 		</script>
-		<script>
-		document.addEventListener('click', function(e) {
-		    // Buscamos si el clic fue en el botón de modificar (o su imagen interna)
-		    const btn = e.target.closest('.btn-modificar');
-		    
-		    if (btn) {
-		        // Bloqueamos el puntero para evitar múltiples clics
-		        btn.style.pointerEvents = 'none';
-		        
-		        // Mostramos el bloqueo de pantalla completo
-		        const blocker = document.getElementById('screen-blocker');
-		        if (blocker) {
-		            blocker.style.display = 'block';
-		        }
-		    }
-		});
-		</script>
 	</body>
 </html>

@@ -429,7 +429,6 @@ function valida_eliminar(){
           request.done(function (response, textStatus, jqXHR) {
 
           if (response.respuesta == 'correcto') {
-alert(response.respuesta)
             $( "#costou" ).prop( "disabled", false );
 
             if(response.verif_cert==1){
@@ -439,7 +438,7 @@ alert(response.respuesta)
               $( "#par_padre" ).prop( "disabled", true );
               $( "#par_hijo" ).prop( "disabled", true );
               $( "#observacion" ).prop( "disabled", true );
-              if(response.monto_certificado==response.prog[0]['programado_total']){
+              if(response.monto_certificado==insumo[0]['programado_total']){
                 $( "#cantidad" ).prop( "disabled", true );
               }
             }
@@ -465,15 +464,15 @@ alert(response.respuesta)
              //document.getElementById("par_padre").value = response.ppdre[0]['par_codigo'];
              document.getElementById("par_hijo").value = response.insumo[0]['par_id'];
              document.getElementById("par_id").value = response.insumo[0]['par_id'];
-             document.getElementById("mtot").value = response.prog[0]['programado_total'];
+             document.getElementById("mtot").value = response.insumo[0]['programado_total'];
              document.getElementById("observacion").value = response.insumo[0]['ins_observacion'];
-             document.getElementById("monto_cert").value = response.monto_certificado;
+             document.getElementById("monto_cert").value = response.insumo[0]['certificado_total'];
              $("#par_padre").html(response.partidas);
              $("#par_hijo").html(response.lista_partidas);
              $("#id").html(response.lista_prod_act);
-             $('#monto').html('<font color=blue size=2><b>MONTO CERTIFICADO : '+response.monto_certificado+'</b></font>');
-             $('#ff').html('FUENTE DE FINANCIAMIENTO : '+response.prog[0]['ff_codigo']+' || ORGANISMO FINANCIADOR : '+response.prog[0]['of_codigo']);
-             if(response.prog[0]['programado_total']!=response.insumo[0]['ins_costo_total']){
+             $('#monto').html('<font color=blue size=2><b>MONTO CERTIFICADO : '+response.insumo[0]['certificado_total']+'</b></font>');
+            
+             if(response.insumo[0]['programado_total']!=response.insumo[0]['ins_costo_total']){
               $('#amtit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO</div></center>');
               $('#mbut').slideUp();
              }
@@ -481,7 +480,7 @@ alert(response.respuesta)
              for (var i = 1; i <=12; i++) {
               mes=mes_texto(i);
              
-              document.getElementById("mm"+i).value = response.prog[0]['mes'+i];
+              document.getElementById("mm"+i).value = response.insumo[0]['mes'+i];
            
               if(response.verif_mes['verf_mes'+i]==1){
                 document.getElementById("mm"+i).disabled = true;
@@ -493,7 +492,7 @@ alert(response.respuesta)
               }
              }
 
-             if(response.monto_certificado==response.prog[0]['programado_total']){
+             if(response.insumo[0]['certificado_total']==response.prog[0]['programado_total']){
               $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
               $('#mbut').slideUp();
              }
@@ -513,7 +512,7 @@ alert(response.respuesta)
                 $('#mbut').slideUp();
               }
               else{
-                if(response.monto_certificado==response.prog[0]['programado_total']){
+                if(response.insumo[0]['certificado_total']==response.insumo[0]['programado_total']){
                     $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
                     $('#mbut').slideUp();
                   }
@@ -1066,3 +1065,60 @@ $(document).ready(function() {
       }
       return texto;
     }
+
+    ///////////////// Anular (ocultar) el item del reporte
+      $(function () {
+        /*------- Anular Modifcación -------*/
+        $(".anular_mod").on("click", function (e) {
+            var id = $(this).attr('name');
+          
+            var request;
+            // confirm dialog
+            alertify.confirm("QUITAR REQUERIMIENTO DEL CITE ?", function (a) {
+                if (a) { 
+                    var url = base+"index.php/modificaciones/cmod_insumo/quitar_requerimiento_cite";
+                    $('#loading-overlay').css('display', 'flex');
+                    if (request) {
+                        request.abort();
+                    }
+                    request = $.ajax({
+                        url: url,
+                        type: "POST",
+                        dataType: "json",
+                      data: "id="+id
+                    });
+
+                    request.done(function (response, textStatus, jqXHR) { 
+                     
+                      if (response.respuesta == 'correcto') {
+                          window.location.reload(true);
+                      } else {
+                        $('#loading-overlay').hide();
+                          alertify.error("Error al anular Item !!! ");
+                      }
+                  });
+                    request.fail(function (jqXHR, textStatus, thrown) {
+                      $('#loading-overlay').hide();
+                        console.log("ERROR: " + textStatus);
+                    });
+                    request.always(function () {
+                        //console.log("termino la ejecuicion de ajax");
+                    });
+
+                    e.preventDefault();
+
+                } else {
+                    // user clicked "cancel"
+                    alertify.error("Opcion cancelada");
+                }
+            });
+            return false;
+        });
+
+    });
+
+
+
+
+
+

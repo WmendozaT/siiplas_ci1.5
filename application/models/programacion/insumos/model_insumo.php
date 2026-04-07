@@ -669,11 +669,16 @@ class Model_insumo extends CI_Model{
 
     /*---- GET REQUERIMIENTO + temporalidad 2026 -----*/
     function get_requerimiento($ins_id){
-        $sql = 'SELECT *
+        $sql = 'SELECT ip.*, 
+                i.*, 
+                par.*, 
+                prog.*, 
+                COALESCE(cert.certificado, 0) AS certificado_total
                 from _insumoproducto ip
                 Inner Join insumos as i On i.ins_id=ip.ins_id
                 Inner Join partidas as par On par.par_id=i.par_id
                 left Join vista_temporalidad_insumo2 as prog On prog.ins_id=i.ins_id
+                left Join vmonto_certificado_insumo as cert On cert.ins_id=i.ins_id
                 where i.ins_id='.$ins_id.' and ins_estado!=3 and i.aper_id!=0';
         
         $query = $this->db->query($sql);

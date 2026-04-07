@@ -103,8 +103,6 @@ class Cmodificaciones extends CI_Controller {
     $data['menu']=$this->menu(3); //// genera menu
     $UniOrg=$this->model_proyecto->get_UnidadOrganizacional($proy_id);
     if(count($UniOrg)!=0){
-
-
       $tabla='';
       $tabla.='
       <style>
@@ -129,6 +127,7 @@ class Cmodificaciones extends CI_Controller {
               font-size: 9px;
             }
     </style>
+    '.$this->modificacionpoa->loading_siguiente_pagina().'
       <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
               <section id="widget-grid" class="well">
                <h1> '.$UniOrg[0]['aper_programa'].' '.$UniOrg[0]['aper_proyecto'].' '.$UniOrg[0]['aper_actividad'].' - '.$UniOrg[0]['proy_nombre'].' '.$UniOrg[0]['abrev'].'</h1>;
@@ -186,7 +185,7 @@ class Cmodificaciones extends CI_Controller {
                               <th style="width:10%;">NRO CITE</th>
                               <th style="width:10%;">FECHA CITE </th>
                               <th style="width:10%;">C&Oacute;DIGO </th>
-                              <th style="width:20%;">SUBACTIVIDAD/UNIDAD RESPONSABLE</th>
+                              <th style="width:20%;">UNIDAD RESPONSABLE</th>
                               <th style="width:5%;"></th>
                               <th style="width:5%;"></th>
                             </tr>
@@ -228,44 +227,7 @@ class Cmodificaciones extends CI_Controller {
                   </article>
                 </div>
               </div>
-            </article>
-
-            <div id="screen-blocker" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; cursor: wait;">
-                <style>
-                    /* Estilos específicos para el spinner sin afectar al resto de la página */
-                    .loader-wrapper { 
-                        position: absolute; 
-                        top: 50%; 
-                        left: 50%; 
-                        transform: translate(-50%, -50%); 
-                        text-align: center; 
-                    }
-                    .spinner-custom { 
-                        border: 8px solid #f3f3f3; 
-                        border-top: 8px solid #5B9360; /* Color verde sugerido */
-                        border-radius: 50%; 
-                        width: 60px; 
-                        height: 60px; 
-                        animation: spin-custom 1s linear infinite; 
-                        margin: 0 auto 15px; 
-                    }
-                    @keyframes spin-custom { 
-                        0% { transform: rotate(0deg); } 
-                        100% { transform: rotate(360deg); } 
-                    }
-                    .loading-text { 
-                        font-family: Arial, sans-serif; 
-                        color: #333; 
-                        font-weight: bold; 
-                        font-size: 16px; 
-                    }
-                </style>
-                
-                <div class="loader-wrapper">
-                    <div class="spinner-custom"></div>
-                    <div class="loading-text">Cargando Listado, espere por favor...</div>
-                </div>
-            </div> ';
+            </article>';
 
             $data['vista']=$tabla;
             $this->load->view('admin/modificacion/list_cites', $data);
@@ -322,18 +284,14 @@ class Cmodificaciones extends CI_Controller {
                 
                 $tabla .='<td align="center">';
                   if($this->conf_mod_req==1 || $this->tp_adm==1){
-                    $tabla .='<a href="'.base_url().'index.php/mod/update_cite/'.$cit['cite_id'].'" id="myBtn'.$cit['cite_id'].'" title="MODIFICAR CITE"><img src="'.base_url().'assets/ifinal/form1.jpg" width="30" height="30"/></a><br>
-                            <img id="load'.$cit['cite_id'].'" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="20" height="20" title="ESPERE UN MOMENTO, LA PAGINA SE ESTA CARGANDO..">';
+
+                    $tabla .='
+                        <a href="'.base_url().'index.php/mod/update_cite/'.$cit['cite_id'].'" class="btn-modificar" title="MODIFICAR CITE">
+                        <img src="'.base_url().'assets/ifinal/form1.jpg" width="30" height="30"/></a><br>';
                   }
                 $tabla .='</td>';
 
               $tabla .='</tr>';
-              $tabla.='<script>
-                          document.getElementById("myBtn'.$cit['cite_id'].'").addEventListener("click", function(){
-                          this.disabled = true;
-                          document.getElementById("load'.$cit['cite_id'].'").style.display = "block";
-                        });
-                      </script>';
             }
         }
       }
@@ -352,16 +310,17 @@ class Cmodificaciones extends CI_Controller {
               $tabla .= '<td align="center">'.$nro.'</td>';
               $tabla .= '<td><b>'.htmlspecialchars($cit['cite_nota']).'</b></td>';
               $tabla .= '<td align="center">'.date('d/m/Y', strtotime($cit['cite_fecha'])).'</td>';
-              $tabla .= '<td></td>';
+              $tabla .= '<td><b>'.htmlspecialchars($cit['cite_codigo']).'</b></td>';
               $tabla .= '<td>'.htmlspecialchars($cit['com_componente']).'</td>';
               $tabla .= '<td align="center"><a href="javascript:abreVentana(\''.$urlReporte.'\');" title="REPORTE"><img src="'.base_url('assets/ifinal/requerimiento.png').'" width="25" height="25"/></a></td>';
               $tabla .= '<td align="center">';
               
               if($this->conf_mod_ope == 1 || $this->tp_adm == 1){
-    $tabla .= '<a href="'.$urlModificar.'" class="btn-modificar" data-id="'.$citeId.'" title="MODIFICAR CITE">
+              $tabla .= '
+              <a href="'.$urlModificar.'" class="btn-modificar" data-id="'.$citeId.'" title="MODIFICAR CITE">
                 <img src="'.base_url('assets/ifinal/form1.jpg').'" width="30" height="30"/>
               </a>';
-}
+              }
               
               $tabla .= '</td>';
               $tabla .= '</tr>';
@@ -383,7 +342,7 @@ class Cmodificaciones extends CI_Controller {
                   $tabla .='<td><b>'.$cit['cppto_cite'].'</b></td>';
                   $tabla .='<td align="center"><b>'.date('d/m/Y',strtotime($cit['cppto_fecha'])).'</b></td>';
                   $tabla .='<td align="center">'.$tp_mod.'</td>';
-                  $tabla .='<td align=center><a href="javascript:abreVentana(\''.site_url("").'/mod/rep_mod_techo/'.$cit['cppto_id'].'\');" title="REPORTE CITES - MODIFICACIÓN TECHO PRESUPUESTARIO"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/></a></td>';
+                  $tabla .='<td align=center><a href="javascript:abreVentana(\''.site_url("").'/mod/rep_mod_techo/'.$cit['cppto_id'].'\');" class="btn-modificar"  title="REPORTE CITES - MODIFICACIÓN TECHO PRESUPUESTARIO"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/></a></td>';
                   $tabla .='<td align=center>';
                     if($this->fun_id==399){
                       $tabla.='<a href="'.base_url().'index.php/mod/techo/'.$cit['cppto_id'].'" title="MODIFICAR TECHO PRESUPUESTARIO">MOD. TECHO</a>';

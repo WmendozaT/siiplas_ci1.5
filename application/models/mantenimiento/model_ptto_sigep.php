@@ -1078,34 +1078,103 @@ class Model_ptto_sigep extends CI_Model{
     }
 
 
-    /*---- Get Partida Programado - gasto corriente (Partida -> Unidad)---*/
-    public function get_partida_programado_poa($aper_id,$par_id){
-        $sql = 'SELECT i.aper_id,i.par_id,par.par_codigo as codigo,par.par_nombre, SUM(i.ins_costo_total) as ppto_programado
-                from insumos i
-                Inner Join partidas as par On par.par_id=i.par_id
-                where i.aper_id='.$aper_id.' and i.par_id='.$par_id.' and i.aper_id!=0 and i.ins_tipo_modificacion=0
-                group by i.aper_id,i.par_id,par.par_codigo,par.par_nombre';
+    /*---- Get Partida Programado - gasto corriente (Partida -> Unidad) a borrar---*/
+    // public function get_partida_programado_poa($aper_id,$par_id){
+    //     $sql = 'SELECT i.aper_id,i.par_id,par.par_codigo as codigo,par.par_nombre, SUM(i.ins_costo_total) as ppto_programado
+    //             from insumos i
+    //             Inner Join partidas as par On par.par_id=i.par_id
+    //             where i.aper_id='.$aper_id.' and i.par_id='.$par_id.' and i.aper_id!=0 and i.ins_tipo_modificacion=0
+    //             group by i.aper_id,i.par_id,par.par_codigo,par.par_nombre';
         
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
-    /*--------- Get Partida Asignado (Partida -> Unidad)------------*/
-    public function get_partida_asignado_sigep($aper_id,$par_id){
+    // /*--------- Get Partida Asignado (Partida -> Unidad) a borrar------------*/
+    // public function get_partida_asignado_sigep($aper_id,$par_id){
+    //     $sql = '
+    //             SELECT pg.aper_id,pg.par_id, p.par_codigo as codigo, p.par_nombre as nombre, SUM(pg.importe) as ppto_asignado,pg.ppto_saldo_ncert
+    //             from ptto_partidas_sigep pg
+    //             Inner Join partidas as p On p.par_id=pg.par_id
+    //             where pg.aper_id='.$aper_id.' and pg.estado!=3 and pg.g_id='.$this->gestion.' and pg.par_id='.$par_id.'
+    //             group by pg.aper_id,pg.par_id, p.par_codigo, p.par_nombre,pg.ppto_saldo_ncert';
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
+
+
+    /*--------- Get Partida Asignado vs programado por partida y unidad------------*/
+    public function get_ppto_partida_asignado_programado_Uresponsable($aper_id,$par_id){
         $sql = '
-                SELECT pg.aper_id,pg.par_id, p.par_codigo as codigo, p.par_nombre as nombre, SUM(pg.importe) as ppto_asignado,pg.ppto_saldo_ncert
-                from ptto_partidas_sigep pg
-                Inner Join partidas as p On p.par_id=pg.par_id
-                where pg.aper_id='.$aper_id.' and pg.estado!=3 and pg.g_id='.$this->gestion.' and pg.par_id='.$par_id.'
-                group by pg.aper_id,pg.par_id, p.par_codigo, p.par_nombre,pg.ppto_saldo_ncert';
+            SELECT 
+                res.aper_id,
+                res.par_id,
+                p.par_codigo AS codigo,
+                p.par_nombre AS nombre,
+                SUM(res.prog) AS ppto_programado,
+                SUM(res.asig) AS ppto_asignado,
+                -- Ajuste: Restar las sumas directamente
+                (SUM(res.asig) - SUM(res.prog)) AS saldo
+            FROM (
+                -- Datos de Insumos
+                SELECT aper_id, par_id, ins_costo_total AS prog, 0 AS asig
+                FROM insumos
+                WHERE ins_tipo_modificacion = 0 AND aper_id != 0
+
+                UNION ALL
+
+                -- Datos de Presupuesto SIGEP
+                SELECT aper_id, par_id, 0 AS prog, importe AS asig
+                FROM ptto_partidas_sigep
+                WHERE estado != 3 AND g_id = '.$this->gestion.'
+            ) res
+            INNER JOIN partidas p ON p.par_id = res.par_id
+            WHERE res.aper_id = '.$aper_id.' AND res.par_id = '.$par_id.'
+            GROUP BY res.aper_id, res.par_id, p.par_codigo, p.par_nombre;';
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
+    /*--------- Get Partida Asignado vs programado por partida y unidad (Reversion)------------*/
+    public function get_ppto_partida__revertido_asignado_programado_Uresponsable($aper_id,$par_id){
+        $sql = '
+            SELECT 
+                res.aper_id,
+                res.par_id,
+                par.par_codigo AS codigo,
+                par.par_nombre AS nombre,
+                SUM(res.monto_revertido) AS monto_revertido,
+                SUM(res.monto_prog_rev) AS monto_programado_revertido,
+                (SUM(res.monto_revertido) - SUM(res.monto_prog_rev)) AS saldo_revertido
+            FROM (
+                -- Primera consulta: Partidas Revertidas
+                SELECT 
+                    aper_id, 
+                    par_id, 
+                    presupuesto_revertido AS monto_revertido, 
+                    0 AS monto_prog_rev
+                FROM lista_partidas_revertidas('.$this->gestion.')
 
+                UNION ALL
 
-
+                -- Segunda consulta: Insumos Modificación Tipo 1
+                SELECT 
+                    aper_id, 
+                    par_id, 
+                    0 AS monto_revertido, 
+                    ins_costo_total AS monto_prog_rev
+                FROM insumos
+                WHERE ins_tipo_modificacion = '1' AND aper_id != '0'
+            ) res
+            INNER JOIN partidas par ON par.par_id = res.par_id
+            -- Filtro único para ambas tablas
+            WHERE res.aper_id = '.$aper_id.' AND res.par_id = '.$par_id.'
+            GROUP BY res.aper_id, res.par_id, par.par_codigo, par.par_nombre
+            ORDER BY par.par_codigo ASC;';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
  
     /*========= SUMA DE CODIGO DE PARTIDA (ASIG, PROG) uni org 2023 =========*/
 /*    public function sum_codigos_partidas_asig_prog($aper_id,$tp){
@@ -1488,14 +1557,14 @@ class Model_ptto_sigep extends CI_Model{
     }
 
     /*-------- GET SALDO REVERTIDO PROGRAMADO POR PARTIDA - UNIDAD --------*/
-    public function get_ppto_partida_revertido_unidad($par_id,$aper_id){
+/*    public function get_ppto_partida_revertido_unidad($par_id,$aper_id){
         $sql = 'select aper_id,par_id,SUM(presupuesto_revertido) monto_revertido
                 from lista_partidas_revertidas('.$this->gestion.')
                 where aper_id='.$aper_id.' and par_id='.$par_id.'
                 group by aper_id,par_id';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 ///// ====== DISTRIBUCION DE PPTO APROBADO POR DISTRITAL
     /*-------- LISTA DE UNIDADES QUE TIENEN PPTO DISPONIBLE A PROGRAMAR (DASHBOARD) A NIVEL DISTRITAL --------*/

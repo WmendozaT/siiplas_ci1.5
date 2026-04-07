@@ -1013,7 +1013,7 @@ class Cmod_insumo extends CI_Controller {
         }
         
         $pie_mod=$this->modificacionpoa->pie_modpoa($data['cite'],$data['cite'][0]['cite_codigo']);
-        $data['pie_rep']='MOD_POA_FORM5_'.$data['cite'][0]['cite_nota'].' de '.date('d-m-Y',strtotime($data['cite'][0]['cite_fecha'])).' - '.$data['cite'][0]['tipo_subactividad'].' '.$data['cite'][0]['serv_descripcion'].' - '.$data['cite'][0]['tipo_adm'].' '.$data['cite'][0]['act_descripcion'].' '.$data['cite'][0]['abrev'].'/'.$this->gestion.'';
+        $data['pie_rep']='MOD_POA_FORM5_'.$data['cite'][0]['cite_nota'].' - '.$data['cite'][0]['tipo_subactividad'].' '.$data['cite'][0]['com_componente'].' - '.$data['cite'][0]['proy_nombre'].' '.$data['cite'][0]['abrev'].'/'.$this->gestion.'';
 
 
         $data['informacion']='
@@ -1295,6 +1295,7 @@ class Cmod_insumo extends CI_Controller {
 
 
     /*------- LISTA DE REQUERIMIENTOS MODIFICADOS (UPDATE)(2020-2021-2022) -------*/
+    //----------------------------- rep mod poa - vigente 2023
     public function rep_requerimiento_update($cite_id){
       $tabla ='';
       $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); // Datos Cite
@@ -1526,6 +1527,8 @@ class Cmod_insumo extends CI_Controller {
 
       return $tabla;
     }
+
+    //----------------------------- rep mod poa - vigente 2023
 
     /*-------- GET CUADRO COMPARATIVO ASIGNADO-POA --------*/
     public function get_comparativo_ptto(){
@@ -1922,27 +1925,80 @@ class Cmod_insumo extends CI_Controller {
     }
 
 
-    /*--- MODIFICAR CITE REQUERIMIENTO ---*/
+    /*--- MODIFICAR CITE REQUERIMIENTO 2026 ---*/
     public function modificar_cite($cite_id){
       $data['cite'] = $this->model_modrequerimiento->get_cite_insumo($cite_id); // Datos Cite
       if(count($data['cite'])!=0){
         $data['menu']=$this->menu(3); //// genera menu
-        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']);
-        $data['titulo']=$this->modificacionpoa->titulo_cabecera($data['cite'],0); /// CABECERA
-        $data['datos_cite']=$this->modificacionpoa->datos_cite($data['cite']); /// DATOS CITE
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($data['cite'][0]['proy_id']);
+        $titulo=$this->modificacionpoa->titulo_cabecera($data['cite'],0); /// CABECERA
+        $tp_cite='INGRESAR A MODIFICACI&Oacute;N';
+        if($data['cite'][0]['cite_estado']==1){ 
+          $tp_cite='INGRESAR A CITE : '.$data['cite'][0]['cite_codigo'];
+        }
 
-        $data['datos_historial_cite_modificado']='';
+        $datos_historial_cite_modificado='';
         if($data['cite'][0]['tp_reporte']==1){
           if($this->tp_adm==1){
-            $data['datos_historial_cite_modificado']='<div align=right><a href="'.site_url("").'/mod/cite_historial_modf5/'.$data['cite'][0]['cite_id'].'" class="btn btn-success" TARGET="_blank" title="INGRESAR A CITE"><b> HISTORIAL DE MODIFICACIÓN </b></a></div>';
+            $datos_historial_cite_modificado='
+            <div align=right><a href="'.site_url("").'/mod/cite_historial_modf5/'.$data['cite'][0]['cite_id'].'" class="btn btn-success" TARGET="_blank" title="INGRESAR A CITE"><b> HISTORIAL DE MODIFICACIÓN </b></a></div>';
           }
           
-          $data['items_modificados']=$this->modificacionpoa->items_modificados_form5_historial($cite_id,0); /// listado de items modificados 2023 (historial)
+          $items_modificados=$this->modificacionpoa->items_modificados_form5_historial($cite_id,0); /// listado de items modificados 2026 (historial)
         }
         else{
-          $data['items_modificados']=$this->rep_requerimiento_update($cite_id); /// listado de items modificados
+          $items_modificados=$this->rep_requerimiento_update($cite_id); /// listado de items modificados anterior gestion 2023
         }
-        
+
+
+        $tabla='';
+        $tabla.='
+        '.$this->modificacionpoa->loading('QUITANDO DEL REPORTE POA').'
+        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-7">
+          <section id="widget-grid" class="well">
+            <div title="'.$proyecto[0]['aper_id'].'">
+              '.$titulo.'
+            </div>
+          </section>
+        </article>
+        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
+          <div class="well">
+            <div class="btn-group btn-group-justified">
+              <a href="'.site_url("").'/mod/list_requerimientos/'.$data['cite'][0]['cite_id'].'" class="btn btn-success" TARGET="_blank" title="INGRESAR A CITE"><i class="fa fa-save"></i><b>'.$tp_cite.'</b></a>
+              <a href="javascript:abreVentana(\''.site_url("").'/mod/rep_mod_financiera/'.$data['cite'][0]['cite_id'].'\');" class="btn btn-default" title="IMPRIMIR REPORTE DE MODIFICACION POA"><i class="fa fa-file-pdf-o"></i> <b>IMPRIMIR REPORTE</b></a>
+              <a href="'.base_url().'index.php/mod/list_cites/'.$data['cite'][0]['proy_id'].'"  class="btn btn-default" title="SALIR"><i class="fa fa-caret-square-o-left"></i> <b>SALIR</b></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="col-sm-12">
+          <div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-x" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+            <header>
+              <span class="widget-icon"> <i class="fa fa-align-justify"></i> </span>
+              <h2></h2>
+            </header>
+            <!-- widget div-->
+            <div>
+              <!-- widget edit box -->
+              <div class="jarviswidget-editbox">
+                <!-- This area used as dropdown edit box -->
+              </div>
+              <!-- end widget edit box -->
+              <!-- widget content -->
+              <div class="widget-body">
+                <div class="row">
+                '.$datos_historial_cite_modificado.'<br>
+                '.$items_modificados.'
+                </div>
+              </div>
+              <!-- end widget body-->
+            </div>
+            <!-- end widget content -->
+          </div>
+          <!-- end widget -->
+        </article>  ';
+
+        $data['vista']=$tabla;
         $this->load->view('admin/modificacion/requerimientos/update_cite', $data);
       }
       else{
@@ -1970,13 +2026,11 @@ class Cmod_insumo extends CI_Controller {
 
     /* ======== FUNCIONES COMPLEMENTARIAS ======= */
 
-    /*------- Quitar modificación del Cite ------*/
+    /*------- Quitar item de la modificacion poa del Cite 2026 ------*/
     function quitar_requerimiento_cite(){
       if ($this->input->is_ajax_request() && $this->input->post()) {
           $post = $this->input->post();
           $id = $this->security->xss_clean($post['id']); /// insh_id 
-         // $tp = $this->security->xss_clean($post['tp']); /// Tp Id : add,mod,del
-
 
           $update_mod = array(
             'historial_activo' => 0 /// item ocultado
@@ -2119,11 +2173,14 @@ class Cmod_insumo extends CI_Controller {
         $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); /// Datos Cite
         $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); ////// DATOS DEL PROYECTO
 
-
-        $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos requerimientos 
+        $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos Get requerimientos 
 
         if($insumo[0]['ins_tipo_modificacion']==0){
-          $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Asignado)
+          $ppto=$this->model_ptto_sigep->get_ppto_partida_asignado_programado_Uresponsable($proyecto[0]['aper_id'],$insumo[0]['par_id']);
+
+
+
+          /*$asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Asignado)
           $prog=$this->model_ptto_sigep->get_partida_programado_poa($proyecto[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Programado)
         
           /// -------------------------
@@ -2136,12 +2193,13 @@ class Cmod_insumo extends CI_Controller {
           if(count($asig)!=0){
             $monto_asig=$asig[0]['ppto_asignado'];
           }
-          /// ------------------------
+          /// ------------------------*/
 
-          $partida_padres = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);//partidas padres          
+          $partida_padres = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);// Lista partidas padres          
         }
         else{
-           $asig=$this->model_ptto_sigep->get_ppto_partida_revertido_unidad($insumo[0]['par_id'],$proyecto[0]['aper_id']); /// Get partida -> Unidad (Asignado reversion)
+          
+           /*$asig=$this->model_ptto_sigep->get_ppto_partida_revertido_unidad($insumo[0]['par_id'],$proyecto[0]['aper_id']); /// Get partida -> Unidad (Asignado reversion)
            $prog=$this->model_ptto_sigep->get_ppto_poa_partida_x_reversion($insumo[0]['par_id'],$proyecto[0]['aper_id']); /// Get partida -> Unidad (Programado reversion)
         
            /// -------------------------
@@ -2154,9 +2212,9 @@ class Cmod_insumo extends CI_Controller {
           if(count($asig)!=0){
             $monto_asig=$asig[0]['monto_revertido'];
           }
-          /// ------------------------
+          /// ------------------------*/
 
-          $partida_padres = $this->model_ptto_sigep->lista_partidas_padres_revertidos($proyecto[0]['aper_id']);//partidas padres REVERTIDO
+          $partida_padres = $this->model_ptto_sigep->lista_partidas_padres_revertidos($proyecto[0]['aper_id']);// Lista partidas padres REVERTIDO
         }
 
           /// ------ Partidas padres ------------
@@ -2177,12 +2235,6 @@ class Cmod_insumo extends CI_Controller {
           $lista_prod_act=$this->lista_form4_x_unidadresponsable($cite,$insumo); /// Lista de Actividades (Form 4)
 
           $saldo=$monto_asig-$monto_prog;
-
-          $monto_certificado=0;
-            $m_certificado=$this->model_certificacion->get_insumo_monto_certificado($insumo[0]['ins_id']);
-            if (count($m_certificado)!=0) {
-              $monto_certificado=$m_certificado[0]['certificado'];
-            }
 
           $verf = array('verf_mes1' => '0','verf_mes2' => '0','verf_mes3' => '0','verf_mes4' => '0','verf_mes5' => '0','verf_mes6' => '0','verf_mes7' => '0','verf_mes8' => '0','verf_mes9' => '0','verf_mes10' => '0','verf_mes11' => '0','verf_mes12' => '0');
           for ($i=1; $i <=12 ; $i++) { 
@@ -2209,7 +2261,7 @@ class Cmod_insumo extends CI_Controller {
 
               'verif_mes' => $verf,
               'trimestre' => $verf,
-              'monto_certificado'=>$monto_certificado,
+              //'monto_certificado'=>$monto_certificado,
               'verif_cert'=>$verif_cert,
             );
           }

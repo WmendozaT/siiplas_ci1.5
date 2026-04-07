@@ -535,7 +535,7 @@
 							
 								<div id="amtit"></div>
 								<header><b>DISTRIBUCI&Oacute;N PRESUPUESTARIA : <?php echo $this->session->userdata('gestion')?></b><br>
-								<label class="label"><div id="ff"></div></label>
+						
 								</header>
 								<br>
 								<div class="row">

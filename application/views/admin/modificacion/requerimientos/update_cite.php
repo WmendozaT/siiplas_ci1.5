@@ -21,14 +21,14 @@
 		<script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
 		<!--para las alertas-->
     	<meta name="viewport" content="width=device-width">
-    	<script>
+<!--     	<script>
 	  	function abreVentana(PDF){
 			var direccion;
 			direccion = '' + PDF;
 			window.open(direccion, "Reporte Modificacion de Operaciones" , "width=800,height=650,scrollbars=SI") ;
 		}                                                  
-        </script>
-		<style>
+        </script> -->
+<!-- 		<style>
 			.table1{
 	          display: inline-block;
 	          width:100%;
@@ -46,7 +46,7 @@
               font-size: 10px;
             
             }
-		</style>
+		</style> -->
 	</head>
 	<body class="">
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
@@ -128,57 +128,7 @@
 			<!-- MAIN CONTENT -->
 			<div id="content">
 			<div class="row">
-				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-8">
-					<section id="widget-grid" class="well">
-						<div title="<?php echo $proyecto[0]['aper_id'];?>">
-							<?php echo $datos_cite.' '.$titulo;?>
-						</div>
-					</section>
-				</article>
-				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-4">
-					<div class="well">
-						<div class="btn-group btn-group-justified">
-							<?php
-								if($cite[0]['cite_estado']==1){ ?>
-									<a href="<?php echo site_url("").'/mod/list_requerimientos/'.$cite[0]['cite_id'];?>" class="btn btn-success" TARGET="_blank" title="INGRESAR A CITE"><i class="fa fa-save"></i><b> INGRESAR A CITE : <?php echo $cite[0]['cite_codigo']; ?></b></a>
-									<?php
-								}
-								else{ ?>
-									<a href="<?php echo site_url("").'/mod/list_requerimientos/'.$cite[0]['cite_id'];?>" class="btn btn-warning" TARGET="_blank" title="INGRESAR A CITE"><i class="fa fa-save"></i><b> INGRESAR A MODIFICACI&Oacute;N</b></a>		
-									<?php
-								}
-							?>
-							<a href="javascript:abreVentana('<?php echo site_url("").'/mod/rep_mod_financiera/'.$cite[0]['cite_id'].'' ?>');" class="btn btn-default" title="IMPRIMIR REPORTE DE MODIFICACION FINANCIERA"><i class="fa fa-file-pdf-o"></i> <b>IMPRIMIR REPORTE</b></a>
-							<a href="<?php echo base_url();?>index.php/mod/list_cites/<?php echo $cite[0]['proy_id'];?>" class="btn btn-default" title="SALIR"><i class="fa fa-caret-square-o-left"></i> <b>SALIR</b></a>
-						</div>
-					</div>
-		        </article>
-
-				<article class="col-sm-12">
-					<div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-x" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
-						<header>
-							<span class="widget-icon"> <i class="fa fa-align-justify"></i> </span>
-							<h2></h2>
-						</header>
-						<!-- widget div-->
-						<div>
-							<!-- widget edit box -->
-							<div class="jarviswidget-editbox">
-								<!-- This area used as dropdown edit box -->
-							</div>
-							<!-- end widget edit box -->
-							<!-- widget content -->
-							<div class="widget-body">
-								<div class="row">
-								<?php echo $datos_historial_cite_modificado.'<br>'.$items_modificados; ?>
-								</div>
-							</div>
-							<!-- end widget body-->
-						</div>
-						<!-- end widget content -->
-					</div>
-					<!-- end widget -->
-				</article>		
+				<?php echo $vista; ?>	
 			</div>
 			<!-- END MAIN CONTENT -->
 			</div>
@@ -214,19 +164,6 @@
 		<!-- BOOTSTRAP JS -->
 		<script src="<?php echo base_url();?>/assets/js/bootstrap/bootstrap.min.js"></script>
 		<!-- CUSTOM NOTIFICATION -->
-		<script src="<?php echo base_url();?>/assets/js/notification/SmartNotification.min.js"></script>
-		<!-- JARVIS WIDGETS -->
-		<script src="<?php echo base_url();?>/assets/js/smartwidgets/jarvis.widget.min.js"></script>
-		<!-- EASY PIE CHARTS -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/easy-pie-chart/jquery.easy-pie-chart.min.js"></script>
-		<!-- SPARKLINES -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/sparkline/jquery.sparkline.min.js"></script>
-		<!-- JQUERY VALIDATE -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/jquery-validate/jquery.validate.min.js"></script>
-		<!-- JQUERY MASKED INPUT -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/masked-input/jquery.maskedinput.min.js"></script>
-		<!-- JQUERY SELECT2 INPUT -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/select2/select2.min.js"></script>
 		<!-- JQUERY UI + Bootstrap Slider -->
 		<script src="<?php echo base_url();?>/assets/js/plugin/bootstrap-slider/bootstrap-slider.min.js"></script>
 		<!-- browser msie issue fix -->
@@ -243,70 +180,8 @@
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.tableTools.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
+		<script src="<?php echo base_url(); ?>mis_js/modificacionpoa/modform5.js"></script> 
 
-		<!-- ELIMINAR PRODUCTO - ACTIVIDAD-->
-		<script type="text/javascript">
-		    $(function () {
-		        function reset() {
-		            $("#toggleCSS").attr("href", "<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css");
-		            alertify.set({
-		                labels: {
-		                    ok: "ACEPTAR",
-		                    cancel: "CANCELAR"
-		                },
-		                delay: 5000,
-		                buttonReverse: false,
-		                buttonFocus: "ok"
-		            });
-		        }
-		        /*------- Anular Modifcación -------*/
-		        $(".anular_mod").on("click", function (e) {
-		            reset();
-		            var id = $(this).attr('name');
-		            //var tp_mod = $(this).attr('id');
-		            var request;
-		            // confirm dialog
-		            alertify.confirm("QUITAR REQUERIMIENTO DEL CITE ?", function (a) {
-		                if (a) { 
-		                    var url = "<?php echo site_url("")?>/modificaciones/cmod_insumo/quitar_requerimiento_cite";
-		                    if (request) {
-		                        request.abort();
-		                    }
-		                    request = $.ajax({
-		                        url: url,
-		                        type: "POST",
-		                        dataType: "json",
-                    			data: "id="+id
-		                    });
-
-		                    request.done(function (response, textStatus, jqXHR) { 
-			                    reset();
-			                    if (response.respuesta == 'correcto') {
-			                        window.location.reload(true);
-			                    } else {
-			                        alertify.error("Error al anular Item !!! ");
-			                    }
-			                });
-		                    request.fail(function (jqXHR, textStatus, thrown) {
-		                        console.log("ERROR: " + textStatus);
-		                    });
-		                    request.always(function () {
-		                        //console.log("termino la ejecuicion de ajax");
-		                    });
-
-		                    e.preventDefault();
-
-		                } else {
-		                    // user clicked "cancel"
-		                    alertify.error("Opcion cancelada");
-		                }
-		            });
-		            return false;
-		        });
-
-		    });
-		</script>
-		<!--  -->
 		<script src = "<?php echo base_url(); ?>mis_js/programacion/programacion/tablas.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {

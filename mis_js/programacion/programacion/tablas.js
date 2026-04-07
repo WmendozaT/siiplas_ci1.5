@@ -50,9 +50,26 @@
       /* END COLUMN FILTER */   
   })
 
+    //// loading para cargar nueva vista
+    document.addEventListener('click', function(e) {
+        // Buscamos si el clic fue en el botón de modificar (o su imagen interna)
+        const btn = e.target.closest('.btn-modificar');
+        
+        if (btn) {
+            // Bloqueamos el puntero para evitar múltiples clics
+            btn.style.pointerEvents = 'none';
+            
+            // Mostramos el bloqueo de pantalla completo
+            const blocker = document.getElementById('screen-blocker');
+            if (blocker) {
+                blocker.style.display = 'block';
+            }
+        }
+    });
+    ///-------------------------------
 
           
-  
+  ///// abre ventana de reportes poa
 function abreVentana(url) {
     var elemento = window.event ? window.event.target.closest('a') : null;
     var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";

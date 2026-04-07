@@ -1226,7 +1226,7 @@ class Modificacionpoa extends CI_Controller{
 
                     $tabla .= '
                     <tr '.$color_tr.'>
-                        <td>'.$tp_label.'</td>
+                        <td title='.$row['ins_id'].'>'.$tp_label.'</td>
                         <td class="text-center" style="background-color:#ecf9f7; color:blue; font-weight:bold; font-size:16px;">'.$row['prod_cod'].'</td>
                         <td class="text-center">'.$botones.'</td>
                         <td>'.$row['par_codigo'].'</td>
@@ -1555,6 +1555,7 @@ class Modificacionpoa extends CI_Controller{
     $tabla='';
     $tabla.='
     <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <input type="hidden" name="base" value="'.base_url().'">
       <div class="jarviswidget jarviswidget-color-darken">
         <header>
           <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
@@ -1597,11 +1598,12 @@ class Modificacionpoa extends CI_Controller{
                       foreach ($listado as $row){
                         $prog = $this->model_modrequerimiento->list_temporalidad_insumo_historial($row['insh_id']);
                         $nro++;
-                        $tabla.='<tr class="modo1">
+                        $tabla.='
+                        <tr class="modo1">
                           <td style="width: 1%;height:11px; text-align: center;font-size: 6px;" title='.$row['ins_id'].'>'.$nro.'</td>
                           <td style="width: 2.1%; text-align: center;font-size: 12px;"><b>'.$row['prod_cod'].'</b></td>
                           <td style="width: 3.5%; text-align: center;">'.$row['par_codigo'].'</td>
-                          <td style="width: 16%; text-align: left; font-size:8.5px;">'.$row['ins_detalle'].'</td>
+                          <td style="width: 16%; text-align: left; font-size:10.5px;">'.$row['ins_detalle'].'</td>
                           <td style="width: 4.6%; text-align: left;">'.$row['ins_unidad_medida'].'</td>
                           <td style="width: 4%; text-align: right;">'.$row['ins_cant_requerida'].'</td>
                           <td style="width: 4%; text-align: right;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
@@ -1617,7 +1619,7 @@ class Modificacionpoa extends CI_Controller{
                             }
                           }
                           $tabla.='
-                          <td style="width: 6.3%; text-align: left; font-size:8.5px;">'.$row['ins_observacion'].'</td>
+                          <td style="width: 6.3%; text-align: left; font-size:11px;">'.$row['ins_observacion'].'</td>
                           <td style="width: 2%; text-align: left;">
                             <a href="#" data-toggle="modal" data-target="#modal_anular_mod" class="btn btn-default anular_mod" title="NO MOSTRAR MODIFICACIÓN"  name="'.$row['insh_id'].'"><img src="'.base_url().'assets/img/neg.jpg" WIDTH="35" HEIGHT="35"/></a>
                           </td>';
@@ -1674,7 +1676,7 @@ class Modificacionpoa extends CI_Controller{
                       <td style="width: 1%;height:11px; text-align: center;font-size: 6px;" title='.$row['ins_id'].'>'.$nro.'</td>
                       <td style="width: 2.1%; text-align: center;font-size: 12px;"><b>'.$item_mod[0]['prod_cod'].'</b></td>
                       <td style="width: 3.5%; text-align: center;">'.$item_mod[0]['par_codigo'].'</td>
-                      <td style="width: 16%; text-align: left; font-size:8.5px;">'.$item_mod[0]['ins_detalle'].'</td>
+                      <td style="width: 16%; text-align: left; font-size:10.5px;">'.$item_mod[0]['ins_detalle'].'</td>
                       <td style="width: 4.6%; text-align: left;">'.$item_mod[0]['ins_unidad_medida'].'</td>
                       <td style="width: 4%; text-align: right;">'.$item_mod[0]['ins_cant_requerida'].'</td>
                       <td style="width: 4%; text-align: right;">'.number_format($item_mod[0]['ins_costo_unitario'], 2, ',', '.').'</td>
@@ -1690,7 +1692,7 @@ class Modificacionpoa extends CI_Controller{
                         }
                       }
                       $tabla.='
-                      <td style="width: 6.3%; text-align: left; font-size:8.5px;">'.$item_mod[0]['ins_observacion'].'</td>
+                      <td style="width: 6.3%; text-align: left; font-size:11px;">'.$item_mod[0]['ins_observacion'].'</td>
                       <td style="width: 2%; text-align: left;">
                         <a href="#" data-toggle="modal" data-target="#modal_anular_mod" class="btn btn-default anular_mod" title="NO MOSTRAR MODIFICACIÓN"  name="'.$item_mod[0]['insh_id'].'"><img src="'.base_url().'assets/img/neg.jpg" WIDTH="35" HEIGHT="35"/></a>
                       </td>';
@@ -2423,12 +2425,50 @@ class Modificacionpoa extends CI_Controller{
 
 
 
+  //// loading para la siguiente pagina
+    public function loading_siguiente_pagina(){
+      $tabla='<div id="screen-blocker" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; cursor: wait;">
+                <style>
+                    /* Estilos específicos para el spinner sin afectar al resto de la página */
+                    .loader-wrapper { 
+                        position: absolute; 
+                        top: 50%; 
+                        left: 50%; 
+                        transform: translate(-50%, -50%); 
+                        text-align: center; 
+                    }
+                    .spinner-custom { 
+                        border: 8px solid #f3f3f3; 
+                        border-top: 8px solid #5B9360; /* Color verde sugerido */
+                        border-radius: 50%; 
+                        width: 60px; 
+                        height: 60px; 
+                        animation: spin-custom 1s linear infinite; 
+                        margin: 0 auto 15px; 
+                    }
+                    @keyframes spin-custom { 
+                        0% { transform: rotate(0deg); } 
+                        100% { transform: rotate(360deg); } 
+                    }
+                    .loading-text { 
+                        font-family: Arial, sans-serif; 
+                        color: #333; 
+                        font-weight: bold; 
+                        font-size: 16px; 
+                    }
+                </style>
+                
+                <div class="loader-wrapper">
+                    <div class="spinner-custom"></div>
+                    <div class="loading-text">espere por favor...</div>
+                </div>
+            </div> ';
+            return $tabla;
+    }
 
 
-
-    //// loading
+    //// loading para ctualizar listado
     public function loading($titulo){
-
       $tabla='<div id="loading-overlay">
                   <div class="loader-content">
                       <div class="spinner-custom"></div>
