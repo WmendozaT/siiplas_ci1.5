@@ -136,3 +136,96 @@ CREATE INDEX IF NOT EXISTS idx_pfe_estado ON _proyectofaseetapacomponente(pfec_e
 CREATE INDEX IF NOT EXISTS idx_componentes_estado ON _componentes(estado) WHERE estado <> 3;
 
 
+---------------- CREACION DE VISTA DEL PRESUPUESTO ASIGNADO Y REVERSION
+
+CREATE OR REPLACE VIEW vista_seguimiento_partidas AS
+SELECT 
+    COALESCE(asig.g_id, prog.g_id) AS g_id, -- Columna de Gestión agregada
+    COALESCE(asig.aper_id, prog.aper_id) AS aper_id,
+    COALESCE(asig.dep_id, prog.dep_id) AS dep_id,
+    COALESCE(asig.dist_id, prog.dist_id) AS dist_id,
+    COALESCE(asig.par_id, prog.par_id) AS par_id,
+    COALESCE(asig.partida, prog.codigo::VARCHAR) AS codigo_partida,
+    COALESCE(asig.par_nombre, prog.partida_nombre, 'SIN ASIGNAR') AS partida,
+    
+    COALESCE(asig.ppto_asignado1, 0) AS ppto_asignado,
+    COALESCE(prog.ppto_programado1, 0) AS ppto_programado,
+    (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) AS saldo_poa,
+    
+    CASE 
+        WHEN (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) < 0 THEN 3
+        WHEN (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) > 0 THEN 1
+        ELSE 0 
+    END AS estado_poa,
+    
+    COALESCE(asig.ppto_asignado_revertido2, 0) AS ppto_asignado_revertido,
+    COALESCE(prog.ppto_programado_revertido2, 0) AS ppto_programado_revertido,
+    (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) AS saldo_revertido,
+    
+    CASE 
+        WHEN (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) < 0 THEN 3
+        WHEN (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) > 0 THEN 1
+        ELSE 0 
+    END AS estado_revertido
+
+FROM (
+    SELECT 
+        pg.aper_id, pg.g_id, pg.par_id, pg.partida, par.par_nombre, 
+        pg.importe AS ppto_asignado1, pg.ppto_saldo_ncert AS ppto_asignado_revertido2,
+        proy.dep_id, proy.dist_id
+    FROM ptto_partidas_sigep pg
+    INNER JOIN partidas par ON par.par_id = pg.par_id
+    INNER JOIN aperturaproyectos ap ON ap.aper_id = pg.aper_id 
+    INNER JOIN _proyectos proy ON proy.proy_id = ap.proy_id
+    WHERE pg.estado != 3
+) asig
+FULL OUTER JOIN (
+    SELECT 
+        i.aper_id, apg.aper_gestion AS g_id, i.par_id, par.par_codigo AS codigo, par.par_nombre AS partida_nombre, 
+        proy.dep_id, proy.dist_id,
+        SUM(CASE WHEN i.ins_tipo_modificacion = 0 THEN i.ins_costo_total ELSE 0 END) AS ppto_programado1,
+        SUM(CASE WHEN i.ins_tipo_modificacion = 1 THEN i.ins_costo_total ELSE 0 END) AS ppto_programado_revertido2
+    FROM insumos i
+    INNER JOIN partidas par ON par.par_id = i.par_id
+    INNER JOIN aperturaproyectos ap ON ap.aper_id = i.aper_id
+    INNER JOIN aperturaprogramatica apg ON apg.aper_id = ap.aper_id
+    INNER JOIN _proyectos proy ON proy.proy_id = ap.proy_id
+    WHERE i.aper_id != 0 AND i.ins_tipo_modificacion IN (0, 1)
+    GROUP BY i.aper_id, apg.aper_gestion, i.par_id, par.par_codigo, par.par_nombre, proy.dep_id, proy.dist_id
+) prog ON asig.par_id = prog.par_id AND asig.aper_id = prog.aper_id AND asig.g_id = prog.g_id;
+
+
+
+-- Índices para la tabla de presupuestos SIGEP
+CREATE INDEX idx_ptto_sigep_aper_g ON ptto_partidas_sigep (aper_id, g_id);
+CREATE INDEX idx_ptto_sigep_par ON ptto_partidas_sigep (par_id);
+
+-- Índices para la tabla de insumos (la más pesada por el SUM)
+CREATE INDEX idx_insumos_aper_mod ON insumos (aper_id, ins_tipo_modificacion);
+CREATE INDEX idx_insumos_par ON insumos (par_id);
+
+-- Índices para las tablas de proyectos
+CREATE INDEX idx_aperturaproy_proy ON aperturaproyectos (proy_id, aper_id);
+
+
+
+--------------- listado de los meses certificado por item
+CREATE OR REPLACE VIEW vista_verif_certificacion_mensual_requerimiento AS
+SELECT 
+    ti.ins_id,
+    ti.g_id AS gestion,
+    MAX(CASE WHEN ti.mes_id = 1 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes1,
+    MAX(CASE WHEN ti.mes_id = 2 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes2,
+    MAX(CASE WHEN ti.mes_id = 3 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes3,
+    MAX(CASE WHEN ti.mes_id = 4 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes4,
+    MAX(CASE WHEN ti.mes_id = 5 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes5,
+    MAX(CASE WHEN ti.mes_id = 6 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes6,
+    MAX(CASE WHEN ti.mes_id = 7 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes7,
+    MAX(CASE WHEN ti.mes_id = 8 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes8,
+    MAX(CASE WHEN ti.mes_id = 9 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes9,
+    MAX(CASE WHEN ti.mes_id = 10 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes10,
+    MAX(CASE WHEN ti.mes_id = 11 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes11,
+    MAX(CASE WHEN ti.mes_id = 12 THEN (CASE WHEN cti.ctins_id IS NOT NULL THEN 1 ELSE 0 END) ELSE 0 END) AS certmes12
+FROM temporalidad_prog_insumo ti
+LEFT JOIN cert_temporalidad_prog_insumo cti ON ti.tins_id = cti.tins_id
+GROUP BY ti.ins_id, ti.g_id;

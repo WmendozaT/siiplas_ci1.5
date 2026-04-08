@@ -148,6 +148,7 @@ class Cmod_insumo extends CI_Controller {
         $data['cabecera']=$this->cabecera_formulario_mod5($data['cite'],$proyecto);
         $data['opciones']=$this->opciones_formulario_mod5($data['cite'],$proyecto);
         $data['style']=$this->style();
+        $data['loading_form']=$this->loagind_form();
         $data['loading']=$this->modificacionpoa->loading('ACTUALIZANDO LISTADO');
       
           if(count($this->model_modrequerimiento->lista_requerimientos($data['cite'][0]['com_id'],$data['cite'][0]['tipo_modificacion']))>50){
@@ -168,6 +169,7 @@ class Cmod_insumo extends CI_Controller {
 
           $data['lista']=$this->tipo_lista_ope_act($data['cite']); /// ALINEADO A ACTIVIDAD (FORM 4)
           $this->load->view('admin/modificacion/requerimientos/list_requerimientos', $data);
+
       }
       else{
         redirect('mod/list_top');
@@ -176,7 +178,59 @@ class Cmod_insumo extends CI_Controller {
 
 
 
+  public function loagind_form(){
+  $tabla='';
+  $tabla.='
+    <style>
+    #loading_req {
+    padding: 30px;
+    text-align: center;
+}
 
+.loader-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    background-color: #3498db; /* Color principal */
+    border-radius: 50%;
+    animation: bounce 0.6s infinite alternate;
+}
+
+/* Retraso para el efecto de ola */
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(-15px); opacity: 0.3; }
+}
+
+.loading-text {
+    font-family: "Arial", sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: #777;
+    text-transform: uppercase;
+}
+    </style>
+     <div id="loading_req" style="display:none;">
+        <div class="loader-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="loading-text">OBTENIENDO INFORMACIÓN...</div>
+    </div>';
+
+  return $tabla;
+  }
 
 
 
@@ -2174,46 +2228,14 @@ class Cmod_insumo extends CI_Controller {
         $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); ////// DATOS DEL PROYECTO
 
         $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos Get requerimientos 
+        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($proyecto[0]['aper_id'],$insumo[0]['par_id']);
 
-        if($insumo[0]['ins_tipo_modificacion']==0){
-          $ppto=$this->model_ptto_sigep->get_ppto_partida_asignado_programado_Uresponsable($proyecto[0]['aper_id'],$insumo[0]['par_id']);
-
-
-
-          /*$asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Asignado)
-          $prog=$this->model_ptto_sigep->get_partida_programado_poa($proyecto[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Programado)
-        
-          /// -------------------------
-          $monto_prog=0;
-          if(count($prog)!=0){
-            $monto_prog=$prog[0]['ppto_programado'];
-          }
-
-          $monto_asig=0;
-          if(count($asig)!=0){
-            $monto_asig=$asig[0]['ppto_asignado'];
-          }
-          /// ------------------------*/
-
+        if($insumo[0]['ins_tipo_modificacion']==0){ /// Poa Normal
+          $saldo=$ppto_partida[0]['saldo_poa'];
           $partida_padres = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);// Lista partidas padres          
         }
-        else{
-          
-           /*$asig=$this->model_ptto_sigep->get_ppto_partida_revertido_unidad($insumo[0]['par_id'],$proyecto[0]['aper_id']); /// Get partida -> Unidad (Asignado reversion)
-           $prog=$this->model_ptto_sigep->get_ppto_poa_partida_x_reversion($insumo[0]['par_id'],$proyecto[0]['aper_id']); /// Get partida -> Unidad (Programado reversion)
-        
-           /// -------------------------
-          $monto_prog=0;
-          if(count($prog)!=0){
-            $monto_prog=$prog[0]['monto_programado_revertido'];
-          }
-
-          $monto_asig=0;
-          if(count($asig)!=0){
-            $monto_asig=$asig[0]['monto_revertido'];
-          }
-          /// ------------------------*/
-
+        else{ /// Poa Revertido
+          $saldo=$ppto_partida[0]['saldo_revertido'];
           $partida_padres = $this->model_ptto_sigep->lista_partidas_padres_revertidos($proyecto[0]['aper_id']);// Lista partidas padres REVERTIDO
         }
 
@@ -2234,35 +2256,15 @@ class Cmod_insumo extends CI_Controller {
           $lista_partidas=$this->partidas_dependientes($insumo); /// Lista de Insumos dependientes
           $lista_prod_act=$this->lista_form4_x_unidadresponsable($cite,$insumo); /// Lista de Actividades (Form 4)
 
-          $saldo=$monto_asig-$monto_prog;
-
-          $verf = array('verf_mes1' => '0','verf_mes2' => '0','verf_mes3' => '0','verf_mes4' => '0','verf_mes5' => '0','verf_mes6' => '0','verf_mes7' => '0','verf_mes8' => '0','verf_mes9' => '0','verf_mes10' => '0','verf_mes11' => '0','verf_mes12' => '0');
-          for ($i=1; $i <=12 ; $i++) { 
-              $mes_cert=$this->model_certificacion->get_insumo_programado_certificado_mes($insumo[0]['ins_id'],$i);
-              if(count($mes_cert)!=0){
-                $verf['verf_mes'.$i]=1;
-              }
-            }
-
-            $verif_cert=0;
-            if(count($this->model_certificacion->verif_insumo_certificado($ins_id))!=0){
-              $verif_cert=1;
-            }
-
           if(count($insumo)!=0){
             $result = array(
               'respuesta' => 'correcto',
               'insumo' => $insumo,
-              'partidas'=> $partidas,
-              'lista_partidas'=> $lista_partidas,
-              'lista_prod_act'=> $lista_prod_act,
-              'monto_saldo' => $saldo+$insumo[0]['ins_costo_total'],
+              'partidas'=> $partidas, /// partidas padres
+              'lista_partidas'=> $lista_partidas, /// partidas dependientes
+              'lista_prod_act'=> $lista_prod_act, /// alineacion a form 4
+              'monto_saldo' => ($saldo+$insumo[0]['programado_total']),
               'saldo_dif' => $saldo,
-
-              'verif_mes' => $verf,
-              'trimestre' => $verf,
-              //'monto_certificado'=>$monto_certificado,
-              'verif_cert'=>$verif_cert,
             );
           }
           else{
@@ -2307,21 +2309,20 @@ class Cmod_insumo extends CI_Controller {
     function lista_form4_x_unidadresponsable($cite,$insumo){
       $tabla='';
 
-        $form4=$this->model_producto->lista_form4_x_unidadresponsable($cite[0]['com_id']);
-        $tabla.='<option value="">Seleccione Actividad</option>';
+        $form4=$this->model_producto->lista_productos($cite[0]['com_id']); /// listado sin temporalidad
+        $tabla.='<option value="">Seleccione Alineacion a form N°4</option>';
 
         if($cite[0]['por_id']==0){ //// alineacion normal
           foreach($form4 as $row){
             if($row['prod_id']==$insumo[0]['prod_id']){
-              $tabla.='<option value="'.$row['prod_id'].'" selected>'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].'</option>';
+              $tabla.='<option value="'.$row['prod_id'].'" selected>'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].' - '.$row['prod_resultado'].'</option>';
             }
             else{
-              $tabla.='<option value="'.$row['prod_id'].'">'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].'</option>';
+              $tabla.='<option value="'.$row['prod_id'].'">'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].' - '.$row['prod_resultado'].'</option>';
             }
           } 
         }
         else{
-
           foreach($form4 as $row){ //// alineacion de actividades del programa bolsa
             $unidad=$this->model_componente->get_componente($row['uni_resp'],$this->gestion);
             $uresp=$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'];

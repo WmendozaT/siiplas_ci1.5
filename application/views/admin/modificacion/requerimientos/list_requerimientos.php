@@ -207,6 +207,8 @@
 		  </div>
 		</div>
 
+		
+
 		<!-- MODAL NUEVO REGISTRO DE REQUERIMIENTOS   -->
         <div class="modal fade" id="modal_nuevo_ff" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
           <div class="modal-dialog" id="mdialTamanio">
@@ -434,6 +436,8 @@
                     	<button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; Salir Formulario</span></button>
                     </div>
 	              <div class="modal-body">
+	              	<?php echo $loading_form; ?>
+	              	<div id="formulario_requerimiento">
 	              	<div id="titulo_req"></div>
 	               		<form action="<?php echo site_url().'/modificaciones/cmod_insumo/valida_update_insumo'?>" method="post" id="form_mod" name="form_mod" class="smart-form">
 						<input type="hidden" name="cite_id" id="cite_id" value="<?php echo $cite[0]['cite_id'];?>">
@@ -548,92 +552,34 @@
 									</section>
 								</div>
 								<div class="row">
-									<section class="col col-2">
-										<label class="label"><div id="mess1"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm1" id="mm1" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE ENERO - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess2"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm2" id="mm2" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE FEBRERO - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess3"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm3" id="mm3" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE MARZO - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess4"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm4" id="mm4" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE ABRIL - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess5"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm5" id="mm5" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE MAYO - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess6"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm6" id="mm6" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE JUNIO - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
+									<?php
+										for ($i=1; $i <=6 ; $i++) { 
+											?>
+											<section class="col col-2">
+												<label class="label"><div id="mess<?php echo $i;?>"></div></label>
+												<label class="input">
+													<i class="icon-append fa fa-money"></i>
+													<input type="text" name="mm<?php echo $i;?>" id="mm<?php echo $i;?>" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE ENERO - <?php echo $this->session->userdata('gestion')?>" disabled>
+												</label>
+											</section>
+											<?php
+										}
+									?>
 								</div>
 								<div class="row">
-									<section class="col col-2">
-										<label class="label"><div id="mess7"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm7" id="mm7" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE JULIO - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess8"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm8" id="mm8" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE AGOSTO - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess9"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm9" id="mm9" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE SEPTIEMBRE - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess10"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm10" id="mm10" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE OCTUBRE - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess11"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm11" id="mm11" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE NOVIEMBRE - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
-									<section class="col col-2">
-										<label class="label"><div id="mess12"></div></label>
-										<label class="input">
-											<i class="icon-append fa fa-money"></i>
-											<input type="text" name="mm12" id="mm12" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE DICIEMBRE - <?php echo $this->session->userdata('gestion')?>" disabled>
-										</label>
-									</section>
+									<?php
+										for ($i=7; $i <=12 ; $i++) { 
+											?>
+											<section class="col col-2">
+												<label class="label"><div id="mess<?php echo $i;?>"></div></label>
+												<label class="input">
+													<i class="icon-append fa fa-money"></i>
+													<input type="text" name="mm<?php echo $i;?>" id="mm<?php echo $i;?>" value="0" onkeyup="suma_programado_modificado(this)" onkeypress="return justNumbers(event);" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE ENERO - <?php echo $this->session->userdata('gestion')?>" disabled>
+												</label>
+											</section>
+											<?php
+										}
+									?>
 								</div>
 								<div id="monto"></div>
 								<input type="hidden" name="monto_cert" id="monto_cert">
@@ -646,6 +592,7 @@
 								<center><img id="loadm" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="40" height="40"></center>
 							</div>
 						</form>
+					</div>
 	            </div>
 	          </div>
 	        </div>

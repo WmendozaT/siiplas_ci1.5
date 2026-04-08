@@ -58,7 +58,7 @@ class Model_modrequerimiento extends CI_Model{
                         Inner Join funcionario as f On ci.fun_id=f.fun_id
                         Inner Join _componentes as c On ci.com_id=c.com_id
                         Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                INNER JOIN fnlista_poa_nacional(2026) poa ON c.pfec_id = poa.pfec_id
+                INNER JOIN fnlista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
                 where ci.cite_id = '.$cite_id.'' ;
 
 
@@ -127,10 +127,10 @@ class Model_modrequerimiento extends CI_Model{
 
     /*---- LISTA DE PARTIDAS DEPENDIENTES (ASIGNADAS) ----*/
     function lista_partidas_dependientes($aper_id,$par_depende){
-        $sql = 'select pg.par_id,pg.partida as par_codigo,p.par_nombre,p.par_depende,pg.importe
+        $sql = 'SELECT pg.par_id,pg.partida as par_codigo,p.par_nombre,p.par_depende,pg.importe
             from ptto_partidas_sigep pg
             Inner Join partidas as p On p.par_id=pg.par_id
-            where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.' and p.par_depende='.$par_depende.'
+            where pg.aper_id='.$aper_id.' and pg.estado!=3 and pg.g_id='.$this->gestion.' and p.par_depende='.$par_depende.'
             order by pg.partida asc';
         $query = $this->db->query($sql);
         return $query->result_array();

@@ -406,224 +406,338 @@ function valida_eliminar(){
 });
 
 
- /*------ MODIFICAR REQUERIMIENTO 2026 -----*/
-  $(function () {
-      $(".mod_ff").on("click", function (e) {
-        ins_id = $(this).attr('name');
-        cite_id = $(this).attr('id');
-        alert(ins_id)
-    
-        var url = base+"index.php/modificaciones/cmod_insumo/get_requerimiento";
+///// get mod requerimiento
+$(function () {
+    var xhr_requerimiento; // Variable externa para controlar peticiones
 
-          var request;
-          if (request) {
-              request.abort();
-          }
-          request = $.ajax({
-              url: url,
-              type: "POST",
-              dataType: 'json',
-              data: "ins_id="+ins_id+"&cite_id="+cite_id
-          });
+    $(".mod_ff").on("click", function (e) {
+        e.preventDefault();
+        const $this = $(this);
+        const ins_id = $this.attr('name');
+        const cite_id = $this.attr('id');
 
-          request.done(function (response, textStatus, jqXHR) {
+        // 1. Estado de carga: Mostrar loading y opacar formulario
+        $("#loading_req").show();
+        $("#formulario_requerimiento").css("opacity", "0.3");
+        $("#mbut").hide(); 
 
-          if (response.respuesta == 'correcto') {
-            $( "#costou" ).prop( "disabled", false );
+        // Abortar petición anterior si el usuario hace clic rápido
+        if (xhr_requerimiento) xhr_requerimiento.abort();
 
-            if(response.verif_cert==1){
-              $( "#detalle" ).prop( "disabled", true );
-            //  $( "#costou" ).prop( "disabled", true );
-              $( "#umedida" ).prop( "disabled", true );
-              $( "#par_padre" ).prop( "disabled", true );
-              $( "#par_hijo" ).prop( "disabled", true );
-              $( "#observacion" ).prop( "disabled", true );
-              if(response.monto_certificado==insumo[0]['programado_total']){
-                $( "#cantidad" ).prop( "disabled", true );
-              }
-            }
-            else{
-              $( "#detalle" ).prop( "disabled", false );
-              $( "#cantidad" ).prop( "disabled", false );
-            //  $( "#costou" ).prop( "disabled", false );
-              $( "#umedida" ).prop( "disabled", false );
-              $( "#par_padre" ).prop( "disabled", false );
-              $( "#par_hijo" ).prop( "disabled", false );
-              $( "#observacion" ).prop( "disabled", false );
+        xhr_requerimiento = $.ajax({
+            url: `${base}index.php/modificaciones/cmod_insumo/get_requerimiento`,
+            type: "POST",
+            dataType: 'json',
+            data: { ins_id, cite_id }
+        });
+
+        xhr_requerimiento.done(function (response) {
+            if (response.respuesta !== 'correcto') {
+                alertify.error("ERROR AL RECUPERAR DATOS");
+                return;
             }
 
-             document.getElementById("saldo").value = parseFloat(response.monto_saldo).toFixed(2);
-             document.getElementById("sal").value = parseFloat(response.monto_saldo).toFixed(2);
-             document.getElementById("monto_dif").value = parseFloat(response.saldo_dif).toFixed(2);
-             document.getElementById("detalle").value = response.insumo[0]['ins_detalle'];
-             document.getElementById("cantidad").value = response.insumo[0]['ins_cant_requerida'];
-             document.getElementById("costou").value = parseFloat(response.insumo[0]['ins_costo_unitario']).toFixed(2);
-             document.getElementById("costot").value = parseFloat(response.insumo[0]['ins_costo_total']).toFixed(2);
-             document.getElementById("costot2").value = parseFloat(response.insumo[0]['ins_costo_total']).toFixed(2);
-             document.getElementById("umedida").value = response.insumo[0]['ins_unidad_medida'];
-             //document.getElementById("par_padre").value = response.ppdre[0]['par_codigo'];
-             document.getElementById("par_hijo").value = response.insumo[0]['par_id'];
-             document.getElementById("par_id").value = response.insumo[0]['par_id'];
-             document.getElementById("mtot").value = response.insumo[0]['programado_total'];
-             document.getElementById("observacion").value = response.insumo[0]['ins_observacion'];
-             document.getElementById("monto_cert").value = response.insumo[0]['certificado_total'];
-             $("#par_padre").html(response.partidas);
-             $("#par_hijo").html(response.lista_partidas);
-             $("#id").html(response.lista_prod_act);
-             $('#monto').html('<font color=blue size=2><b>MONTO CERTIFICADO : '+response.insumo[0]['certificado_total']+'</b></font>');
+            const ins = response.insumo[0];
+            const esCertificado = (ins.certificado_total != 0);
+
+            // 2. Control de Inputs (Habilitar/Deshabilitar en bloque)
+            const campos = ["#detalle", "#umedida", "#par_padre", "#par_hijo", "#observacion"];
+            $(campos.join(",")).prop("disabled", esCertificado);
             
-             if(response.insumo[0]['programado_total']!=response.insumo[0]['ins_costo_total']){
-              $('#amtit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO</div></center>');
-              $('#mbut').slideUp();
-             }
+            // Lógica específica para cantidad
+            $("#cantidad").prop("disabled", (esCertificado && ins.certificado_total == ins.programado_total));
+            $("#costou").prop("disabled", false);
 
-             for (var i = 1; i <=12; i++) {
-              mes=mes_texto(i);
+            // 3. Llenado masivo de datos al formulario
+            $("#saldo, #sal").val(parseFloat(response.monto_saldo).toFixed(2));
+            $("#monto_dif").val(parseFloat(response.saldo_dif).toFixed(2));
+            $("#detalle").val(ins.ins_detalle);
+            $("#cantidad").val(ins.ins_cant_requerida);
+            $("#costou").val(parseFloat(ins.ins_costo_unitario).toFixed(2));
+            $("#costot, #costot2").val(parseFloat(ins.ins_costo_total).toFixed(2));
+            $("#umedida").val(ins.ins_unidad_medida);
+            $("#par_hijo, #par_id").val(ins.par_id);
+            $("#mtot").val(ins.programado_total);
+            $("#observacion").val(ins.ins_observacion);
+            $("#monto_cert").val(ins.certificado_total);
+
+            // Inyección de HTML dinámico (Selects y Listas)
+            $("#par_padre").html(response.partidas);
+            $("#par_hijo").html(response.lista_partidas);
+            $("#id").html(response.lista_prod_act);
+            $('#monto').html(`<font color="blue" size="2"><b>MONTO CERTIFICADO : ${ins.certificado_total}</b></font>`);
+
+            // 4. Bucle de Meses (Uso de la nueva vista)
+            for (let i = 1; i <= 12; i++) {
+                let nombreMes = mes_texto(i);
+                let estaCertificado = (ins['certmes' + i] == 1);
+                
+                $(`#mm${i}`).val(ins['mes' + i]).prop("disabled", estaCertificado);
+                $(`#mess${i}`).html(estaCertificado ? 
+                    `<font color="red"><b>${nombreMes} (*)</b></font>` : 
+                    `<b>${nombreMes}</b>`
+                );
+            }
+
+            // 5. Gestión de Alertas y Títulos Finales
+            let alertaHtml = "";
+            let tituloHtml = "";
+            let mostrarBoton = true;
+
+            // Validación: Programado vs Costo Total
+            if (ins.programado_total != ins.ins_costo_total) {
+                alertaHtml = '<center><div class="alert alert-danger">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL</div></center>';
+                mostrarBoton = false;
+            }
+
+            // Validación: Certificación Total
+            if (ins.certificado_total == ins.programado_total) {
+                tituloHtml = '<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>';
+                mostrarBoton = false;
+            } else {
+                const tipoMod = ins.ins_tipo_modificacion == 0 ? "" : "<br><b>(REVERSIÓN DE REQUERIMIENTO)</b>";
+                tituloHtml = `<center><h2 class="alert alert-info">MODIFICAR DATOS DEL REQUERIMIENTO${tipoMod}</h2></center>`;
+            }
+
+            // Validación: Saldo disponible
+            if (ins.programado_total > response.monto_saldo) {
+                alertaHtml = '<center><div class="alert alert-danger">COSTO TOTAL ES MAYOR AL SALDO, VERIFIQUE MONTOS</div></center>';
+                mostrarBoton = false;
+            }
+
+            $("#amtit").html(alertaHtml);
+            $("#titulo_req").html(tituloHtml);
+            $("#mbut")[mostrarBoton ? "slideDown" : "slideUp"]();
+
+        });
+
+        xhr_requerimiento.fail(function (e) {
+            if (e.statusText !== 'abort') {
+                alertify.error("ERROR AL RECUPERAR DATOS DEL REQUERIMIENTO");
+            }
+        });
+
+        xhr_requerimiento.always(function () {
+            // 6. Finalización: Ocultar loading y restaurar opacidad siempre
+            $("#loading_req").hide();
+            $("#formulario_requerimiento").css("opacity", "1");
+        });
+    });
+});
+ /*------ MODIFICAR REQUERIMIENTO 2026 -----*/
+  // $(function () {
+  //     $(".mod_ff").on("click", function (e) {
+  //       ins_id = $(this).attr('name');
+  //       cite_id = $(this).attr('id');
+  //      // alert(ins_id+' - '+cite_id)
+    
+  //       var url = base+"index.php/modificaciones/cmod_insumo/get_requerimiento";
+  //         var request;
+  //         if (request) {
+  //             request.abort();
+  //         }
+  //         request = $.ajax({
+  //             url: url,
+  //             type: "POST",
+  //             dataType: 'json',
+  //             data: "ins_id="+ins_id+"&cite_id="+cite_id
+  //         });
+
+  //         request.done(function (response, textStatus, jqXHR) {
+
+  //         if (response.respuesta == 'correcto') {
+  //         //  alert(response.respuesta)
+  //           $( "#costou" ).prop( "disabled", false );
+
+  //           if(response.insumo[0]['certificado_total']!=0){
+  //             $( "#detalle" ).prop( "disabled", true );
+  //             $( "#umedida" ).prop( "disabled", true );
+  //             $( "#par_padre" ).prop( "disabled", true );
+  //             $( "#par_hijo" ).prop( "disabled", true );
+  //             $( "#observacion" ).prop( "disabled", true );
+  //             if(response.monto_certificado==insumo[0]['programado_total']){
+  //               $( "#cantidad" ).prop( "disabled", true );
+  //             }
+  //           }
+  //           else{
+  //             $( "#detalle" ).prop( "disabled", false );
+  //             $( "#cantidad" ).prop( "disabled", false );
+  //             $( "#umedida" ).prop( "disabled", false );
+  //             $( "#par_padre" ).prop( "disabled", false );
+  //             $( "#par_hijo" ).prop( "disabled", false );
+  //             $( "#observacion" ).prop( "disabled", false );
+  //           }
+
+  //            document.getElementById("saldo").value = parseFloat(response.monto_saldo).toFixed(2);
+  //            document.getElementById("sal").value = parseFloat(response.monto_saldo).toFixed(2);
+  //            document.getElementById("monto_dif").value = parseFloat(response.saldo_dif).toFixed(2);
+  //            document.getElementById("detalle").value = response.insumo[0]['ins_detalle'];
+  //            document.getElementById("cantidad").value = response.insumo[0]['ins_cant_requerida'];
+  //            document.getElementById("costou").value = parseFloat(response.insumo[0]['ins_costo_unitario']).toFixed(2);
+  //            document.getElementById("costot").value = parseFloat(response.insumo[0]['ins_costo_total']).toFixed(2);
+  //            document.getElementById("costot2").value = parseFloat(response.insumo[0]['ins_costo_total']).toFixed(2);
+  //            document.getElementById("umedida").value = response.insumo[0]['ins_unidad_medida'];
+  //            document.getElementById("par_hijo").value = response.insumo[0]['par_id'];
+  //            document.getElementById("par_id").value = response.insumo[0]['par_id'];
+  //            document.getElementById("mtot").value = response.insumo[0]['programado_total'];
+  //            document.getElementById("observacion").value = response.insumo[0]['ins_observacion'];
+  //            document.getElementById("monto_cert").value = response.insumo[0]['certificado_total'];
+  //            $("#par_padre").html(response.partidas);
+  //            $("#par_hijo").html(response.lista_partidas);
+  //            $("#id").html(response.lista_prod_act);
+  //            $('#monto').html('<font color=blue size=2><b>MONTO CERTIFICADO : '+response.insumo[0]['certificado_total']+'</b></font>');
+            
+  //            if(response.insumo[0]['programado_total']!=response.insumo[0]['ins_costo_total']){
+  //             $('#amtit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO</div></center>');
+  //             $('#mbut').slideUp();
+  //            }
+
+  //            for (var i = 1; i <=12; i++) {
+  //               mes=mes_texto(i);
+  //               document.getElementById("mm"+i).value = response.insumo[0]['mes'+i];
              
-              document.getElementById("mm"+i).value = response.insumo[0]['mes'+i];
-           
-              if(response.verif_mes['verf_mes'+i]==1){
-                document.getElementById("mm"+i).disabled = true;
-                $('#mess'+i).html('<font color=red><b>'+mes+' (*)</b></font>');
-              }
-              else{
-                document.getElementById("mm"+i).disabled = false;
-                $('#mess'+i).html('<b>'+mes+'</b>');
-              }
-             }
+  //               if(response.insumo[0]['certmes'+i]==1){
+  //                 document.getElementById("mm"+i).disabled = true;
+  //                 $('#mess'+i).html('<font color=red><b>'+mes+' (*)</b></font>');
+  //               }
+  //               else{
+  //                 document.getElementById("mm"+i).disabled = false;
+  //                 $('#mess'+i).html('<b>'+mes+'</b>');
+  //               }
+  //            }
 
-             if(response.insumo[0]['certificado_total']==response.prog[0]['programado_total']){
-              $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
-              $('#mbut').slideUp();
-             }
-             else{
-              if(response.insumo[0]['ins_tipo_modificacion']==0){
-                $('#titulo_req').html('<center><h2 class="alert alert-info">MODIFICAR REQUERIMIENTO</h2></center>');
-              }
-              else{
-                $('#titulo_req').html('<center><h2 class="alert alert-info">MODIFICAR REQUERIMIENTO<br><b>(REVERSIÓN DE REQUERIMIENTO)</b></h2></center>');
-              }
+  //            if(response.insumo[0]['certificado_total']==response.insumo[0]['programado_total']){
+  //             $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
+  //             $('#mbut').slideUp();
+  //            }
+  //            else{
+  //             if(response.insumo[0]['ins_tipo_modificacion']==0){
+  //               $('#titulo_req').html('<center><h2 class="alert alert-info">MODIFICAR DATOS DEL REQUERIMIENTO</h2></center>');
+  //             }
+  //             else{
+  //               $('#titulo_req').html('<center><h2 class="alert alert-info">MODIFICAR DATOS DEL REQUERIMIENTO<br><b>(REVERSIÓN DE REQUERIMIENTO)</b></h2></center>');
+  //             }
               
-              $('#mbut').slideDown();
-             }
+  //             $('#mbut').slideDown();
+  //            }
 
-              if(response.prog[0]['programado_total']>response.monto_saldo){
-                $('#amtit').html('<center><div class="alert alert-danger alert-block">COSTO TOTAL ES MAYOR AL SALDO, VERIFIQUE MONTOS</div></center>');
-                $('#mbut').slideUp();
-              }
-              else{
-                if(response.insumo[0]['certificado_total']==response.insumo[0]['programado_total']){
-                    $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
-                    $('#mbut').slideUp();
-                  }
-                else{
-                    $('#amtit').html('');
-                    $('#mbut').slideDown();
-                }
-              }
-          }
-          else{
-              alertify.error("ERROR AL RECUPERAR DATOS DEL REQUERIMIENTO");
-          }
+  //             if(response.insumo[0]['programado_total']>response.monto_saldo){
+  //               $('#amtit').html('<center><div class="alert alert-danger alert-block">COSTO TOTAL ES MAYOR AL SALDO, VERIFIQUE MONTOS</div></center>');
+  //               $('#mbut').slideUp();
+  //             }
+  //             else{
+  //               if(response.insumo[0]['certificado_total']==response.insumo[0]['programado_total']){
+  //                   $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
+  //                   $('#mbut').slideUp();
+  //                 }
+  //               else{
+  //                   $('#amtit').html('');
+  //                   $('#mbut').slideDown();
+  //               }
+  //             }
+  //         }
+  //         else{
+  //             alertify.error("ERROR AL RECUPERAR DATOS DEL REQUERIMIENTO");
+  //         }
 
-          });
-          request.fail(function (jqXHR, textStatus, thrown) {
-              console.log("ERROR: " + textStatus);
-          });
-          request.always(function () {
-              //console.log("termino la ejecuicion de ajax");
-          });
-          e.preventDefault();
-          // =============================VALIDAR EL FORMULARIO DE MODIFICACION
-          $("#subir_mins").on("click", function (e) {
-              var $validator = $("#form_mod").validate({
-                     rules: {
-                      ins_id: { //// Insumo
-                      required: true,
-                      },
-                      proy_id: { //// Proyecto
-                          required: true,
-                      },
-                      detalle: { //// Detalle
-                          required: true,
-                      },
-                      cantidad: { //// Cantidad
-                          required: true,
-                      },
-                      id: { //// id
-                          required: true,
-                      },
-                      costou: { //// Costo U
-                          required: true,
-                      },
-                      costot: { //// costo tot
-                          required: true,
-                      },
-                      umedida: { //// unidad medida
-                          required: true,
-                      },
-                      par_padre: { //// par padre
-                          required: true,
-                      },
-                      par_hijo: { //// par hijo
-                          required: true,
-                      }
-                  },
-                  messages: {
-                      ins_id: "<font color=red>ID</font>",
-                      detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>", 
-                      cantidad: "<font color=red>CANTIDAD</font>",
-                      costou: "<font color=red>COSTO UNITARIO</font>",
-                      costot: "<font color=red>COSTO TOTAL</font>",
-                      umedida: "<font color=red>REGISTRE UNIDAD DE MEDIDA</font>",
-                      par_padre: "<font color=red>SELECCIONE GRUPO DE PARTIDAS</font>",
-                      par_hijo: "<font color=red>SELECCIONE PARTIDA</font>", 
-                      id: "<font color=red>SELECCIONE VINCULACIÓN</font>",                     
-                  },
-                  highlight: function (element) {
-                      $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-                  },
-                  unhighlight: function (element) {
-                      $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-                  },
-                  errorElement: 'span',
-                  errorClass: 'help-block',
-                  errorPlacement: function (error, element) {
-                      if (element.parent('.input-group').length) {
-                          error.insertAfter(element.parent());
-                      } else {
-                          error.insertAfter(element);
-                      }
-                  }
-              });
-              var $valid = $("#form_mod").valid();
-              if (!$valid) {
-                  $validator.focusInvalid();
-              } else {
-                saldo=document.getElementById("sal").value;
-                programado=document.getElementById("mtot").value;
-                dif=saldo-programado;
+  //         });
+  //         request.fail(function (jqXHR, textStatus, thrown) {
+  //             console.log("ERROR: " + textStatus);
+  //         });
+  //         request.always(function () {
+  //             //console.log("termino la ejecuicion de ajax");
+  //         });
+  //         e.preventDefault();
+  //         // =============================VALIDAR EL FORMULARIO DE MODIFICACION
+  //         $("#subir_mins").on("click", function (e) {
+  //             var $validator = $("#form_mod").validate({
+  //                    rules: {
+  //                     ins_id: { //// Insumo
+  //                     required: true,
+  //                     },
+  //                     proy_id: { //// Proyecto
+  //                         required: true,
+  //                     },
+  //                     detalle: { //// Detalle
+  //                         required: true,
+  //                     },
+  //                     cantidad: { //// Cantidad
+  //                         required: true,
+  //                     },
+  //                     id: { //// id
+  //                         required: true,
+  //                     },
+  //                     costou: { //// Costo U
+  //                         required: true,
+  //                     },
+  //                     costot: { //// costo tot
+  //                         required: true,
+  //                     },
+  //                     umedida: { //// unidad medida
+  //                         required: true,
+  //                     },
+  //                     par_padre: { //// par padre
+  //                         required: true,
+  //                     },
+  //                     par_hijo: { //// par hijo
+  //                         required: true,
+  //                     }
+  //                 },
+  //                 messages: {
+  //                     ins_id: "<font color=red>ID</font>",
+  //                     detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>", 
+  //                     cantidad: "<font color=red>CANTIDAD</font>",
+  //                     costou: "<font color=red>COSTO UNITARIO</font>",
+  //                     costot: "<font color=red>COSTO TOTAL</font>",
+  //                     umedida: "<font color=red>REGISTRE UNIDAD DE MEDIDA</font>",
+  //                     par_padre: "<font color=red>SELECCIONE GRUPO DE PARTIDAS</font>",
+  //                     par_hijo: "<font color=red>SELECCIONE PARTIDA</font>", 
+  //                     id: "<font color=red>SELECCIONE VINCULACIÓN</font>",                     
+  //                 },
+  //                 highlight: function (element) {
+  //                     $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+  //                 },
+  //                 unhighlight: function (element) {
+  //                     $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
+  //                 },
+  //                 errorElement: 'span',
+  //                 errorClass: 'help-block',
+  //                 errorPlacement: function (error, element) {
+  //                     if (element.parent('.input-group').length) {
+  //                         error.insertAfter(element.parent());
+  //                     } else {
+  //                         error.insertAfter(element);
+  //                     }
+  //                 }
+  //             });
+  //             var $valid = $("#form_mod").valid();
+  //             if (!$valid) {
+  //                 $validator.focusInvalid();
+  //             } else {
+  //               saldo=document.getElementById("sal").value;
+  //               programado=document.getElementById("mtot").value;
+  //               dif=saldo-programado;
           
-                if(dif>=0){
-                    alertify.confirm("MODIFICAR REQUERIMIENTO ?", function (a) {
-                        if (a) {
-                            document.getElementById("loadm").style.display = 'block';
-                            document.getElementById("subir_mins").value = "MODIFICANDO REQUERIMIENTO...";
-                            document.getElementById('subir_mins').disabled = true;
-                            document.forms['form_mod'].submit();
-                        } else {
-                            alertify.error("OPCI\u00D3N CANCELADA");
-                        }
-                    });
-                }
-                else{
-                  $('#amtit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO, VERIFIQUE DATOS</div></center>');
-                  alertify.error("EL MONTO PROGRAMADO NO PUEDE SER MAYO AL MONTO SALDO DE LA OPERACIÓN, VERIFIQUE MONTOS");
-                }
-              }
-          });
-      });
-  });
+  //               if(dif>=0){
+  //                   alertify.confirm("MODIFICAR REQUERIMIENTO ?", function (a) {
+  //                       if (a) {
+  //                           document.getElementById("loadm").style.display = 'block';
+  //                           document.getElementById("subir_mins").value = "MODIFICANDO REQUERIMIENTO...";
+  //                           document.getElementById('subir_mins').disabled = true;
+  //                           document.forms['form_mod'].submit();
+  //                       } else {
+  //                           alertify.error("OPCI\u00D3N CANCELADA");
+  //                       }
+  //                   });
+  //               }
+  //               else{
+  //                 $('#amtit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO, VERIFIQUE DATOS</div></center>');
+  //                 alertify.error("EL MONTO PROGRAMADO NO PUEDE SER MAYO AL MONTO SALDO DE LA OPERACIÓN, VERIFIQUE MONTOS");
+  //               }
+  //             }
+  //         });
+  //     });
+  // });
 
 
 //// ELIMINAR REQUERIMIENTOS POA 2026

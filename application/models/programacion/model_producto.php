@@ -361,7 +361,7 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }*/
 
-    //// lista de productos
+    //// lista de productos sin Temporalidad
     function lista_productos($com_id){
         $sql = 'SELECT *
             from _productos as p
@@ -413,7 +413,7 @@ class model_producto extends CI_Model {
 
 
 
-    /*=== LISTA DE ACTIVIDADES (NORMAL) ===*/
+    /*=== LISTA DE ACTIVIDADES (NORMAL) + TEMPORALIDAD ===*/
     function lista_form4_x_unidadresponsable($com_id){
         $sql = '
             SELECT  p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
