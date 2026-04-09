@@ -222,7 +222,6 @@
                         <input type="hidden" name="cite_id" id="cite_id" value="<?php echo $cite[0]['cite_id'];?>">
                         <header>
                         	<b>DATOS GENERALES DEL REQUERIMIENTO</b>
-                        	<!-- <label class="label"><?php echo $titulo;?></label> -->
                         </header>
 							<fieldset>
 								<div class="row">
@@ -311,7 +310,7 @@
 								<br>
 								
 								<div id="atit"></div>
-								<header><b>DISTRIBUCI&Oacute;N PRESUPUESTARIA : <?php echo $this->session->userdata('gestion')?></b><br>
+								<header><b>DISTRIBUCI&Oacute;N PRESUPUESTARIA - <?php echo $this->session->userdata('gestion')?></b><br>
 								<label class="label"><div id="ff"></div></label>
 								</header>
 								<br>
@@ -427,14 +426,15 @@
                 </div>
             </div>
         </div>
-        <!--  =====================================================  -->
+        <!--  ==================================================  -->
+
         <!-- ============ Modal Modificar requerimiento ========= -->
         <div class="modal fade" id="modal_mod_ff" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	          <div class="modal-dialog" id="mdialTamanio">
 	            <div class="modal-content">
 	            	<div class="modal-header">
-                    	<button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; Salir Formulario</span></button>
-                    </div>
+                    <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; Salir Formulario</span></button>
+                </div>
 	              <div class="modal-body">
 	              	<?php echo $loading_form; ?>
 	              	<div id="formulario_requerimiento">
@@ -443,16 +443,13 @@
 						<input type="hidden" name="cite_id" id="cite_id" value="<?php echo $cite[0]['cite_id'];?>">
 						<input type="hidden" name="ins_id" id="ins_id">
 						<input type="hidden" name="par_id" id="par_id">
-							<header><b>DATOS GENERALES DEL REQUERIMIENTO</b>
-								<!-- <label class="label"><?php echo $titulo;?></label> -->
-							</header>
+							<header><b>DATOS GENERALES DEL REQUERIMIENTO</b></header>
 							<fieldset>
 								<div class="row">
 									<section class="col col-3">
 										<label class="label"><b>GRUPO PARTIDA</b></label>
 										<label class="input">
-											<select class="form-control" id="par_padre" name="par_padre" title="SELECCIONE GRUPO DE PARTIDA">
-											</select>
+											<select class="form-control" id="par_padre" name="par_padre" title="SELECCIONE GRUPO DE PARTIDA"></select>
 										</label>
 									</section>
 									<section class="col col-3">
@@ -466,8 +463,6 @@
 										<label class="label"><b>UNIDAD DE MEDIDA</b></label>
 										<label class="input">
 											<input type="text" name="umedida" id="umedida" title="MODIFICAR UNIDAD DE MEDIDA">
-											<!-- <select class="form-control" id="mum_id" name="mum_id" title="SELECCIONE UNIDAD DE MEDIDA">
-		                                    </select> -->
 										</label>
 									</section>
 									<section class="col col-2">
@@ -486,7 +481,6 @@
 										</label>
 									</section>
 								</div>
-
 
 								<div class="row">
 									<section class="col col-6">
@@ -538,7 +532,7 @@
 								</div>
 							
 								<div id="amtit"></div>
-								<header><b>DISTRIBUCI&Oacute;N PRESUPUESTARIA : <?php echo $this->session->userdata('gestion')?></b><br>
+								<header><b>DISTRIBUCI&Oacute;N PRESUPUESTARIA - <?php echo $this->session->userdata('gestion')?></b><br>
 						
 								</header>
 								<br>

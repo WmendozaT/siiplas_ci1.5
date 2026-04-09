@@ -46,7 +46,7 @@ class Model_modrequerimiento extends CI_Model{
         return $query->result_array();
     }
 
-    /*---- GET DATOS CITE----*/
+    /*---- GET DATOS CITE 2026----*/
     function get_cite_insumo($cite_id){
         $sql = 'SELECT ci.cite_id, ci.com_id, ci.cite_codigo, ci.cite_nota, ci.cite_fecha, ci.tp_reporte,
                     ci.cite_estado, ci.cite_activo, ci.tipo_modificacion,ci.prod_id,ci.fun_id,ci.cite_observacion,
@@ -187,7 +187,7 @@ class Model_modrequerimiento extends CI_Model{
     }
 
     /*---- LISTA DE ACTIVIDADES SEGUN COMPONENTE----*/
-    function list_actividades_componente($com_id){
+/*    function list_actividades_componente($com_id){
         $sql = 'select p.prod_id,p.com_id,p.prod_producto,p.prod_ppto,p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta,p.prod_fuente_verificacion,p.prod_unidades,p.prod_ponderacion,p.estado,p.prod_mod,
                 p.prod_resultado,p.acc_id,p.prod_cod, p.prod_observacion,p.mt_id,p.or_id,i.indi_descripcion,
                 ore.or_id,ore.or_codigo,og.og_id,og.og_codigo, ae.acc_id,ae.acc_codigo,oe.obj_codigo,a.*
@@ -207,7 +207,7 @@ class Model_modrequerimiento extends CI_Model{
                 order by p.prod_cod, oe.obj_codigo, ae.ae asc'; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 

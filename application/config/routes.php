@@ -244,7 +244,7 @@ $route['prog/eliminar_insumos_todos/(:any)'] = 'programacion/crequerimiento/elim
 $route['prog/combo_partidas'] = 'programacion/crequerimiento/combo_partidas_hijos';// COMBO PARTIDAS HIJOS
 $route['prog/combo_umedida'] = 'programacion/crequerimiento/combo_unidad_medida';// COMBO UNIDAD DE MEDIDA
 
-$route['prog/combo_partidas_asig'] = 'programacion/crequerimiento/combo_partidas_hijos_asignados';// COMBO PARTIDAS ASIGNADOS
+$route['prog/combo_partidas_asig'] = 'programacion/crequerimiento/combo_partidas_hijos_asignados';// COMBO PARTIDAS ASIGNADAS
 
 $route['prog/list_requerimiento/(:any)'] = 'programacion/cajuste_crequerimiento/list_requerimientos_total/$1';  //// Listado de Requerimientos para ajuste
 

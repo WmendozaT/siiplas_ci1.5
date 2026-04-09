@@ -106,11 +106,15 @@ $(function () {
       return /\d/.test(String.fromCharCode(keynum));
   }
 
-  //// ELIMINA REQUERIMIENTOS SELECCIONADOS
+  //// ELIMINA REQUERIMIENTOS SELECCIONADOS del listado 2026
 function valida_eliminar(){
   if(document.del_req.tot.value!=0){
     alertify.confirm("ESTA SEGURO DE ELIMINAR "+document.del_req.tot.value+" REQUERIMIENTOS ?", function (a) {
       if (a) {
+        $("#loading-overlay").css("display", "flex");
+        $(".loader-content h2").text("ELIMINANDO REQUERIMIENTOS SELECCIONADOS...");
+
+
           document.getElementById("btsubmit").value = "ELIMINANDO REQUERIMIENTOS...";
           document.getElementById("btsubmit").disabled = true;
           document.del_req.submit();
@@ -318,95 +322,90 @@ function valida_eliminar(){
 
 
 
- //// VALIDA NUEVO REGISTRO DE REQUERIMIENTOS POA
- $(function () {
+ //// VALIDA NUEVO REGISTRO DE REQUERIMIENTOS POA 2026
+  $(function () {
     $("#subir_ins").on("click", function () {
         var $validator = $("#form_nuevo").validate({
-          rules: {
-            cite_id: { //// cite
-            required: true,
+            rules: {
+                cite_id: { required: true },
+                ins_detalle: { required: true },
+                ins_cantidad: { required: true },
+                ins_costo_u: { required: true },
+                costo: { required: true },
+                ins_um: { required: true },
+                padre: { required: true },
+                partida_id: { required: true },
+                dato_id: { required: true }
             },
-            ins_detalle: { //// Detalle
-                required: true,
+            messages: {
+                ins_detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>",
+                ins_cantidad: "<font color=red>CANTIDAD</font>",
+                ins_costo_u: "<font color=red>COSTO UNITARIO</font>",
+                costo: "<font color=red>COSTO TOTAL</font>",
+                ins_um: "<font color=red>REGISTRE UNIDAD DE MEDIDA</font>",
+                padre: "<font color=red>SELECCIONE GRUPO DE PARTIDAS</font>",
+                partida_id: "<font color=red>SELECCIONE PARTIDA</font>",
+                dato_id: "<font color=red>ACTIVIDAD</font>",
             },
-            ins_cantidad: { //// Cantidad
-                required: true,
+            highlight: function (element) {
+                $(element).closest('section').removeClass('has-success').addClass('has-error');
             },
-            ins_costo_u: { //// Costo U
-                required: true,
+            unhighlight: function (element) {
+                $(element).closest('section').removeClass('has-error').addClass('has-success');
             },
-            costo: { //// costo tot
-                required: true,
-            },
-            ins_um: { //// unidad medida
-                required: true,
-            },
-            padre: { //// par padre
-                required: true,
-            },
-            partida_id: { //// par hijo
-                required: true,
-            },
-            dato_id: { //// dato id
-                required: true,
-            }
-          },
-          messages: {
-            ins_detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>", 
-            ins_cantidad: "<font color=red>CANTIDAD</font>",
-            ins_costo_u: "<font color=red>COSTO UNITARIO</font>",
-            costo: "<font color=red>COSTO TOTAL</font>",
-            ins_um: "<font color=red>REGISTRE UNIDAD DE MEDIDA</font>",
-            padre: "<font color=red>SELECCIONE GRUPO DE PARTIDAS</font>",
-            partida_id: "<font color=red>SELECCIONE PARTIDA</font>", 
-            dato_id: "<font color=red>ACTIVIDAD</font>",                     
-          },
-          highlight: function (element) {
-              $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-          },
-          unhighlight: function (element) {
-              $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-          },
-          errorElement: 'span',
-          errorClass: 'help-block',
-          errorPlacement: function (error, element) {
-            if (element.parent('.input-group').length) {
+            errorElement: 'span',
+            errorClass: 'help-block',
+            errorPlacement: function (error, element) {
                 error.insertAfter(element.parent());
-            } else {
-                error.insertAfter(element);
             }
-          }
-      });
+        });
 
-      var $valid = $("#form_nuevo").valid();
-      if (!$valid) {
-          $validator.focusInvalid();
-      } else {
-        saldo=document.getElementById("saldo").value;
-        programado=document.getElementById("tot").value;
-        dif=saldo-programado;
-        if(dif>=0){
-          alertify.confirm("DESEA GUARDAR REQUERIMIENTO ?", function (a) {
-            if (a) {
-              document.getElementById("loada").style.display = 'block';
-                document.getElementById("subir_ins").value = "GUARDANDO REQUERIMIENTO...";
-                document.getElementById('subir_ins').disabled = true;
-                document.forms['form_nuevo'].submit();
-            } else {
-                alertify.error("OPCI\u00D3N CANCELADA");
+        var $valid = $("#form_nuevo").valid();
+        if (!$valid) {
+            $validator.focusInvalid();
+        } else {
+            // CAPTURA DE VALORES PARA VALIDACIÓN MONETARIA
+            var saldo = parseFloat($("#saldo").val()) || 0;
+            var costo_total = parseFloat($('[name="costo"]').val()) || 0;
+            var programado = parseFloat($("#tot").val()) || 0;
+
+            // 1. Validar Saldo de Partida
+            if (costo_total > saldo) {
+                $('#atit').html('<div class="alert alert-danger text-center"><b>ERROR:</b> EL COSTO TOTAL (' + costo_total.toFixed(2) + ') SUPERA EL SALDO DISPONIBLE (' + saldo.toFixed(2) + ')</div>');
+                alertify.error("EL MONTO SUPERA EL SALDO DE LA PARTIDA");
+                return false;
             }
-          });
+
+            // 2. Validar Coincidencia con Programación Mensual (Temporalidad)
+            // Usamos toFixed(2) para evitar problemas con decimales flotantes
+            if (costo_total.toFixed(2) !== programado.toFixed(2)) {
+                $('#atit').html('<div class="alert alert-danger text-center"><b>ERROR:</b> EL MONTO PROGRAMADO (' + programado.toFixed(2) + ') NO COINCIDE CON EL COSTO TOTAL (' + costo_total.toFixed(2) + ')</div>');
+                alertify.error("EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL");
+                return false;
+            }
+
+            // 3. Si todo está correcto, proceder al guardado
+            $('#atit').html(''); // Limpiar errores
+            alertify.confirm("¿DESEA GUARDAR REQUERIMIENTO?", function (a) {
+                if (a) {
+                   // === INCORPORACIÓN DEL LOADING ===
+                    $("#loading-overlay").css("display", "flex"); // Mostrar overlay centrado
+                    // Deshabilitar botón y cambiar texto
+                    $("#subir_ins").prop('disabled', true).text("GUARDANDO...");
+                    // Enviar formulario
+                    document.forms['form_nuevo'].submit();
+                } else {
+                    alertify.error("OPCI\u00D3N CANCELADA");
+                }
+            });
         }
-        else{
-          $('#atit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO, VERIFIQUE DATOS</div></center>');
-            alertify.error("EL MONTO PROGRAMADO NO PUEDE SER MAYO AL MONTO SALDO DE LA OPERACIÓN, VERIFIQUE MONTOS");
-        }
-      }
     });
 });
 
 
-///// get mod requerimiento
+
+
+///// get form mod requerimiento
 $(function () {
     var xhr_requerimiento; // Variable externa para controlar peticiones
 
@@ -415,6 +414,7 @@ $(function () {
         const $this = $(this);
         const ins_id = $this.attr('name');
         const cite_id = $this.attr('id');
+       // alert(ins_id+' - '+cite_id)
 
         // 1. Estado de carga: Mostrar loading y opacar formulario
         $("#loading_req").show();
@@ -441,7 +441,7 @@ $(function () {
             const esCertificado = (ins.certificado_total != 0);
 
             // 2. Control de Inputs (Habilitar/Deshabilitar en bloque)
-            const campos = ["#detalle", "#umedida", "#par_padre", "#par_hijo", "#observacion"];
+            const campos = ["#ins_id","#detalle", "#umedida", "#par_padre", "#par_hijo", "#observacion"];
             $(campos.join(",")).prop("disabled", esCertificado);
             
             // Lógica específica para cantidad
@@ -451,6 +451,7 @@ $(function () {
             // 3. Llenado masivo de datos al formulario
             $("#saldo, #sal").val(parseFloat(response.monto_saldo).toFixed(2));
             $("#monto_dif").val(parseFloat(response.saldo_dif).toFixed(2));
+            $("#ins_id").val(ins.ins_id);
             $("#detalle").val(ins.ins_detalle);
             $("#cantidad").val(ins.ins_cant_requerida);
             $("#costou").val(parseFloat(ins.ins_costo_unitario).toFixed(2));
@@ -523,224 +524,95 @@ $(function () {
             $("#formulario_requerimiento").css("opacity", "1");
         });
     });
-});
- /*------ MODIFICAR REQUERIMIENTO 2026 -----*/
-  // $(function () {
-  //     $(".mod_ff").on("click", function (e) {
-  //       ins_id = $(this).attr('name');
-  //       cite_id = $(this).attr('id');
-  //      // alert(ins_id+' - '+cite_id)
-    
-  //       var url = base+"index.php/modificaciones/cmod_insumo/get_requerimiento";
-  //         var request;
-  //         if (request) {
-  //             request.abort();
-  //         }
-  //         request = $.ajax({
-  //             url: url,
-  //             type: "POST",
-  //             dataType: 'json',
-  //             data: "ins_id="+ins_id+"&cite_id="+cite_id
-  //         });
 
-  //         request.done(function (response, textStatus, jqXHR) {
+    //// subir datos de la modificacion poa del requerimiento
+    $("#subir_mins").on("click", function (e) {
+        e.preventDefault(); // Evita el envío automático para validar primero
 
-  //         if (response.respuesta == 'correcto') {
-  //         //  alert(response.respuesta)
-  //           $( "#costou" ).prop( "disabled", false );
+        var $validator = $("#form_mod").validate({
+            rules: {
+                ins_id: { required: true },
+                detalle: { required: true },
+                cantidad: { required: true, min: 0.1 },
+                costou: { required: true, min: 0.1 },
+                costot: { required: true },
+                umedida: { required: true },
+                par_padre: { required: true },
+                par_hijo: { required: true },
+                id: { required: true } // Vinculación Form 4
+            },
+            messages: {
+                ins_id: "<font color=red>S/ID</font>",
+                detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>",
+                cantidad: "<font color=red>CANTIDAD</font>",
+                costou: "<font color=red>COSTO UNITARIO</font>",
+                umedida: "<font color=red>REGISTRE UNIDAD DE MEDIDA</font>",
+                par_padre: "<font color=red>SELECCIONE GRUPO</font>",
+                par_hijo: "<font color=red>SELECCIONE PARTIDA</font>",
+                id: "<font color=red>SELECCIONE VINCULACIÓN</font>"
+            },
+            highlight: function (element) {
+                $(element).closest('section').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('section').removeClass('has-error');
+            },
+            errorPlacement: function (error, element) {
+                error.insertAfter(element.parent());
+            }
+        });
 
-  //           if(response.insumo[0]['certificado_total']!=0){
-  //             $( "#detalle" ).prop( "disabled", true );
-  //             $( "#umedida" ).prop( "disabled", true );
-  //             $( "#par_padre" ).prop( "disabled", true );
-  //             $( "#par_hijo" ).prop( "disabled", true );
-  //             $( "#observacion" ).prop( "disabled", true );
-  //             if(response.monto_certificado==insumo[0]['programado_total']){
-  //               $( "#cantidad" ).prop( "disabled", true );
-  //             }
-  //           }
-  //           else{
-  //             $( "#detalle" ).prop( "disabled", false );
-  //             $( "#cantidad" ).prop( "disabled", false );
-  //             $( "#umedida" ).prop( "disabled", false );
-  //             $( "#par_padre" ).prop( "disabled", false );
-  //             $( "#par_hijo" ).prop( "disabled", false );
-  //             $( "#observacion" ).prop( "disabled", false );
-  //           }
-
-  //            document.getElementById("saldo").value = parseFloat(response.monto_saldo).toFixed(2);
-  //            document.getElementById("sal").value = parseFloat(response.monto_saldo).toFixed(2);
-  //            document.getElementById("monto_dif").value = parseFloat(response.saldo_dif).toFixed(2);
-  //            document.getElementById("detalle").value = response.insumo[0]['ins_detalle'];
-  //            document.getElementById("cantidad").value = response.insumo[0]['ins_cant_requerida'];
-  //            document.getElementById("costou").value = parseFloat(response.insumo[0]['ins_costo_unitario']).toFixed(2);
-  //            document.getElementById("costot").value = parseFloat(response.insumo[0]['ins_costo_total']).toFixed(2);
-  //            document.getElementById("costot2").value = parseFloat(response.insumo[0]['ins_costo_total']).toFixed(2);
-  //            document.getElementById("umedida").value = response.insumo[0]['ins_unidad_medida'];
-  //            document.getElementById("par_hijo").value = response.insumo[0]['par_id'];
-  //            document.getElementById("par_id").value = response.insumo[0]['par_id'];
-  //            document.getElementById("mtot").value = response.insumo[0]['programado_total'];
-  //            document.getElementById("observacion").value = response.insumo[0]['ins_observacion'];
-  //            document.getElementById("monto_cert").value = response.insumo[0]['certificado_total'];
-  //            $("#par_padre").html(response.partidas);
-  //            $("#par_hijo").html(response.lista_partidas);
-  //            $("#id").html(response.lista_prod_act);
-  //            $('#monto').html('<font color=blue size=2><b>MONTO CERTIFICADO : '+response.insumo[0]['certificado_total']+'</b></font>');
+        if ($("#form_mod").valid()) {
+            const saldo = parseFloat($("#sal").val()) || 0;
+            const costoTotal = parseFloat($("#costot").val()) || 0;
             
-  //            if(response.insumo[0]['programado_total']!=response.insumo[0]['ins_costo_total']){
-  //             $('#amtit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO</div></center>');
-  //             $('#mbut').slideUp();
-  //            }
+            // 1. Validar Suma de Meses (Temporalidad)
+            let sumaMeses = 0;
+            for (let i = 1; i <= 12; i++) {
+                sumaMeses += parseFloat($(`#mm${i}`).val()) || 0;
+            }
 
-  //            for (var i = 1; i <=12; i++) {
-  //               mes=mes_texto(i);
-  //               document.getElementById("mm"+i).value = response.insumo[0]['mes'+i];
-             
-  //               if(response.insumo[0]['certmes'+i]==1){
-  //                 document.getElementById("mm"+i).disabled = true;
-  //                 $('#mess'+i).html('<font color=red><b>'+mes+' (*)</b></font>');
-  //               }
-  //               else{
-  //                 document.getElementById("mm"+i).disabled = false;
-  //                 $('#mess'+i).html('<b>'+mes+'</b>');
-  //               }
-  //            }
+            // Redondear a 2 decimales para evitar errores de precisión en JS
+            sumaMeses = parseFloat(sumaMeses.toFixed(2));
 
-  //            if(response.insumo[0]['certificado_total']==response.insumo[0]['programado_total']){
-  //             $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
-  //             $('#mbut').slideUp();
-  //            }
-  //            else{
-  //             if(response.insumo[0]['ins_tipo_modificacion']==0){
-  //               $('#titulo_req').html('<center><h2 class="alert alert-info">MODIFICAR DATOS DEL REQUERIMIENTO</h2></center>');
-  //             }
-  //             else{
-  //               $('#titulo_req').html('<center><h2 class="alert alert-info">MODIFICAR DATOS DEL REQUERIMIENTO<br><b>(REVERSIÓN DE REQUERIMIENTO)</b></h2></center>');
-  //             }
-              
-  //             $('#mbut').slideDown();
-  //            }
+            if (sumaMeses !== costoTotal) {
+                alertify.error("LA SUMA DE LOS MESES (" + sumaMeses + ") NO COINCIDE CON EL COSTO TOTAL (" + costoTotal + ")");
+                $('#amtit').html('<div class="alert alert-danger text-center">LA SUMA DE LA PROGRAMACIÓN MENSUAL DEBE SER IGUAL AL COSTO TOTAL.</div>');
+                return;
+            }
 
-  //             if(response.insumo[0]['programado_total']>response.monto_saldo){
-  //               $('#amtit').html('<center><div class="alert alert-danger alert-block">COSTO TOTAL ES MAYOR AL SALDO, VERIFIQUE MONTOS</div></center>');
-  //               $('#mbut').slideUp();
-  //             }
-  //             else{
-  //               if(response.insumo[0]['certificado_total']==response.insumo[0]['programado_total']){
-  //                   $('#titulo_req').html('<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>');
-  //                   $('#mbut').slideUp();
-  //                 }
-  //               else{
-  //                   $('#amtit').html('');
-  //                   $('#mbut').slideDown();
-  //               }
-  //             }
-  //         }
-  //         else{
-  //             alertify.error("ERROR AL RECUPERAR DATOS DEL REQUERIMIENTO");
-  //         }
-
-  //         });
-  //         request.fail(function (jqXHR, textStatus, thrown) {
-  //             console.log("ERROR: " + textStatus);
-  //         });
-  //         request.always(function () {
-  //             //console.log("termino la ejecuicion de ajax");
-  //         });
-  //         e.preventDefault();
-  //         // =============================VALIDAR EL FORMULARIO DE MODIFICACION
-  //         $("#subir_mins").on("click", function (e) {
-  //             var $validator = $("#form_mod").validate({
-  //                    rules: {
-  //                     ins_id: { //// Insumo
-  //                     required: true,
-  //                     },
-  //                     proy_id: { //// Proyecto
-  //                         required: true,
-  //                     },
-  //                     detalle: { //// Detalle
-  //                         required: true,
-  //                     },
-  //                     cantidad: { //// Cantidad
-  //                         required: true,
-  //                     },
-  //                     id: { //// id
-  //                         required: true,
-  //                     },
-  //                     costou: { //// Costo U
-  //                         required: true,
-  //                     },
-  //                     costot: { //// costo tot
-  //                         required: true,
-  //                     },
-  //                     umedida: { //// unidad medida
-  //                         required: true,
-  //                     },
-  //                     par_padre: { //// par padre
-  //                         required: true,
-  //                     },
-  //                     par_hijo: { //// par hijo
-  //                         required: true,
-  //                     }
-  //                 },
-  //                 messages: {
-  //                     ins_id: "<font color=red>ID</font>",
-  //                     detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>", 
-  //                     cantidad: "<font color=red>CANTIDAD</font>",
-  //                     costou: "<font color=red>COSTO UNITARIO</font>",
-  //                     costot: "<font color=red>COSTO TOTAL</font>",
-  //                     umedida: "<font color=red>REGISTRE UNIDAD DE MEDIDA</font>",
-  //                     par_padre: "<font color=red>SELECCIONE GRUPO DE PARTIDAS</font>",
-  //                     par_hijo: "<font color=red>SELECCIONE PARTIDA</font>", 
-  //                     id: "<font color=red>SELECCIONE VINCULACIÓN</font>",                     
-  //                 },
-  //                 highlight: function (element) {
-  //                     $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-  //                 },
-  //                 unhighlight: function (element) {
-  //                     $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-  //                 },
-  //                 errorElement: 'span',
-  //                 errorClass: 'help-block',
-  //                 errorPlacement: function (error, element) {
-  //                     if (element.parent('.input-group').length) {
-  //                         error.insertAfter(element.parent());
-  //                     } else {
-  //                         error.insertAfter(element);
-  //                     }
-  //                 }
-  //             });
-  //             var $valid = $("#form_mod").valid();
-  //             if (!$valid) {
-  //                 $validator.focusInvalid();
-  //             } else {
-  //               saldo=document.getElementById("sal").value;
-  //               programado=document.getElementById("mtot").value;
-  //               dif=saldo-programado;
-          
-  //               if(dif>=0){
-  //                   alertify.confirm("MODIFICAR REQUERIMIENTO ?", function (a) {
-  //                       if (a) {
-  //                           document.getElementById("loadm").style.display = 'block';
-  //                           document.getElementById("subir_mins").value = "MODIFICANDO REQUERIMIENTO...";
-  //                           document.getElementById('subir_mins').disabled = true;
-  //                           document.forms['form_mod'].submit();
-  //                       } else {
-  //                           alertify.error("OPCI\u00D3N CANCELADA");
-  //                       }
-  //                   });
-  //               }
-  //               else{
-  //                 $('#amtit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO, VERIFIQUE DATOS</div></center>');
-  //                 alertify.error("EL MONTO PROGRAMADO NO PUEDE SER MAYO AL MONTO SALDO DE LA OPERACIÓN, VERIFIQUE MONTOS");
-  //               }
-  //             }
-  //         });
-  //     });
-  // });
+            // 2. Validar Saldo de Partida
+            // Importante: El saldo ya debería incluir el monto anterior del insumo (calculado en el controlador)
+            if (costoTotal <= saldo) {
+                alertify.confirm("¿ESTÁ SEGURO DE MODIFICAR EL REQUERIMIENTO?", function (a) {
+                    if (a) {
+                        // Bloqueo de botón y visualización de load
+                        $("#loading-overlay").css("display", "flex"); // Usar flex para centrar
+                        $("#subir_mins").prop("disabled", true).val("PROCESANDO...");
+                        
+                        // Asegurar que campos disabled se envíen si es necesario 
+                        // (Opcional: $("#form_mod").find(':disabled').prop('disabled', false);)
+                        
+                        document.forms['form_mod'].submit();
+                    } else {
+                        alertify.error("OPERACIÓN CANCELADA");
+                    }
+                });
+            } else {
+                $('#amtit').html('<div class="alert alert-danger text-center">EL MONTO SUPERA EL SALDO DISPONIBLE DE LA PARTIDA.</div>');
+                alertify.error("VERIFIQUE EL SALDO DISPONIBLE");
+            }
+        } else {
+            $validator.focusInvalid();
+        }
+    });
 
 
-//// ELIMINAR REQUERIMIENTOS POA 2026
+});
+
+
+
+//// ELIMINAR REQUERIMIENTO POA 2026
     $(function () {
         // Función de configuración de Alertify
         function reset_alertify() { 
@@ -796,122 +668,144 @@ $(function () {
 
 
 /////// FUNCIONES EXTRAS ======================
-//// partidas hijos (add)
-  $(document).ready(function () {
+//// partidas hijos (add nuevo) 2026
+var requestPartidaAdicion; 
+$(document).ready(function () {
     $("#partida_id").change(function () {            
-        var par_id = $(this).val(); /// Par id
-        var tp=0;
-        var url = base+"index.php/modificaciones/cmod_insumo/get_monto_partida";
-        var request;
-        if (request) {
-            request.abort();
+        var par_id = $(this).val();
+        var cite_id = $('[name="cite_id"]').val();
+        var id = 0; // Es 0 porque es una adición nueva
+        var tp = 0; // Modo adición
+        var url = base + "index.php/modificaciones/cmod_insumo/get_monto_partida";
+
+        if (requestPartidaAdicion) {
+            requestPartidaAdicion.abort();
         }
-        request = $.ajax({
+
+        requestPartidaAdicion = $.ajax({
             url: url,
             type: "POST",
             dataType: 'json',
-            data: "par_id="+par_id+"&proy_id="+proy_id+"&tp="+tp+"&id="+cite_id
+            data: { par_id: par_id, cite_id: cite_id, tp: tp, id: id },
+            beforeSend: function() {
+                // Ocultar botón de guardado y mostrar loading
+                $('#but').slideUp(); 
+                $('#atit').html('<div class="text-center"><img src="'+base+'assets/img/loading.gif" width="35"/><br>Verificando saldo...</div>');
+            }
         });
 
-        request.done(function (response, textStatus, jqXHR) {
-        if (response.respuesta == 'correcto') {
-          $('[name="saldo"]').val((response.monto).toFixed(2));
+        requestPartidaAdicion.done(function (response) {
+            if (response.respuesta == 'correcto') {
+                var saldo_partida = parseFloat(response.monto) || 0;
+                var costo_total = parseFloat($('[name="costot"]').val()) || 0;
+                var total_programado = parseFloat($('[name="tot"]').val()) || 0;
 
-          costo = parseFloat($('[name="costot"]').val()); //// costo Total Programado
-          saldo_partida=parseFloat($('[name="saldo"]').val()); /// saldo partida
-          total_programado = parseFloat($('[name="tot"]').val()); /// total programado (Temporalidad)
+                // Actualizar campo de saldo en la vista
+                $('[name="saldo"]').val(saldo_partida.toFixed(2));
 
-          if(response.monto!=0){
-            if((parseFloat(costo).toFixed(2)<=parseFloat(saldo_partida).toFixed(2)) & (parseFloat(costo).toFixed(2)==parseFloat(total_programado).toFixed(2))){
-              $('#atit').html('');
+                if (saldo_partida > 0) {
+                    // Validar: Saldo suficiente Y Costo coincide con Programación Temporal
+                    if (costo_total <= saldo_partida && costo_total === total_programado) {
+                        $('#atit').html('');
+                        $('#but').slideDown(); // Mostrar botón si todo está OK
+                    } 
+                    else {
+                        var msg = (costo_total > saldo_partida) ? 
+                                  "EL COSTO EXCEDE EL SALDO DE LA PARTIDA" : 
+                                  "EL COSTO TOTAL NO COINCIDE CON LA PROGRAMACIÓN MENSUAL";
+                        
+                        $('#atit').html('<div class="alert alert-danger text-center"><b>ERROR:</b> ' + msg + '</div>');
+                        $('#but').slideUp();
+                    }
+                } 
+                else {
+                    $('#atit').html('<div class="alert alert-danger text-center">NO EXISTE PRESUPUESTO DISPONIBLE EN ESTA PARTIDA</div>');
+                    $('#but').slideUp();
+                }
+            } else {
+                alertify.error("ERROR AL RECUPERAR MONTO ASIGNADO");
+                $('#atit').html('');
             }
-            else{
-              $('#atit').html('<center><div class="alert alert-danger alert-block">LOS MONTOS DEBEN SER CORREGIDOS</div></center>');
-            $('#but').slideUp();
-            }
-          }
-          else{
-            $('#atit').html('<center><div class="alert alert-danger alert-block">NO EXISTE PRESUPUESTO DISPONIBLE EN ESA PARTIDA</div></center>');
-          $('#but').slideUp();
-          }
-
-        }
-        else{
-            alertify.error("ERROR AL RECUPERAR MONTO ASIGNADO");
-        }
-
         });
-      });
-  });
+
+        requestPartidaAdicion.fail(function(jqXHR, textStatus) {
+            if (textStatus !== 'abort') {
+                $('#atit').html('<div class="alert alert-warning text-center">Error de conexión al verificar saldo.</div>');
+            }
+        });
+    });
+});
 
 
-  //// partidas hijos (mod)
+  //// partidas hijos (modificacion poa) 2026
+  var requestPartida; 
   $(document).ready(function () {
     $("#par_hijo").change(function () {            
-      var par_id = $(this).val();
-      var tp=1;
-      var ins_id = $('[name="ins_id"]').val(); //// ins id
+        var par_id = $(this).val();
+        var tp = 1;
+        var ins_id = $('[name="ins_id"]').val();
+        var cite_id = $('[name="cite_id"]').val();
+        var costo = parseFloat($('[name="costot"]').val()) || 0;
+        var url = base + "index.php/modificaciones/cmod_insumo/get_monto_partida";
 
+        if (requestPartida) {
+            requestPartida.abort();
+        }
 
-      //alert(tp+'----'+ins_id)
-      costo = parseFloat($('[name="costot"]').val()); //// costo
-        var url = base+"index.php/modificaciones/cmod_insumo/get_monto_partida";
-          var request;
-          if (request) {
-              request.abort();
-          }
-          request = $.ajax({
-              url: url,
-              type: "POST",
-              dataType: 'json',
-              data: "par_id="+par_id+"&proy_id="+proy_id+"&tp="+tp+"&id="+ins_id
-          });
-
-          request.done(function (response, textStatus, jqXHR) {
-
-          if (response.respuesta == 'correcto') {
-            //alert(response.datos)
-            par_id1 = parseFloat($('[name="par_id"]').val()); //// par id 
-            costo = parseFloat($('[name="costot"]').val()); //// Costo
-
-            if(par_id1==par_id){
-              document.getElementById("saldo").value = parseFloat(response.monto+costo).toFixed(2);
-              document.getElementById("sal").value = parseFloat(response.monto+costo).toFixed(2);
-              saldo_partida = parseFloat($('[name="sal"]').val()); //// saldo partida
-              $('[name="monto_dif"]').val((parseFloat($('[name="sal"]').val())-costo).toFixed(2));
-            }
-            else{
-              document.getElementById("saldo").value = parseFloat(response.monto).toFixed(2);
-              document.getElementById("sal").value = parseFloat(response.monto).toFixed(2);
-              saldo_partida = parseFloat($('[name="sal"]').val()); //// saldo partida
-              $('[name="monto_dif"]').val((parseFloat($('[name="sal"]').val())-costo).toFixed(2));
-            }
-            
-            if(costo>saldo_partida){
-              $('#matit').html('<center><div class="alert alert-danger alert-block">MONTO PROGRAMADO SUPERA AL MONTO SALDO DE LA PARTIDA, VERIFIQUE MONTOS</div></center>');
-              $('#mbut').slideUp();
-            }
-            else{
-              programado = parseFloat($('[name="mtot"]').val()); //// saldo partida
-              if(programado!=costo){
-            $('#matit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO, VERIFIQUE DATOS</div></center>');
+        requestPartida = $.ajax({
+            url: url,
+            type: "POST",
+            dataType: 'json',
+            data: { par_id: par_id, cite_id: cite_id, tp: tp, id: ins_id },
+            beforeSend: function() {
+                // Bloqueamos el botón y mostramos el loading
                 $('#mbut').slideUp();
-          }
-          else{
-            $('[name="monto_dif"]').val((saldo_partida-costo).toFixed(2));
-            $('#matit').html('');
-                $('#mbut').slideDown();
-          }
+                $('#amtit').html('<div class="text-center"><img src="'+base+'assets/img/loading.gif" width="35"/><br>Verificando saldo de partida...</div>');
+            },
+            complete: function() {
+                // Esta parte se ejecuta siempre al finalizar
+                // Puedes quitar un spinner general aquí si lo deseas
             }
-          }
-          else{
-              alertify.error("ERROR AL RECUPERAR MONTO ASIGNADO");
-          }
+        });
 
-          });
-      });
-  });
+        requestPartida.done(function (response) {
+            if (response.respuesta == 'correcto') {
+                var par_id_original = parseFloat($('[name="par_id"]').val());
+                var monto_base = parseFloat(response.monto);
+                
+                var saldo_disponible = (par_id_original == par_id) ? (monto_base + costo) : monto_base;
 
+                $("#saldo, [name='sal']").val(saldo_disponible.toFixed(2));
+                
+                var programado = parseFloat($('[name="mtot"]').val()) || 0;
+                var diferencia = saldo_disponible - costo;
+                $('[name="monto_dif"]').val(diferencia.toFixed(2));
+
+                if (costo > saldo_disponible) {
+                    $('#amtit').html('<div class="alert alert-danger text-center">EL MONTO SUPERA EL SALDO DE LA PARTIDA</div>');
+                    $('#mbut').slideUp();
+                } 
+                else if (programado !== costo) {
+                    $('#amtit').html('<div class="alert alert-danger text-center">EL MONTO PROGRAMADO ('+programado+') NO COINCIDE CON EL COSTO TOTAL ('+costo+')</div>');
+                    $('#mbut').slideUp();
+                } 
+                else {
+                    $('#amtit').html(''); // Limpiamos el loading
+                    $('#mbut').slideDown();
+                }
+            } else {
+                $('#amtit').html('');
+                alertify.error("ERROR AL RECUPERAR MONTO ASIGNADO");
+            }
+        });
+
+        requestPartida.fail(function(jqXHR, textStatus) {
+            if(textStatus !== 'abort') {
+                $('#amtit').html('<div class="alert alert-warning text-center">Error de conexión al verificar saldo.</div>');
+            }
+        });
+    });
+});
 
 
 /*---------- PARTIDAS ------------*/
@@ -947,6 +841,7 @@ $(function () {
 $(document).ready(function() {
     pageSetUp();
     $("#par_padre").change(function () {
+      
           $("#par_padre option:selected").each(function () {
           elegido=$(this).val();
           ins_id = $('[name="ins_id"]').val(); //// costo Total Programado

@@ -275,7 +275,7 @@ class Cmod_insumo extends CI_Controller {
 
           $tabla.='
           <button type="button" id="btsubmit" onclick="valida_eliminar()" class="btn btn-danger btn-sm btn-block">
-            <i class="glyphicon glyphicon-trash"></i> &nbsp;DELETE INSUMOS (SELECCIONADOS)
+            <i class="glyphicon glyphicon-trash"></i> &nbsp;ELIMINAR INSUMOS (SELECCIONADOS)
           </button>
         </div>';
 
@@ -437,38 +437,29 @@ class Cmod_insumo extends CI_Controller {
     /*---- tipo lista : Operacion-Actividad ----*/
     public function tipo_lista_ope_act($cite){
       $tabla='';
-      $operaciones=$this->model_producto->lista_form4_x_unidadresponsable($cite[0]['com_id']);
+      //$operaciones=$this->model_producto->lista_productos($cite[0]['com_id']); /// listado sin temporalidad
         $tabla.='
           <section class="col col-3">
             <label class="label"><b>ALINEACI&Oacute;N FORM 4 (ACTIVIDAD) '.$this->gestion.'</b> (prod id: '.$cite[0]['prod_id'].')</label>
             <label class="input">';
               if($cite[0]['por_id']==0){ /// Programas Normales
+                $form4=$this->model_producto->lista_productos($cite[0]['com_id']);
                 $tabla.='
                 <select class="form-control" id="dato_id" name="dato_id" title="SELECCIONE ACTIVIDAD">
                   <option value="">Seleccione Actividad</option>';
-                  foreach($operaciones as $row){ 
+                  foreach($form4 as $row){ 
                     $tabla.='<option value="'.$row['prod_id'].'">'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].'</option>';
                   } 
                   $tabla.='      
                 </select>';
               }
               else{ /// Programas Bolsas
+                $form4=$this->model_producto->get_lista_form4_uresp_consolidado_programa_bolsas($cite[0]['com_id']);
                 $tabla.='
                 <select class="form-control" id="dato_id" name="dato_id" title="SELECCIONE ACTIVIDAD">';
                   //$tabla.='<option value="">Seleccione Actividad</option>';
-                  foreach($operaciones as $row){
-                    $unidad=$this->model_componente->get_componente($row['uni_resp'],$this->gestion);
-          
-                    if(count($unidad)!=0){
-                      $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
-                      if($cite[0]['prod_id']==$row['prod_id']){
-                        $tabla.='<option value="'.$row['prod_id'].'" selected>'.$row['or_codigo'].'/'.$row['prod_cod'].' ('.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].') -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</option>';
-                      }
-                      /*else{
-                        $tabla.='<option value="'.$row['prod_id'].'">'.$row['or_codigo'].'/'.$row['prod_cod'].' ('.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].') -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</option>';
-                      }*/
-                      
-                    }
+                  foreach($form4 as $row){
+                    $tabla.='<option value="'.$row['prod_id'].'">'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].' -> ('.$row['prod_unidades'].')</option>';
                   } 
                   $tabla.='      
                 </select>';
@@ -484,7 +475,7 @@ class Cmod_insumo extends CI_Controller {
 
 
 
-    /*--- VALIDA ADD REQUERIMIENTO (2023) ---*/
+    /*--- VALIDA ADD REQUERIMIENTO (2026) ---*/
     public function valida_add_insumo(){
       if($this->input->post()) {
         $post = $this->input->post();
@@ -588,16 +579,34 @@ class Cmod_insumo extends CI_Controller {
     }
 
 
-     /*--- VALIDA UPDATE REQUERIMIENTO (2023) ---*/
+     /*======== VALIDA UPDATE REQUERIMIENTO (2026) ========*/
      public function valida_update_insumo(){
       if($this->input->post()) {
         $post = $this->input->post();
         $ins_id = $this->security->xss_clean($post['ins_id']); /// Ins id
         $cite_id = $this->security->xss_clean($post['cite_id']); /// cite id
 
-        //$insumo = $this->minsumos->get_dato_insumo($ins_id); //// DATOS DEL REQUERIMIENTO
-        $insumo = $this->model_insumo->get_requerimiento($ins_id); //// DATOS DEL REQUERIMIENTO
-        if(count($this->model_certificacion->get_insumo_monto_certificado($ins_id))!=0){ /// Cuando ya esta certificado
+
+        // 1. VALIDACIÓN: Si el ID está vacío o no es numérico
+        if (empty($ins_id) || !is_numeric($ins_id) || empty($cite_id)) {
+            $this->session->set_flashdata('danger', 'ERROR: DATOS INCOMPLETOS PARA MODIFICAR EL REQUERIMIENTO');
+            // Redirige al listado principal o a la página anterior
+            redirect(site_url("").'/mod/list_requerimientos/'.$cite_id.'');
+            return; // Detiene la ejecución
+        }
+
+        // 2. VALIDACIÓN DE EXISTENCIA: Verificar si los datos realmente existen en la BD
+        $insumo = $this->model_insumo->get_requerimiento($ins_id);
+        $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
+
+        if (empty($insumo) || empty($cite)) {
+            $this->session->set_flashdata('danger', 'ERROR: EL REQUERIMIENTO NO EXISTE O FUE ELIMINADO');
+            redirect(site_url("").'/mod/list_requerimientos/'.$cite_id.'');
+            return;
+        }
+
+
+        if($insumo[0]['certificado_total']!=0){ /// Cuando ya esta certificado
           $detalle = $insumo[0]['ins_detalle']; /// detalle
         //  $costo_unitario = $insumo[0]['ins_costo_unitario']; /// costo unitario
           $unidad = $insumo[0]['ins_unidad_medida']; /// Unidad de medida
@@ -618,20 +627,6 @@ class Cmod_insumo extends CI_Controller {
         $id = $this->security->xss_clean($post['id']); /// id : prod,act
         $producto=$this->model_producto->get_producto_id($id); /// Get producto
 
-        $id = $this->security->xss_clean($post['id']); /// id : prod,act
-        $producto=$this->model_producto->get_producto_id($id); /// Get producto
-
-
-        $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
-        $proyecto=$this->model_proyecto->get_proyecto_inversion($cite[0]['proy_id']); /// Get Proyecto
-        if($cite[0]['tp_id']==1){
-          $actividades=$this->model_modrequerimiento->list_actividades_componente($cite[0]['com_id']);
-          $id_anterior=$actividades[0]['act_id'];
-        }
-        else{
-          $operaciones=$this->model_producto->lista_form4_x_unidadresponsable($cite[0]['com_id']);
-          $id_anterior=$operaciones[0]['prod_id'];
-        }
 
           if($this->registra_insumo_original($cite_id,$ins_id)){
             
@@ -2344,66 +2339,30 @@ class Cmod_insumo extends CI_Controller {
       return $tabla;
     }
 
-    /*---------- GET MONTO PARTIDA ------------*/
+
+    /*---------- GET MONTO PARTIDA 2026 ------------*/
     public function get_monto_partida(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $par_id = $this->security->xss_clean($post['par_id']);
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// Datos Proyecto
-        $id = $this->security->xss_clean($post['id']);
-        $tp = $this->security->xss_clean($post['tp']);
+        $cite_id = $this->security->xss_clean($post['cite_id']);
+        $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); /// Datos Cite
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// Datos Unidad Organizacional
+        $tp = $this->security->xss_clean($post['tp']); /// tp: 0 (form nuevo) , tp:1 (form modificacion)
+        $id = $this->security->xss_clean($post['id']); /// cite id, ins_id
 
-        if($tp==0){
-          $cite = $this->model_modrequerimiento->get_cite_insumo($id); /// Datos Cite
-          $tp_mod=$cite[0]['tipo_modificacion'];
+        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($proyecto[0]['aper_id'],$par_id);
+        if($cite[0]['tipo_modificacion']==0){ /// poa normal
+          $saldo=$ppto_partida[0]['saldo_poa'];
         }
-        else{
-          $insumo= $this->model_insumo->get_requerimiento($id); /// Datos requerimientos productos
-          $tp_mod=$insumo[0]['ins_tipo_modificacion'];
+        else{ /// poa revertido
+          $saldo=$ppto_partida[0]['saldo_revertido'];
         }
-
-
-
-        if($tp_mod==0){
-          $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$par_id); /// Get partida -> Unidad (Asignado)
-          $prog=$this->model_ptto_sigep->get_partida_programado_poa($proyecto[0]['aper_id'],$par_id); /// Get partida -> Unidad (Programado)
-        
-          /// -------------------------
-          $monto_prog=0;
-          if(count($prog)!=0){
-            $monto_prog=$prog[0]['ppto_programado'];
-          }
-
-          $monto_asig=0;
-          if(count($asig)!=0){
-            $monto_asig=$asig[0]['ppto_asignado'];
-          }
-          /// ------------------------
-        }
-        else{
-          $asig_rev=$this->model_ptto_sigep->get_ppto_partida_revertido_unidad($par_id,$proyecto[0]['aper_id']); /// Get partida -> Unidad (Asignado reversion)
-          $prog_rev=$this->model_ptto_sigep->get_ppto_poa_partida_x_reversion($par_id,$proyecto[0]['aper_id']); /// Get partida -> Unidad (Programado reversion)
-        
-           /// -------------------------
-          $monto_prog=0;
-          if(count($prog_rev)!=0){
-            $monto_prog=$prog_rev[0]['monto_programado_revertido'];
-          }
-
-          $monto_asig=0;
-          if(count($asig_rev)!=0){
-            $monto_asig=$asig_rev[0]['monto_revertido'];
-          }
-          /// ------------------------
-        }
-
-        $monto=$monto_asig-$monto_prog;
 
         $result = array(
           'respuesta' => 'correcto',
-          'monto' => round($monto,2),
-          'datos' => $proyecto[0]['aper_id'].' <> '.$par_id.'--->'.$tp_mod.' || '.$monto_asig.'---'.$monto_prog,
+          'monto' => round($saldo,2),
+          'datos' => $proyecto[0]['aper_id'].' <> '.$par_id,
         );
   
         echo json_encode($result);

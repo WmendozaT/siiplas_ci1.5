@@ -113,7 +113,7 @@ class Model_componente extends CI_Model{
                 /* 1. Filtros directos de la tabla principal y su relación inmediata */
                 INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id AND pfe.pfec_estado = 1
                 INNER JOIN aperturaprogramatica apg ON apg.aper_id = pfe.aper_id 
-                    AND apg.aper_gestion = 2026 
+                    AND apg.aper_gestion = '.$this->gestion.' 
                     AND apg.aper_estado != 3
                 /* 2. Relaciones de catálogo y descripción */
                 INNER JOIN servicios_actividad sa ON sa.serv_id = c.serv_id
