@@ -73,30 +73,105 @@ $(document).ready(function() {
   //// ------------------
 
 
-$(function () {
-    //SUBIR ARCHIVO
-    $("#subir_archivo").on("click", function () {
-      var $valid = $("#form_subir_sigep").valid();
-      if (!$valid) {
-          $validator.focusInvalid();
-      } else {
-        if(document.getElementById('archivo').value==''){
-          alertify.alert('POR FAVOR SELECCIONE ARCHIVO .CSV');
-          return false;
+  ////------------ para migrar archivo en Excel==========2026
+  $(document).ready(function() {
+    // 1. Mostrar el nombre del archivo seleccionado (Mejora visual)
+    $('#archivo').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        if (fileName) {
+            $('.form-control').html(fileName);
         }
-          alertify.confirm("SUBIR ARCHIVO REQUERIMIENTOS.CSV?", function (a) {
-              if (a) {
-                  document.getElementById("subir_archivo").value = "AGREGANDO REQUERIMIENTOS...";
-                  document.getElementById("loads").style.display = 'block';
-                  document.getElementById('subir_archivo').disabled = true;
-                  document.forms['form_subir_sigep'].submit();
-              } else {
-                  alertify.error("OPCI\u00D3N CANCELADA");
-              }
-          });
-      }
     });
-  });
+
+    // 2. Evento de clic en el botón de subir
+    $('#subir_archivo').on('click', function(e) {
+        e.preventDefault();
+
+        // Validar que seleccionó un archivo antes de enviarlo
+        if ($('#archivo').val() == '') {
+            alert("Por favor, seleccione un archivo Excel antes de continuar.");
+            return false;
+        }
+
+        // Preparar los datos del formulario (FormData soporta archivos)
+        var form = $('#form_subir_sigep')[0];
+        var data = new FormData(form);
+
+        // UI: Deshabilitar botón y mostrar carga
+        $('#subir_archivo').prop('disabled', true).text('VALIDANDO Y SUBIENDO...');
+        $('#loads').show();
+
+        $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: $('#form_subir_sigep').attr('action'), // Toma la URL del action del form
+            data: data,
+            processData: false, // Importante para enviar archivos
+            contentType: false, // Importante para enviar archivos
+            cache: false,
+            success: function(response) {
+                // PHP 5.6/CI 1.5 a veces envía texto, aseguramos el objeto JSON
+                var res = (typeof response === 'object') ? response : JSON.parse(response);
+
+                if (res.status === 'success') {
+                    alert("¡Éxito! " + res.msj);
+                    location.reload();
+                } else {
+                    // Mostrar lista de errores detectados en el Excel
+                    var errorMsg = "CORREGIR LOS SIGUIENTES CAMPOS:\n\n";
+                    $.each(res.errors, function(index, value) {
+                        errorMsg += "• " + value + "\n";
+                    });
+                    alert(errorMsg);
+                    
+                    // Resetear el botón
+                    $('#subir_archivo').prop('disabled', false).text('SUBIR REQUERIMIENTOS .CSV');
+                    $('#loads').hide();
+                }
+            },
+            error: function(e) {
+                alert("Error crítico en el servidor. Verifique el tamaño del archivo o la conexión.");
+                $('#subir_archivo').prop('disabled', false).text('SUBIR REQUERIMIENTOS .CSV');
+                $('#loads').hide();
+            }
+        });
+    });
+});
+  ////-----------------------------------------
+
+
+
+///// subir archivos anterior
+// $(function () {
+//     //SUBIR ARCHIVO
+//     $("#subir_archivo").on("click", function () {
+//       var $valid = $("#form_subir_sigep").valid();
+//       if (!$valid) {
+//           $validator.focusInvalid();
+//       } else {
+//         if(document.getElementById('archivo').value==''){
+//           alertify.alert('POR FAVOR SELECCIONE ARCHIVO .CSV');
+//           return false;
+//         }
+//           alertify.confirm("SUBIR ARCHIVO REQUERIMIENTOS.CSV?", function (a) {
+//               if (a) {
+//                   document.getElementById("subir_archivo").value = "AGREGANDO REQUERIMIENTOS...";
+//                   document.getElementById("loads").style.display = 'block';
+//                   document.getElementById('subir_archivo').disabled = true;
+//                   document.forms['form_subir_sigep'].submit();
+//               } else {
+//                   alertify.error("OPCI\u00D3N CANCELADA");
+//               }
+//           });
+//       }
+//     });
+//   });
+
+
+
+
+
+
 
   function justNumbers(e){
       var keynum = window.event ? window.event.keyCode : e.which;
@@ -239,45 +314,57 @@ function valida_eliminar(){
 
 
     /*---- BOTON PARA CARGAR EL CUADRO COMPARATIVO POR PARTIDAS ----*/
-    $(function () {
-        $(".boton_cuadro_comparativo").on("click", function (e) {
-            proy_id=$('[name="proy_id"]').val();
-            com_id=$('[name="com_id"]').val();
+   $(function () {
+    // Definimos request fuera para que el .abort() funcione realmente entre clics
+    var request;
 
-            $('#partidas').html('<div class="loadin" align="center"><br><br><br><img src="'+base+'/assets/img/cargando-loading-039.gif" alt="loading" style="width:70%;"/></div>');
+    $(".boton_cuadro_comparativo").on("click", function (e) {
+        e.preventDefault(); // Siempre al inicio
 
-            document.getElementById("boton_comparativo").style.display = 'none';
-            var url = base+"index.php/programacion/cppto_comparativo/get_cuadro_comparativo_ptto";
-            var request;
-            if (request) {
-                request.abort();
+        var cite_id = $('[name="cite_id"]').val();
+        
+        // 1. Validar que exista un ID seleccionado
+        if (!cite_id) {
+            alertify.warning("Por favor, seleccione un CITE.");
+            return;
+        }
+
+        // 2. Mostrar loader y ocultar botón
+        $('#partidas').html('<div class="loadin" align="center"><br><br><img src="'+base+'/assets/img/cargando-loading-039.gif" alt="loading" style="width:50%;""")/>></div>');
+        $("#boton_comparativo").hide(); // Más simple que .style.display = 'none'
+
+        // 3. Abortar petición previa si el usuario hace clic rápido varias veces
+        if (request) {
+            request.abort();
+        }
+
+        // 4. Petición AJAX
+        request = $.ajax({
+            url: base + "index.php/modificaciones/cmod_insumo/get_cuadro_comparativo_ptto",
+            type: "POST",
+            dataType: 'json',
+            // Es mejor enviar un objeto que un string manual
+            data: { cite_id: cite_id } 
+        });
+
+        request.done(function (response) {
+            if (response.respuesta === 'correcto') {
+                // Insertamos el iframe y lo mostramos con efecto
+                $('#partidas').hide().html(response.tabla).fadeIn(1000);
+            } else {
+                alertify.error(response.mensaje || "ERROR AL RECUPERAR DATOS");
+                $("#boton_comparativo").show(); // Reaparece el botón si falló
             }
-            request = $.ajax({
-                url: url,
-                type: "POST",
-                dataType: 'json',
-                data: "proy_id="+proy_id
-            });
+        });
 
-            request.done(function (response, textStatus, jqXHR) {
-            if (response.respuesta == 'correcto') {
-                $('#partidas').fadeIn(1000).html(response.tabla);
+        request.fail(function (jqXHR, textStatus) {
+            if (textStatus !== 'abort') {
+                console.error("Error en la petición: " + textStatus);
+                alertify.error("Error de conexión al servidor");
             }
-            else{
-                alertify.error("ERROR AL RECUPERAR DATOS POA ");
-            }
-
-            });
-            request.fail(function (jqXHR, textStatus, thrown) {
-                console.log("ERROR: " + textStatus);
-            });
-            request.always(function () {
-                //console.log("termino la ejecuicion de ajax");
-            });
-            e.preventDefault();
-          
         });
     });
+  });
 
 
 

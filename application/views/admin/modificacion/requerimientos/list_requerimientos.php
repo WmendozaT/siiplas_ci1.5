@@ -134,7 +134,7 @@
 									<a href="#tabs-a"><b>MIS REQUERIMIENTOS</b></a>
 								</li>
 								<li>
-									<a href="#tabs-c"><b>VER CUADRO COMPARATIVO DE PRESUPUESTO</b></a>
+									<a href="#tabs-c"><b>VER CUADRO COMPARATIVO POA - PRESUPUESTO</b></a>
 								</li>
 							</ul>
 
@@ -642,41 +642,65 @@
 	 <!--  =============== -->
 
 	    <!-- ================== MODAL SUBIR ARCHIVO ========================== -->
-	  	<div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-	        <div class="modal-dialog modal-dialog-centered" role="document" class="modal-dialog modal-sm">
-	            <div class="modal-content">
-	                <div class="modal-header">
-	                    <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-	                </div>
-	                <div class="modal-body">
-	                	<h2><center>SUBIR ARCHIVO REQUERIMIENTO.CSV <br><?php if($cite[0]['tipo_modificacion']==1){ echo "<b>(REVERSION DE SALDOS)</b>";} ?></center></h2>
-	                	
-	                    <div class="row">
-	                    		<script src="<?php echo base_url(); ?>assets/file_nuevo/jquery.min.js"></script>
-	                    		<form action="<?php echo site_url().'/modificaciones/cmod_insumo/valida_add_requerimientos';?>" method="post" enctype="multipart/form-data" id="form_subir_sigep" name="form_subir_sigep">
-	                            <input type="hidden" id="cite_id" name="cite_id" value="<?php echo $cite[0]['cite_id'];?>" />
-								
-								<div class="input-group">
-								  	<span class="input-group-btn">
-								  	
-								    <span class="btn btn-primary" onclick="$(this).parent().find('input[type=file]').click();">Browse</span>
-								    <input  id="archivo" accept=".csv" name="archivo" onchange="$(this).parent().parent().find('.form-control').html($(this).val().split(/[\\|/]/).pop());" style="display: none;" type="file">
-								  	<input name="MAX_FILE_SIZE" type="hidden" value="20000" />
-								  </span>
-								  <span class="form-control"></span>
-								</div>
-								<hr>
-								<div >
-									<?php if($cite[0]['tipo_modificacion']==1){ echo "<b>NOTA IMPORTANTE : </b> antes de migrar la plantilla debe verificar que exista saldos disponibles en las partidas revertidas ";} ?>
-	                                <button type="button" name="subir_archivo" id="subir_archivo" class="btn btn-success" style="width:100%;">SUBIR REQUERIMIENTOS .CSV</button><br>
-			                        <center><img id="loads" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="50" height="50"></center>
-	                            </div>
-                              </form> 
-	                    </div>
-	                </div>
-	            </div>
-	        </div>
-	    </div>
+		<div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true">
+		    <div class="modal-dialog modal-dialog-centered">
+		        <div class="modal-content">
+		            <!-- Cabecera con estilo corregido -->
+		            <div class="modal-header bg-primary text-white">
+		                <h5 class="modal-title" style="color:white !important;">Importar desde Excel</h5>
+		                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		            </div>
+		            
+		            <div class="modal-body">
+		                <div class="text-center mb-4">
+		                    <h4 class="font-weight-bold">PLANTILLA DE REQUERIMIENTOS</h4>
+		                    <?php if($cite[0]['tipo_modificacion'] == 1): ?>
+		                        <div class="alert alert-warning p-1" style="font-weight: bold;">
+		                            MODO: REVERSIÓN DE SALDOS
+		                        </div>
+		                    <?php endif; ?>
+		                </div>
+
+		                <!-- Formulario -->
+		                <form action="<?= site_url('modificaciones/cmod_insumo/valida_add_requerimientos'); ?>" method="post" enctype="multipart/form-data" id="form_subir_sigep">
+		                    <input type="hidden" id="cite_id" name="cite_id" value="<?= $cite[0]['cite_id']; ?>" />
+		                    
+		                    <div class="form-group">
+		                        <label>Seleccione archivo Excel (.xlsx, .xls)</label>
+		                        <div class="custom-file">
+		                            <!-- Acepta formatos Excel nativos -->
+		                            <input type="file" class="custom-file-input" id="archivo" name="archivo" accept=".xlsx, .xls" required>
+		                            <label class="custom-file-label" for="archivo" id="label-archivo">Elegir archivo...</label>
+		                        </div>
+		                        <small class="text-muted">Asegúrese de que las columnas coincidan con el formato establecido.</small>
+		                    </div>
+
+		                    <?php if($cite[0]['tipo_modificacion'] == 1): ?>
+		                        <div class="alert alert-info small">
+		                            <strong>NOTA IMPORTANTE:</strong> Antes de migrar, verifique que existan saldos disponibles en las partidas revertidas.
+		                        </div>
+		                    <?php endif; ?>
+
+		                    <hr>
+		                    
+		                    <!-- Botón tipo button para controlar la subida con el JS de validación -->
+		                    <button type="button" id="subir_archivo" class="btn btn-success btn-block shadow-sm">
+		                        <i class="fa fa-file-excel-o"></i> VALIDAR Y SUBIR EXCEL
+		                    </button>
+
+		                    <!-- Loader (ID loads para coincidir con tu gif original o loader para el nuevo) -->
+		                    <div id="loads" class="text-center mt-3" style="display: none;">
+		                        <img src="<?= base_url('assets/img/loading.gif'); ?>" width="50">
+		                        <p class="small text-primary"><b>Validando información del Excel...</b></p>
+		                    </div>
+		                </form> 
+		            </div>
+		        </div>
+		    </div>
+		</div>
+
 		<?php echo $loading;?>
 		<!-- END PAGE FOOTER -->
 		<script>

@@ -151,17 +151,18 @@ class Cmod_insumo extends CI_Controller {
         $data['loading_form']=$this->loagind_form();
         $data['loading']=$this->modificacionpoa->loading('ACTUALIZANDO LISTADO');
       
-          if(count($this->model_modrequerimiento->lista_requerimientos($data['cite'][0]['com_id'],$data['cite'][0]['tipo_modificacion']))>50){
+          if(count($this->model_modrequerimiento->lista_requerimientos($data['cite'][0]['com_id'],$data['cite'][0]['tipo_modificacion']))>150){
             
-            $data['tabla']=$this->modificacionpoa->modificar_requerimientos_auxiliar($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
+            $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_SinTemporalidad($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
             /*if($this->fun_id==598){ /// exclusivo doctor muruchi
               $data['tabla']=$this->modificacionpoa->modificar_requerimientos($data['cite']);  /// 2023
             }*/
           }
           else{
-            $data['tabla']=$this->modificacionpoa->modificar_requerimientos($data['cite']);  /// 2026
+            $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_ConTemporalidad($data['cite']);  /// 2026
           }
 
+         // $data['tabla']=$this->modificacionpoa->modificar_requerimientos_auxiliar($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
           $data['part_padres'] = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);//partidas padres
           if($data['cite'][0]['tipo_modificacion']==1){
             $data['part_padres'] = $this->model_ptto_sigep->lista_partidas_padres_revertidos($proyecto[0]['aper_id']);//partidas padres REVERTIDO
@@ -174,6 +175,7 @@ class Cmod_insumo extends CI_Controller {
       else{
         redirect('mod/list_top');
       }
+
     }
 
 
@@ -234,6 +236,40 @@ class Cmod_insumo extends CI_Controller {
 
 
 
+    /*-------- GET CUADRO COMPARATIVO ASIGNADO-POA 2026 --------*/
+    public function get_cuadro_comparativo_ptto() {
+        // Verificamos petición AJAX y POST
+        if (!$this->input->is_ajax_request() || !$this->input->post()) {
+            show_404();
+            return;
+        }
+
+        $cite_id = $this->security->xss_clean($this->input->post('cite_id'));
+        $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
+
+        // Validar que el CITE existe
+        if (!empty($cite)) {
+            $proy_id = $cite[0]['proy_id'];
+            
+            // Generar la URL del reporte
+            $url_reporte = site_url("prog/reporte_ptto_consolidado_comparativo_programa/{$proy_id}");
+            
+            // Construir el iframe (puedes agregar estilos aquí mismo)
+            $tabla = '<iframe src="'.$url_reporte.'" width="100%" height="800px" frameborder="0"></iframe>';
+
+            $result = array(
+                'respuesta' => 'correcto',
+                'tabla' => $tabla,
+            );
+        } else {
+            $result = array(
+                'respuesta' => 'error',
+                'mensaje' => 'No se encontraron datos para el CITE proporcionado.'
+            );
+        }
+
+        echo json_encode($result);
+    }
 
 
 
@@ -250,7 +286,7 @@ class Cmod_insumo extends CI_Controller {
     return $tabla;
   }
 
-  /*----- OPCIONES FORMULARIO ------*/
+  /*----- OPCIONES FORMULARIO 2026 ------*/
   public function opciones_formulario_mod5($cite,$proyecto){
     $monto=$this->modificacionpoa->ppto($proyecto);
     $tabla='';
@@ -493,7 +529,7 @@ class Cmod_insumo extends CI_Controller {
         //$observacion = preg_replace('/[^\w\s]/u', '', $this->security->xss_clean($post['ins_observacion'])); /// observacion  
         $id = $this->security->xss_clean($post['dato_id']); /// Alineacion id Producto, Actividad
         $producto=$this->model_producto->get_producto_id($id); /// Get producto
-        $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
+       // $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
         $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// DATOS DEL PROYECTO
         $umedida=$this->model_insumo->get_unidadmedida($um_id);
 
@@ -1577,329 +1613,469 @@ class Cmod_insumo extends CI_Controller {
       return $tabla;
     }
 
+
+    //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2026
+    public function valida_add_requerimientos() {
+      $this->load->library('excel'); // Carga el archivo que creamos arriba
+    
+      $path = $_FILES['archivo']['tmp_name'];
+      $cite_id = $this->input->post('cite_id');
+      $archivo = $_FILES['archivo']['tmp_name'];
+      $errores = array();
+      $data_insertar = array();
+
+      try {
+          $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+          $lector = PHPExcel_IOFactory::createReader($archivoTipo);
+          $phpExcel = $lector->load($archivo);
+          $hoja = $phpExcel->getSheet(0);
+          $filasMax = $hoja->getHighestRow();
+
+          // --- 1. VALIDACIÓN DE ENCABEZADOS (Columnas A a la S) ---
+          // Verificamos las primeras columnas críticas para asegurar que sea el formato correcto
+          if (trim($hoja->getCell('A1')->getValue()) != 'COD ACT' || 
+              trim($hoja->getCell('B1')->getValue()) != 'PARTIDA' || 
+              trim($hoja->getCell('F1')->getValue()) != 'TOTAL') {
+              echo json_encode(array('status' => 'error', 'errors' => array('El formato del Excel no es válido. Verifique los encabezados.')));
+              return;
+          }
+
+          // --- 2. VALIDACIÓN FILA POR FILA ---
+          for ($i = 2; $i <= $filasMax; $i++) {
+              // Extraer valores básicos
+              $cod_act = $hoja->getCell('A' . $i)->getValue();
+              $partida = $hoja->getCell('B' . $i)->getValue();
+              $total   = $hoja->getCell('F' . $i)->getOldCalculatedValue() ? $hoja->getCell('F' . $i)->getCalculatedValue() : $hoja->getCell('F' . $i)->getValue();
+
+              // Validaciones básicas
+              if (empty($cod_act)) $errores[] = "Fila $i: 'COD ACT' es obligatorio.";
+              if (empty($partida)) $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
+              if (!is_numeric($total)) $errores[] = "Fila $i: El 'TOTAL' debe ser un número.";
+
+              // --- 3. VALIDACIÓN DE MESES (Columnas G a R) ---
+              $suma_meses = 0;
+              $columnas_meses = array('G','H','I','J','K','L','M','N','O','P','Q','R');
+              
+              foreach ($columnas_meses as $col) {
+                  $val_mes = $hoja->getCell($col . $i)->getValue();
+                  if (!empty($val_mes)) {
+                      if (!is_numeric($val_mes)) {
+                          $errores[] = "Fila $i: Valor no numérico detectado en los meses.";
+                          break;
+                      }
+                      $suma_meses += $val_mes;
+                  }
+              }
+
+              // Validación de integridad: ¿La suma de los meses coincide con el TOTAL?
+              if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
+                  $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con el TOTAL ($total).";
+              }
+
+              if (empty($errores)) {
+                  // Preparamos el array para PostgreSQL
+                  $data_insertar[] = array(
+                      'cite_id'   => $cite_id,
+                      'cod_act'   => $cod_act,
+                      'partida'   => $partida,
+                      'detalle'   => $hoja->getCell('C' . $i)->getValue(),
+                      'unidad'    => $hoja->getCell('D' . $i)->getValue(),
+                      'precio'    => $hoja->getCell('E' . $i)->getValue(),
+                      'total'     => $total,
+                      'enero'     => $hoja->getCell('G' . $i)->getCalculatedValue(), // getCalculatedValue por si hay fórmulas
+                      'febrero'   => $hoja->getCell('H' . $i)->getCalculatedValue(),
+                      'marzo'     => $hoja->getCell('I' . $i)->getCalculatedValue(),
+                      'abril'     => $hoja->getCell('J' . $i)->getCalculatedValue(),
+                      'mayo'      => $hoja->getCell('K' . $i)->getCalculatedValue(),
+                      'junio'     => $hoja->getCell('L' . $i)->getCalculatedValue(),
+                      'julio'     => $hoja->getCell('M' . $i)->getCalculatedValue(),
+                      'agosto'    => $hoja->getCell('N' . $i)->getCalculatedValue(),
+                      'septiembre'=> $hoja->getCell('O' . $i)->getCalculatedValue(),
+                      'octubre'   => $hoja->getCell('P' . $i)->getCalculatedValue(),
+                      'noviembre' => $hoja->getCell('Q' . $i)->getCalculatedValue(),
+                      'diciembre' => $hoja->getCell('R' . $i)->getCalculatedValue(),
+                      'observacion'=> $hoja->getCell('S' . $i)->getValue()
+                  );
+              }
+
+              if (count($errores) > 15) break; // Límite de errores para no saturar
+          }
+
+          // --- 4. INSERCIÓN FINAL ---
+          if (empty($errores) && !empty($data_insertar)) {
+              $this->db->trans_start(); // Iniciar transacción en Postgres
+              foreach ($data_insertar as $fila) {
+                  $this->db->insert('tu_tabla_requerimientos', $fila);
+              }
+              $this->db->trans_complete();
+
+              if ($this->db->trans_status() === FALSE) {
+                  echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos.')));
+              } else {
+                  echo json_encode(array('status' => 'success', 'msj' => count($data_insertar) . ' filas subidas correctamente.'));
+              }
+          } else {
+              echo json_encode(array('status' => 'error', 'errors' => $errores));
+          }
+
+      } catch (Exception $e) {
+          echo json_encode(array('status' => 'error', 'errors' => array('Excepción: ' . $e->getMessage())));
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //----------------------------- rep mod poa - vigente 2023
 
     /*-------- GET CUADRO COMPARATIVO ASIGNADO-POA --------*/
-    public function get_comparativo_ptto(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
+    // public function get_comparativo_ptto(){
+    //   if($this->input->is_ajax_request() && $this->input->post()){
+    //     $post = $this->input->post();
+    //     $proy_id = $this->security->xss_clean($post['proy_id']);
+    //     $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
 
-        $tabla='<hr><iframe id="ipdf" width="100%"  height="900px;" src="'.base_url().'index.php/proy/ptto_consolidado_comparativo/'.$proy_id.'"></iframe>';
-        $result = array(
-          'respuesta' => 'correcto',
-          'tabla'=>$tabla,
-        );
+    //     $tabla='<hr><iframe id="ipdf" width="100%"  height="900px;" src="'.base_url().'index.php/proy/ptto_consolidado_comparativo/'.$proy_id.'"></iframe>';
+    //     $result = array(
+    //       'respuesta' => 'correcto',
+    //       'tabla'=>$tabla,
+    //     );
           
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }
+    //     echo json_encode($result);
+    //   }else{
+    //       show_404();
+    //   }
+    // }
 
      /*----- MIGRACION DE REQUERIMIENTOS A UNA OPERACIÓN (2019) -----*/
-    function valida_add_requerimientos2(){
-      if ($this->input->post()) {
-          $post = $this->input->post();
-          $cite_id = $this->security->xss_clean($post['cite_id']);
-          $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); // Datos Cite
-          $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// DATOS DEL PROYECTO
+    // function valida_add_requerimientos2(){
+    //   if ($this->input->post()) {
+    //       $post = $this->input->post();
+    //       $cite_id = $this->security->xss_clean($post['cite_id']);
+    //       $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); // Datos Cite
+    //       $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// DATOS DEL PROYECTO
 
-          $tipo = $_FILES['archivo']['type'];
-          $tamanio = $_FILES['archivo']['size'];
-          $archivotmp = $_FILES['archivo']['tmp_name'];
+    //       $tipo = $_FILES['archivo']['type'];
+    //       $tamanio = $_FILES['archivo']['size'];
+    //       $archivotmp = $_FILES['archivo']['tmp_name'];
 
-          $filename = $_FILES["archivo"]["name"];
-          $file_basename = substr($filename, 0, strripos($filename, '.'));
-          $file_ext = substr($filename, strripos($filename, '.'));
-          $allowed_file_types = array('.csv');
+    //       $filename = $_FILES["archivo"]["name"];
+    //       $file_basename = substr($filename, 0, strripos($filename, '.'));
+    //       $file_ext = substr($filename, strripos($filename, '.'));
+    //       $allowed_file_types = array('.csv');
 
-          if (in_array($file_ext, $allowed_file_types) && ($tamanio < 90000000)) {
+    //       if (in_array($file_ext, $allowed_file_types) && ($tamanio < 90000000)) {
 
-              $lineas = file($archivotmp);
+    //           $lineas = file($archivotmp);
 
-              $i=0;
-              $nro=0;
-              foreach ($lineas as $linea_num => $linea){ /// A
+    //           $i=0;
+    //           $nro=0;
+    //           foreach ($lineas as $linea_num => $linea){ /// A
 
-                if($i != 0){ /// B
-                  $datos = explode(";",$linea);
-                  if(count($datos)==20){ /// C
+    //             if($i != 0){ /// B
+    //               $datos = explode(";",$linea);
+    //               if(count($datos)==20){ /// C
 
-                      $cod_ope = intval(trim($datos[0])); //// Codigo Actividad
-                      $cod_partida = intval(trim($datos[1])); //// Codigo partida
-                      $par_id = $this->model_insumo->get_partida_codigo($cod_partida); //// Datos Partida
+    //                   $cod_ope = intval(trim($datos[0])); //// Codigo Actividad
+    //                   $cod_partida = intval(trim($datos[1])); //// Codigo partida
+    //                   $par_id = $this->model_insumo->get_partida_codigo($cod_partida); //// Datos Partida
 
-                      $detalle = strval(utf8_encode(trim($datos[2]))); //// descripcion form5
-                      $unidad = strval(utf8_encode(trim($datos[3]))); //// Unidad
-                      $cantidad = intval(trim($datos[4])); //// Cantidad
-                      $unitario = intval(trim($datos[5])); //// Costo Unitario
-                      $total=round(($cantidad*$unitario),2); // Costo Total
+    //                   $detalle = strval(utf8_encode(trim($datos[2]))); //// descripcion form5
+    //                   $unidad = strval(utf8_encode(trim($datos[3]))); //// Unidad
+    //                   $cantidad = intval(trim($datos[4])); //// Cantidad
+    //                   $unitario = intval(trim($datos[5])); //// Costo Unitario
+    //                   $total=round(($cantidad*$unitario),2); // Costo Total
 
-                      $var=7; $sum_prog=0;
-                      for ($i=1; $i <=12 ; $i++) {
-                        //$m[$i]=(float)$datos[$var]; //// Mes i
-                        $m[$i]=floatval(trim($datos[$var])); //// Mes i
-                        if($m[$i]==''){
-                          $m[$i]=0;
-                        }
-                        $var++;
-                        $sum_prog=$sum_prog+$m[$i];
-                      }
-                      $observacion = utf8_encode(trim($datos[19])); //// Observacion
-                      $verif_operacion=$this->model_producto->verif_componente_operacion($cite[0]['com_id'],$cod_ope);
-                      echo $total.'---'.$sum_prog.'<br>';
-                      echo count($par_id).'--'.$cod_partida.'-- '.($total==$sum_prog)." --".count($verif_operacion)."<br>";
-                      if(count($par_id)!=0 & $cod_partida!=0 & ($total==$sum_prog) & count($verif_operacion)!=0){ /// D
+    //                   $var=7; $sum_prog=0;
+    //                   for ($i=1; $i <=12 ; $i++) {
+    //                     //$m[$i]=(float)$datos[$var]; //// Mes i
+    //                     $m[$i]=floatval(trim($datos[$var])); //// Mes i
+    //                     if($m[$i]==''){
+    //                       $m[$i]=0;
+    //                     }
+    //                     $var++;
+    //                     $sum_prog=$sum_prog+$m[$i];
+    //                   }
+    //                   $observacion = utf8_encode(trim($datos[19])); //// Observacion
+    //                   $verif_operacion=$this->model_producto->verif_componente_operacion($cite[0]['com_id'],$cod_ope);
+    //                   echo $total.'---'.$sum_prog.'<br>';
+    //                   echo count($par_id).'--'.$cod_partida.'-- '.($total==$sum_prog)." --".count($verif_operacion)."<br>";
+    //                   if(count($par_id)!=0 & $cod_partida!=0 & ($total==$sum_prog) & count($verif_operacion)!=0){ /// D
 
-                        $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Ppto. Asignado
-                        if(count($asig)!=0){ /// Verificando que haya presupuesto distinto a cero
-                          $prog=$this->model_ptto_sigep->get_partida_accion($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Ppto. Programado
-                          $monto_prog=0;
-                          if(count($prog)!=0){
-                            $monto_prog=$prog[0]['monto'];
-                          }
+    //                     $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Ppto. Asignado
+    //                     if(count($asig)!=0){ /// Verificando que haya presupuesto distinto a cero
+    //                       $prog=$this->model_ptto_sigep->get_partida_accion($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Ppto. Programado
+    //                       $monto_prog=0;
+    //                       if(count($prog)!=0){
+    //                         $monto_prog=$prog[0]['monto'];
+    //                       }
 
-                          $saldo_partida=$asig[0]['monto']-$monto_prog+$asig[0]['ppto_saldo_ncert'];
+    //                       $saldo_partida=$asig[0]['monto']-$monto_prog+$asig[0]['ppto_saldo_ncert'];
 
-                          if($total<=$saldo_partida){ /// E
-                            $nro++;
-                            echo $detalle."<br>";
-                            /*-------- Insert Insumos Nuevos -------*/
-                            /*$query=$this->db->query('set datestyle to DMY');
-                            $data_to_store = array( 
-                            'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
-                            'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-                            'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
-                            'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
-                            'ins_costo_unitario' => $unitario, /// Costo Unitario
-                            'ins_costo_total' => $total, /// Costo Total
-                            'ins_unidad_medida' => strtoupper($unidad), /// Insumo Unidad de Medida
-                            'par_id' => $par_id[0]['par_id'], /// Partidas
-                            'ins_tipo' => 1, /// Ins Tipo
-                            'ins_observacion' => strtoupper($observacion), /// Observacion
-                            'fun_id' => $this->fun_id, /// Funcionario
-                            'ins_gestion' => $this->gestion, /// Gestion
-                            'aper_id' => $proyecto[0]['aper_id'], /// aper id
-                            'num_ip' => $this->input->ip_address(), 
-                            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                            'ins_mod' => 2,
-                            );
-                            $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
-                            $ins_id=$this->db->insert_id();*/
-                            /*--------------------------------------*/
-                            /*--------------------------------------*/
-                            /*$data_to_store2 = array( ///// Tabla InsumoProducto
-                              'prod_id' => $verif_operacion[0]['prod_id'], /// prod id
-                              'ins_id' => $ins_id, /// ins_id
-                            );
-                            $this->db->insert('_insumoproducto', $data_to_store2);*/
-                            //--------------------------------------*/
+    //                       if($total<=$saldo_partida){ /// E
+    //                         $nro++;
+    //                         echo $detalle."<br>";
+    //                         /*-------- Insert Insumos Nuevos -------*/
+    //                         /*$query=$this->db->query('set datestyle to DMY');
+    //                         $data_to_store = array( 
+    //                         'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
+    //                         'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
+    //                         'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
+    //                         'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
+    //                         'ins_costo_unitario' => $unitario, /// Costo Unitario
+    //                         'ins_costo_total' => $total, /// Costo Total
+    //                         'ins_unidad_medida' => strtoupper($unidad), /// Insumo Unidad de Medida
+    //                         'par_id' => $par_id[0]['par_id'], /// Partidas
+    //                         'ins_tipo' => 1, /// Ins Tipo
+    //                         'ins_observacion' => strtoupper($observacion), /// Observacion
+    //                         'fun_id' => $this->fun_id, /// Funcionario
+    //                         'ins_gestion' => $this->gestion, /// Gestion
+    //                         'aper_id' => $proyecto[0]['aper_id'], /// aper id
+    //                         'num_ip' => $this->input->ip_address(), 
+    //                         'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //                         'ins_mod' => 2,
+    //                         );
+    //                         $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
+    //                         $ins_id=$this->db->insert_id();*/
+    //                         /*--------------------------------------*/
+    //                         /*--------------------------------------*/
+    //                         /*$data_to_store2 = array( ///// Tabla InsumoProducto
+    //                           'prod_id' => $verif_operacion[0]['prod_id'], /// prod id
+    //                           'ins_id' => $ins_id, /// ins_id
+    //                         );
+    //                         $this->db->insert('_insumoproducto', $data_to_store2);*/
+    //                         //--------------------------------------*/
 
-                            /*------ PARA LA GESTION 2020 ------*/
-                            /*for ($p=1; $p <=12 ; $p++) { 
-                              if($m[$p]!=0){
-                               $data_to_store4 = array( 
-                                  'ins_id' => $ins_id, /// Id Insumo
-                                  'mes_id' => $p, /// Mes 
-                                  'ipm_fis' => $m[$p], /// Valor mes
-                                  'g_id' => $this->gestion, /// Gestion 
-                                );
-                                $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
-                              }
-                            }*/
-                            /*----------------------------------*/
+    //                         /*------ PARA LA GESTION 2020 ------*/
+    //                         /*for ($p=1; $p <=12 ; $p++) { 
+    //                           if($m[$p]!=0){
+    //                            $data_to_store4 = array( 
+    //                               'ins_id' => $ins_id, /// Id Insumo
+    //                               'mes_id' => $p, /// Mes 
+    //                               'ipm_fis' => $m[$p], /// Valor mes
+    //                               'g_id' => $this->gestion, /// Gestion 
+    //                             );
+    //                             $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+    //                           }
+    //                         }*/
+    //                         /*----------------------------------*/
 
-                            /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
-                             /* $data_to_store2 = array(
-                                'ins_id' => $ins_id, /// ins_id
-                                'cite_id' => $cite_id, /// cite_id
-                                'num_ip' => $this->input->ip_address(), 
-                                'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                                'fun_id' => $this->session->userdata("fun_id"),
-                                );
-                              $this->db->insert('insumo_add', $data_to_store2);
-                              $add_id=$this->db->insert_id();*/
-                            /*---------------------------------------*/
-                          } /// E
-                        }
-                      } /// D
+    //                         /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
+    //                          /* $data_to_store2 = array(
+    //                             'ins_id' => $ins_id, /// ins_id
+    //                             'cite_id' => $cite_id, /// cite_id
+    //                             'num_ip' => $this->input->ip_address(), 
+    //                             'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //                             'fun_id' => $this->session->userdata("fun_id"),
+    //                             );
+    //                           $this->db->insert('insumo_add', $data_to_store2);
+    //                           $add_id=$this->db->insert_id();*/
+    //                         /*---------------------------------------*/
+    //                       } /// E
+    //                     }
+    //                   } /// D
 
-                  } /// C
-                } /// B
-                $i++;
-              } /// A
+    //               } /// C
+    //             } /// B
+    //             $i++;
+    //           } /// A
 
-             // $this->session->set_flashdata('success','SE REGISTRARON '.$nro.' REQUERIMIENTOS');
-             // redirect(site_url("").'/mod/list_requerimientos/'.$cite_id.'');
-          }
-          else{
-            echo "Error !!!";
-          }
-      }
-      else{
-        echo "Error !!!!";
-      }
-    }
+    //          // $this->session->set_flashdata('success','SE REGISTRARON '.$nro.' REQUERIMIENTOS');
+    //          // redirect(site_url("").'/mod/list_requerimientos/'.$cite_id.'');
+    //       }
+    //       else{
+    //         echo "Error !!!";
+    //       }
+    //   }
+    //   else{
+    //     echo "Error !!!!";
+    //   }
+    // }
 
      /*----- MIGRACION DE REQUERIMIENTOS (2023) -----*/
-    function valida_add_requerimientos(){
-      if ($this->input->post()) {
-          $post = $this->input->post();
-          $cite_id = $this->security->xss_clean($post['cite_id']);
-          $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); // Datos Cite
-          $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// DATOS DEL PROYECTO
+    // function valida_add_requerimientos(){
+    //   if ($this->input->post()) {
+    //       $post = $this->input->post();
+    //       $cite_id = $this->security->xss_clean($post['cite_id']);
+    //       $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); // Datos Cite
+    //       $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// DATOS DEL PROYECTO
 
-          $tipo = $_FILES['archivo']['type'];
-          $tamanio = $_FILES['archivo']['size'];
-          $archivotmp = $_FILES['archivo']['tmp_name'];
+    //       $tipo = $_FILES['archivo']['type'];
+    //       $tamanio = $_FILES['archivo']['size'];
+    //       $archivotmp = $_FILES['archivo']['tmp_name'];
 
-          $filename = $_FILES["archivo"]["name"];
-          $file_basename = substr($filename, 0, strripos($filename, '.'));
-          $file_ext = substr($filename, strripos($filename, '.'));
-          $allowed_file_types = array('.csv');
+    //       $filename = $_FILES["archivo"]["name"];
+    //       $file_basename = substr($filename, 0, strripos($filename, '.'));
+    //       $file_ext = substr($filename, strripos($filename, '.'));
+    //       $allowed_file_types = array('.csv');
 
-          if (in_array($file_ext, $allowed_file_types) && ($tamanio < 90000000)) {
-              $lineas = file($archivotmp);
+    //       if (in_array($file_ext, $allowed_file_types) && ($tamanio < 90000000)) {
+    //           $lineas = file($archivotmp);
 
-              $i=0;
-              $nro=0;
-              foreach ($lineas as $linea_num => $linea){ /// A
-                if($i != 0){ /// B
-                  $datos = explode(";",$linea);
-                  if(count($datos)==20){ /// C
-                      $cod_ope = intval(trim($datos[0])); //// Codigo Actividad
-                      $cod_partida = intval(trim($datos[1])); //// Codigo partida
-                      $par_id = $this->model_insumo->get_partida_codigo($cod_partida); //// DATOS DE LA FASE ACTIVA
+    //           $i=0;
+    //           $nro=0;
+    //           foreach ($lineas as $linea_num => $linea){ /// A
+    //             if($i != 0){ /// B
+    //               $datos = explode(";",$linea);
+    //               if(count($datos)==20){ /// C
+    //                   $cod_ope = intval(trim($datos[0])); //// Codigo Actividad
+    //                   $cod_partida = intval(trim($datos[1])); //// Codigo partida
+    //                   $par_id = $this->model_insumo->get_partida_codigo($cod_partida); //// DATOS DE LA FASE ACTIVA
 
-                      $detalle = strval(utf8_encode(trim($datos[2]))); //// descripcion form5
-                      $unidad = strval(utf8_encode(trim($datos[3]))); //// Unidad
-                      $cantidad = intval(trim($datos[4])); //// Cantidad
-                      $unitario = round(floatval(trim($datos[5])),2); //// Costo Unitario
+    //                   $detalle = strval(utf8_encode(trim($datos[2]))); //// descripcion form5
+    //                   $unidad = strval(utf8_encode(trim($datos[3]))); //// Unidad
+    //                   $cantidad = intval(trim($datos[4])); //// Cantidad
+    //                   $unitario = round(floatval(trim($datos[5])),2); //// Costo Unitario
 
-                      $p_total=round(($cantidad*$unitario),2);
-                      $total = round(floatval(trim($datos[6])),2); //// Costo Total
+    //                   $p_total=round(($cantidad*$unitario),2);
+    //                   $total = round(floatval(trim($datos[6])),2); //// Costo Total
 
-                      $var=7; $sum_prog=0;
-                      for ($i=1; $i <=12 ; $i++) {
-                        $m[$i]=floatval(trim($datos[$var])); //// Mes i
-                        if($m[$i]==''){
-                          $m[$i]=0;
-                        }
-                        $var++;
-                        $sum_prog=$sum_prog+$m[$i];
-                      }
-                      $observacion = utf8_encode(trim($datos[19])); //// Observacion
-                      $verif_operacion=$this->model_producto->verif_componente_operacion($cite[0]['com_id'],$cod_ope);
+    //                   $var=7; $sum_prog=0;
+    //                   for ($i=1; $i <=12 ; $i++) {
+    //                     $m[$i]=floatval(trim($datos[$var])); //// Mes i
+    //                     if($m[$i]==''){
+    //                       $m[$i]=0;
+    //                     }
+    //                     $var++;
+    //                     $sum_prog=$sum_prog+$m[$i];
+    //                   }
+    //                   $observacion = utf8_encode(trim($datos[19])); //// Observacion
+    //                   $verif_operacion=$this->model_producto->verif_componente_operacion($cite[0]['com_id'],$cod_ope);
 
-                      if(count($par_id)!=0 & $cod_partida!=0 & ($p_total==$sum_prog) & ($total==$sum_prog) & count($verif_operacion)!=0){ /// D
-                        ///-------------
-                        $ppto_asignado=0;
-                        if($cite[0]['tipo_modificacion']==0){
-                          $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Ppto. Asignado
-                          $ppto_asignado=$asig[0]['ppto_asignado'];
+    //                   if(count($par_id)!=0 & $cod_partida!=0 & ($p_total==$sum_prog) & ($total==$sum_prog) & count($verif_operacion)!=0){ /// D
+    //                     ///-------------
+    //                     $ppto_asignado=0;
+    //                     if($cite[0]['tipo_modificacion']==0){
+    //                       $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Ppto. Asignado
+    //                       $ppto_asignado=$asig[0]['ppto_asignado'];
 
-                          $prog=$this->model_ptto_sigep->get_partida_programado_poa($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Programado POA
-                          if(count($prog)!=0){
-                            $monto_prog=$prog[0]['ppto_programado'];
-                          }
-                        }
-                        else{
-                          $asig=$this->model_ptto_sigep->get_ppto_partida_revertido_unidad($par_id[0]['par_id'],$proyecto[0]['aper_id']); /// Ppto. Asignado Revertido
-                          $ppto_asignado=$asig[0]['monto_revertido'];
+    //                       $prog=$this->model_ptto_sigep->get_partida_programado_poa($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Programado POA
+    //                       if(count($prog)!=0){
+    //                         $monto_prog=$prog[0]['ppto_programado'];
+    //                       }
+    //                     }
+    //                     else{
+    //                       $asig=$this->model_ptto_sigep->get_ppto_partida_revertido_unidad($par_id[0]['par_id'],$proyecto[0]['aper_id']); /// Ppto. Asignado Revertido
+    //                       $ppto_asignado=$asig[0]['monto_revertido'];
 
-                          $prog=$this->model_ptto_sigep->get_ppto_poa_partida_x_reversion($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Programado POA Revertido
-                          if(count($prog)!=0){
-                            $monto_prog=$prog[0]['monto_programado_revertido'];
-                          }
-                        }
+    //                       $prog=$this->model_ptto_sigep->get_ppto_poa_partida_x_reversion($proyecto[0]['aper_id'],$par_id[0]['par_id']); /// Programado POA Revertido
+    //                       if(count($prog)!=0){
+    //                         $monto_prog=$prog[0]['monto_programado_revertido'];
+    //                       }
+    //                     }
 
 
-                        if(count($asig)!=0){ /// Verificando que haya presupuesto distinto a cero
-                          $saldo_partida=$ppto_asignado-$monto_prog;
+    //                     if(count($asig)!=0){ /// Verificando que haya presupuesto distinto a cero
+    //                       $saldo_partida=$ppto_asignado-$monto_prog;
 
-                          if($total<=$saldo_partida){ /// E
+    //                       if($total<=$saldo_partida){ /// E
                             
-                            /*-------- Insert Insumos Nuevos -------*/
-                            $query=$this->db->query('set datestyle to DMY');
-                            $data_to_store = array( 
-                            'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
-                            'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-                            'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
-                            'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
-                            'ins_costo_unitario' => $unitario, /// Costo Unitario
-                            'ins_costo_total' => $total, /// Costo Total
-                            'ins_unidad_medida' => strtoupper($unidad), /// Insumo Unidad de Medida
-                            'par_id' => $par_id[0]['par_id'], /// Partidas
-                            'ins_tipo' => 1, /// Ins Tipo
-                            'ins_observacion' => strtoupper($observacion), /// Observacion
-                            'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo de registro // poa , reversion
-                            'fun_id' => $this->fun_id, /// Funcionario
-                            'ins_gestion' => $this->gestion, /// Gestion
-                            'aper_id' => $proyecto[0]['aper_id'], /// aper id
-                            'com_id' => $cite[0]['com_id'], /// com id 
-                            'form4_cod' => $cod_ope, /// cod act
-                            'num_ip' => $this->input->ip_address(), 
-                            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                            'ins_mod' => 2,
-                            'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'],
-                            'ins_tp_reg' => 1, //// migracion (1)
-                            );
-                            $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
-                            $ins_id=$this->db->insert_id();
-                            /*--------------------------------------*/
-                            /*--------------------------------------*/
-                            $data_to_store2 = array( ///// Tabla InsumoProducto
-                              'prod_id' => $verif_operacion[0]['prod_id'], /// prod id
-                              'ins_id' => $ins_id, /// ins_id
-                            );
-                            $this->db->insert('_insumoproducto', $data_to_store2);
-                            //--------------------------------------*/
+    //                         /*-------- Insert Insumos Nuevos -------*/
+    //                         $query=$this->db->query('set datestyle to DMY');
+    //                         $data_to_store = array( 
+    //                         'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
+    //                         'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
+    //                         'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
+    //                         'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
+    //                         'ins_costo_unitario' => $unitario, /// Costo Unitario
+    //                         'ins_costo_total' => $total, /// Costo Total
+    //                         'ins_unidad_medida' => strtoupper($unidad), /// Insumo Unidad de Medida
+    //                         'par_id' => $par_id[0]['par_id'], /// Partidas
+    //                         'ins_tipo' => 1, /// Ins Tipo
+    //                         'ins_observacion' => strtoupper($observacion), /// Observacion
+    //                         'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo de registro // poa , reversion
+    //                         'fun_id' => $this->fun_id, /// Funcionario
+    //                         'ins_gestion' => $this->gestion, /// Gestion
+    //                         'aper_id' => $proyecto[0]['aper_id'], /// aper id
+    //                         'com_id' => $cite[0]['com_id'], /// com id 
+    //                         'form4_cod' => $cod_ope, /// cod act
+    //                         'num_ip' => $this->input->ip_address(), 
+    //                         'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //                         'ins_mod' => 2,
+    //                         'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'],
+    //                         'ins_tp_reg' => 1, //// migracion (1)
+    //                         );
+    //                         $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
+    //                         $ins_id=$this->db->insert_id();
+    //                         /*--------------------------------------*/
+    //                         /*--------------------------------------*/
+    //                         $data_to_store2 = array( ///// Tabla InsumoProducto
+    //                           'prod_id' => $verif_operacion[0]['prod_id'], /// prod id
+    //                           'ins_id' => $ins_id, /// ins_id
+    //                         );
+    //                         $this->db->insert('_insumoproducto', $data_to_store2);
+    //                         //--------------------------------------*/
 
-                            /*------ PARA LA GESTION 2023 ------*/
-                            for ($p=1; $p <=12 ; $p++) { 
-                              if($m[$p]!=0){
-                                if(count($this->model_certificacion->get_insumo_programado_mes($ins_id,$p))==0){
-                                    $data_to_store4 = array( 
-                                    'ins_id' => $ins_id, /// Id Insumo
-                                    'mes_id' => $p, /// Mes 
-                                    'ipm_fis' => $m[$p], /// Valor mes
-                                    'g_id' => $this->gestion, /// Gestion 
-                                  );
-                                  $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
-                                }
-                              }
-                            }
-                            /*----------------------------------*/
+    //                         /*------ PARA LA GESTION 2023 ------*/
+    //                         for ($p=1; $p <=12 ; $p++) { 
+    //                           if($m[$p]!=0){
+    //                             if(count($this->model_certificacion->get_insumo_programado_mes($ins_id,$p))==0){
+    //                                 $data_to_store4 = array( 
+    //                                 'ins_id' => $ins_id, /// Id Insumo
+    //                                 'mes_id' => $p, /// Mes 
+    //                                 'ipm_fis' => $m[$p], /// Valor mes
+    //                                 'g_id' => $this->gestion, /// Gestion 
+    //                               );
+    //                               $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+    //                             }
+    //                           }
+    //                         }
+    //                         /*----------------------------------*/
 
-                            if($this->copia_insumo($cite_id,$ins_id,1)){ /// inserta historial reporte
-                              $nro++;
-                            }
+    //                         if($this->copia_insumo($cite_id,$ins_id,1)){ /// inserta historial reporte
+    //                           $nro++;
+    //                         }
 
-                            /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
-                              $this->update_activo_modificacion($cite_id);
-                            /*--------------------------------------*/
-                          } /// E
-                        }
-                      } /// D
+    //                         /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
+    //                           $this->update_activo_modificacion($cite_id);
+    //                         /*--------------------------------------*/
+    //                       } /// E
+    //                     }
+    //                   } /// D
 
-                  } /// C
-                } /// B
-                $i++;
-              } /// A
+    //               } /// C
+    //             } /// B
+    //             $i++;
+    //           } /// A
 
-              $this->session->set_flashdata('success','SE REGISTRARON '.$nro.' REQUERIMIENTOS');
-              redirect(site_url("").'/mod/list_requerimientos/'.$cite_id.'');
-          }
-          else{
-            echo "Error !!!";
-          }
-      }
-      else{
-        echo "Error !!!!";
-      }
-    }
+    //           $this->session->set_flashdata('success','SE REGISTRARON '.$nro.' REQUERIMIENTOS');
+    //           redirect(site_url("").'/mod/list_requerimientos/'.$cite_id.'');
+    //       }
+    //       else{
+    //         echo "Error !!!";
+    //       }
+    //   }
+    //   else{
+    //     echo "Error !!!!";
+    //   }
+    // }
 
     /*--- CERRAR MODIFICACION FIN (2020) ---*/
      public function cerrar_modificacion(){

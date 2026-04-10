@@ -233,25 +233,8 @@ class Modificacionpoa extends CI_Controller{
       return $tabla;
     }
 
-//////////////// FORMULARIO N° 4 
 
-    /*------ VERIFICANDO CODIGO DE MODIFICACION POA (2020)-----*/
-/*    public function datos_cite($cite){
-      $tabla='';
-
-      if($cite[0]['cite_estado']!=0){
-        $tit='<font color=blue><b>'.$cite[0]['cite_codigo'].'</b></font>';
-      }
-      else{
-        $tit=' <font color=#a87830><b>DEBE CERRAR LA MODIFICACI&Oacute;N !!</b></font>';
-      }
-
-      $tabla.='<h1><b> CITE Nro. : <small>'.$cite[0]['cite_nota'].'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;FECHA : <small>'.date('d/m/Y',strtotime($cite[0]['cite_fecha'])).'</small>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;C&Oacute;DIGO : '.$tit.'</b></h1>';
-      return $tabla;
-    }*/
-
-
-    /*------ TITULO CABECERA (2026) (FORMULARIO N° 4)-----*/
+    /*------ TITULO CABECERA (2026) (FORMULARIO N° 4 Y 5)-----*/
     public function titulo_cabecera($cite,$tp){
       if($cite[0]['cite_estado']!=0){
         $estado_cite='<font color=blue><b>'.$cite[0]['cite_codigo'].'</b></font>';
@@ -295,6 +278,7 @@ class Modificacionpoa extends CI_Controller{
         
       return $tabla;
     }
+
 
     /*--- MONTO PRESUPUESTO ASIGNADO - PROGRAMADO (TOTAL UNIDAD)(2023) ---*/
     public function ppto($proyecto){
@@ -1147,7 +1131,7 @@ class Modificacionpoa extends CI_Controller{
 
 
     /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE AUXILIAR (2026) en casos de que sean muchos requerimientos ------*/
-    public function modificar_requerimientos_auxiliar($cite){
+    public function formN5_mod_lista_requerimientos_SinTemporalidad($cite){
       $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cite[0]['proy_id']); /// PROYECTO
       if($proyecto[0]['por_id']==0){
         $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']); /// Listado normal
@@ -1261,7 +1245,7 @@ class Modificacionpoa extends CI_Controller{
 
 
     /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE COMPLETO (2026) ------*/
-    public function modificar_requerimientos($cite){
+    public function formN5_mod_lista_requerimientos_ConTemporalidad($cite){
       $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']);
 
       $tabla='';
@@ -1302,104 +1286,80 @@ class Modificacionpoa extends CI_Controller{
                   </tr>
                 </thead>
                 <tbody>';
-                $cont = 0;
+                 $cont = 0;
+                $total = 0;
+
                 foreach ($lista_insumos as $row) {
-                  $color_tr=''; $dis=''; $title='title="REQUERIMIENTO"';
-                  $prog = $this->model_insumo->list_temporalidad_insumo($row['ins_id']);
-                  $monto_cert=0;$valor_mod=0; $valor_delete=0;
-                  if($row['ins_monto_certificado']!=0){
-                    if($row['ins_monto_certificado']==$prog[0]['programado_total']){
-                      $color_tr='#f9d8e0';
-                      $valor_mod=1;
-                      $valor_delete=1;
-                    }
-                    elseif ($row['ins_monto_certificado']<$prog[0]['programado_total']) {
-                      $color_tr='#f7ebd3';
-                      $valor_delete=1;
-                    }
-                  }
-
-                  $tp_mod_registro='<div style="color:blue"><b>REG. x POA</b></div>';
-                  if($row['ins_tipo_modificacion']==1){
-                    $tp_mod_registro='<div style="color:#2BD6C7"><b>REG. x REV.</b></div>';
-                  }
-
-                  $cont++;
-                    $tabla .='<tr bgcolor='.$color_tr.'>';
-                    $tabla .='<td title='.$row['ins_id'].'>'.$tp_mod_registro.'</td>';
-                    $tabla .='<td align=center bgcolor="#ecf9f7" title="CODIGO ACTIVIDAD"><font size=3 color=blue><br>'.$row['prod_cod'].'</font></td>';
-                    $tabla .='<td align=center>';
-                      if($valor_mod==0 & $valor_delete==0){
-                         if($this->fun_id==399){
-                                $tabla.=' <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR REQUERIMIENTO - '.$row['ins_id'].'"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a><br>
-                                  <a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR REQUERIMIENTO"  name="'.$row['ins_id'].'" >
-                                    <img src="'.base_url().'assets/img/delete.png" width="35" height="35"/>
-                                  </a>';
-                        }
-                      }
-                      elseif($valor_mod==0 & $valor_delete==1){
-                        $tabla.='
-                            <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR REQUERIMIENTO - '.$row['ins_id'].'"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a><br>
-                            <a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default certpoas" name="'.$row['ins_id'].'" title="VER MIS CERTIFICACIONES POA- '.$row['ins_id'].'"><img src="'.base_url().'assets/img/ifinal/doc.jpg" WIDTH="35" HEIGHT="35"/></a>';
-                      }
-                      else{
-                        $tabla.='<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default certpoas" name="'.$row['ins_id'].'" title="VER MIS CERTIFICACIONES POA- '.$row['ins_id'].'"><img src="'.base_url().'assets/img/ifinal/doc.jpg" WIDTH="35" HEIGHT="35"/></a><br>';
-                      }
-                    $tabla.='</td>';
-                    $tabla .='<td style="width:5%;">'.$row['par_codigo'].'</td>'; /// partida
-                    $tabla .= '<td style="width:15%;">'.$row['ins_detalle'].'</td>'; /// detalle requerimiento
-                    $tabla .= '<td style="width:10%;">'.$row['ins_unidad_medida'].'</td>'; /// Unidad
-                    $tabla .= '<td style="width:5%;">'.$row['ins_cant_requerida'].'</td>'; /// cantidad
-                    $tabla .= '<td style="width:5%;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>';
-                    $tabla .= '<td style="width:5%;">'.number_format($row['ins_costo_total'], 2, ',', '.').'</td>';
-                    $tabla .= '<td style="width:5%;" bgcolor="#f1dfb9">'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</td>';
-
-                    if(count($prog)!=0){
-                      $tabla.='<td style="width:5%;">'.number_format($prog[0]['programado_total'], 2, ',', '.').'</td> ';
-                      for ($i=1; $i <=12 ; $i++) { 
-                        $tabla.='<td style="width:5%;" bgcolor="#eaf9f7">'.number_format($prog[0]['mes'.$i], 2, ',', '.').'</td>';
-                      }
-                    }
-                    else{
-                      $tabla.='<td style="width:5%;">0</td>';
-                      for ($i=1; $i <=12 ; $i++) { 
-                        $tabla.='<td style="width:5%;" bgcolor="#ffeeeb">0</td>';
-                      }
-                    }
+                    $prog = $this->model_insumo->list_temporalidad_insumo($row['ins_id']);
+                    $cont++;
+                    $total += $row['ins_costo_total'];
                     
-                    $tabla .= ' 
-                      <td style="width:8%;">'.$row['ins_observacion'].'</td>
-                      <td style="width:2%;" bgcolor="#f3cbcb">';
-                        if($valor_mod==0 & $valor_delete==0){
-                          $tabla.='<center><input type="checkbox" name="ins[]" value="'.$row['ins_id'].'" onclick="scheck'.$cont.'(this.checked);"/></center>';
+                    // Lógica de colores y estados
+                    $color_tr = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 'style="background-color:#f9d8e0;"' : '';
+                    $valor_mod = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 1 : 0;
+                    $valor_delete = ($row['ins_monto_certificado'] != 0) ? 1 : 0;
+
+                    // Etiqueta de tipo de registro
+                    $tp_label = ($row['ins_tipo_modificacion'] == 1) 
+                        ? '<span class="label label-warning">REG. x REV.</span>' 
+                        : '<span class="label label-primary">REG. x POA</span>';
+
+                    // Construcción de Botones
+                    $botones = '';
+                    if ($valor_mod == 0 && $valor_delete == 0) {
+                        if ($this->fun_id == 399) {
+                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR"><img src="'.base_url('assets/ifinal/modificar.png').'" width="33"></a> ';
+                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default btn-xs del_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="ELIMINAR"><img src="'.base_url('assets/img/delete.png').'" width="33"></a>';
                         }
-                      $tabla.='
-                      </td>';
-                        
-                  $tabla .= '</tr>';
-                  $total=$total+$row['ins_costo_total'];
-                  ?>
-                  <script>
-                    function scheck<?php echo $cont;?>(estaChequeado) {
-                      val = parseInt($('[name="tot"]').val());
-                      if (estaChequeado == true) {
-                        val = val + 1;
-                      } else {
-                        val = val - 1;
-                      }
-                      $('[name="tot"]').val((val).toFixed(0));
+                    } elseif ($valor_mod == 0 && $valor_delete == 1) {
+                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" ><img src="'.base_url('assets/ifinal/modificar.png').'" width="33"></a> ';
+                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="33"></a>';
+                    } else {
+                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="33"></a>';
                     }
-                  </script>
-                  <?php
+
+                    $tabla .= '
+                    <tr '.$color_tr.'>
+                        <td title='.$row['ins_id'].'>'.$tp_label.'</td>
+                        <td class="text-center" style="background-color:#ecf9f7; color:blue; font-weight:bold; font-size:16px;">'.$row['prod_cod'].'</td>
+                        <td class="text-center">'.$botones.'</td>
+                        <td>'.$row['par_codigo'].'</td>
+                        <td>'.$row['ins_detalle'].'</td>
+                        <td>'.$row['ins_unidad_medida'].'</td>
+                        <td class="text-right">'.$row['ins_cant_requerida'].'</td>
+                        <td class="text-right">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
+                        <td class="text-right"><b>'.number_format($row['ins_costo_total'], 2, ',', '.').'</b></td>
+                        <td class="text-right" style="background-color:#f1dfb9;">'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</td>';
+                        
+                        if(count($prog)!=0){
+                          $tabla.='<td style="width:5%;">'.number_format($prog[0]['programado_total'], 2, ',', '.').'</td> ';
+                          for ($i=1; $i <=12 ; $i++) { 
+                            $tabla.='<td style="width:5%;" bgcolor="#eaf9f7">'.number_format($prog[0]['mes'.$i], 2, ',', '.').'</td>';
+                          }
+                        }
+                        else{
+                          $tabla.='<td style="width:5%;">0</td>';
+                          for ($i=1; $i <=12 ; $i++) { 
+                            $tabla.='<td style="width:5%;" bgcolor="#ffeeeb">0</td>';
+                          }
+                        }
+
+                    $tabla .= '
+                        <td>'.$row['ins_observacion'].'</td>
+                        <td class="text-center" style="background-color:#f3cbcb;">';
+                        if ($valor_mod == 0 && $valor_delete == 0) {
+                            $tabla .= '<input type="checkbox" class="check-insumo" name="ins[]" value="'.$row['ins_id'].'">';
+                        }
+                    $tabla .= '</td></tr>';
                 }
-                $tabla.='
-                </tbody>
+              $tabla.='
+              </tbody>
                   <tr class="modo1">
                     <td colspan="8">proy: '.$cite[0]['proy_id'].' | aper: '.$cite[0]['aper_id'].' <b>TOTAL</b> </td>
-                    <td><font color="blue" size=1>'.number_format($total, 2, ',', '.') .'</font></td>
-                    <td colspan="16"></td>
+                    <td><font color="blue" size=2><b>'.number_format($total, 2, ',', '.') .'</b></font></td>
+                    <td colspan="15"></td>
                   </tr>
-              </table>';
+            </table>';
 
       return $tabla;
     }

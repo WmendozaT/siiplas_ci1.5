@@ -233,26 +233,26 @@ class Cppto_comparativo extends CI_Controller {
 
 
 
-    //// ====== COMPARATIVO POR UNIDAD ORGANIZACIONAL
-    /*-------- GET CUADRO COMPARATIVO ASIGNADO-POA --------*/
-    public function get_cuadro_comparativo_ptto(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
+    // //// ====== COMPARATIVO POR UNIDAD ORGANIZACIONAL
+    // /*-------- GET CUADRO COMPARATIVO ASIGNADO-POA --------*/
+    // public function get_cuadro_comparativo_ptto(){
+    //   if($this->input->is_ajax_request() && $this->input->post()){
+    //     $post = $this->input->post();
+    //     $proy_id = $this->security->xss_clean($post['proy_id']);
+    //     $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
 
-        $tabla='Actualizando';
+    //     $tabla='Actualizando';
 
-        $result = array(
-          'respuesta' => 'correcto',
-          'tabla'=>$tabla,
-        );
+    //     $result = array(
+    //       'respuesta' => 'correcto',
+    //       'tabla'=>$tabla,
+    //     );
           
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }
+    //     echo json_encode($result);
+    //   }else{
+    //       show_404();
+    //   }
+    // }
 
 
 

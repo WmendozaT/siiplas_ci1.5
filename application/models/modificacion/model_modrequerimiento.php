@@ -80,7 +80,7 @@ class Model_modrequerimiento extends CI_Model{
         return $query->result_array();
     }
 
-    /*---- LISTA DE REQUERIMIENTOS SIN TEMPORALIDAD----*/
+    /*---- LISTA DE REQUERIMIENTOS x UNIDAD RESPONSABLE (SIN TEMPORALIDAD) ----*/
     function lista_requerimientos($com_id,$tp_mod){
         $sql = 'SELECT 
                     i.*, 

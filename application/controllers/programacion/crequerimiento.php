@@ -320,38 +320,7 @@ class crequerimiento extends CI_Controller{
               for ($i=1; $i <=12 ; $i++) { 
                 $tabla.='<td>0</td>';
               }
-              /*if(count($prog)!=0){
-                $tabla.='
-                <td>'.number_format($prog[0]['programado_total'], 2, ',', '.').'</td> 
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes1'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes2'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes3'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes4'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes5'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes6'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes7'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes8'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes9'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes10'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes11'], 2, ',', '.').'</td>
-                <td bgcolor="#dcfbf8">'.number_format($prog[0]['mes12'], 2, ',', '.').'</td>';
-              }
-              else{
-                $tabla.='
-                <td>0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>
-                <td bgcolor="#f9d4ce">0</td>';
-              }*/
+
               $tabla .= '<td>'.$row['ins_observacion'].'</td>
               <td>';
               if($this->tp_adm==1 || $this->conf_form5==1){
@@ -660,6 +629,11 @@ class crequerimiento extends CI_Controller{
         }
         echo $salida;
     }
+
+
+
+
+
 
     function mes_nombre(){
         $mes[1] = 'ENE.';
