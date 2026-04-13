@@ -643,62 +643,37 @@
 
 	    <!-- ================== MODAL SUBIR ARCHIVO ========================== -->
 		<div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true">
-		    <div class="modal-dialog modal-dialog-centered">
-		        <div class="modal-content">
-		            <!-- Cabecera con estilo corregido -->
-		            <div class="modal-header bg-primary text-white">
-		                <h5 class="modal-title" style="color:white !important;">Importar desde Excel</h5>
-		                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-		                    <span aria-hidden="true">&times;</span>
-		                </button>
-		            </div>
-		            
-		            <div class="modal-body">
-		                <div class="text-center mb-4">
-		                    <h4 class="font-weight-bold">PLANTILLA DE REQUERIMIENTOS</h4>
-		                    <?php if($cite[0]['tipo_modificacion'] == 1): ?>
-		                        <div class="alert alert-warning p-1" style="font-weight: bold;">
-		                            MODO: REVERSIÓN DE SALDOS
-		                        </div>
-		                    <?php endif; ?>
-		                </div>
+		    <div class="modal-dialog" id="dialog_subir"> 
+			    <div class="modal-content">
+			        <!-- ... (cabecera igual) ... -->
+			        <div class="modal-body">
+			            <form action="<?= site_url('modificaciones/cmod_insumo/valida_add_requerimientos'); ?>" method="post" enctype="multipart/form-data" id="form_subir_sigep">
+			                <input type="hidden" name="cite_id" value="<?= $cite[0]['cite_id']; ?>" />
+			                
+			                <div class="form-group">
+			                    <label>Seleccione archivo Excel (.xlsx, .xls)</label>
+			                    <div class="custom-file">
+			                        <input type="file" class="custom-file-input" id="archivo" name="archivo" accept=".xlsx, .xls" required>
+			                        <!-- 2. Asegúrate que este label tenga el ID correcto para el JS -->
+			                        <label class="custom-file-label" for="archivo" id="label_archivo">Elegir archivo...</label>
+			                    </div>
+			                </div>
 
-		                <!-- Formulario -->
-		                <form action="<?= site_url('modificaciones/cmod_insumo/valida_add_requerimientos'); ?>" method="post" enctype="multipart/form-data" id="form_subir_sigep">
-		                    <input type="hidden" id="cite_id" name="cite_id" value="<?= $cite[0]['cite_id']; ?>" />
-		                    
-		                    <div class="form-group">
-		                        <label>Seleccione archivo Excel (.xlsx, .xls)</label>
-		                        <div class="custom-file">
-		                            <!-- Acepta formatos Excel nativos -->
-		                            <input type="file" class="custom-file-input" id="archivo" name="archivo" accept=".xlsx, .xls" required>
-		                            <label class="custom-file-label" for="archivo" id="label-archivo">Elegir archivo...</label>
-		                        </div>
-		                        <small class="text-muted">Asegúrese de que las columnas coincidan con el formato establecido.</small>
-		                    </div>
+			                <div id="mensaje" style="font-size:13px;"></div>
+			                
+			                <!-- 3. Cambié el ID del botón a 'btn_subir' -->
+			                <button type="button" id="btn_subir" class="btn btn-success btn-block shadow-sm">
+			                    <i class="fa fa-file-excel-o"></i> VALIDAR Y SUBIR ARCHIVO EXCEL
+			                </button>
 
-		                    <?php if($cite[0]['tipo_modificacion'] == 1): ?>
-		                        <div class="alert alert-info small">
-		                            <strong>NOTA IMPORTANTE:</strong> Antes de migrar, verifique que existan saldos disponibles en las partidas revertidas.
-		                        </div>
-		                    <?php endif; ?>
-
-		                    <hr>
-		                    
-		                    <!-- Botón tipo button para controlar la subida con el JS de validación -->
-		                    <button type="button" id="subir_archivo" class="btn btn-success btn-block shadow-sm">
-		                        <i class="fa fa-file-excel-o"></i> VALIDAR Y SUBIR EXCEL
-		                    </button>
-
-		                    <!-- Loader (ID loads para coincidir con tu gif original o loader para el nuevo) -->
-		                    <div id="loads" class="text-center mt-3" style="display: none;">
-		                        <img src="<?= base_url('assets/img/loading.gif'); ?>" width="50">
-		                        <p class="small text-primary"><b>Validando información del Excel...</b></p>
-		                    </div>
-		                </form> 
-		            </div>
-		        </div>
-		    </div>
+			                <div id="loads" class="text-center mt-3" style="display: none;">
+			                    <img src="<?= base_url('assets/img/loading.gif'); ?>" width="50">
+			                    <p><b>Validando...</b></p>
+			                </div>
+			            </form> 
+			        </div>
+			    </div>
+			</div>
 		</div>
 
 		<?php echo $loading;?>

@@ -60,6 +60,15 @@ class model_producto extends CI_Model {
     }
 
 
+    /*--- VERIF ALINEACION DEL REQUERIMIENTO A LA ACTIVIDAD 2026 ---*/
+    public function verif_form4_vigente_para_alineacion($com_id,$prod_cod){ 
+        $sql = 'SELECT *
+                from _productos p
+                where p.com_id='.$com_id.' and p.prod_cod='.$prod_cod.' and p.estado!=3'; 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
 
     /*----- LISTA DE FORM 4 ELIMINADOS PARA LIMPIAR EN LA BS -----*/
     function list_form4_eliminados_gestion($proy_id){
@@ -680,7 +689,7 @@ class model_producto extends CI_Model {
     }
 
 
-    /*------ VERIF OPERACION REQUERIMIENTO -----*/
+    /*------ VERIF ALINEACION DEL REQUERIMIENTO A LA ACTIVIDAD anterior-----*/
     public function verif_componente_operacion($com_id,$prod_cod){ 
         $sql = 'select *
                 from _productos p

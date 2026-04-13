@@ -1296,7 +1296,7 @@ class Modificacionpoa extends CI_Controller{
                     
                     // Lógica de colores y estados
                     $color_tr = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 'style="background-color:#f9d8e0;"' : '';
-                    $valor_mod = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 1 : 0;
+                    $valor_mod = ($row['ins_monto_certificado'] != 0 && (round($row['ins_monto_certificado'],2) == round($row['ins_costo_total'],2))) ? 1 : 0;
                     $valor_delete = ($row['ins_monto_certificado'] != 0) ? 1 : 0;
 
                     // Etiqueta de tipo de registro

@@ -73,65 +73,60 @@ $(document).ready(function() {
   //// ------------------
 
 
-  ////------------ para migrar archivo en Excel==========2026
-  $(document).ready(function() {
-    // 1. Mostrar el nombre del archivo seleccionado (Mejora visual)
+  ////------------  PARA MIGRAR ARCHIVO EN EXCEL 2026 ==========2026
+$(document).ready(function() {
+    // CORRECCIÓN: Mostrar nombre del archivo al seleccionar
     $('#archivo').on('change', function() {
         var fileName = $(this).val().split('\\').pop();
         if (fileName) {
-            $('.form-control').html(fileName);
+            // Actualiza el texto del label específico de Bootstrap
+            $('#label_archivo').html(fileName);
         }
     });
 
-    // 2. Evento de clic en el botón de subir
-    $('#subir_archivo').on('click', function(e) {
+    // EVENTO CLIC EN EL BOTÓN (Ahora usando el ID único btn_subir)
+    $('#btn_subir').on('click', function(e) {
         e.preventDefault();
+        $('#mensaje').html(''); // Limpiar mensajes
 
-        // Validar que seleccionó un archivo antes de enviarlo
         if ($('#archivo').val() == '') {
-            alert("Por favor, seleccione un archivo Excel antes de continuar.");
+            $('#mensaje').html('<div class="alert alert-danger">Seleccione un archivo Excel.</div>');
             return false;
         }
 
-        // Preparar los datos del formulario (FormData soporta archivos)
         var form = $('#form_subir_sigep')[0];
         var data = new FormData(form);
 
-        // UI: Deshabilitar botón y mostrar carga
-        $('#subir_archivo').prop('disabled', true).text('VALIDANDO Y SUBIENDO...');
+        $('#btn_subir').prop('disabled', true).text('VALIDANDO...');
         $('#loads').show();
 
         $.ajax({
             type: "POST",
-            enctype: 'multipart/form-data',
-            url: $('#form_subir_sigep').attr('action'), // Toma la URL del action del form
+            url: $('#form_subir_sigep').attr('action'),
             data: data,
-            processData: false, // Importante para enviar archivos
-            contentType: false, // Importante para enviar archivos
-            cache: false,
+            processData: false,
+            contentType: false,
             success: function(response) {
-                // PHP 5.6/CI 1.5 a veces envía texto, aseguramos el objeto JSON
                 var res = (typeof response === 'object') ? response : JSON.parse(response);
 
                 if (res.status === 'success') {
-                    alert("¡Éxito! " + res.msj);
-                    location.reload();
+                    $('#mensaje').html('<div class="alert alert-success">' + res.msj + '</div>');
+                    setTimeout(function(){ location.reload(); }, 2000);
                 } else {
-                    // Mostrar lista de errores detectados en el Excel
-                    var errorMsg = "CORREGIR LOS SIGUIENTES CAMPOS:\n\n";
+                    var errorMsg = "<strong>ERRORES ENCONTRADOS:</strong><ul>";
                     $.each(res.errors, function(index, value) {
-                        errorMsg += "• " + value + "\n";
+                        errorMsg += "<li>" + value + "</li>";
                     });
-                    alert(errorMsg);
-                    
-                    // Resetear el botón
-                    $('#subir_archivo').prop('disabled', false).text('SUBIR REQUERIMIENTOS .CSV');
+                    errorMsg += "</ul>";
+                    $('#mensaje').html('<div class="alert alert-danger">' + errorMsg + '</div>');
+            
+                    $('#btn_subir').prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> VALIDAR Y SUBIR ARCHIVO EXCEL');
                     $('#loads').hide();
                 }
             },
-            error: function(e) {
-                alert("Error crítico en el servidor. Verifique el tamaño del archivo o la conexión.");
-                $('#subir_archivo').prop('disabled', false).text('SUBIR REQUERIMIENTOS .CSV');
+            error: function(jqXHR) {
+                $('#mensaje').html('<div class="alert alert-danger">Error 500: Fallo en el servidor. Revise el archivo.</div>');
+                $('#btn_subir').prop('disabled', false).text('VALIDAR Y SUBIR');
                 $('#loads').hide();
             }
         });

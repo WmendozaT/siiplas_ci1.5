@@ -187,40 +187,40 @@ class Cmod_insumo extends CI_Controller {
     #loading_req {
     padding: 30px;
     text-align: center;
-}
+  }
 
-.loader-dots {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-}
+  .loader-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+  }
 
-.dot {
-    width: 12px;
-    height: 12px;
-    background-color: #3498db; /* Color principal */
-    border-radius: 50%;
-    animation: bounce 0.6s infinite alternate;
-}
+  .dot {
+      width: 12px;
+      height: 12px;
+      background-color: #3498db; /* Color principal */
+      border-radius: 50%;
+      animation: bounce 0.6s infinite alternate;
+  }
 
-/* Retraso para el efecto de ola */
-.dot:nth-child(2) { animation-delay: 0.2s; }
-.dot:nth-child(3) { animation-delay: 0.4s; }
+  /* Retraso para el efecto de ola */
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes bounce {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(-15px); opacity: 0.3; }
-}
+  @keyframes bounce {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-15px); opacity: 0.3; }
+  }
 
-.loading-text {
-    font-family: "Arial", sans-serif;
-    font-size: 12px;
-    font-weight: bold;
-    color: #777;
-    text-transform: uppercase;
-}
+  .loading-text {
+      font-family: "Arial", sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      color: #777;
+      text-transform: uppercase;
+  }
     </style>
      <div id="loading_req" style="display:none;">
         <div class="loader-dots">
@@ -447,13 +447,13 @@ class Cmod_insumo extends CI_Controller {
             text-align: center;
             font-size: 11px;
         }
-            #mdialTamanio{
+        #mdialTamanio{
             width: 80% !important;
         }
         #comparativo{
           width: 50% !important;
         }
-        #csv{
+        #dialog_subir{
           width: 30% !important;
         }
           input[type="checkbox"] {
@@ -1617,9 +1617,16 @@ class Cmod_insumo extends CI_Controller {
     //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2026
     public function valida_add_requerimientos() {
       $this->load->library('excel'); // Carga el archivo que creamos arriba
-    
-      $path = $_FILES['archivo']['tmp_name'];
+     // $path = $_FILES['archivo']['tmp_name'];
       $cite_id = $this->input->post('cite_id');
+      $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
+
+      // Validar que el CITE exista antes de seguir
+      if (empty($cite)) {
+        echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información del CITE. Verifique su sesión.')));
+        return;
+      }
+
       $archivo = $_FILES['archivo']['tmp_name'];
       $errores = array();
       $data_insertar = array();
@@ -1630,12 +1637,22 @@ class Cmod_insumo extends CI_Controller {
           $phpExcel = $lector->load($archivo);
           $hoja = $phpExcel->getSheet(0);
           $filasMax = $hoja->getHighestRow();
+          // --- 1. VALIDACIÓN DE ESTRUCTURA (Columnas) ---
+          // Obtener la última columna con datos (ej: 'S') y convertirla a número (19)
+          $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+          $totalColumnas = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+          $limitePermitido = 20; // Columna T es la 20
 
-          // --- 1. VALIDACIÓN DE ENCABEZADOS (Columnas A a la S) ---
+          if (($totalColumnas > $limitePermitido) || ($totalColumnas < $limitePermitido)) {
+              echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. Solo se permiten $limitePermitido (hasta la 'T'). Por favor, elimine columnas sobrantes.")));
+              return;
+          }
+
+          // --- 1. VALIDACIÓN DE ENCABEZADOS (Columnas A a la T) ---
           // Verificamos las primeras columnas críticas para asegurar que sea el formato correcto
           if (trim($hoja->getCell('A1')->getValue()) != 'COD ACT' || 
               trim($hoja->getCell('B1')->getValue()) != 'PARTIDA' || 
-              trim($hoja->getCell('F1')->getValue()) != 'TOTAL') {
+              trim($hoja->getCell('G1')->getValue()) != 'TOTAL') {
               echo json_encode(array('status' => 'error', 'errors' => array('El formato del Excel no es válido. Verifique los encabezados.')));
               return;
           }
@@ -1645,7 +1662,49 @@ class Cmod_insumo extends CI_Controller {
               // Extraer valores básicos
               $cod_act = $hoja->getCell('A' . $i)->getValue();
               $partida = $hoja->getCell('B' . $i)->getValue();
-              $total   = $hoja->getCell('F' . $i)->getOldCalculatedValue() ? $hoja->getCell('F' . $i)->getCalculatedValue() : $hoja->getCell('F' . $i)->getValue();
+              $cantidad = $hoja->getCell('E' . $i)->getValue();
+              $precio = $hoja->getCell('F' . $i)->getValue();
+              $total   = $hoja->getCell('G' . $i)->getOldCalculatedValue() ? $hoja->getCell('G' . $i)->getCalculatedValue() : $hoja->getCell('G' . $i)->getValue();
+              
+              if($total!=($cantidad*$precio)){
+                $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
+              }
+
+
+              // --- VALIDACION CODIGO DE ACTIVIDAD---
+              if (!empty($cod_act)) {
+                  $get_form4=$this->model_producto->verif_form4_vigente_para_alineacion($cite[0]['com_id'],$cod_act);
+                  if(count($get_form4)==1){
+                    $prod_id=$get_form4[0]['prod_id'];
+                  }
+                  else{
+                    $errores[] = "Fila $i: sin Actividad disponible para su alineacion, revisar el codigo de Actividad.";
+                  }
+              } else {
+                  $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
+              }
+
+              // --- NUEVA VALIDACIÓN: TAMAÑO DE PARTIDA ---
+              if (!empty($partida)) {
+                  // strlen cuenta cuántos caracteres tiene la cadena
+
+                  if (strlen($partida) != 5) {
+                      $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres (tiene " . strlen($partida) . ").";
+                  }
+                  else{
+                    $get_partida=$this->model_partidas->dato_par_codigo($partida);
+                    if(count($get_partida)==1){
+                      if(count($this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],$get_partida[0]['par_id']))==0){
+                        $errores[] = "Fila $i: Error !! la 'PARTIDA' ($partida) Nose encuentra asignado al programa, verifique la asignacion de partida..";
+                      }
+                    }
+                    else{
+                      $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe en nuestra Base de Datos.";
+                    }
+                  }
+              } else {
+                  $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
+              }
 
               // Validaciones básicas
               if (empty($cod_act)) $errores[] = "Fila $i: 'COD ACT' es obligatorio.";
@@ -1654,7 +1713,7 @@ class Cmod_insumo extends CI_Controller {
 
               // --- 3. VALIDACIÓN DE MESES (Columnas G a R) ---
               $suma_meses = 0;
-              $columnas_meses = array('G','H','I','J','K','L','M','N','O','P','Q','R');
+              $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
               
               foreach ($columnas_meses as $col) {
                   $val_mes = $hoja->getCell($col . $i)->getValue();
@@ -1675,49 +1734,102 @@ class Cmod_insumo extends CI_Controller {
               if (empty($errores)) {
                   // Preparamos el array para PostgreSQL
                   $data_insertar[] = array(
-                      'cite_id'   => $cite_id,
-                      'cod_act'   => $cod_act,
-                      'partida'   => $partida,
-                      'detalle'   => $hoja->getCell('C' . $i)->getValue(),
-                      'unidad'    => $hoja->getCell('D' . $i)->getValue(),
-                      'precio'    => $hoja->getCell('E' . $i)->getValue(),
-                      'total'     => $total,
-                      'enero'     => $hoja->getCell('G' . $i)->getCalculatedValue(), // getCalculatedValue por si hay fórmulas
-                      'febrero'   => $hoja->getCell('H' . $i)->getCalculatedValue(),
-                      'marzo'     => $hoja->getCell('I' . $i)->getCalculatedValue(),
-                      'abril'     => $hoja->getCell('J' . $i)->getCalculatedValue(),
-                      'mayo'      => $hoja->getCell('K' . $i)->getCalculatedValue(),
-                      'junio'     => $hoja->getCell('L' . $i)->getCalculatedValue(),
-                      'julio'     => $hoja->getCell('M' . $i)->getCalculatedValue(),
-                      'agosto'    => $hoja->getCell('N' . $i)->getCalculatedValue(),
-                      'septiembre'=> $hoja->getCell('O' . $i)->getCalculatedValue(),
-                      'octubre'   => $hoja->getCell('P' . $i)->getCalculatedValue(),
-                      'noviembre' => $hoja->getCell('Q' . $i)->getCalculatedValue(),
-                      'diciembre' => $hoja->getCell('R' . $i)->getCalculatedValue(),
-                      'observacion'=> $hoja->getCell('S' . $i)->getValue()
+                      'ins_codigo'   => $this->session->userdata("name").'/REQ/'.$this->gestion,
+                      'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
+                      'par_id'   => $get_partida[0]['par_id'],
+                      'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
+                      'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
+                      'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
+                      'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
+                      'ins_costo_total'     => $total,
+                      'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
+                      'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo modificacion
+                      'fun_id' => $this->fun_id, /// Funcionario
+                      'aper_id' => $cite[0]['aper_id'], /// aper id
+                      'com_id' => $cite[0]['com_id'], /// com id 
+                      'form4_cod' => $cod_act, /// cod act
+                      'ins_mod' => 2, /// mod
+                      'num_ip' => $this->input->ip_address(), 
+                      'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                  );
+
+                      // Creamos un vector temporal con los meses para esta fila
+                  $meses_vector = array(
+                      1  => $hoja->getCell('H' . $i)->getCalculatedValue(),
+                      2  => $hoja->getCell('I' . $i)->getCalculatedValue(),
+                      3  => $hoja->getCell('J' . $i)->getCalculatedValue(),
+                      4  => $hoja->getCell('K' . $i)->getCalculatedValue(),
+                      5  => $hoja->getCell('L' . $i)->getCalculatedValue(),
+                      6  => $hoja->getCell('M' . $i)->getCalculatedValue(),
+                      7  => $hoja->getCell('N' . $i)->getCalculatedValue(),
+                      8  => $hoja->getCell('O' . $i)->getCalculatedValue(),
+                      9  => $hoja->getCell('P' . $i)->getCalculatedValue(),
+                      10 => $hoja->getCell('Q' . $i)->getCalculatedValue(),
+                      11 => $hoja->getCell('R' . $i)->getCalculatedValue(),
+                      12 => $hoja->getCell('S' . $i)->getCalculatedValue()
                   );
               }
-
               if (count($errores) > 15) break; // Límite de errores para no saturar
           }
-
           // --- 4. INSERCIÓN FINAL ---
+          if (ob_get_length()) ob_clean(); 
+          header('Content-Type: application/json');
+
           if (empty($errores) && !empty($data_insertar)) {
               $this->db->trans_start(); // Iniciar transacción en Postgres
+              
               foreach ($data_insertar as $fila) {
-                  $this->db->insert('tu_tabla_requerimientos', $fila);
+                  // Cambia 'tu_tabla_requerimientos' por el nombre real de tu tabla
+                  $this->db->insert('insumos', $fila);
+                  $ins_id=$this->db->insert_id();
+                  /*-----------------------------------------------*/
+                  $data_to_store2 = array( ///// Tabla InsumoProducto
+                    'prod_id' => $prod_id, /// prod id 
+                    'ins_id' => $ins_id, /// ins_id
+                  );
+                  $this->db->insert('_insumoproducto', $data_to_store2);
+                  /*---------------------------------------------*/
+                    /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
+                      for ($i=1; $i <=12 ; $i++) {
+                        $pfin=$this->security->xss_clean($meses_vector[$i]);
+                        if($pfin!=0){
+                            $data_to_store4 = array( 
+                              'ins_id' => $ins_id, /// Id Insumo
+                              'mes_id' => $i, /// Mes 
+                              'ipm_fis' => $pfin, /// Valor mes
+                              'g_id' => $this->gestion, /// Gestion 
+                            );
+                            $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+                        }
+                      }
+                    /*------------------------------------------*/
+                    /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
+                    if($this->copia_insumo($cite_id,$ins_id,1)){ /// inserta historial reporte
+                      /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
+                        $this->update_activo_modificacion($cite_id);
+                      /*--------------------------------------*/
+                    }
               }
               $this->db->trans_complete();
-
               if ($this->db->trans_status() === FALSE) {
-                  echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos.')));
+                  echo json_encode(array(
+                      'status' => 'error', 
+                      'errors' => array('Error al insertar en la base de datos (Transacción fallida).')
+                  ));
               } else {
-                  echo json_encode(array('status' => 'success', 'msj' => count($data_insertar) . ' filas subidas correctamente.'));
+                  echo json_encode(array(
+                      'status' => 'success', 
+                      'msj' => count($data_insertar) . ' filas subidas correctamente.'
+                  ));
               }
           } else {
-              echo json_encode(array('status' => 'error', 'errors' => $errores));
+              // Si hay errores de validación o no hay datos
+              echo json_encode(array(
+                  'status' => 'error', 
+                  'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no tiene datos válidos.')
+              ));
           }
-
+          exit; 
       } catch (Exception $e) {
           echo json_encode(array('status' => 'error', 'errors' => array('Excepción: ' . $e->getMessage())));
       }
@@ -1755,24 +1867,6 @@ class Cmod_insumo extends CI_Controller {
 
     //----------------------------- rep mod poa - vigente 2023
 
-    /*-------- GET CUADRO COMPARATIVO ASIGNADO-POA --------*/
-    // public function get_comparativo_ptto(){
-    //   if($this->input->is_ajax_request() && $this->input->post()){
-    //     $post = $this->input->post();
-    //     $proy_id = $this->security->xss_clean($post['proy_id']);
-    //     $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
-
-    //     $tabla='<hr><iframe id="ipdf" width="100%"  height="900px;" src="'.base_url().'index.php/proy/ptto_consolidado_comparativo/'.$proy_id.'"></iframe>';
-    //     $result = array(
-    //       'respuesta' => 'correcto',
-    //       'tabla'=>$tabla,
-    //     );
-          
-    //     echo json_encode($result);
-    //   }else{
-    //       show_404();
-    //   }
-    // }
 
      /*----- MIGRACION DE REQUERIMIENTOS A UNA OPERACIÓN (2019) -----*/
     // function valida_add_requerimientos2(){
@@ -2426,6 +2520,16 @@ class Cmod_insumo extends CI_Controller {
 
           $lista_partidas=$this->partidas_dependientes($insumo); /// Lista de Insumos dependientes
           $lista_prod_act=$this->lista_form4_x_unidadresponsable($cite,$insumo); /// Lista de Actividades (Form 4)
+
+          /// --------------
+          $update_insumo= array(
+            'ins_monto_certificado' => $insumo[0]['certificado_total']
+          );
+          $this->db->where('ins_id', $ins_id);
+          $this->db->update('insumos', $this->security->xss_clean($update_insumo));
+          /// --------------
+
+
 
           if(count($insumo)!=0){
             $result = array(
