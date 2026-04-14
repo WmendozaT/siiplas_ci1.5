@@ -10,7 +10,7 @@ class Faseetapa extends CI_Controller {
           $this->load->model('programacion/model_faseetapa');
           $this->load->model('programacion/model_componente');
           $this->load->model('programacion/model_producto');
-          $this->load->model('programacion/model_actividad');
+     
           $this->load->model('menu_modelo');
           $this->load->model('Users_model','',true);
           $this->gestion = $this->session->userData('gestion'); /// Gestion

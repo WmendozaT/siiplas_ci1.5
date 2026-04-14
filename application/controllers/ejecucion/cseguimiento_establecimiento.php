@@ -6,7 +6,7 @@ class Cseguimiento_establecimiento extends CI_Controller {
         $this->load->library('pdf2');
         $this->load->model('programacion/model_proyecto');
         $this->load->model('programacion/model_faseetapa');
-        $this->load->model('programacion/model_actividad');
+
         $this->load->model('programacion/model_producto');
         $this->load->model('programacion/model_componente');
         $this->load->model('ejecucion/model_seguimientopoa');

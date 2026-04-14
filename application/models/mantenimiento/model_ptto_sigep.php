@@ -26,6 +26,8 @@ class Model_ptto_sigep extends CI_Model{
         SELECT 
             COALESCE(asig.dep_id, prog.dep_id) AS dep_id,
             COALESCE(asig.dist_id, prog.dist_id) AS dist_id,
+
+            COALESCE(asig.sp_id, 0) AS sp_id,
             COALESCE(asig.par_id, prog.par_id) AS par_id,
             COALESCE(asig.partida, prog.codigo::VARCHAR) AS codigo_partida,
             COALESCE(asig.par_nombre, prog.partida_nombre, 'SIN ASIGNAR') AS partida,
@@ -52,7 +54,7 @@ class Model_ptto_sigep extends CI_Model{
 
         FROM (
             SELECT 
-                pg.par_id, pg.partida, par.par_nombre, 
+                pg.sp_id,pg.par_id, pg.partida, par.par_nombre, 
                 pg.importe AS ppto_asignado1, pg.ppto_saldo_ncert AS ppto_asignado_revertido2,
                 proy.dep_id, proy.dist_id
             FROM ptto_partidas_sigep pg
@@ -440,15 +442,15 @@ class Model_ptto_sigep extends CI_Model{
     }
 
     /*-------- Partidas por Apertura (VIGENTE mod techo) --------*/
-    public function partidas_proyecto($aper_id){
-        $sql = ' SELECT pg.sp_id, pg.par_id,pg.partida,p.par_nombre,pg.importe,pg.ppto_saldo_ncert,pg.ppto_saldo_observacion
-                 from ptto_partidas_sigep pg
-                 Inner Join partidas as p On p.par_id=pg.par_id
-                 where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.'
-                 order by pg.partida';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    // public function partidas_proyecto($aper_id){
+    //     $sql = ' select pg.sp_id, pg.par_id,pg.partida,p.par_nombre,pg.importe,pg.ppto_saldo_ncert,pg.ppto_saldo_observacion
+    //              from ptto_partidas_sigep pg
+    //              Inner Join partidas as p On p.par_id=pg.par_id
+    //              where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.'
+    //              order by pg.partida';
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*---- Get Partida Asignado -----*/
     public function get_partida_asignado_unidad($aper_id,$par_id){
@@ -1319,23 +1321,28 @@ class Model_ptto_sigep extends CI_Model{
 
 /*============ MODULO DE MODIFICACIONES =============*/
 
-    /*-------- Get Cite Presupuesto --------*/
+    /*-------- Get Cite Techo Presupuestario 2026 --------*/
     public function get_cite_techo($cppto_id){
-        $sql = 'select *
+        $sql = 'SELECT *
                 from ppto_cite cit
                 Inner Join funcionario as fun On fun.fun_id=cit.fun_id 
-                where cit.cppto_id='.$cppto_id.' and cit.cppto_estado!=\'3\'';
+                INNER JOIN fnlista_poa_nacional('.$this->gestion.') poa ON cit.proy_id = poa.proy_id
+                where cit.cppto_id='.$cppto_id.' and cit.cppto_estado!=3';
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
-    /*--- Lista de partidas no seleccionados en sigep --*/
-    public function list_partidas_noasig($aper_id){
+    /*--- Lista de partidas no asignados a la Unidad Organizacional 2026 --*/
+    public function list_partidas_noasignada_UnidadOrganizacional($aper_id){
         $sql = '
-        Select * 
-        from partidas 
-        where not exists (select * from ptto_partidas_sigep where partidas.par_id = ptto_partidas_sigep.par_id and ptto_partidas_sigep.aper_id='.$aper_id.' and ptto_partidas_sigep.estado!=\'3\' ) and partidas.par_depende!=\'0\'
-        order by partidas.par_codigo asc';
+        SELECT p.*
+        FROM partidas p
+        LEFT JOIN ptto_partidas_sigep pps ON p.par_id = pps.par_id 
+            AND pps.aper_id = '.$aper_id.' 
+            AND pps.estado != 3
+        WHERE pps.par_id IS NULL  -- Esto filtra solo las que NO existen en la otra tabla
+          AND p.par_depende != 0
+        ORDER BY p.par_codigo ASC;';
         $query = $this->db->query($sql);
         return $query->result_array();
     }

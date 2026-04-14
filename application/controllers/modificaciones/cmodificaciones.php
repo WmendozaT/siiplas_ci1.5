@@ -11,7 +11,7 @@ class Cmodificaciones extends CI_Controller {
             $this->load->model('programacion/model_proyecto');
             $this->load->model('modificacion/model_modificacion');
             $this->load->model('programacion/model_faseetapa');
-            $this->load->model('programacion/model_actividad');
+          
             $this->load->model('programacion/model_producto');
             $this->load->model('programacion/model_componente');
             $this->load->model('programacion/insumos/minsumos');

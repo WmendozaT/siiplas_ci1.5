@@ -144,6 +144,7 @@ SELECT
     COALESCE(asig.aper_id, prog.aper_id) AS aper_id,
     COALESCE(asig.dep_id, prog.dep_id) AS dep_id,
     COALESCE(asig.dist_id, prog.dist_id) AS dist_id,
+    COALESCE(asig.sp_id, 0) AS sp_id,
     COALESCE(asig.par_id, prog.par_id) AS par_id,
     COALESCE(asig.partida, prog.codigo::VARCHAR) AS codigo_partida,
     COALESCE(asig.par_nombre, prog.partida_nombre, 'SIN ASIGNAR') AS partida,
@@ -170,7 +171,7 @@ SELECT
 
 FROM (
     SELECT 
-        pg.aper_id, pg.g_id, pg.par_id, pg.partida, par.par_nombre, 
+        pg.sp_id,pg.aper_id, pg.g_id, pg.par_id, pg.partida, par.par_nombre, 
         pg.importe AS ppto_asignado1, pg.ppto_saldo_ncert AS ppto_asignado_revertido2,
         proy.dep_id, proy.dist_id
     FROM ptto_partidas_sigep pg

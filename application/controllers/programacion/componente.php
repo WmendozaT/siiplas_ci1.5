@@ -10,7 +10,7 @@ class Componente extends CI_Controller {
             $this->load->model('programacion/model_faseetapa');
             $this->load->model('programacion/model_componente');
             $this->load->model('programacion/model_producto');
-            $this->load->model('programacion/model_actividad');
+           // $this->load->model('programacion/model_actividad');
             $this->load->model('programacion/insumos/minsumos');
             $this->load->model('mantenimiento/model_estructura_org');
             $this->load->model('mestrategico/model_objetivoregion');
@@ -32,76 +32,76 @@ class Componente extends CI_Controller {
 
 
     /*------------ DELETE COMPONENTE (PROYECTOS DE INVERSIÓN) --------------*/
-    function elimina_operaciones_componente_pi(){
-      if ($this->input->is_ajax_request() && $this->input->post()) {
-          $post = $this->input->post();
-          $com_id = $this->security->xss_clean($post['com_id']);
-          $productos = $this->model_producto->list_prod($com_id);
+    // function elimina_operaciones_componente_pi(){
+    //   if ($this->input->is_ajax_request() && $this->input->post()) {
+    //       $post = $this->input->post();
+    //       $com_id = $this->security->xss_clean($post['com_id']);
+    //       $productos = $this->model_producto->list_prod($com_id);
 
-            foreach ($productos as $rowp) {
-            $update_prod= array(
-                'fun_id' => $this->fun_id,
-                'estado' => 3
-            );
-            $this->db->where('prod_id', $rowp['prod_id']);
-            $this->db->update('_productos', $this->security->xss_clean($update_prod));
+    //         foreach ($productos as $rowp) {
+    //         $update_prod= array(
+    //             'fun_id' => $this->fun_id,
+    //             'estado' => 3
+    //         );
+    //         $this->db->where('prod_id', $rowp['prod_id']);
+    //         $this->db->update('_productos', $this->security->xss_clean($update_prod));
 
-            $actividad=$this->model_actividad->list_act_anual($rowp['prod_id']);
-            foreach ($actividad as $rowa) {
-                /*---------------------------------------*/
-                $insumos = $this->model_actividad->insumo_actividad($rowa['act_id']);
-                foreach ($insumos as $rowi) {
-                  $update_ins= array(
-                    'fun_id' => $this->fun_id,
-                    'aper_id' => 0,
-                    'ins_estado' => 3,
-                    'num_ip' => $this->input->ip_address(), 
-                    'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
-                  );
-                  $this->db->where('ins_id', $rowi['ins_id']);
-                  $this->db->update('insumos', $this->security->xss_clean($update_ins));
+    //         $actividad=$this->model_actividad->list_act_anual($rowp['prod_id']);
+    //         foreach ($actividad as $rowa) {
+    //             /*---------------------------------------*/
+    //             $insumos = $this->model_actividad->insumo_actividad($rowa['act_id']);
+    //             foreach ($insumos as $rowi) {
+    //               $update_ins= array(
+    //                 'fun_id' => $this->fun_id,
+    //                 'aper_id' => 0,
+    //                 'ins_estado' => 3,
+    //                 'num_ip' => $this->input->ip_address(), 
+    //                 'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+    //               );
+    //               $this->db->where('ins_id', $rowi['ins_id']);
+    //               $this->db->update('insumos', $this->security->xss_clean($update_ins));
 
-                  $update_insg= array(
-                  'insg_estado' => 3
-                  );
-                  $this->db->where('ins_id', $ins_id);
-                  $this->db->update('insumo_gestion', $this->security->xss_clean($update_insg));
-                }
+    //               $update_insg= array(
+    //               'insg_estado' => 3
+    //               );
+    //               $this->db->where('ins_id', $ins_id);
+    //               $this->db->update('insumo_gestion', $this->security->xss_clean($update_insg));
+    //             }
                     
-                    /*------------ UPDATE ACTIVIDAD -------*/
-                    $update_act= array(
-                      'fun_id' => $this->fun_id,
-                      'estado' => 3
-                    );
-                    $this->db->where('act_id', $rowa['act_id']);
-                    $this->db->update('_actividades', $this->security->xss_clean($update_act));
-                }
-            }
+    //                 /*------------ UPDATE ACTIVIDAD -------*/
+    //                 $update_act= array(
+    //                   'fun_id' => $this->fun_id,
+    //                   'estado' => 3
+    //                 );
+    //                 $this->db->where('act_id', $rowa['act_id']);
+    //                 $this->db->update('_actividades', $this->security->xss_clean($update_act));
+    //             }
+    //         }
 
-            $productos = $this->model_producto->list_prod($com_id);
-            if(count($productos)==0){
-                $update_com= array(
-                    'fun_id' => $this->fun_id,
-                    'estado' => 3
-                );
-                $this->db->where('com_id', $com_id);
-                $this->db->update('_componentes', $this->security->xss_clean($update_com));
+    //         $productos = $this->model_producto->list_prod($com_id);
+    //         if(count($productos)==0){
+    //             $update_com= array(
+    //                 'fun_id' => $this->fun_id,
+    //                 'estado' => 3
+    //             );
+    //             $this->db->where('com_id', $com_id);
+    //             $this->db->update('_componentes', $this->security->xss_clean($update_com));
 
-                $result = array(
-                    'respuesta' => 'correcto'
-                );
-            }
-            else{
-                $result = array(
-                    'respuesta' => 'error'
-                );
-            }
+    //             $result = array(
+    //                 'respuesta' => 'correcto'
+    //             );
+    //         }
+    //         else{
+    //             $result = array(
+    //                 'respuesta' => 'error'
+    //             );
+    //         }
            
-          echo json_encode($result);
-      } else {
-          echo 'DATOS ERRONEOS';
-      }
-    }
+    //       echo json_encode($result);
+    //   } else {
+    //       echo 'DATOS ERRONEOS';
+    //   }
+    // }
 
    
  
@@ -290,30 +290,30 @@ class Componente extends CI_Controller {
         return $tr_return;
     }
 
-    public function actividades($prod_id){
-       $actividad=$this->model_actividad->list_act_anual($prod_id); /// Actividad
-       $tabla='';
-       $nro_a=0;
-       if(count($actividad)!=0){
-            foreach ($actividad as $row){
-                $nro_a++;
-                $tabla.='<tr class="modo1" bgcolor="#e5f3f1">';
-                    $tabla.='<td>'.$nro_a.'</td>';
-                    $tabla.='<td></td>';
-                    $tabla.='<td>'.$row['act_actividad'].'</td>';
-                    $tabla.='<td>'.$row['indi_abreviacion'].'</td>';
-                    $tabla.='<td>'.$row['act_indicador'].'</td>';
-                    $tabla.='<td>'.round($row['act_linea_base'],2).'</td>';
-                    $tabla.='<td>'.round($row['act_meta'],2).'</td>';
-                    $tabla.='<td>'.$row['act_ponderacion'].' %</td>';
-                    $tabla.='<td>'.$row['act_fuente_verificacion'].'</td>';
-                    $tabla.='<td>'.$this->temporalizacion_act($row['act_id'],$this->session->userdata('gestion')).'</td>';
-                $tabla.='</tr>';
-            }
-       }
+    // public function actividades($prod_id){
+    //    $actividad=$this->model_actividad->list_act_anual($prod_id); /// Actividad
+    //    $tabla='';
+    //    $nro_a=0;
+    //    if(count($actividad)!=0){
+    //         foreach ($actividad as $row){
+    //             $nro_a++;
+    //             $tabla.='<tr class="modo1" bgcolor="#e5f3f1">';
+    //                 $tabla.='<td>'.$nro_a.'</td>';
+    //                 $tabla.='<td></td>';
+    //                 $tabla.='<td>'.$row['act_actividad'].'</td>';
+    //                 $tabla.='<td>'.$row['indi_abreviacion'].'</td>';
+    //                 $tabla.='<td>'.$row['act_indicador'].'</td>';
+    //                 $tabla.='<td>'.round($row['act_linea_base'],2).'</td>';
+    //                 $tabla.='<td>'.round($row['act_meta'],2).'</td>';
+    //                 $tabla.='<td>'.$row['act_ponderacion'].' %</td>';
+    //                 $tabla.='<td>'.$row['act_fuente_verificacion'].'</td>';
+    //                 $tabla.='<td>'.$this->temporalizacion_act($row['act_id'],$this->session->userdata('gestion')).'</td>';
+    //             $tabla.='</tr>';
+    //         }
+    //    }
 
-       return $tabla;
-    }
+    //    return $tabla;
+    // }
 
     function mes_nombre(){
         $mes[1] = 'ENE.';
@@ -331,75 +331,75 @@ class Componente extends CI_Controller {
         return $mes;
     }
     /*----------------------------------- ACTIVIDADES ----------------------------*/
-    public function temporalizacion_act($act_id,$gestion){
-        $act=$this->model_actividad->get_actividad_id($act_id); /// programado
-        $programado=$this->model_actividad->actividad_programado($act_id,$gestion); /// Actividad Programado
+    // public function temporalizacion_act($act_id,$gestion){
+    //     $act=$this->model_actividad->get_actividad_id($act_id); /// programado
+    //     $programado=$this->model_actividad->actividad_programado($act_id,$gestion); /// Actividad Programado
 
-        $m[0]='g_id';
-        $m[1]='enero';
-        $m[2]='febrero';
-        $m[3]='marzo';
-        $m[4]='abril';
-        $m[5]='mayo';
-        $m[6]='junio';
-        $m[7]='julio';
-        $m[8]='agosto';
-        $m[9]='septiembre';
-        $m[10]='octubre';
-        $m[11]='noviembre';
-        $m[12]='diciembre';
+    //     $m[0]='g_id';
+    //     $m[1]='enero';
+    //     $m[2]='febrero';
+    //     $m[3]='marzo';
+    //     $m[4]='abril';
+    //     $m[5]='mayo';
+    //     $m[6]='junio';
+    //     $m[7]='julio';
+    //     $m[8]='agosto';
+    //     $m[9]='septiembre';
+    //     $m[10]='octubre';
+    //     $m[11]='noviembre';
+    //     $m[12]='diciembre';
 
-        for ($i=1; $i <=12 ; $i++) { 
-            $prog[1][$i]=0;
-            $prog[2][$i]=0;
-            $prog[3][$i]=0;
-        }
+    //     for ($i=1; $i <=12 ; $i++) { 
+    //         $prog[1][$i]=0;
+    //         $prog[2][$i]=0;
+    //         $prog[3][$i]=0;
+    //     }
 
-        $pa=0;
-        if(count($programado)!=0){
-            for ($i=1; $i <=12 ; $i++) { 
-                $prog[1][$i]=$programado[0][$m[$i]];
-               /* $pa=$pa+$prog[1][$i];
-                $prog[2][$i]=$pa+$act[0]['act_linea_base'];
+    //     $pa=0;
+    //     if(count($programado)!=0){
+    //         for ($i=1; $i <=12 ; $i++) { 
+    //             $prog[1][$i]=$programado[0][$m[$i]];
+    //            /* $pa=$pa+$prog[1][$i];
+    //             $prog[2][$i]=$pa+$act[0]['act_linea_base'];
 
-              if($act[0]['act_meta']!=0){
-                $prog[3][$i]=round(((($pa+$act[0]['act_linea_base'])/$act[0]['act_meta'])*100),2);
-              }  */
-            } 
-        }
+    //           if($act[0]['act_meta']!=0){
+    //             $prog[3][$i]=round(((($pa+$act[0]['act_linea_base'])/$act[0]['act_meta'])*100),2);
+    //           }  */
+    //         } 
+    //     }
         
-        $tr_return = '';
-        $tr_return .= '<table>
-                        <thead>
-                        <tr>
-                              <th style="width:6%;"></th>
-                              <th style="width:7%;">Ene.</th>
-                              <th style="width:7%;">Feb.</th>
-                              <th style="width:7%;">Mar.</th>
-                              <th style="width:7%;">Abr.</th>
-                              <th style="width:7%;">May.</th>
-                              <th style="width:7%;">Jun.</th>
-                              <th style="width:7%;">Jul.</th>
-                              <th style="width:7%;">Agos.</th>
-                              <th style="width:7%;">Sept.</th>
-                              <th style="width:7%;">Oct.</th>
-                              <th style="width:7%;">Nov.</th>
-                              <th style="width:7%;">Dic.</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                          <td>P.</td>';
-                          for($i = 1 ;$i<=12 ;$i++)
-                          {
-                            $tr_return .= '<td>'.$prog[1][$i].'</td>';
-                          }
-                          $tr_return .= '
-                          </tr>
-                        </tbody>
-                    </table>';
-        return $tr_return;
-    }
+    //     $tr_return = '';
+    //     $tr_return .= '<table>
+    //                     <thead>
+    //                     <tr>
+    //                           <th style="width:6%;"></th>
+    //                           <th style="width:7%;">Ene.</th>
+    //                           <th style="width:7%;">Feb.</th>
+    //                           <th style="width:7%;">Mar.</th>
+    //                           <th style="width:7%;">Abr.</th>
+    //                           <th style="width:7%;">May.</th>
+    //                           <th style="width:7%;">Jun.</th>
+    //                           <th style="width:7%;">Jul.</th>
+    //                           <th style="width:7%;">Agos.</th>
+    //                           <th style="width:7%;">Sept.</th>
+    //                           <th style="width:7%;">Oct.</th>
+    //                           <th style="width:7%;">Nov.</th>
+    //                           <th style="width:7%;">Dic.</th>
+    //                     </tr>
+    //                     </thead>
+    //                     <tbody>
+    //                       <tr>
+    //                       <td>P.</td>';
+    //                       for($i = 1 ;$i<=12 ;$i++)
+    //                       {
+    //                         $tr_return .= '<td>'.$prog[1][$i].'</td>';
+    //                       }
+    //                       $tr_return .= '
+    //                       </tr>
+    //                     </tbody>
+    //                 </table>';
+    //     return $tr_return;
+    // }
 
     function estilo_vertical(){
         $estilo_vertical = '<style>

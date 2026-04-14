@@ -10,7 +10,7 @@ class Proyecto extends CI_Controller {
       $this->load->model('programacion/model_proyecto');
       $this->load->model('programacion/model_componente');
       $this->load->model('programacion/model_producto');
-      $this->load->model('programacion/model_actividad');
+
       $this->load->model('mantenimiento/mapertura_programatica');
       $this->load->model('mantenimiento/munidad_organizacional');
       $this->load->model('mantenimiento/model_estructura_org');

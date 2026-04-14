@@ -18,7 +18,7 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }*/
 
-    /*----- LISTA DE FORMULARIO 4 (2022) para el SEguimiento POA -----*/
+    /*----- LISTA DE FORMULARIO 4 (2022) para el SEguimiento POA (A optimizar)-----*/
     function list_operaciones_subactividad($com_id){
         $sql = '
         select 

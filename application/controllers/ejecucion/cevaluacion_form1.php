@@ -6,7 +6,7 @@ class Cevaluacion_form1 extends CI_Controller {
       if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
       $this->load->model('programacion/model_proyecto');
       $this->load->model('programacion/model_faseetapa');
-      $this->load->model('programacion/model_actividad');
+
       $this->load->model('programacion/model_producto');
       $this->load->model('programacion/model_componente');
       $this->load->model('ejecucion/model_evaluacion');

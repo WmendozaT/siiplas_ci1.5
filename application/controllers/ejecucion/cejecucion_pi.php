@@ -11,7 +11,7 @@ class Cejecucion_pi extends CI_Controller {
           $this->load->model('consultas/model_consultas');
           $this->load->model('programacion/model_proyecto');
           $this->load->model('programacion/model_faseetapa');
-          $this->load->model('programacion/model_actividad');
+        
           $this->load->model('programacion/model_producto');
           $this->load->model('programacion/model_componente');
           $this->load->model('mantenimiento/model_ptto_sigep');

@@ -8,7 +8,7 @@ class Cservicios extends CI_Controller {
             $this->load->model('programacion/model_faseetapa');
             $this->load->model('programacion/model_componente');
             $this->load->model('programacion/model_producto');
-            $this->load->model('programacion/model_actividad');
+     
             $this->load->model('programacion/insumos/minsumos');
             $this->load->model('mantenimiento/model_estructura_org');
             $this->load->model('mestrategico/model_objetivoregion');
@@ -249,17 +249,17 @@ class Cservicios extends CI_Controller {
       }
     }
 
-  /*---- UNIDADES RESPONSABLES (2024) ---------*/
+  /*---- UNIDADES RESPONSABLES (2024) a optimizar ---------*/
   function unidades_resp($proy_id){
-    $proyecto = $this->model_proyecto->get_id_proyecto($proy_id);
-    $fase = $this->model_faseetapa->get_id_fase($proy_id);
-
-    if($this->rol==1 || $proyecto[0]['fun']==$this->fun_id){
-        $componente=$this->model_componente->componentes_id($fase[0]['id'],$proyecto[0]['tp_id']);    
-    }
-    else{
-        $componente=$this->model_componente->componentes_fun_id($fase[0]['id'],$this->fun_id);     
-    }
+    $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
+    //$fase = $this->model_faseetapa->get_id_fase($proy_id);
+    $componente=$this->model_componente->lista_UnidadesResponsables($proy_id);
+    // if($this->rol==1 || $proyecto[0]['fun']==$this->fun_id){
+    //     $componente=$this->model_componente->componentes_id($fase[0]['id'],$proyecto[0]['tp_id']);    
+    // }
+    // else{
+    //     $componente=$this->model_componente->componentes_fun_id($fase[0]['id'],$this->fun_id);     
+    // }
     $tabla='';
     $tabla.='<table id="dt_basic4" class="table table table-bordered" width="100%">
                 <thead>
@@ -282,7 +282,7 @@ class Cservicios extends CI_Controller {
                     $num++;
                     $tabla.='
                     <tr>';
-                        if(count($this->model_producto->list_prod($row['com_id']))==0 & $this->tp_adm==1){
+                        if(count($this->model_producto->lista_productos($row['com_id']))==0 & $this->tp_adm==1){
                             $tabla.='<td><a href="#" data-toggle="modal" data-target="#modal_neg_ff" class="btn btn-default neg_ff" title="DESHABILITAR SUB-ACTIVIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->list_prod($row['com_id'])).'" ><img src="' . base_url() . 'assets/img/neg.jpg" WIDTH="35" HEIGHT="35"/></td>';
                         }
                         else{
@@ -309,7 +309,7 @@ class Cservicios extends CI_Controller {
                         <td bgcolor="#d4f1fb" align="center" title="'.$row["com_id"].'"><font color="blue" size=3><b>'.$row['serv_cod'].'</b></font></td>
                         <td>'.$row['serv_descripcion'].'</td>
                         <td>'.$row['com_ponderacion'].' %</td>
-                        <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->list_prod($row['com_id'])).'</font></td>
+                        <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>
                         <td align="center">
                             <a href="'.site_url("admin").'/prog/list_prod/'.$row['com_id'].'" title="MIS ACTIVIDADES" class="btn btn-default" target=_black><img src="'.base_url().'assets/ifinal/archivo.png" WIDTH="34" HEIGHT="34"/></a>
                         </td>
@@ -317,13 +317,13 @@ class Cservicios extends CI_Controller {
                         <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/proy/orequerimiento_proceso/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
                         <td align="center"><a href="'.site_url("").'/prog/exportar_productos/'.$row['com_id'].'" title="EXPORTAR ACTIVIDADES" class="btn btn-default"><img src="' . base_url() . 'assets/ifinal/excel.jpg" WIDTH="38"/></a></td>
                         <td align="center">';
-                        if(count($this->model_producto->list_prod($row['com_id']))!=0 & $this->tp_adm==1){
-                            $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR TODAS LAS ACTIVIDADES DE LA UNIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->list_prod($row['com_id'])).'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
+                        if(count($this->model_producto->lista_productos($row['com_id']))!=0 & $this->tp_adm==1){
+                            $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR TODAS LAS ACTIVIDADES DE LA UNIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
                         }
                         $tabla.='
                         </td>
                     </tr>';
-                    $sum=$sum+count($this->model_producto->list_prod($row['com_id']));
+                    $sum=$sum+count($this->model_producto->lista_productos($row['com_id']));
                     $ponderacion=$ponderacion+$row['com_ponderacion'];
                 }
                 $tabla.='    

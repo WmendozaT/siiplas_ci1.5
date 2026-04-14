@@ -8,7 +8,7 @@ class Cprog_insumo extends CI_Controller{
       if($this->session->userdata('fun_id')!=null){
         $this->load->library('pdf2');
         $this->load->model('menu_modelo');
-        $this->load->model('programacion/model_actividad');
+
         $this->load->model('programacion/insumos/minsumos');
         $this->load->model('programacion/insumos/model_insumo'); /// gestion 2020
         $this->load->model('mantenimiento/model_partidas');

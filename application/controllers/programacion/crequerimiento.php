@@ -19,7 +19,7 @@ class crequerimiento extends CI_Controller{
         $this->load->model('programacion/model_faseetapa');
         $this->load->model('programacion/model_componente');
         $this->load->model('programacion/model_producto');
-        $this->load->model('programacion/model_actividad');
+       
         $this->load->model('mantenimiento/model_ptto_sigep');
         $this->load->model('mestrategico/model_objetivoregion');
         $this->load->model('modificacion/model_modrequerimiento'); /// Gestion 2020
@@ -39,7 +39,7 @@ class crequerimiento extends CI_Controller{
         }
     }
 
-    /*---- LISTA DE COMPONENTES SEGUN EL TIPO DE EJECUCION ----*/
+    /*---- LISTA DE COMPONENTES SEGUN EL TIPO DE EJECUCION (a optimizar) ----*/
     function list_requerimientos($prod_id){
       $data['producto']=$this->model_producto->get_producto_id($prod_id); // Producto
       $data['stylo']=$this->programacionpoa->estilo_tabla_form5();
@@ -47,15 +47,15 @@ class crequerimiento extends CI_Controller{
         $data['componente']=$this->model_componente->get_componente($data['producto'][0]['com_id'],$this->gestion); // Componente
         $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['componente'][0]['proy_id']);
         $data['menu']=$this->genera_menu($data['proyecto'][0]['proy_id']);
-        $data['monto_asig']=$this->model_ptto_sigep->suma_ptto_accion($data['proyecto'][0]['aper_id'],1);
-        $data['monto_prog']=$this->model_ptto_sigep->suma_ptto_accion($data['proyecto'][0]['aper_id'],2);
+        //$data['monto_asig']=$this->model_ptto_sigep->suma_ptto_accion($data['proyecto'][0]['aper_id'],1);
+        //$data['monto_prog']=$this->model_ptto_sigep->suma_ptto_accion($data['proyecto'][0]['aper_id'],2);
         $monto_a=0;$monto_p=0;$monto_saldo=0;
-        if(count($data['monto_asig'])!=0){
+/*        if(count($data['monto_asig'])!=0){
             $monto_a=$data['monto_asig'][0]['monto'];
         }
         if(count($data['monto_prog'])){
             $monto_p=$data['monto_prog'][0]['monto'];
-        }
+        }*/
 
         $data['monto_a']=$monto_a;
         $data['monto_p']=$monto_p;
@@ -242,7 +242,7 @@ class crequerimiento extends CI_Controller{
       }
     }
 
-    /*----------- LISTA DE REQUERIMIENTOS (2020) --------------*/
+    /*----------- LISTA DE REQUERIMIENTOS (2020) (A optimizar) --------------*/
     public function mis_requerimientos($prod_id,$componente){
       $lista_insumos = $this->model_insumo->lista_insumos_prod($prod_id);
       $tabla='';
@@ -335,7 +335,7 @@ class crequerimiento extends CI_Controller{
                 </td>
                 <td>';
                   if($this->tp_adm==1 || $this->conf_form5==1){
-                  $productos = $this->model_producto->list_prod($componente[0]['com_id']); // Lista de productos
+                  $productos = $this->model_producto->lista_productos($componente[0]['com_id']); // Lista de productos
                     $tabla .='<select class="form-control" onchange="doSelectAlert(event,this.value,'.$row['ins_id'].');">';
                       foreach($productos as $pr){
                         //if($pr['prod_ppto']==1){

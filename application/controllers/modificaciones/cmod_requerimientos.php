@@ -13,7 +13,7 @@ class Cmod_requerimientos extends CI_Controller {
             $this->load->model('programacion/model_proyecto');
             $this->load->model('modificacion/model_modificacion');
             $this->load->model('programacion/model_faseetapa');
-            $this->load->model('programacion/model_actividad');
+           
             $this->load->model('programacion/model_producto');
             $this->load->model('programacion/model_componente');
             $this->load->model('programacion/insumos/minsumos');
@@ -329,28 +329,28 @@ class Cmod_requerimientos extends CI_Controller {
     }
 
 
-    /*------------------- Techo Presupuestario -------------------*/
+    /*------- Modificacion del Techo Presupuestario 2026 --------*/
     public function techo($cppto_id){
-      $data['cite']=$this->model_ptto_sigep->get_cite_techo($cppto_id);
-      $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']);
-      if(count($data['cite'])!=0 & count($data['proyecto'])!=0){
-        $data['menu']=$this->menu(3); //// genera menu
-        
-        $titulo=' <h1> APERTURA PROGRAM&Aacute;TICA : <small>'.$data['proyecto'][0]['aper_programa'].''.$data['proyecto'][0]['proy_sisin'].'000 - '.$data['proyecto'][0]['proy_nombre'].'</small></h1>
-                  <h1> CITE : <small>'.$data['cite'][0]['cppto_cite'].'</small> || FECHA : <small>'.date('d/m/Y',strtotime($data['cite'][0]['cppto_fecha'])).'</small></h1>
-                  <h1> PRESUPUESTO ASIGNADO - '.$this->gestion.'</h1>';
-        if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['cite'][0]['proy_id']);
+      $data['menu']=$this->menu(3); //// genera menu
+      $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
+      $data['formulario']='';
+      if(count($cite)!=0){
+        $data['formulario'].='
+          <article class="col-xs-12 col-sm-12 col-md-12 col-lg-9">
+            <section id="widget-grid" class="well">
+              <h1><small>'.$cite[0]['aper_programa'].''.$cite[0]['aper_proyecto'].''.$cite[0]['aper_actividad'].' - '.$cite[0]['tipo'].' '.$cite[0]['proy_nombre'].' - '.$cite[0]['abrev'].'</small></h1>
+              <h1> CITE : <small>'.$cite[0]['cppto_cite'].'</small> || FECHA : <small>'.date('d/m/Y',strtotime($cite[0]['cppto_fecha'])).'</small></h1>
+            </section>
+          </article>
+          <article class="col-xs-12 col-sm-12 col-md-12 col-lg-3">
+            <section id="widget-grid" class="well">
+              Opciones
+            </section>
+          </article>
+          '.$this->detalle_lista_partidas_asignadas($cite).'';
 
-          $titulo=' <h1> APERTURA PROGRAM&Aacute;TICA : <small>'.$data['proyecto'][0]['aper_programa'].''.$data['proyecto'][0]['aper_proyecto'].''.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' - '.$data['proyecto'][0]['abrev'].'</small></h1>
-                  <h1> CITE : <small>'.$data['cite'][0]['cppto_cite'].'</small> || FECHA : <small>'.date('d/m/Y',strtotime($data['cite'][0]['cppto_fecha'])).'</small></h1>
-                  <h1> PRESUPUESTO ASIGNADO - '.$this->gestion.'</h1>';
-        }
 
-
-        $data['titulo']=$titulo;
-        $data['partidas_asig']=$this->list_partidas($data['cite']); /// Partidas Asignadas
-        $data['list_partidas']=$this->model_ptto_sigep->list_partidas_noasig($data['proyecto'][0]['aper_id']); /// Aper id
+        $data['list_partidas']=$this->model_ptto_sigep->list_partidas_noasignada_UnidadOrganizacional($cite[0]['aper_id']); /// Aper id
 
         $this->load->view('admin/modificacion/techo/edit_partidas', $data);
       }
@@ -360,159 +360,95 @@ class Cmod_requerimientos extends CI_Controller {
       
     }
 
-    /*------ Lista de Partidas a modificar (2019-220-2021) -------*/
-    function list_partidas($cite){
-      $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); //// DATOS DEL PROYECTO
-      $partidas=$this->model_ptto_sigep->partidas_proyecto($proyecto[0]['aper_id']);
-      $total=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],1);
-      $monto_total=0;
-      if(count($total)!=0){
-        $monto_total=$total[0]['monto'];
-      }
+    /*------ Lista de Partidas a modificar 2026 -------*/
+    function detalle_lista_partidas_asignadas($cite){
+      $partidas=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($cite[0]['aper_id']);
       $tabla='';
-      $nro=0;
+      $tabla.='   
+          <article class="col-xs-12">
+            <section class="well" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <input name="base" type="hidden" value="'.base_url().'">
+                <!-- Título con mejor estilo -->
+                <div class="alert alert-info text-center" style="background: #1c7368; color: white; border: none; margin-bottom: 20px;">
+                    <h3 style="margin: 0; font-weight: bold;">
+                        <i class="fa fa-money"></i> TECHO PRESUPUESTARIO - PARTIDAS ASIGNADAS '.$cite[0]['aper_id'].'
+                    </h3>
+                </div>
 
-      $tabla.='<center>
-                <table class="table table-bordered" style="width:80%;" align="center">
-                  <tr title="'.$proyecto[0]['aper_id'].'">';
-                    if($cite[0]['tp']==0){
-                      $tabla.='
-                      <td style="width:15%;">
-                      <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-primary nuevo_ff btn-lg" title="NUEVO REGISTRO PARTIDA" style="width:100%; height:100%;">NUEVO PARTIDA</a>
-                    </td>';
-                    }
-                    $tabla.='
-                    <td style="width:5%;">BUSCADOR</td>
-                    <td style="width:80%;"><input type="text" class="form-control" id="kwd_search" value="" style="width:100%;"/></td>
-                  </tr>
-                </table><br>
-                <table class="table table-bordered" id="table" style="width:80%;" align="center">
-                  <thead>
-                    <tr>
-                      <th bgcolor="#1c7368"><font color="#ffffff">'.$proyecto[0]['aper_id'].'#</font></th>
-                      <th style="width:5%;" bgcolor="#1c7368"><font color="#ffffff">C&Oacute;DIGO PARTIDA</font></th>
-                      <th style="width:15%;"bgcolor="#1c7368"><font color="#ffffff">DESCRIPCI&Oacute;N PARTIDA</font></th>
-                      <th bgcolor="#1c7368"><font color="#ffffff">MONTO ASIGNADO</font></th>
-                      <th bgcolor="#1c7368"><font color="#ffffff">MONTO PROGRAMADO POA</font></th>';
-                      if($cite[0]['tp']==0){
-                        $tabla.='<th bgcolor="#1c7368"><font color="#ffffff">MONTO A MODIFICAR.</font></th>';
+                <!-- Barra de herramientas (Botón + Buscador) -->
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-md-2">
+                        <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-success btn-lg btn-block shadow">
+                            <i class="fa fa-plus-circle"></i> NUEVA PARTIDA
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-addon" style="background: #eee;"><i class="fa fa-search"></i> BUSCADOR</span>
+                            <input type="text" class="form-control" id="kwd_search" placeholder="Escriba para filtrar partidas...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla Estilizada -->
+                <div class="table-responsive" align=center>
+                    <table class="table table-hover table-striped table-bordered" id="table" style="width:70%; font-size:14px;">
+                        <thead>
+                            <tr style="background-color: #155d54; color: #ffffff;">
+                                <th class="text-center" style="background-color: #155d54;">PARTIDA</th>
+                                <th class="text-center" style="background-color: #155d54;">PPTO. ASIGNADO</th>
+                                <th class="text-center" style="background-color: #155d54;">MONTO A MODIFICAR</th>
+                                <th class="text-center" style="background-color: #155d54;">PPTO TOTAL</th>
+                                <th class="text-center" style="background-color: #155d54;">PPTO. REVERTIDO</th>
+                                <th class="text-center" style="background-color: #155d54;">PPTO. TOTAL REVERTIDO</th>
+                                <th class="text-center" style="width: 5%;">SALDO</th>
+                                <th class="text-center" style="width: 5%;">ELIMINAR</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
+                          foreach($partidas as $row){
+                          $id = $row['sp_id'];
+                          $tabla.='  
+                          <tr id="fila'.$id.'">
+                              <td style="width:30%;"><b>'.$row['codigo_partida'].' - </b>'.$row['partida'].'</td>
+                              <td class="text-right">'.number_format($row['ppto_asignado'], 2).'</td>
+                              
+                              <!-- Input para Modificación -->
+                              <td class="text-right">
+                                  <input type="number" class="form-control val-mod" data-id="'.$id.'" id="ppto_mod'.$id.'" value="0" step="0.01">
+                              </td>
+                              <td class="text-right" style="color: #007bff; font-weight: bold;">
+                                  <div id="total_asignado'.$id.'">0.00</div>
+                              </td>
+
+                              <!-- Input para Revertido -->
+                              <td class="text-right">
+                                  <input type="number" class="form-control val-rev" data-id="'.$id.'" id="ppto_rev'.$id.'" value="0" step="0.01">
+                              </td>
+                              <td class="text-right" style="color: #007bff; font-weight: bold;">
+                                  <div id="total_asignado_rev'.$id.'">0.00</div>
+                              </td>
+
+                              <!-- Botones de Acción con data-id -->
+                              <td class="text-center">
+                                  <button class="btn btn-default btn-sm btn-guardar" title="Registrar" data-id="'.$id.'">
+                                      <i class="fa fa-save text-primary"></i>
+                                  </button>
+                              </td>
+                              <td class="text-center">
+                                  <button class="btn btn-danger btn-sm btn-eliminar" title="Eliminar" data-id="'.$id.'">
+                                      <i class="fa fa-trash"></i>
+                                  </button>
+                              </td>
+                          </tr>';
                       }
-                      $tabla.='
-                      <th bgcolor="#1c7368"><font color="#ffffff">PRESUPUESTO FINAL</font></th>
-                      <th bgcolor="#1c7368"><font color="#ffffff">ELIMINAR</font></th>
-                      <th bgcolor="#1c7368"><font color="#ffffff" style="width:8%;">MONTO REVERTIDO</font></th>';
-                      if($cite[0]['tp']==1){
                         $tabla.='
-                        <th bgcolor="#1c7368"><font color="#ffffff">REGISTRAR SALDO</font></th>
-                        <th bgcolor="#1c7368"></th>';
-                      }
-                      $tabla.='
-                    </tr>
-                  </thead>
-                  <tbody>';
-                  foreach($partidas  as $row){
-                    $programado=$this->model_ptto_sigep->get_partida_programado_poa($proyecto[0]['aper_id'],$row['par_id']);
-                    $monto_poa=0;
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </article>';
 
-                    if(count($programado)!=0){
-                      $monto_poa=$programado[0]['ppto_programado'];          
-                    }
-
-                    $nro++;
-                    $tabla .='
-                    <tr class="modo1">
-                      <td align=center>'.$nro.'<input type="hidden" name="sp_id[]" value="'.$row['sp_id'].'"></td>
-                      <td align=center><b>'.$row['partida'].'</b></td>
-                      <td align=left><b>'.$row['par_nombre'].'</b></td>
-                      <td align=right><input type="hidden" id="monto'.$nro.'" name="monto_inicial[]" value="'.$row['importe'].'">
-                        <b>'.number_format($row['importe'], 2, ',', '.').'</b>
-                      </td>
-                      <td align=right>
-                        <b>'.number_format($monto_poa, 2, ',', '.').'</b>
-                      </td>';
-                      if($cite[0]['tp']==0){
-                        $tabla.='<td align=center><input type="number" class="form-control" onkeyup="suma_monto_partida('.$nro.');" name="monto_dif[]" id="dif'.$nro.'" value="0" title="MONTO A INCREMENTAR" pattern="^[0-9]" pattern="^[0-9]"  min="1" step="1"></td>';
-                      }
-                      $tabla.='
-                      <td align=center>
-                        <input type="text" class="form-control" id="mpartida'.$nro.'" value="'.$row['importe'].'" title="MONTO FINAL" disabled>
-                        <input type="hidden" name="monto_partida[]" id="mpartida'.$nro.'" value="'.$row['importe'].'">
-                      </td>
-                      <td align=center><a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR MONTO PARTIDA"  name="'.$row['sp_id'].'" id="'.$cite[0]['proy_id'].'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a></td>
-                      <td align="right" style="width:8%;"><b>'.number_format($row['ppto_saldo_ncert'], 2, '.', ',').'</b></td>';
-                        if($cite[0]['tp']==1){
-                          $tabla.='
-                          <td align="center">
-                            <a href="#" data-toggle="modal" data-target="#modal_add_saldo" class="btn btn-default add_saldo" name="'.$row['sp_id'].'" title="SALDO REVERTIDO"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a>
-                          </td>
-                          <td align="center">
-                          </td>';
-                        }
-                      $tabla.='
-                    </tr>';
-                  }
-                  $tabla.='</tbody>
-                  <tr>
-                    <td colspan="3">TOTAL </td>
-                    <td align=center>'.$monto_total.'</td>
-                    <td align=center></td>';
-                    if($cite[0]['tp']==0){
-                      $tabla.='<td align=center></td>';
-                    }
-                    $tabla.='
-                    <td align=center><input type="text" class="form-control" name="total" value="'.$monto_total.'" disabled="true"></td>
-                    <td align=center></td>';
-                    if($cite[0]['tp']==1){
-                      $tabla.='<td align=center colspan="2"></td>';
-                    }
-                    $tabla.='
-                  </tr>
-                  
-                </table>
-                </center>';
-      ?>
-      <script type="text/javascript">
-        function suma_monto_partida(nro){
-            monto = parseFloat($('[id="monto'+nro+'"]').val());
-            dif = parseFloat($('[id="dif'+nro+'"]').val());
-            $('[id="mpartida'+nro+'"]').val((monto+dif).toFixed(2));
-
-            monto_partida = parseFloat($('[id="mpartida'+nro+'"]').val());
-
-            if(isNaN(monto_partida)){
-              $('#but').slideUp();
-            }
-            else{
-              $('#but').slideDown();
-            }
-
-            var suma=0;
-            var suma_dif=0;
-            for (var i = 1; i <= <?php echo count($partidas); ?>; i++) {
-              suma=parseFloat(suma)+parseFloat($('[id="mpartida'+i+'"]').val());
-            }
-     
-            $('[name="total"]').val((suma).toFixed(2));
-        }
-
-        function suma_monto(){ 
-            var suma=0;
-            for (var i = 1; i <= <?php echo count($partidas); ?>; i++) {
-                suma=parseFloat(suma)+parseFloat($('[id="mpartida'+i+'"]').val());
-            }
-     
-            $('[name="total"]').val((suma).toFixed(2));
-        }
-
-        function justNumbers(e){
-          var keynum = window.event ? window.event.keyCode : e.which;
-            if ((keynum == 8) || (keynum == 46))
-            return true;
-               
-            return /\d/.test(String.fromCharCode(keynum));
-        }
-        </script>
-      <?php
       return $tabla;
     }
 
@@ -640,56 +576,56 @@ class Cmod_requerimientos extends CI_Controller {
     }
 
 
-    /*------------ UPDATE PARTIDAS (MODIFICACIONES)--------------*/
-    public function valida_update_partidas_mod(){
-      if ($this->input->post()) {
-          $post = $this->input->post();
-          $cite_id = $this->security->xss_clean($post['cite_id']);
-          $cite=$this->model_ptto_sigep->get_cite_techo($cite_id);
+    /*------------ UPDATE PARTIDAS (MODIFICACIONES) MODIFICACION DEL TECHO PRESUPUESTARIO ( a optimizar a borrar)--------------*/
+    // public function valida_update_partidas_mod(){
+    //   if ($this->input->post()) {
+    //       $post = $this->input->post();
+    //       $cite_id = $this->security->xss_clean($post['cite_id']);
+    //       $cite=$this->model_ptto_sigep->get_cite_techo($cite_id);
 
-          $nro=0;
-          if (!empty($_POST["sp_id"]) && is_array($_POST["sp_id"]) ) {
-          foreach ( array_keys($_POST["sp_id"]) as $como){
-            if($_POST["monto_dif"][$como]!=0){
-               /*-------- Insert ppto_modifcado ----------*/
-              $data_to_store2 = array(
-                'cppto_id' => $cite_id,
-                'sp_id' => $_POST["sp_id"][$como],
-                'num_ip' => $this->input->ip_address(), 
-                'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                'ppto_ini' => $_POST["monto_inicial"][$como],
-                'monto_dif' => $_POST["monto_dif"][$como],
-                'ppto_final' => $_POST["monto_partida"][$como],
-              );
-              $this->db->insert('ppto_mod',$data_to_store2);
-              $cppto_id=$this->db->insert_id();
-              /*----------------------------------------*/
+    //       $nro=0;
+    //       if (!empty($_POST["sp_id"]) && is_array($_POST["sp_id"]) ) {
+    //       foreach ( array_keys($_POST["sp_id"]) as $como){
+    //         if($_POST["monto_dif"][$como]!=0){
+    //            /*-------- Insert ppto_modifcado ----------*/
+    //           $data_to_store2 = array(
+    //             'cppto_id' => $cite_id,
+    //             'sp_id' => $_POST["sp_id"][$como],
+    //             'num_ip' => $this->input->ip_address(), 
+    //             'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //             'ppto_ini' => $_POST["monto_inicial"][$como],
+    //             'monto_dif' => $_POST["monto_dif"][$como],
+    //             'ppto_final' => $_POST["monto_partida"][$como],
+    //           );
+    //           $this->db->insert('ppto_mod',$data_to_store2);
+    //           $cppto_id=$this->db->insert_id();
+    //           /*----------------------------------------*/
 
-              /*--------- Update ppto Sigep ----------*/
-              $update_ppto= array(
-                'importe' => $_POST["monto_partida"][$como],
-                'estado' => 2,
-                'fun_id' => $this->fun_id
-              );
-              $this->db->where('sp_id', $_POST["sp_id"][$como]);
-              $this->db->update('ptto_partidas_sigep', $this->security->xss_clean($update_ppto));
-              /*----------------------------------------*/
-              $nro++;
-            }
-          }
+    //           /*--------- Update ppto Sigep ----------*/
+    //           $update_ppto= array(
+    //             'importe' => $_POST["monto_partida"][$como],
+    //             'estado' => 2,
+    //             'fun_id' => $this->fun_id
+    //           );
+    //           $this->db->where('sp_id', $_POST["sp_id"][$como]);
+    //           $this->db->update('ptto_partidas_sigep', $this->security->xss_clean($update_ppto));
+    //           /*----------------------------------------*/
+    //           $nro++;
+    //         }
+    //       }
 
-          $this->session->set_flashdata('success','SE MODIFICARON '.$nro.' MONTO DE PARTIDAS');
-          redirect(site_url("").'/mod/techo/'.$cite_id);
-        }
-        else{
-          $this->session->set_flashdata('danger','ERROR AL MODIFICAR PARTIDAS');
-          redirect(site_url("").'/mod/techo/'.$cite_id);
-        }
-      }
-      else{
-        echo "<font color=red><b>Error al Eliminar Operaciones</b></font>";
-      }
-    }
+    //       $this->session->set_flashdata('success','SE MODIFICARON '.$nro.' MONTO DE PARTIDAS');
+    //       redirect(site_url("").'/mod/techo/'.$cite_id);
+    //     }
+    //     else{
+    //       $this->session->set_flashdata('danger','ERROR AL MODIFICAR PARTIDAS');
+    //       redirect(site_url("").'/mod/techo/'.$cite_id);
+    //     }
+    //   }
+    //   else{
+    //     echo "<font color=red><b>Error al Eliminar Operaciones</b></font>";
+    //   }
+    // }
 
 
     /*-------- ELIMINAR MONTOS PARTIDA --------*/

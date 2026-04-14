@@ -22,7 +22,7 @@
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
         <meta name="viewport" content="width=device-width">
         <!--fin de stiloh-->
-          <script>
+<!--           <script>
             function abreVentana(PDF){             
                 var direccion;
                 direccion = '' + PDF;
@@ -44,33 +44,12 @@
             #col{
               color: #1c7368;
             }
-            </style>
+            </style> -->
     </head>
     <body class="">
         <!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
         <!-- HEADER -->
         <header id="header">
-            <div id="logo-group">
-                <!-- <span id="logo"> <img src="<?php echo base_url(); ?>assets/img/logo.png" alt="SmartAdmin"> </span> -->
-            </div>
-            <div class="col-md-4 " style="font-size:18px;margin-top:10px;margin-bottom:-10px;">
-                <span>
-                    &nbsp;&nbsp;&nbsp; 
-                    <div class="badge bg-color-blue">
-                        <span style="font-size:15px;"><b>Fecha Sesi&oacute;n: <?php echo $this->session->userdata('desc_mes').' / '.$this->session->userdata('gestion');?></b></span>
-                    </div>
-                </span>
-                <div class="project-context hidden-xs">
-                    <span class="project-selector dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="font-size:19px;">
-                        <i class="fa fa-lg fa-fw fa-calendar txt-color-blue"></i>
-                    </span>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="<?php echo base_url();?>index.php/cambiar_gestion">Cambiar Gestión</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
             <!-- pulled right: nav area -->
             <div class="pull-right">
                 <!-- collapse menu button -->
@@ -144,65 +123,7 @@
             <!-- widget grid -->
                 <section id="widget-grid" class="">
                     <div class="row">
-                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-9">
-                            <section id="widget-grid" class="well">
-                                <div class="">
-                                    <?php echo $titulo; ?>
-                                </div>
-                            </section>
-                        </article>
-                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-3">
-                            <section id="widget-grid" class="well">
-                              <style type="text/css">#graf{font-size: 80px;}</style> 
-                              <center>
-                                <div class="dropdown">
-                                <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenu1" style="width:100%;" data-toggle="dropdown" aria-expanded="true">
-                                  OPCIONES
-                                  <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:abreVentana('<?php echo site_url("").'/mod/rep_mod_techo/'.$cite[0]['cppto_id'].'' ?>');" title="IMPRIMIR MODIFICACI&Oacute;N TECHO">IMPRIMIR MOD. TECHO PRESUPUESTARIO</a></li>
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:abreVentana('<?php echo site_url("").'/proy/ptto_consolidado_comparativo/'.$cite[0]['proy_id'].'' ?>');" title="CUADRO COMPARATIVO PRESUPUESTARIO">CUADRO COMPARATIVO PRESUPUESTARIO</a></li>
-                                    <li role="presentation"><a onclick="cerrar()" class="btn btn-danger" style="width:100%;" title="Cerrar Modificacion"><font color="#ffffff">CERRAR MODIFICACI&Oacute;N</font></a></li>
-                                </ul>
-                              </div>
-                              </center>
-                            </section>
-                        </article>
-
-                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                            <?php 
-                              if($this->session->flashdata('success')){ ?>
-                                <div class="alert alert-success">
-                                  <?php echo $this->session->flashdata('success'); ?>
-                                </div>
-                            <?php }
-                                elseif($this->session->flashdata('danger')){ ?>
-                                <div class="alert alert-danger">
-                                  <?php echo $this->session->flashdata('danger'); ?>
-                                </div><?php }
-                            ?>
-
-                            <div class="well">
-                            <div class="row">
-                                <form action="<?php echo site_url("").'/modificaciones/cmod_requerimientos/valida_update_partidas_mod'?>" id="form_nuevo" name="form_nuevo" class="smart-form" method="post">
-                                <input type="hidden" name="cite_id" id="cite_id" value="<?php echo $cite[0]['cppto_id'];?>">
-                                <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                    <fieldset>
-                                    <center><font size="3"><b>TECHO PRESUPUESTARIO - PARTIDAS ASIGNADAS</b></font></center><br>
-                                    <?php echo $partidas_asig;?>
-                                    </fieldset>
-                                </article>
-                                <footer>
-                                    <div id="but" style="display:none;">
-                                        <button type="button" name="add_form" id="add_form" class="btn btn-primary">MODIFICAR TECHO PRESUPUESTARIO</button>
-                                    </div>
-                                </footer>
-                            </form> 
-                            </div>
-                        </div>
-                        </article>
-                        <!-- WIDGET END -->
+                        <?php echo $formulario; ?>
                     </div>
                 </section>
             </div>
@@ -220,7 +141,7 @@
         <!-- END PAGE FOOTER -->
 
         <!-- ============ Modal Reversion de Saldos ========= -->
-        <div class="modal fade" id="modal_add_saldo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<!--         <div class="modal fade" id="modal_add_saldo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered" role="document" class="modal-dialog modal-sm">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -259,7 +180,7 @@
                 </div>
               </div>
             </div>
-        </div>
+        </div> -->
      <!--  =============== -->
 
 
@@ -368,7 +289,8 @@
         <!-- Voice command : plugin -->
         <script src="<?php echo base_url(); ?>assets/js/speech/voicecommand.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
-        <script type="text/javascript">
+        <script src="<?php echo base_url(); ?>mis_js/modificacionpoa/modppto.js"></script> 
+<!--         <script type="text/javascript">
         /*------ MODIFICAR REQUERIMIENTO -----*/
           $(function () {
               $(".add_saldo").on("click", function (e) {
@@ -426,10 +348,10 @@
                   });
               });
           });    
-        </script>
+        </script> -->
 
 
-        <script type="text/javascript">
+<!--         <script type="text/javascript">
         function justNumbers(e){
             var keynum = window.event ? window.event.keyCode : e.which;
             if ((keynum == 8) || (keynum == 46))
@@ -485,7 +407,7 @@
                 });
             });
         });
-        </script>
+        </script> -->
 
         <!-- Verificando valor del saldo -->
 <!--         <script type="text/javascript">
@@ -536,7 +458,7 @@
               }
             }
         </script> -->
-        <script type="text/javascript">
+<!--         <script type="text/javascript">
         $(function () {
             $("#subir_form2").on("click", function () {
                 var $valid = $("#form_nuevo2").valid();
@@ -556,7 +478,7 @@
                 }
             });
         });
-        </script>
+        </script> -->
 
         <script type="text/javascript">
             $(function () {
@@ -625,7 +547,7 @@
 
             });
         </script>
-        <script type="text/javascript">
+<!--         <script type="text/javascript">
         $(document).ready(function(){
           $("#kwd_search").keyup(function(){
             if( $(this).val() != ""){
@@ -644,6 +566,6 @@
             return (elem.textContent || elem.innerText || $(elem).text() || "").toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
           }
         });
-        </script>
+        </script> -->
     </body>
 </html>

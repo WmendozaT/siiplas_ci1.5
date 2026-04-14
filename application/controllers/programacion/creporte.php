@@ -8,7 +8,7 @@ class Creporte extends CI_Controller {
             $this->load->model('programacion/model_faseetapa');
             $this->load->model('programacion/model_componente');
             $this->load->model('programacion/model_producto');
-            $this->load->model('programacion/model_actividad');
+           
             $this->load->model('programacion/insumos/model_insumo');
             $this->load->model('mantenimiento/model_estructura_org');
             $this->load->model('mestrategico/model_objetivoregion');

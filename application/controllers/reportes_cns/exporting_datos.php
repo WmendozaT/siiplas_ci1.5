@@ -7,7 +7,7 @@
         $this->load->model('programacion/model_proyecto');
         $this->load->model('programacion/model_componente');
         $this->load->model('programacion/model_producto');
-        $this->load->model('programacion/model_actividad');
+        
         $this->load->model('programacion/insumos/minsumos');
         $this->load->model('reportes/mreporte_operaciones/mrep_operaciones');
         $this->load->model('ejecucion/model_ejecucion');
