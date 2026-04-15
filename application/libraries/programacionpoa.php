@@ -41,8 +41,23 @@ class Programacionpoa extends CI_Controller{
       $this->conf_poa_estado = $this->session->userData('conf_poa_estado'); /// Ajuste POA 1: Inicial, 2 : Ajuste, 3 : aprobado
     }
 
-  /// ----- APERTURAR NUEVO POA (UNIDAD)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /// ----- APERTURAR NUEVO POA (UNIDAD)
   /*------------ FORMULACIÓN - ADICION - POA (2020) ----------*/
   public function formulacion_add_poa_adm(){
     $tabla='';

@@ -4,7 +4,7 @@ class Model_evalregional extends CI_Model{
     public function __construct(){
         $this->load->database();
         $this->load->model('programacion/model_proyecto');
-        $this->load->model('programacion/model_actividad');
+        //$this->load->model('programacion/model_actividad');
         $this->load->model('programacion/model_producto');
         $this->load->model('programacion/model_componente');
         $this->gestion = $this->session->userData('gestion');

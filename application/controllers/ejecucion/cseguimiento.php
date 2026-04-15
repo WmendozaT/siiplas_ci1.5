@@ -16,7 +16,6 @@ class Cseguimiento extends CI_Controller {
         $this->load->model('mantenimiento/model_configuracion');
         $this->load->model('ejecucion/model_notificacion');
         $this->load->model('programacion/insumos/model_insumo');
-        //$this->load->model('mantenimiento/model_funcionario');
         $this->load->model('menu_modelo');
         $this->load->model('Users_model','',true);
         $this->load->library('security');
@@ -28,16 +27,15 @@ class Cseguimiento extends CI_Controller {
         $this->dist_tp = $this->session->userData('dist_tp');
         $this->tmes = $this->session->userData('trimestre');
         $this->mes = $this->mes_nombre();
-        //$this->tmes = 3;
         $this->fun_id = $this->session->userData('fun_id');
         $this->tp_adm = $this->session->userData('tp_adm');
-        
         $this->resolucion=$this->session->userdata('rd_poa');
         $this->com_id=$this->session->userdata('com_id');
         $this->mes_sistema=$this->session->userData('mes'); /// mes sistema
        // $this->load->library('menu');
         $this->verif_mes=$this->session->userdata('mes_actual');
         $this->load->library('seguimientopoa');
+        $this->load->library('programacionpoa');
 
         }else{
           $this->session->sess_destroy();
@@ -56,76 +54,11 @@ class Cseguimiento extends CI_Controller {
       $data['proyectos']='No disponible';
       $data['gasto_corriente']='No disponible';
 
-
       $data['proyectos']=$this->list_pinversion(4);
       $data['gasto_corriente']=$this->list_gasto_corriente(4);
       
       $data['titulo']=$this->seguimientopoa->aviso_seguimiento_evaluacion_poa();
       $this->load->view('admin/evaluacion/seguimiento_poa/list_poas_aprobados', $data);
-
-      /*$insumos=$this->model_insumo->lista_insumos(2021);
-
-      $tabla='';
-      $tabla.='
-      <table border="1" cellpadding="0" cellspacing="0" class="tabla">
-              <thead>
-                 <tr style="background-color: #66b2e8">
-                    <th style="width:2%;height:40px;background-color: #eceaea;">REGIONAL</th>
-                    <th style="width:2%;height:40px;background-color: #eceaea;">DISTRITAL</th>
-                    <th style="width:2%;height:40px;background-color: #eceaea;">PROGRAMA</th>
-                    <th style="width:2%;height:40px;background-color: #eceaea;">DESCRIPCION</th>
-                    <th style="width:2%;height:40px;background-color: #eceaea;">GESTION</th>
-                    <th style="width:2%;height:40px;background-color: #eceaea;">GASTO CORRIENTE / PROYECTO DE INVERSION</th>
-                    
-                    <th style="width:2%;background-color: #eceaea;">PARTIDA</th>
-                    <th style="width:20%;background-color: #eceaea;">REQUERIMIENTO</th>
-                    <th style="width:5%;background-color: #eceaea;">UNIDAD DE MEDIDA</th>
-                    <th style="width:3%;background-color: #eceaea;">CANTIDAD</th>
-                    <th style="width:5%;background-color: #eceaea;">PRECIO</th>
-                    <th style="width:5%;background-color: #eceaea;">COSTO TOTAL</th>
-                    <th style="width:5%;background-color: #eceaea;">OBSERVACI&Oacute;N</th>
-                    <th style="width:5%;background-color: #eceaea;">GESTION</th>
-                    <th style="width:5%;background-color: #eceaea;">FECHA</th>
-                    <th style="width:5%;background-color: #eceaea;">INS. CODIGO</th>
-                  </tr>
-              </thead>
-            <tbody>';
-            foreach ($insumos as $row){
-              $tabla.='
-              <tr>
-                <td>'.strtoupper($row['dep_departamento']).'</td>
-                <td>'.strtoupper($row['dist_distrital']).'</td>
-                <td>'.$row['aper_programa'].''.$row['aper_proyecto'].''.$row['aper_actividad'].'</td>
-                <td>'.strtoupper($row['aper_descripcion']).'</td>
-                <td>'.$row['aper_gestion'].'</td>
-                <td>'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].'</td>
-
-                <td>'.$row['par_codigo'].'</td>
-                <td>'.strtoupper($row['ins_detalle']).'</td>
-                <td>'.$row['ins_unidad_medida'].'</td>
-                <td>'.round($row['ins_cant_requerida'],2).'</td>
-                <td>'.round($row['ins_costo_unitario'],2).'</td>
-                <td>'.round($row['ins_costo_total'],2).'</td>
-                <td>'.strtoupper($row['ins_observacion']).'</td>
-                <td>'.$row['ins_gestion'].'</td>
-                <td>'.$row['ins_fecha_requerimiento'].'</td>
-                <td>'.$row['ins_codigo'].'</td>
-              </tr>';
-            }
-            $tabla.='
-            </tbody>
-          </table>';*/
-
-
-/*header('Content-type: application/vnd.ms-excel');
-      header("Content-Disposition: attachment; filename=CONSOLIDADO_$fecha.xls"); //Indica el nombre del archivo resultante
-      header("Pragma: no-cache");
-      header("Expires: 0");
-      echo "";*/
-
-     // echo $tabla;
-
-
     }
 
 
@@ -235,7 +168,7 @@ class Cseguimiento extends CI_Controller {
           <tbody>';
             $nro=0;
             foreach($proyectos as $row){
-              $componentes=$this->model_componente->lista_subactividad($row['proy_id']);
+              $componentes=$this->model_componente->lista_UnidadesResponsables($row['proy_id']);
               $temp_inicial=$this->model_insumo->temporalidad_inicial_total_unidad($row['proy_id']); /// temporalidad inicial
               $nro++;
               $tabla.='
@@ -243,7 +176,7 @@ class Cseguimiento extends CI_Controller {
                   <td title='.$row['proy_id'].'><center>'.$nro.'</center></td>
                   <td align=center bgcolor="#deebfb">';
                   foreach($componentes as $rowc){
-                  if(count($this->model_producto->list_prod($rowc['com_id']))!=0){
+                  if(count($this->model_producto->lista_productos($rowc['com_id']))!=0){
                     $tabla.='
                       <a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">
                         REGISTRAR EJECUCIÓN '.$this->verif_mes[2].' / '.$this->gestion.'

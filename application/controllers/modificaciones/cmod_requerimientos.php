@@ -392,17 +392,18 @@ class Cmod_requerimientos extends CI_Controller {
 
                 <!-- Tabla Estilizada -->
                 <div class="table-responsive" align=center>
-                    <table class="table table-hover table-striped table-bordered" id="table" style="width:70%; font-size:14px;">
+                    <table class="table table-hover table-striped table-bordered" id="table" style="width:80%; font-size:14px;">
                         <thead>
                             <tr style="background-color: #155d54; color: #ffffff;">
                                 <th class="text-center" style="background-color: #155d54;">PARTIDA</th>
                                 <th class="text-center" style="background-color: #155d54;">PPTO. ASIGNADO</th>
                                 <th class="text-center" style="background-color: #155d54;">MONTO A MODIFICAR</th>
                                 <th class="text-center" style="background-color: #155d54;">PPTO TOTAL</th>
+                                <th class="text-center" style="width: 5%;background-color: #155d54;">GUARDAR</th>
                                 <th class="text-center" style="background-color: #155d54;">PPTO. REVERTIDO</th>
                                 <th class="text-center" style="background-color: #155d54;">PPTO. TOTAL REVERTIDO</th>
-                                <th class="text-center" style="width: 5%;">SALDO</th>
-                                <th class="text-center" style="width: 5%;">ELIMINAR</th>
+                                <th class="text-center" style="width: 5%;background-color: #155d54;">GUARDAR REV.</th>
+                                <th class="text-center" style="width: 5%;background-color: #155d54;">ELIMINAR</th>
                             </tr>
                         </thead>
                         <tbody>';
@@ -420,7 +421,12 @@ class Cmod_requerimientos extends CI_Controller {
                               <td class="text-right" style="color: #007bff; font-weight: bold;">
                                   <div id="total_asignado'.$id.'">0.00</div>
                               </td>
-
+                              <!-- Botones de Acción con data-id -->
+                              <td class="text-center">
+                                  <button class="btn btn-default btn-sm btn-guardar" title="Registrar" data-id="'.$id.'">
+                                      <i class="fa fa-save text-primary"></i>
+                                  </button>
+                              </td>
                               <!-- Input para Revertido -->
                               <td class="text-right">
                                   <input type="number" class="form-control val-rev" data-id="'.$id.'" id="ppto_rev'.$id.'" value="0" step="0.01">
@@ -431,7 +437,7 @@ class Cmod_requerimientos extends CI_Controller {
 
                               <!-- Botones de Acción con data-id -->
                               <td class="text-center">
-                                  <button class="btn btn-default btn-sm btn-guardar" title="Registrar" data-id="'.$id.'">
+                                  <button class="btn btn-default btn-sm btn-guardar_rev" title="Registrar" data-id="'.$id.'">
                                       <i class="fa fa-save text-primary"></i>
                                   </button>
                               </td>
@@ -441,7 +447,7 @@ class Cmod_requerimientos extends CI_Controller {
                                   </button>
                               </td>
                           </tr>';
-                      }
+                        }
                         $tabla.='
                         </tbody>
                     </table>
