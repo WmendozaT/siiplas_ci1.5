@@ -334,6 +334,8 @@ class Creporte extends CI_Controller {
 
     //// REPORTE FORMULARIO POA N 4 - CONSOLIDADO POA 2026 (vigente)
     public function reporte_formulario4_consolidado($proy_id){
+        ini_set('memory_limit', '-1');
+        set_time_limit(0);
         $tabla='';
         $data['mes'] = $this->mes_nombre();
         $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO

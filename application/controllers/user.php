@@ -844,12 +844,13 @@ class User extends CI_Controller{
                     <?php
                 break;
             case '10':
+            $mod=$this->model_configuracion->get_modulos(10); //// Diagnostico para PEI
                 $enlace = '
                     <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/admin/dm/8/"  onclick="reporte_internos()" class="jarvismetro-tile big-cubes bg-color-greenLight">
+                        <a href="'.base_url().'index.php/Diagnostico_pei"  onclick="reporte_internos()" class="jarvismetro-tile big-cubes bg-color-greenLight">
                         <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/calidad.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">CONTROL DE CALIDAD</h1>
+                            <img class="img-circle" src="'.base_url().'assets/img/proyectos.png" style="margin-left:0px; width: 95px"/>
+                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
                         </div>
                         </a>
                     </div>';

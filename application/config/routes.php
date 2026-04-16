@@ -622,14 +622,6 @@ $route['admin/partidas_del']='mantenimiento/partidas/del_par';// vista partidas 
 //--------------------------- CONF. PROYECTOS DE INVERSIÓN ----------------------//
 $route['proy_inversion']='mantenimiento/cconf_pinversion/list_proyectos';// Lista Proyectos de Inversion
 $route['proy_ver_fases/(:any)']='mantenimiento/cconf_pinversion/ver_fases/$1';// Ver Fases del Proyecto
-//$route['mnt/activar_fase']='mantenimiento/cconf_pinversion/activar_fase';// Lista Proyectos de Inversion
-
-//$route['ver_consolidado/(:any)']='mantenimiento/cconf_pinversion/consolidado_temporalidad/$1/$2';// Consolidado de Temporalidad - Programado,Ejecutado (EVALUACION)
-
-//--------------------------- MANTENIMIENTO EDICIONES ----------------------//
-//$route['ediciones']='mantenimiento/cediciones/menu_ediciones';// Menu de Ediciones- Certificaciones-Modificaciones
-//$route['rep_ediciones/(:any)']='mantenimiento/cediciones/rep_ediciones/$1';// Exportar PDF
-
 
 //--------------------------- MANTENIMIENTO AJUSTES AL SISTEMA ----------------------//
 $route['ediciones']='mantenimiento/cajustes/menu_ajustes';// Para los ajustes que se necesite
@@ -700,5 +692,7 @@ $route['seg_proyectos'] = 'reporte_ejecucion_proyectos/creportejecucion_pi/menu_
 $route['cns_inversion'] = 'reporte_ejecucion_proyectos/consulta_pi/menu_pi'; ///// Menu Consulta Proyectos de Inversion
 $route['reporte_ficha_tecnica_pinversion/(:any)'] = 'reporte_ejecucion_proyectos/consulta_pi/ficha_tecnica_pinversion/$1'; ///// Generar Reporte PDF Ficha Tecnica de
 
-//// MODULO DE CONSULTAS PARA LAS GERENCIAS, ADMINISTRACIONES PARA SUPERVISAR LOS PROYECTOS DE INVERSION
-//$route['ejecucion_proyectos_inversion'] = 'reporte_ejecucion_proyectos/creportejecucion_pi/ejecucion_proyectos'; ///// Consolidado de Proyectos de Inversion
+//// ====== DIAGNOSTICO PEI
+$route['Diagnostico_pei'] = 'Cdiagnostico_pei/CDiagnostico_pei/diagnostico_principal'; ///// Principal formulario de Diagnosticos
+
+
