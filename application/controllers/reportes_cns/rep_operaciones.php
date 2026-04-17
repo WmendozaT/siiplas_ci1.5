@@ -10,7 +10,6 @@ class Rep_operaciones extends CI_Controller {
         $this->load->model('programacion/model_proyecto');
         $this->load->model('programacion/model_componente');
         $this->load->model('programacion/model_producto');
-        $this->load->model('programacion/model_actividad');
         $this->load->model('mantenimiento/model_estructura_org');
         $this->load->model('mantenimiento/model_ptto_sigep');
         $this->load->model('mestrategico/model_objetivoregion');

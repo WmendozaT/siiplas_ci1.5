@@ -28,7 +28,8 @@ class User extends CI_Controller{
         $this->dep_id = $this->session->userData('dep_id');
         $this->rol = $this->session->userData('rol_id');
         $this->dist_tp = $this->session->userData('dist_tp');
-        $this->fun_id = $this->session->userData('fun_id'); /// 592 REG LA PAZ
+        $this->fun_id = $this->session->userData('fun_id'); ///
+        $this->conf_pei = $this->session->userData('conf_pei'); /// Conf Pei
 
         $this->modulo = $this->session->userdata('modulos');
         $this->tp_adm = $this->session->userdata("tp_adm");
@@ -218,10 +219,465 @@ class User extends CI_Controller{
     }
 
 
-    /*-------------- DASHBOARD ---------------*/
+
+    /// ====== DASDHBOARD ADMINISTRATIVO 2026
     public function dashboard_index(){
         if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
-            $data['vector_menus'] = $this->menu_principal_roles(); //// MENU SEGUN EL ROL DEL USUARIO
+            $data['menu_disponible'] = $this->dashboard->menu_disponibles_administrativo(); //// MENU SEGUN EL ROL DEL USUARIO
+            $data['gestiones']=$this->list_gestiones();
+
+            $data['cabecera']='';
+            $data['cabecera'].='<div class="container">
+                        <div class="navbar-header">
+                          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                          </button>
+                          <a class="navbar-brand" href="#"><font color="#1c7368"><b>'.$this->session->userdata('name').'</b></font></a>
+                        </div>
+                        <div class="navbar-collapse collapse">
+                          <ul class="nav navbar-nav">
+                            <li class="active"><a href="#"><b>Home</b></a></li>';
+                            if($this->tp_adm==1){
+                                $data['cabecera'].='
+                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" title="CAMBIAR GESTI&Oacute;N">Gesti&oacute;n</a></li>
+                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>
+                                <li><a href="#" data-toggle="modal" data-target="#modal_seguimiento_nacional" title="SEGUIMIENTO POA NACIONAL" class="seg_uni"><b>Seguimiento POA NACIONAL</b></a></li>';
+                            }
+                            else{
+                                $data['cabecera'].='<li><a href="#" data-toggle="modal" data-target="#modal_seguimiento" id="<?php echo $dist_id; ?>" title="SEGUIMIENTO POA" class="seg_uni"><b>Seguimiento POA</b></a></li>';
+                            }
+
+                            $data['cabecera'].='
+                            <li class="dropdown">
+                              <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Descarga de Archivos / Documentos">Descargas <b class="caret"></b></a>
+                              <ul class="dropdown-menu">
+                                <div style="color:blue; text-align: center;"><b>ANTEPROYECTO POA 2026</b></div>
+                                <li><a href="'.base_url().'assets/video/FORMULARIOS_APROY2026/Plan_de_Trabajo_y_Directrices_Formulacion_POA_2026.pdf" style="cursor: pointer;" download><b>1.- Plan de Trabajo y Directrices Formulacion poa 2026</b></a></li>
+                              </ul>
+                            </li>
+                          </ul>
+                          <ul class="nav navbar-nav navbar-right">
+                            <li class="active"><a href="'.base_url().'index.php/admin/logout" title="CERRAR SESI&Oacute;N"><b>SALIR</b></a></li>
+                          </ul>
+                        </div>
+                    </div>';
+
+
+            $data['titulo']='';
+            $data['titulo'].='
+            <input name="base" type="hidden" value="'.base_url().'">
+            <div class="row box-green1">
+                <div class="col-md-8">
+                  <h3>BIENVENIDO : '.$this->session->userdata('funcionario').'</h3>
+                  <h4>'.$this->tp_resp().'</h4>
+                  <h4><b>CARGO : </b>'.$this->session->userdata("cargo").'</h4>
+                  <h4><b>MES / GESTI&Oacute;N VIGENTE : '.$this->verif_mes[2].' / '.$this->gestion.'</b></h4>
+                  <h4><b>TRIMESTRE VIGENTE : </b>'.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</h4>
+                </div>
+                <div class="col-md-4" align="center">
+                  <img src="'.base_url('assets/img_v1.1/moni.png').'" style="width:85%;">
+                </div>
+            </div>';
+
+            $data['mensaje_alertas']=$this->mensaje_sistema(); 
+            
+            $gestiones=$this->list_gestiones();
+            $cambiar_gestion='';
+            $cambiar_gestion.='
+                <div class="modal fade" id="modal_nuevo_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-body">
+                        <form action="'.site_url().'/cambiar_session" id="form_nuevo" name="form_nuevo" class="form-horizontal" method="post">
+                            <h3 class="alert alert-info"><center>CAMBIAR GESTI&Oacute;N - '.$this->gestion.'</center></h3>   
+                            <fieldset>
+                              <div class="form-group">
+                                  <div class="form-group">
+                                    <label class="col-md-2 control-label">GESTI&Oacute;N</label>
+                                    <div class="col-md-10">
+                                        '.$gestiones.'
+                                    </div>
+                                  </div>
+                              </div>
+                            </fieldset>                    
+                            <div class="form-actions">
+                                <div class="row">
+                                  <div class="col-md-12" align="right">
+                                    <button class="btn btn-default" data-dismiss="modal" id="cl" title="CANCELAR">CANCELAR</button>
+                                    <button type="button" name="subir_form" id="subir_form" class="btn btn-info" >CAMBIAR GESTI&Oacute;N</button>
+                                    <center><img id="load" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="50" height="50"></center>
+                                  </div>
+                                </div>
+                            </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>';
+            $data['modal_cambiar_gestion']=$cambiar_gestion;
+
+
+            $cambiar_trimestre='';
+            $cambiar_trimestre.='
+            <div class="modal fade" id="modal_nuevo_tr" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <form action="'.site_url().'/cambiar_session_trimestre" id="form_trimestre" name="form_trimestre" class="form-horizontal" method="post">
+                        <h4 class="alert alert-info"><center>CAMBIAR TRIMESTRE - '.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</center></h4>   
+                        <fieldset>
+                          <div class="form-group">
+                              <div class="form-group">
+                                  <label class="col-md-2 control-label">TRIMESTRE</label>
+                                  <div class="col-md-10">
+                                      '.$this->list_trimestre().'
+                                  </div>
+                              </div>
+                          </div>
+                        </fieldset>                    
+                        <div class="form-actions">
+                            <div class="row">
+                              <div class="col-md-12" align="right">
+                                <button class="btn btn-default" data-dismiss="modal" id="cl" title="CANCELAR">CANCELAR</button>
+                                <button type="button" name="subir_formt" id="subir_formt" class="btn btn-info" >CAMBIAR TRIMESTRE</button>
+                                <center><img id="loadt" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="50" height="50"></center>
+                              </div>
+                            </div>
+                        </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>';
+            $data['cambiar_trimestre']=$cambiar_trimestre;
+
+
+
+       $data['seguimiento_poa']='';
+       if($this->session->userdata('estado_notificaciones')==1){
+            $dia_cambios = 17;
+            $hoy = date("j");
+            if ($this->gestion>2025 & ($hoy == $dia_cambios)) {
+               if($this->dep_id==2){ //// Exclusivo para la Regional LA paz
+                    $nro_poa=count($this->model_seguimientopoa->get_seguimiento_poa_mes_regional($this->dep_id,$this->verif_mes[1],$this->gestion));;
+                }
+                else{ /// Listado normal
+                    $nro_poa=count($this->model_seguimientopoa->get_seguimiento_poa_mes_distrital($this->dist_id,$this->verif_mes[1],$this->gestion));
+                }
+                
+                if($nro_poa!=0){
+                    $data['seguimiento_poa']=$this->mensaje_ejecucion_operaciones_mes($nro_poa);
+                }
+            }
+            else{
+                $data['seguimiento_poa']='';
+            }
+        }
+
+                
+
+
+
+
+            $modal_notificacion_form4='';
+            $modal_notificacion_form4.='
+                <div class="modal fade" id="modal_form4_mes" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document" id="mdialTamanio">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                      </div>
+                      <div class="modal-body" align="center">
+                        <div id="operaciones"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>';
+            $data['modal_notificacion_form4']=$modal_notificacion_form4;
+
+            $modal_notificacion_form4_pi='';
+            $modal_notificacion_form4_pi.='
+            <div class="modal fade" id="modal_form5_pi_mes" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document" id="mdialTamanio">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                  </div>
+                  <div class="modal-body" align="center">
+                    <div id="pinversion"></div>
+                  </div>
+                </div>
+              </div>
+            </div>';
+            $data['modal_notificacion_form4_pi']=$modal_notificacion_form4_pi;
+
+
+            $get_unidades_seguimiento_poa_mensual='';
+            $get_unidades_seguimiento_poa_mensual.='
+            <div class="modal fade" id="modal_seguimiento" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document" id="mdialTamanio_saldos">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                  </div>
+                  <div class="modal-body" align="center">
+                    <div id="seg"></div>
+                  </div>
+                </div>
+              </div>
+            </div>';
+            $data['get_unidades_seguimiento_poa_mensual']=$get_unidades_seguimiento_poa_mensual;
+
+
+            $get_unidades_seguimiento_poa_mensual_nacional='';
+            $get_unidades_seguimiento_poa_mensual_nacional.='
+            <div class="modal fade" id="modal_respuesta" tabindex="-1" role="dialog" aria-labelledby="respuestaModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document" id="mdialTamanio_saldos"> <!-- Modal grande -->
+                      <div class="modal-content">
+                          <div class="modal-body">
+                              <div id="responsee"></div> <!-- Div para mostrar la respuesta -->
+                          </div>
+                          <div class="modal-footer">
+                              <div id="botones"></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>';
+            $data['get_unidades_seguimiento_poa_mensual_nacional']=$get_unidades_seguimiento_poa_mensual_nacional;
+
+
+
+
+
+
+            $distritales=$this->model_proyecto->lista_distritales();
+            $select_distrital='';
+            $select_distrital.='
+            <div class="modal fade" id="modal_seguimiento_nacional" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <form id="form_seg" name="form_seg" class="form-horizontal" method="post">
+                        <h3 class="alert alert-info"><center>SEGUIMIENTO POA - '.$this->verif_mes[2].' / '.$this->gestion.'</center></h3>   
+                        <fieldset>
+                          <div class="form-group">
+                            <div class="col-md-12">
+                              <select name="seg_reg" id="seg_reg" class="form-control" required>
+                                <option value="0">seleccionar Distrital...</option>';
+                                foreach($distritales as $row){
+                                    $select_distrital.='<option value="'.$row['dist_id'].'">'.strtoupper($row['dist_distrital']).'</option>';
+                                }
+                            $select_distrital.='
+                              </select>
+                            </div>
+                          </div>
+                        </fieldset>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>';
+            $data['select_distrital']=$select_distrital;
+
+            //// ------ SOLICITUDES DE PASSWORD
+            $data['solicitudes_pass']='';
+            $solicitudes_password=$this->model_funcionario->listado_solicitud_contraseñas();
+            if(count($solicitudes_password)!=0 & $this->fun_id==399){
+                $data['solicitudes_pass']='
+                <input name="base" type="hidden" value="'.base_url().'">
+                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
+                        <div class="modal-dialog modal-login" id="mdialTamanio_psw">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 style="color:blue; text-align:center"><b>Atención de Solicitudes de Contraseña</b></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div style="color:blue; font-size:10px;">Tienes ('.count($solicitudes_password).') Solicitudes por atender..</div>
+                                    <table class="table table-bordered">
+                                    <thead>
+                                      <tr title="" >
+                                        <th scope="col" style="text-align:center;">#</th>
+                                        <th scope="col" style="text-align:center;">TRABAJADOR</th>
+                                        <th scope="col" style="text-align:center;">USUARIO</th>
+                                        <th scope="col" style="text-align:center;">DISTRITAL</th>
+                                        <th scope="col" style="text-align:center;">CORREO ELECTRONICO</th>
+                                        <th scope="col" style="text-align:center;"></th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>';
+                                    $nro=0;
+                                    foreach($solicitudes_password as $row){
+                                        $nro++;
+                                        $data['solicitudes_pass'].='
+                                        <tr>
+                                            <td>'.$nro.'</td>
+                                            <td>'.$row['fun_nombre'].' '.$row['fun_paterno'].' '.$row['fun_materno'].'</td>
+                                            <td>'.$row['fun_usuario'].'</td>
+                                            <td>'.$row['dist_distrital'].'</td>
+                                            <td><b>'.$row['email'].'</b></td>
+                                            <td>
+                                                <a href="javascript:abreVentana(\''.site_url("").'/solpassw/'.$row['fun_id'].'\');" class="btn btn-default" title="GENERAR REPORTE"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>USUARIO</b></font></a>
+                                            </td>
+                                        </tr>';
+                                    }
+                                    $data['solicitudes_pass'].='
+                                    </tbody>
+                                    </table>                                  
+                                </div>
+                            </div>
+                        </div>
+                    </div>';
+            }
+
+
+            $data['popup_credenciales']='';
+            //// ------ CREDENCIALES (INACTIVO)
+            if(($this->conf_credenciales==1 || $this->fun_credencial==0) & $this->fun_id!=399){
+                $data['popup_credenciales']='
+                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
+                        <div class="modal-dialog modal-login" id="mdialTamanio_saldos">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 style="color:green; text-align:center"><b>ACTUALIZACIÓN DE CREDENCIALES DE ACCESO AL SIIPLAS.</b></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-success" role="alert">
+                                        <p>Estimad@: <b>'.$this->session->userdata('funcionario').'</b>, para garantizar la seguridad de información, se implemento nuevas medidas de seguridad para proteger su cuenta de acceso al Sistema de Planificación <b>SIIPLAS.</b></p><br>
+                                        <p>Como parte de estas medidas es necesario que actualice sus Credenciales de Acceso. Esta acción es parte de nuestras politicas vigente en el <b>Plan de Seguridad de la Información PISI.</p>
+                                        <hr>
+
+                                        <div style="font-size:15px;"><b>POLITICA DE GESTIÓN DE CONTRASEÑAS - Version 1.1</b></div>
+                                        <br>
+                                 
+                                      <ul>
+                                        <li>La contraseña debe estar compuesta por una combinación de letras mayúsculas,minúsculas, números y símbolos especiales como ser: “~ ! @ # $ % ^ & * ( ) _ + - = { } | [ ] \ : " ;  < > ? , . /</li>
+                                        <li>Toda contraseña de usuarios internos en servicios, sistemas y/o aplicaciones institucionales de la CNS, debe tener una longitud mínima de doce (12) caracteres alfanuméricos y símbolos especiales.</li>
+                                        <li>Se debe implementar un historial de contraseñas en todo sistema institucional de la CNS que haga uso de credenciales de acceso, en el que se guarden las contraseñas antiguas para que los usuarios no reutilicen las mismas.</li>
+                                      </ul>
+
+                                    </div>
+                                    
+                                </div>
+                                <div class="modal-footer">
+                                <a href="'.base_url().'index.php/admin/logout" class="btn btn-danger">Cerrar sesion</a>
+                                <a href="'.base_url().'index.php/admin/mod_contra" class="btn btn-success">Actualizar ahora</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>';
+            }
+
+
+            ///------- Verificando Saldos
+            $data['popup_saldos']='';
+             if($this->conf_ajuste_poa==1){
+                if($this->verif_saldos_disponibles_distrital($this->dep_id,$this->dist_id)==1 & $this->dep_id!=10 & $this->gestion>2025){
+                
+                    $data['popup_saldos']='
+                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
+                        <div class="modal-dialog modal-login" id="mdialTamanio_saldos">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 style="color:red"><b>AJUSTAR DISTRIBUCION DE SALDOS - GESTIÓN '.$this->gestion.' !!!</b></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-danger" role="alert">
+                                      <p>Hola: <b>'.$this->session->userdata('funcionario').'</b>, la <b>'.strtoupper($ddep[0]['dist_distrital']).'</b> a la fecha presenta saldos en su POA '.$this->gestion.' que deben ser ajustados y/o inscritos a traves de Modificaciones POA, mientras no se encuentre ajustado no podra realizar <b>CERTIFICACIONES POA.</b></p>
+                                    </div>
+                                    '.$this->lista_unidades_con_saldo($this->dep_id,$this->dist_id).'
+                                </div>
+                                <div class="modal-footer">
+                                <a href="'.base_url().'index.php/admin/logout" class="btn btn-danger">salir de la sesion</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>';
+                }
+            }
+
+
+            $this->load->view('admin/dashboard',$data);
+            
+        } else{
+            $this->session->sess_destroy();
+            redirect('/','refresh');
+        }
+    }
+
+
+
+    /// ====== DASDHBOARD ADMINISTRATIVO 2026 a borrar
+    public function dashboard_index2(){
+        if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
+            $data['vector_menus'] = $this->dashboard->menu_disponibles_administrativo(); //// MENU SEGUN EL ROL DEL USUARIO
+            $cabecera='';
+            $cabecera.='<div class="container">
+                        <div class="navbar-header">
+                          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                          </button>
+                          <a class="navbar-brand" href="#"><font color="#1c7368"><b>'.$this->session->userdata('name').'</b></font></a>
+                        </div>
+                        <div class="navbar-collapse collapse">
+                          <ul class="nav navbar-nav">
+                            <li class="active"><a href="#"><b>Home</b></a></li>';
+                            if($this->tp_adm==1){
+                                $cabecera.='
+                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" title="CAMBIAR GESTI&Oacute;N">Gesti&oacute;n</a></li>
+                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>
+                                <li><a href="#" data-toggle="modal" data-target="#modal_seguimiento_nacional" title="SEGUIMIENTO POA NACIONAL" class="seg_uni"><b>Seguimiento POA NACIONAL</b></a></li>';
+                            }
+                            else{
+                                $cabecera.='<li><a href="#" data-toggle="modal" data-target="#modal_seguimiento" id="<?php echo $dist_id; ?>" title="SEGUIMIENTO POA" class="seg_uni"><b>Seguimiento POA</b></a></li>';
+                            }
+
+                            $cabecera.='
+                            <li class="dropdown">
+                              <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Descarga de Archivos / Documentos">Descargas <b class="caret"></b></a>
+                              <ul class="dropdown-menu">
+                                <div style="color:blue; text-align: center;"><b>ANTEPROYECTO POA 2026</b></div>
+                                <li><a href="'.base_url().'assets/video/FORMULARIOS_APROY2026/Plan_de_Trabajo_y_Directrices_Formulacion_POA_2026.pdf" style="cursor: pointer;" download><b>1.- Plan de Trabajo y Directrices Formulacion poa 2026</b></a></li>
+                              </ul>
+                            </li>
+                          </ul>
+                          <ul class="nav navbar-nav navbar-right">
+                            <li class="active"><a href="'.base_url().'index.php/admin/logout" title="CERRAR SESI&Oacute;N"><b>SALIR</b></a></li>
+                          </ul>
+                        </div>
+                    </div>';
+
+
+            $titulo='';
+            $titulo.='
+            <div class="row box-green1">
+                <div class="col-md-8">
+                  <h3>BIENVENIDO : '.$this->session->userdata('funcionario').'</h3>
+                  <h4>'.$this->tp_resp().'</h4>
+                  <h4><b>CARGO : </b>'.$this->session->userdata("cargo").'</h4>
+                  <h4><b>MES / GESTI&Oacute;N VIGENTE : '.$this->verif_mes[2].' / '.$this->gestion.'</b></h4>
+                  <h4><b>TRIMESTRE VIGENTE : </b>'.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</h4>
+                </div>
+                <div class="col-md-4" align="center">
+                  <img src="'.base_url('assets/img_v1.1/moni.png').'" style="width:85%;">
+                </div>
+            </div>';
+
+            $mensaje_alertas=$this->mensaje_sistema(); 
+                            
+
+
+
+
+
+
+
+
             $data['resp']=$this->session->userdata('funcionario');
             $data['dist_id']=$this->dist_id;
             $data['res_dep']=$this->tp_resp();
@@ -394,7 +850,7 @@ class User extends CI_Controller{
                 $data['mensaje']=$this->mensaje_sistema();   
 
                 ///===================== CONF NOTIFICACION POA =========================
-                $dia_cambios = 12;
+                $dia_cambios = 17;
                 $hoy = date("j");
 
                 if ($this->gestion>2025 & ($hoy == $dia_cambios)) {
@@ -622,273 +1078,7 @@ class User extends CI_Controller{
     }
 
 
-
-    /*------------- MENU PRINCIPAL -------------*/
-    public function menu_principal_roles(){
-        $fun_id = $this->session->userdata('fun_id');
-        $menus = $this->model_configuracion->modulos($this->gestion);
-        //$menus = $this->model_control_menus->menu_segun_roles($fun_id);
-        
-        $vector;
-        $n = 0;
-        if(count($menus)!=0){
-            if($this->tp_adm==1){
-                $menus=$this->model_configuracion->list_modulos();
-                foreach ($menus as $fila) {
-                    $vector[$n] = $this->html_menu_opciones($fila['mod_id']);
-                    $n++;
-                }
-            }
-            else{
-                $rol=$this->model_funcionario->get_rol($fun_id);
-                if($rol[0]['r_id']==10){ /// REPORTES POA
-                    $vector[0]=
-                    '<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/consulta/poa_ofc"  onclick="gasto_corriente_ofc()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/proyectos.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;"><b>POA OFICINA CENTRAL / '.$this->gestion.'</b></h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function gasto_corriente_ofc(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                    $vector[1]=
-                    '<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/consulta/mis_operaciones"  onclick="gasto_corriente()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/impresora.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;"><b>POA NACIONAL/ '.$this->gestion.'</b></h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function gasto_corriente(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                    $vector[2]=
-                    '<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/ejecucion_proyectos_inversion"  onclick="inversion()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/gerencia.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;"><b>PROYECTOS DE INVERSIÓN / '.$this->gestion.'</b></h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function inversion(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                }
-                elseif ($rol[0]['r_id']==11) { /// PARA EJECUCION DE PROYECTOS DE INVERSION
-                    $vector[0]=
-                    '<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/ejec_fin_pi" onclick="inversion()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/proyectos.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">EJECUCIÓN INVERSION '.$this->gestion.'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function inversion(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                }
-                else{
-                    foreach ($menus as $fila) {
-                        $vector[$n] = $this->html_menu_opciones($fila['mod_id']);
-                        $n++;
-                    }
-                }
-            }
-
-        }
-        else{
-            if($fun_id==399){
-                $vector[0]=
-                    '<div class="alert alert-danger" role="alert" align=center>
-                      NO EXISTEN MODULOS HABILITADOS PARA LA GESTI&Oacute;N '.$this->gestion.'
-                    </div>
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/Configuracion" onclick="mantenimiento()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/mantenimiento1.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">MANTENIMIENTO</h1>
-                        </div>
-                        </a>
-                    </div>';
-            }
-            else{
-                $vector[0]=
-                '<div class="alert alert-danger" role="alert" align=center>
-                    NO EXISTEN MODULOS HABILITADOS PARA LA GESTI&Oacute;N '.$this->gestion.', CONTACTESE CON EL DEPARTAMENTO NACIONAL DE PLANIFICACI&Oacute;N
-                </div>';
-            }
-            
-        }
-        
-        return $vector;
-    }
-
-    /*------------- FORMA TABLA MENU SISTEMA ---------------*/
-    public function html_menu_opciones($o_filtro){
-        switch ($o_filtro) {
-            case '1':
-                $mod=$this->model_configuracion->get_modulos(1);
-                $enlace = '
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/me/mis_ogestion" id="myBtn" onclick="pei()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/proyectos.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function pei(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                break;
-            case '2':
-                $mod=$this->model_configuracion->get_modulos(2);
-                $enlace = '
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/admin/proy/list_proy" id="myBtn2" onclick="programacion()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/programacion.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function programacion(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                break;
-            case '3':
-                $mod=$this->model_configuracion->get_modulos(3);
-                $enlace = '
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/mod/list_top" id="myBtn3" onclick="modificacion()"  class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/registro1.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function modificacion(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                break;
-            case '4':
-                $mod=$this->model_configuracion->get_modulos(4);
-                $enlace = '
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/eval/mis_operaciones" id="myBtn3" onclick="evaluacion()"  class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/trabajo_social.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function evaluacion(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                break;
-            case '7':
-                $mod=$this->model_configuracion->get_modulos(7);
-                $enlace = '
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/rep/list_operaciones_req" id="myBtn6" onclick="reporte()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/impresora.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function reporte(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                break;
-            case '10':
-            $mod=$this->model_configuracion->get_modulos(10); //// Diagnostico para PEI
-                $enlace = '
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/Diagnostico_pei"  onclick="reporte_internos()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/proyectos.png" style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function reporte_internos(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                break;
-            case '9':
-                $mod=$this->model_configuracion->get_modulos(9);
-                $enlace = '
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <a href="'.base_url().'index.php/Configuracion" onclick="mantenimiento()" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/mantenimiento1.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;">'.$mod[0]['mod_descripcion'].'</h1>
-                        </div>
-                        </a>
-                    </div>';
-                    ?>
-                    <script>
-                      function mantenimiento(){
-                        document.getElementById("load").style.display = "block";
-                      }
-                    </script>
-                    <?php
-                break;
-            default:
-                $enlace = '';
-                break;
-        }
-        return $enlace;
-    }
-
-    /// DASHBOARD SEGUIMIENTO POA (UNIDAD ADMINISTRATIVA / ESTABLECIMIENTO DE SALUD)
+    /// DASHBOARD SEGUIMIENTO POA (UNIDAD ADMINISTRATIVA / ESTABLECIMIENTO DE SALUD) 2026
     public function dashboard_seguimientopoa(){
         if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
         $data['dasboard']=$this->dashboard->dashboard_seguimientopoa();
@@ -1041,7 +1231,7 @@ class User extends CI_Controller{
         $gestion = $this->Users_model->obtener_gestion();
         $entidad = $this->Users_model->get_entidad($gestion[0]['ide']);
         $conf = $this->model_configuracion->get_configuracion();
-        $modulos = $this->model_configuracion->modulos($conf[0]['ide']);
+        //$modulos = $this->model_configuracion->modulos($conf[0]['ide']);
         $entidad = $entidad->conf_nombre_entidad;
         $data = array(
             'user_name' => $data[0]['fun_usuario'],
@@ -1060,10 +1250,12 @@ class User extends CI_Controller{
             'name_distrital' => $data[0]['dist_distrital'],
             'dist_tp' => $data[0]['dist_tp'],
             'dep_id' => $data[0]['dep_id'],
+            'conf_pei' => $gestion[0]['conf_pei'], /// Diagnostico Pei
             'gestion' => $gestion[0]['ide'],
             'mes' => $gestion[0]['conf_mes'],
             'conf_ajuste_poa' => $gestion[0]['conf_ajuste_poa'],
             'conf_psw' => $gestion[0]['conf_psw'], /// Credenciales
+
             'estado_notificaciones' => $gestion[0]['conf_poa'], /// Estado para las Notificaciones 0:no activo, 1: Habilitado
             'entidad' => $gestion[0]['conf_nombre_entidad'],
             'trimestre' => $gestion[0]['conf_mes_otro'], /// Trimestre 1,2,3,4
@@ -1083,7 +1275,7 @@ class User extends CI_Controller{
             'img' => base_url().'assets/ifinal/cns_logo.JPG',
            // 'img' => 'assets/ifinal/cns_logo.JPG',
             'mes_actual'=>$this->verif_mes_gestion($gestion[0]['conf_mes']),
-            'modulos' => $modulos,
+           // 'modulos' => $modulos,
             'desc_mes' => $this->mes_texto($gestion[0]['conf_mes']),
             'name' => 'SIIPLAS V1.0',
             'direccion' => 'DEPARTAMENTO NACIONAL DE PLANIFICACI&Oacute;N',

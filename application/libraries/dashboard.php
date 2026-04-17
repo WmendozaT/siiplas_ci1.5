@@ -42,10 +42,9 @@ class Dashboard extends CI_Controller{
 
 
 
- /*----- Login -----*/
+ /*----- Login 2026 -----*/
     public function form_login(){
         $tabla='';
-        
             $captcha= $this->generar_captcha(array(0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R'),4);
             
             $data['cod_captcha']=$captcha;
@@ -416,12 +415,40 @@ class Dashboard extends CI_Controller{
     }
 
 
+    /*----- dashboard Administrativo 2026 -----*/
+    public function dashboard_siiplas(){
+
+    }
 
 
+    /*---- Menu Disponible parte Administrativa --------*/
+    public function menu_disponibles_administrativo(){
+        $menu_disponibles=$this->model_configuracion->modulos_disponibles();
+        $tabla='';
+        $tabla.='<div class="row">';
+        if(count($menu_disponibles)!=0){
+            foreach($menu_disponibles as $row){
+            $tabla.='
+                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                    <a href="'.base_url().'index.php/'.$row['url'].'"  class="jarvismetro-tile big-cubes bg-color-greenLight">
+                    <div class="well1" align="center">
+                        <img class="img-circle" src="'.base_url().''.$row['icono_mod'].'"  style="margin-left:0px; width: 95px"/>
+                        <h1 style="font-size: 11px;"><b>'.$row['mod_descripcion'].'</b></h1>
+                    </div>
+                    </a>
+                </div>';
+            }
+        }
+        else{
+            $tabla.='SIN MODULOS DISPONIBLES';
+        }
+        $tabla.='</div>';
 
+        return $tabla;
+    }
+    
 
-
-    /*----- dashboard seguimiento Administracion/Establecimiento-----*/
+    /*----- dashboard seguimiento Administracion/Establecimiento 2026-----*/
     public function dashboard_seguimientopoa(){
 
             if($this->session->userdata('tp_usuario')==0){ /// Unidad Administrativa

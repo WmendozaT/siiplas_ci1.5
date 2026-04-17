@@ -8,6 +8,7 @@ class Model_configuracion extends CI_Model {
         $this->adm = $this->session->userData('adm');
         $this->dist = $this->session->userData('dist');
         $this->dist_tp = $this->session->userData('dist_tp');
+        $this->tp_adm = $this->session->userdata("tp_adm"); /// tipo de administracion 1: (nacional), 0: (regional/distrital)
     }
 
 
@@ -205,7 +206,7 @@ class Model_configuracion extends CI_Model {
     public function list_modulos(){
        $sql = ' select *
                 from modulo
-                where mod_estado!=\'0\'
+                where mod_estado=\'1\'
                 order by mod_id asc';
         $query = $this->db->query($sql);
         return $query->result_array(); 
@@ -219,6 +220,41 @@ class Model_configuracion extends CI_Model {
         $query = $this->db->query($sql);
         return $query->result_array(); 
     }
+
+    /// Lista de Modulos Habilitados y Disponibles 2026
+    public function modulos_disponibles(){
+        if($this->tp_adm==1){
+            $sql = 'SELECT 
+                    m.*, 
+                    CASE 
+                        WHEN c.mod_id IS NULL THEN 0
+                        ELSE 1
+                    END AS estado_habilitado
+                FROM modulo m
+                LEFT JOIN (
+                    SELECT mod_id 
+                    FROM confi_modulo 
+                    WHERE ide = '.$this->gestion.'
+                ) c ON m.mod_id = c.mod_id
+                WHERE m.mod_estado = 1 and m.rol_id='.$this->rol.'
+                ORDER BY m.mod_id ASC;';
+        }
+        else{
+            $sql = 'SELECT m.*, c.*
+                    FROM modulo m
+                    INNER JOIN confi_modulo c ON m.mod_id = c.mod_id
+                    WHERE c.ide = '.$this->gestion.' 
+                      AND m.mod_estado = 1 and m.rol_id='.$this->rol.'
+                    ORDER BY m.mod_id ASC;';
+        }
+
+       
+        $query = $this->db->query($sql);
+        return $query->result_array(); 
+    }
+
+
+
 
     /*---- Get Modulo ---*/
     public function get_modulos($mod_id){

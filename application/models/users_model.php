@@ -58,48 +58,74 @@ public function __construct()
         return $query->result_array();
 	}
 
+	// public function get_datos_usuario($fun_id){
+    //     $sql = 'select tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.cm_id,tmp.fun_domicilio,tmp.fun_telefono,tmp.fun_estado,
+	// 	tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
+	// 	tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,MIN(tmp.r_id) as rol_id,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm,tmp.r_estado,tmp.sw_pass
+	// 	from (select f.*, r.r_id,r.r_estado
+	// 	from fun_rol r right join (select f.*, u.uni_unidad
+	// 	from (select *
+	// 	from funcionario 
+	// 	where fun_estado = \'1\' or fun_estado = \'2\') f left join unidadorganizacional u
+	// 	on f.uni_id = u.uni_id) f
+	// 	on r.fun_id = f.fun_id
+	// 	order by f.fun_id) tmp
+	// 	Inner Join _distritales as ds On ds.dist_id=tmp.fun_dist
+	// 	where tmp.fun_id = '.$fun_id.'
+	// 	GROUP BY tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.cm_id,tmp.fun_domicilio,tmp.fun_telefono,tmp.fun_estado,
+	// 	tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
+	// 	tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm,tmp.r_estado,tmp.sw_pass';
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
+
 	public function get_datos_usuario($fun_id){
-        $sql = 'select tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.cm_id,tmp.fun_domicilio,tmp.fun_telefono,tmp.fun_estado,
-		tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
-		tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,MIN(tmp.r_id) as rol_id,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm,tmp.r_estado,tmp.sw_pass
-		from (select f.*, r.r_id,r.r_estado
-		from fun_rol r right join (select f.*, u.uni_unidad
-		from (select *
-		from funcionario 
-		where fun_estado = \'1\' or fun_estado = \'2\') f left join unidadorganizacional u
-		on f.uni_id = u.uni_id) f
-		on r.fun_id = f.fun_id
-		order by f.fun_id) tmp
-		Inner Join _distritales as ds On ds.dist_id=tmp.fun_dist
-		where tmp.fun_id = '.$fun_id.'
-		GROUP BY tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.cm_id,tmp.fun_domicilio,tmp.fun_telefono,tmp.fun_estado,
-		tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
-		tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm,tmp.r_estado,tmp.sw_pass';
-        $query = $this->db->query($sql);
+		$sql = 'SELECT 
+			    f.fun_id, f.uni_id, f.car_id, f.fun_nombre, f.fun_ci, f.cm_id, f.fun_domicilio, 
+			    f.fun_telefono, f.fun_estado, f.fun_usuario, f.fun_password, f.fun_paterno, 
+			    f.fun_materno, f.fun_cargo, f.fecha_creacion, f.fun_adm, f.fun_dist, 
+			    u.uni_unidad, 
+			    MIN(r.r_id) AS rol_id, 
+			    ds.dist_id, ds.dep_id, ds.dist_distrital, ds.dist_estado, ds.dist_tp, 
+			    f.tp_adm, r.r_estado, f.sw_pass, f.conf_mod_form4, f.conf_mod_form5, f.conf_mod_ppto,f.conf_cert_poa,f.conf_eval_poa,f.conf_otro,conf_img,conf_pei
+			FROM funcionario f
+			LEFT JOIN unidadorganizacional u ON f.uni_id = u.uni_id
+			LEFT JOIN fun_rol r ON f.fun_id = r.fun_id
+			INNER JOIN _distritales ds ON ds.dist_id = f.fun_dist
+			WHERE f.fun_id = '.$fun_id.' 
+			  AND (f.fun_estado = 1 OR f.fun_estado = 2)
+			GROUP BY 
+			    f.fun_id, f.uni_id, f.car_id, f.fun_nombre, f.fun_ci, f.cm_id, f.fun_domicilio, 
+			    f.fun_telefono, f.fun_estado, f.fun_usuario, f.fun_password, f.fun_paterno, 
+			    f.fun_materno, f.fun_cargo, f.fecha_creacion, f.fun_adm, f.fun_dist, 
+			    u.uni_unidad, ds.dist_id, ds.dep_id, ds.dist_distrital, ds.dist_estado, 
+			    ds.dist_tp, f.tp_adm, r.r_estado, f.sw_pass, f.conf_mod_form4, f.conf_mod_form5, f.conf_mod_ppto,f.conf_cert_poa,f.conf_eval_poa,f.conf_otro,conf_img,conf_pei;';
+		
+		$query = $this->db->query($sql);
         return $query->result_array();
     }
 
 
-    public function get_datos_usuario2($fun_id){
-        $sql = 'select tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.fun_domicilio,tmp.fun_telefono,
-		tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
-		tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,MIN(tmp.r_id) as rol_id,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm
-		from (select f.*, r.r_id
-		from fun_rol r right join (select f.*, u.uni_unidad
-		from (select *
-		from funcionario 
-		where fun_estado = \'1\' or fun_estado = \'2\') f left join unidadorganizacional u
-		on f.uni_id = u.uni_id) f
-		on r.fun_id = f.fun_id
-		order by f.fun_id) tmp
-		Inner Join _distritales as ds On ds.dist_id=tmp.fun_dist
-		where tmp.fun_id = '.$fun_id.'
-		GROUP BY tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.fun_domicilio,tmp.fun_telefono,
-		tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
-		tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    // public function get_datos_usuario2($fun_id){
+    //     $sql = 'select tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.fun_domicilio,tmp.fun_telefono,
+	// 	tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
+	// 	tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,MIN(tmp.r_id) as rol_id,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm
+	// 	from (select f.*, r.r_id
+	// 	from fun_rol r right join (select f.*, u.uni_unidad
+	// 	from (select *
+	// 	from funcionario 
+	// 	where fun_estado = \'1\' or fun_estado = \'2\') f left join unidadorganizacional u
+	// 	on f.uni_id = u.uni_id) f
+	// 	on r.fun_id = f.fun_id
+	// 	order by f.fun_id) tmp
+	// 	Inner Join _distritales as ds On ds.dist_id=tmp.fun_dist
+	// 	where tmp.fun_id = '.$fun_id.'
+	// 	GROUP BY tmp.fun_id,tmp.uni_id,tmp.car_id,tmp.fun_nombre,tmp.fun_ci,tmp.fun_domicilio,tmp.fun_telefono,
+	// 	tmp.fun_usuario,tmp.fun_password,tmp.fun_estado,tmp.fun_paterno,tmp.fun_materno,tmp.fun_cargo,tmp.fecha_creacion,
+	// 	tmp.fun_adm,tmp.fun_dist,tmp.uni_unidad,ds.dist_id,ds.dep_id,ds.dist_distrital,ds.dist_estado,ds.dist_tp,tmp.tp_adm';
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
 
