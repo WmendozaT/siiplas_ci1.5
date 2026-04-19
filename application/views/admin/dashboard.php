@@ -14,35 +14,6 @@
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.core.css" />
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
     <script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
-
-<!--       <style>
-        #mdialTamanio{
-          width: 80% !important;
-        }
-        #mdialTamanio_psw{
-          width: 40% !important;
-        }
-        #mdialTamanio_saldos{
-          width: 65% !important;
-        }
-        table{
-          font-size: 10px;
-          width: 100%;
-          max-width:1550px;;
-          overflow-x: scroll;
-        }
-        th{
-          padding: 1.4px;
-          font-size: 10px;
-        }
-        td{
-          font-size: 10px;
-        }
-        #myModal {
-          background: #000000;
-          opacity:0.9
-        }
-      </style> -->
   </head>
 
   <body >
@@ -52,31 +23,24 @@
     </div>
 
     <div class="container">
-
-    <!-- Main component for a primary marketing message or call to action -->
-    <div class="jumbotron">
-        <?php echo $titulo; ?>
-    </div>
-        
-    <section id="widget-grid" class="well">
-      <!-- row -->
-      
-      <?php echo $mensaje_alertas;?>
-      <?php echo $seguimiento_poa;?>
-      <?php echo $menu_disponible; ?>
-      <!-- end row -->
-    </section>
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+          <?php echo $titulo; ?>
+      </div>
+      <section id="widget-grid" class="well">
+        <!-- row -->
+        <?php echo $mensaje_alertas;?>
+        <?php echo $Notificacion_poa;?>
+        <?php echo $menu_disponible; ?>
+        <!-- end row -->
+      </section>
 
     </div> <!-- /container -->
 
     <?php echo $modal_cambiar_gestion; ?>
 
     <!-- MODAL SEGUIMIENTO POA FORM 4 -->
-    <?php echo $modal_notificacion_form4; ?>
-
-
-    <!-- MODAL SEGUIMIENTO POA FORM 5 (PROYECTOS DE INVERSION) -->
-    <?php echo $modal_notificacion_form4_pi; ?>
+    <?php echo $modal_notificacion_poa; ?>
 
     <!-- MODAL SALDOS -->
     <?php echo $get_unidades_seguimiento_poa_mensual;?>

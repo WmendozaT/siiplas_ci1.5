@@ -47,51 +47,10 @@ class User extends CI_Controller{
         $this->load->view('rewriten_404');
     }
     
-    /*----------- Lista de Gestiones Disponibles ---------*/
-    public function list_gestiones(){
-        $listar_gestion= $this->model_configuracion->lista_gestion();
-        $tabla='';
-
-        $tabla.='
-                <input type="hidden" name="gest" id="gest" value="'.$this->gestion.'">
-                <select name="gestion_usu" id="gestion_usu" class="form-control" required>
-                <option value="0">seleccionar gestión</option>'; 
-        foreach ($listar_gestion as $row) {
-            if($row['ide']==$this->gestion){
-                $tabla.='<option value="'.$row['ide'].'" select >'.$row['ide'].'</option>';
-            }
-            else{
-                $tabla.='<option value="'.$row['ide'].'" >'.$row['ide'].'</option>';
-            }
-        };
-        $tabla.='</select>';
-        return $tabla;
-    }
 
 
-    /*--- Lista de Gestiones Disponibles ---*/
-    public function list_trimestre(){
-        $listar_trimestre= $this->model_configuracion->get_mes_trimestre();
-        $tmes=$this->model_evaluacion->trimestre();
-        $tabla='';
 
-        $tabla.='
-                <input type="hidden" name="tmes" id="tmes" value="'.$this->tmes.'">
-                <select name="trimestre_usu" id="trimestre_usu" class="form-control" required>
-                <option value="0">seleccionar Trimestre</option>'; 
-        foreach ($listar_trimestre as $row) {
-                if($row['trm_id']!=0 & $row['trm_id']<4){
-                    if($row['trm_id']==$tmes[0]['trm_id']){
-                        $tabla.='<option value="'.$row['trm_id'].'" select>'.$row['trm_descripcion'].'</option>';
-                    }
-                    else{
-                        $tabla.='<option value="'.$row['trm_id'].'" >'.$row['trm_descripcion'].'</option>';
-                    }
-                }
-        };
-        $tabla.='</select>';
-        return $tabla;
-    }
+
 
 
     /*-------- Valida Cambio gestion Session -----------*/
@@ -224,9 +183,136 @@ class User extends CI_Controller{
     public function dashboard_index(){
         if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
             $data['menu_disponible'] = $this->dashboard->menu_disponibles_administrativo(); //// MENU SEGUN EL ROL DEL USUARIO
-            $data['gestiones']=$this->list_gestiones();
+            //$data['gestiones']=$this->list_gestiones();
 
-            $data['cabecera']='';
+            $data['cabecera']='
+            <style>
+            #mdialTamanio{
+                width: 80% !important;
+            }
+            #mdialTamanio_saldos{
+                width: 50% !important;
+            }
+
+            .loading-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            /* El Spinner */
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid rgba(0, 0, 0, 0.1);
+                border-left-color: #09f; /* Color del giro */
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 10px;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            .loading-container p {
+                font-family: Arial, sans-serif;
+                color: #666;
+                font-size: 14px;
+            }
+
+
+            .table-custom {
+                border-collapse: separate;
+                border-spacing: 0;
+                font-size: 11px;
+                background-color: #fff;
+                border: 1px solid #e0e0e0;
+            }
+
+            /* Cabecera elegante */
+            .table-custom thead {
+                background-color: #2c3e50;
+                color: #ffffff;
+            }
+
+            .table-custom thead th {
+                border: none;
+                text-transform: uppercase;
+                font-weight: 600;
+                padding: 1px;
+            }
+
+            /* Celdas resaltadas (reemplaza el antiguo bgcolor) */
+            .table-custom td.col-highlight {
+                background-color: #f0fdfa; /* Un verde azulado muy suave */
+                color: #0d9488;
+                font-weight: 500;
+            }
+
+            /* Efectos al pasar el mouse */
+            .table-hover tbody tr:hover {
+                background-color: #f8fafc !important;
+                transition: background 0.2s;
+            }
+
+            /* Botón de acción */
+            .btn-action {
+                display: inline-block;
+                padding: 4px;
+                border-radius: 4px;
+                transition: transform 0.2s;
+            }
+
+            .btn-action:hover {
+                transform: scale(1.2);
+                background-color: #e2e8f0;
+            }
+
+            .text-center { text-align: center; }
+
+
+
+                /* Cabecera roja vibrante AJUSTE DE SALDOS*/
+                .modal-header.bg-danger {
+                    background: linear-gradient(45deg, #d9534f 0%, #c9302c 100%);
+                    border-bottom: none;
+                }
+
+                /* Efecto de sombra y bordes suaves */
+                .modal-content {
+                    border-radius: 12px;
+                    overflow: hidden;
+                }
+
+                /* Contenedor de lista con scroll si es muy larga */
+                .saldos-container {
+                    max-height: 300px;
+                    overflow-y: auto;
+                    border: 1px solid #e9ecef;
+                }
+
+                /* Estilo para los botones */
+                .btn-outline-danger {
+                    border-width: 2px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    font-size: 12px;
+                }
+
+                /* Ajuste de tipografía */
+                .modal-body h5 {
+                    margin-bottom: 5px;
+                }
+                .modal-body p {
+                    color: #555;
+                    line-height: 1.5;
+                }
+
+            </style>';
             $data['cabecera'].='<div class="container">
                         <div class="navbar-header">
                           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -247,7 +333,7 @@ class User extends CI_Controller{
                                 <li><a href="#" data-toggle="modal" data-target="#modal_seguimiento_nacional" title="SEGUIMIENTO POA NACIONAL" class="seg_uni"><b>Seguimiento POA NACIONAL</b></a></li>';
                             }
                             else{
-                                $data['cabecera'].='<li><a href="#" data-toggle="modal" data-target="#modal_seguimiento" id="<?php echo $dist_id; ?>" title="SEGUIMIENTO POA" class="seg_uni"><b>Seguimiento POA</b></a></li>';
+                                $data['cabecera'].='<li><a href="#" data-toggle="modal" data-target="#modal_seguimiento" id="'.$this->dist_id.'" title="SEGUIMIENTO POA" class="seg_uni"><b>Seguimiento POA</b></a></li>';
                             }
 
                             $data['cabecera'].='
@@ -282,577 +368,13 @@ class User extends CI_Controller{
                 </div>
             </div>';
 
-            $data['mensaje_alertas']=$this->mensaje_sistema(); 
-            
-            $gestiones=$this->list_gestiones();
-            $cambiar_gestion='';
-            $cambiar_gestion.='
-                <div class="modal fade" id="modal_nuevo_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                  <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                      <div class="modal-body">
-                        <form action="'.site_url().'/cambiar_session" id="form_nuevo" name="form_nuevo" class="form-horizontal" method="post">
-                            <h3 class="alert alert-info"><center>CAMBIAR GESTI&Oacute;N - '.$this->gestion.'</center></h3>   
-                            <fieldset>
-                              <div class="form-group">
-                                  <div class="form-group">
-                                    <label class="col-md-2 control-label">GESTI&Oacute;N</label>
-                                    <div class="col-md-10">
-                                        '.$gestiones.'
-                                    </div>
-                                  </div>
-                              </div>
-                            </fieldset>                    
-                            <div class="form-actions">
-                                <div class="row">
-                                  <div class="col-md-12" align="right">
-                                    <button class="btn btn-default" data-dismiss="modal" id="cl" title="CANCELAR">CANCELAR</button>
-                                    <button type="button" name="subir_form" id="subir_form" class="btn btn-info" >CAMBIAR GESTI&Oacute;N</button>
-                                    <center><img id="load" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="50" height="50"></center>
-                                  </div>
-                                </div>
-                            </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>';
-            $data['modal_cambiar_gestion']=$cambiar_gestion;
-
-
-            $cambiar_trimestre='';
-            $cambiar_trimestre.='
-            <div class="modal fade" id="modal_nuevo_tr" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                  <div class="modal-body">
-                    <form action="'.site_url().'/cambiar_session_trimestre" id="form_trimestre" name="form_trimestre" class="form-horizontal" method="post">
-                        <h4 class="alert alert-info"><center>CAMBIAR TRIMESTRE - '.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</center></h4>   
-                        <fieldset>
-                          <div class="form-group">
-                              <div class="form-group">
-                                  <label class="col-md-2 control-label">TRIMESTRE</label>
-                                  <div class="col-md-10">
-                                      '.$this->list_trimestre().'
-                                  </div>
-                              </div>
-                          </div>
-                        </fieldset>                    
-                        <div class="form-actions">
-                            <div class="row">
-                              <div class="col-md-12" align="right">
-                                <button class="btn btn-default" data-dismiss="modal" id="cl" title="CANCELAR">CANCELAR</button>
-                                <button type="button" name="subir_formt" id="subir_formt" class="btn btn-info" >CAMBIAR TRIMESTRE</button>
-                                <center><img id="loadt" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="50" height="50"></center>
-                              </div>
-                            </div>
-                        </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>';
-            $data['cambiar_trimestre']=$cambiar_trimestre;
-
-
-
-       $data['seguimiento_poa']='';
-       if($this->session->userdata('estado_notificaciones')==1){
-            $dia_cambios = 17;
-            $hoy = date("j");
-            if ($this->gestion>2025 & ($hoy == $dia_cambios)) {
-               if($this->dep_id==2){ //// Exclusivo para la Regional LA paz
-                    $nro_poa=count($this->model_seguimientopoa->get_seguimiento_poa_mes_regional($this->dep_id,$this->verif_mes[1],$this->gestion));;
-                }
-                else{ /// Listado normal
-                    $nro_poa=count($this->model_seguimientopoa->get_seguimiento_poa_mes_distrital($this->dist_id,$this->verif_mes[1],$this->gestion));
-                }
-                
-                if($nro_poa!=0){
-                    $data['seguimiento_poa']=$this->mensaje_ejecucion_operaciones_mes($nro_poa);
-                }
-            }
-            else{
-                $data['seguimiento_poa']='';
-            }
-        }
-
-                
-
-
-
-
-            $modal_notificacion_form4='';
-            $modal_notificacion_form4.='
-                <div class="modal fade" id="modal_form4_mes" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                  <div class="modal-dialog modal-lg" role="document" id="mdialTamanio">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-                      </div>
-                      <div class="modal-body" align="center">
-                        <div id="operaciones"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>';
-            $data['modal_notificacion_form4']=$modal_notificacion_form4;
-
-            $modal_notificacion_form4_pi='';
-            $modal_notificacion_form4_pi.='
-            <div class="modal fade" id="modal_form5_pi_mes" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div class="modal-dialog modal-lg" role="document" id="mdialTamanio">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-                  </div>
-                  <div class="modal-body" align="center">
-                    <div id="pinversion"></div>
-                  </div>
-                </div>
-              </div>
-            </div>';
-            $data['modal_notificacion_form4_pi']=$modal_notificacion_form4_pi;
-
-
-            $get_unidades_seguimiento_poa_mensual='';
-            $get_unidades_seguimiento_poa_mensual.='
-            <div class="modal fade" id="modal_seguimiento" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div class="modal-dialog modal-lg" role="document" id="mdialTamanio_saldos">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-                  </div>
-                  <div class="modal-body" align="center">
-                    <div id="seg"></div>
-                  </div>
-                </div>
-              </div>
-            </div>';
-            $data['get_unidades_seguimiento_poa_mensual']=$get_unidades_seguimiento_poa_mensual;
-
-
-            $get_unidades_seguimiento_poa_mensual_nacional='';
-            $get_unidades_seguimiento_poa_mensual_nacional.='
-            <div class="modal fade" id="modal_respuesta" tabindex="-1" role="dialog" aria-labelledby="respuestaModalLabel" aria-hidden="true">
-                  <div class="modal-dialog modal-lg" role="document" id="mdialTamanio_saldos"> <!-- Modal grande -->
-                      <div class="modal-content">
-                          <div class="modal-body">
-                              <div id="responsee"></div> <!-- Div para mostrar la respuesta -->
-                          </div>
-                          <div class="modal-footer">
-                              <div id="botones"></div>
-                          </div>
-                      </div>
-                  </div>
-              </div>';
-            $data['get_unidades_seguimiento_poa_mensual_nacional']=$get_unidades_seguimiento_poa_mensual_nacional;
-
-
-
-
-
-
-            $distritales=$this->model_proyecto->lista_distritales();
-            $select_distrital='';
-            $select_distrital.='
-            <div class="modal fade" id="modal_seguimiento_nacional" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                  <div class="modal-body">
-                    <form id="form_seg" name="form_seg" class="form-horizontal" method="post">
-                        <h3 class="alert alert-info"><center>SEGUIMIENTO POA - '.$this->verif_mes[2].' / '.$this->gestion.'</center></h3>   
-                        <fieldset>
-                          <div class="form-group">
-                            <div class="col-md-12">
-                              <select name="seg_reg" id="seg_reg" class="form-control" required>
-                                <option value="0">seleccionar Distrital...</option>';
-                                foreach($distritales as $row){
-                                    $select_distrital.='<option value="'.$row['dist_id'].'">'.strtoupper($row['dist_distrital']).'</option>';
-                                }
-                            $select_distrital.='
-                              </select>
-                            </div>
-                          </div>
-                        </fieldset>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>';
-            $data['select_distrital']=$select_distrital;
-
-            //// ------ SOLICITUDES DE PASSWORD
-            $data['solicitudes_pass']='';
-            $solicitudes_password=$this->model_funcionario->listado_solicitud_contraseñas();
-            if(count($solicitudes_password)!=0 & $this->fun_id==399){
-                $data['solicitudes_pass']='
-                <input name="base" type="hidden" value="'.base_url().'">
-                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
-                        <div class="modal-dialog modal-login" id="mdialTamanio_psw">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 style="color:blue; text-align:center"><b>Atención de Solicitudes de Contraseña</b></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div style="color:blue; font-size:10px;">Tienes ('.count($solicitudes_password).') Solicitudes por atender..</div>
-                                    <table class="table table-bordered">
-                                    <thead>
-                                      <tr title="" >
-                                        <th scope="col" style="text-align:center;">#</th>
-                                        <th scope="col" style="text-align:center;">TRABAJADOR</th>
-                                        <th scope="col" style="text-align:center;">USUARIO</th>
-                                        <th scope="col" style="text-align:center;">DISTRITAL</th>
-                                        <th scope="col" style="text-align:center;">CORREO ELECTRONICO</th>
-                                        <th scope="col" style="text-align:center;"></th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>';
-                                    $nro=0;
-                                    foreach($solicitudes_password as $row){
-                                        $nro++;
-                                        $data['solicitudes_pass'].='
-                                        <tr>
-                                            <td>'.$nro.'</td>
-                                            <td>'.$row['fun_nombre'].' '.$row['fun_paterno'].' '.$row['fun_materno'].'</td>
-                                            <td>'.$row['fun_usuario'].'</td>
-                                            <td>'.$row['dist_distrital'].'</td>
-                                            <td><b>'.$row['email'].'</b></td>
-                                            <td>
-                                                <a href="javascript:abreVentana(\''.site_url("").'/solpassw/'.$row['fun_id'].'\');" class="btn btn-default" title="GENERAR REPORTE"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>USUARIO</b></font></a>
-                                            </td>
-                                        </tr>';
-                                    }
-                                    $data['solicitudes_pass'].='
-                                    </tbody>
-                                    </table>                                  
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-            }
-
-
-            $data['popup_credenciales']='';
-            //// ------ CREDENCIALES (INACTIVO)
-            if(($this->conf_credenciales==1 || $this->fun_credencial==0) & $this->fun_id!=399){
-                $data['popup_credenciales']='
-                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
-                        <div class="modal-dialog modal-login" id="mdialTamanio_saldos">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 style="color:green; text-align:center"><b>ACTUALIZACIÓN DE CREDENCIALES DE ACCESO AL SIIPLAS.</b></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="alert alert-success" role="alert">
-                                        <p>Estimad@: <b>'.$this->session->userdata('funcionario').'</b>, para garantizar la seguridad de información, se implemento nuevas medidas de seguridad para proteger su cuenta de acceso al Sistema de Planificación <b>SIIPLAS.</b></p><br>
-                                        <p>Como parte de estas medidas es necesario que actualice sus Credenciales de Acceso. Esta acción es parte de nuestras politicas vigente en el <b>Plan de Seguridad de la Información PISI.</p>
-                                        <hr>
-
-                                        <div style="font-size:15px;"><b>POLITICA DE GESTIÓN DE CONTRASEÑAS - Version 1.1</b></div>
-                                        <br>
-                                 
-                                      <ul>
-                                        <li>La contraseña debe estar compuesta por una combinación de letras mayúsculas,minúsculas, números y símbolos especiales como ser: “~ ! @ # $ % ^ & * ( ) _ + - = { } | [ ] \ : " ;  < > ? , . /</li>
-                                        <li>Toda contraseña de usuarios internos en servicios, sistemas y/o aplicaciones institucionales de la CNS, debe tener una longitud mínima de doce (12) caracteres alfanuméricos y símbolos especiales.</li>
-                                        <li>Se debe implementar un historial de contraseñas en todo sistema institucional de la CNS que haga uso de credenciales de acceso, en el que se guarden las contraseñas antiguas para que los usuarios no reutilicen las mismas.</li>
-                                      </ul>
-
-                                    </div>
-                                    
-                                </div>
-                                <div class="modal-footer">
-                                <a href="'.base_url().'index.php/admin/logout" class="btn btn-danger">Cerrar sesion</a>
-                                <a href="'.base_url().'index.php/admin/mod_contra" class="btn btn-success">Actualizar ahora</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-            }
-
-
-            ///------- Verificando Saldos
-            $data['popup_saldos']='';
-             if($this->conf_ajuste_poa==1){
-                if($this->verif_saldos_disponibles_distrital($this->dep_id,$this->dist_id)==1 & $this->dep_id!=10 & $this->gestion>2025){
-                
-                    $data['popup_saldos']='
-                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
-                        <div class="modal-dialog modal-login" id="mdialTamanio_saldos">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 style="color:red"><b>AJUSTAR DISTRIBUCION DE SALDOS - GESTIÓN '.$this->gestion.' !!!</b></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="alert alert-danger" role="alert">
-                                      <p>Hola: <b>'.$this->session->userdata('funcionario').'</b>, la <b>'.strtoupper($ddep[0]['dist_distrital']).'</b> a la fecha presenta saldos en su POA '.$this->gestion.' que deben ser ajustados y/o inscritos a traves de Modificaciones POA, mientras no se encuentre ajustado no podra realizar <b>CERTIFICACIONES POA.</b></p>
-                                    </div>
-                                    '.$this->lista_unidades_con_saldo($this->dep_id,$this->dist_id).'
-                                </div>
-                                <div class="modal-footer">
-                                <a href="'.base_url().'index.php/admin/logout" class="btn btn-danger">salir de la sesion</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-                }
-            }
-
-
-            $this->load->view('admin/dashboard',$data);
-            
-        } else{
-            $this->session->sess_destroy();
-            redirect('/','refresh');
-        }
-    }
-
-
-
-    /// ====== DASDHBOARD ADMINISTRATIVO 2026 a borrar
-    public function dashboard_index2(){
-        if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
-            $data['vector_menus'] = $this->dashboard->menu_disponibles_administrativo(); //// MENU SEGUN EL ROL DEL USUARIO
-            $cabecera='';
-            $cabecera.='<div class="container">
-                        <div class="navbar-header">
-                          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                          </button>
-                          <a class="navbar-brand" href="#"><font color="#1c7368"><b>'.$this->session->userdata('name').'</b></font></a>
-                        </div>
-                        <div class="navbar-collapse collapse">
-                          <ul class="nav navbar-nav">
-                            <li class="active"><a href="#"><b>Home</b></a></li>';
-                            if($this->tp_adm==1){
-                                $cabecera.='
-                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" title="CAMBIAR GESTI&Oacute;N">Gesti&oacute;n</a></li>
-                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>
-                                <li><a href="#" data-toggle="modal" data-target="#modal_seguimiento_nacional" title="SEGUIMIENTO POA NACIONAL" class="seg_uni"><b>Seguimiento POA NACIONAL</b></a></li>';
-                            }
-                            else{
-                                $cabecera.='<li><a href="#" data-toggle="modal" data-target="#modal_seguimiento" id="<?php echo $dist_id; ?>" title="SEGUIMIENTO POA" class="seg_uni"><b>Seguimiento POA</b></a></li>';
-                            }
-
-                            $cabecera.='
-                            <li class="dropdown">
-                              <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Descarga de Archivos / Documentos">Descargas <b class="caret"></b></a>
-                              <ul class="dropdown-menu">
-                                <div style="color:blue; text-align: center;"><b>ANTEPROYECTO POA 2026</b></div>
-                                <li><a href="'.base_url().'assets/video/FORMULARIOS_APROY2026/Plan_de_Trabajo_y_Directrices_Formulacion_POA_2026.pdf" style="cursor: pointer;" download><b>1.- Plan de Trabajo y Directrices Formulacion poa 2026</b></a></li>
-                              </ul>
-                            </li>
-                          </ul>
-                          <ul class="nav navbar-nav navbar-right">
-                            <li class="active"><a href="'.base_url().'index.php/admin/logout" title="CERRAR SESI&Oacute;N"><b>SALIR</b></a></li>
-                          </ul>
-                        </div>
-                    </div>';
-
-
-            $titulo='';
-            $titulo.='
-            <div class="row box-green1">
-                <div class="col-md-8">
-                  <h3>BIENVENIDO : '.$this->session->userdata('funcionario').'</h3>
-                  <h4>'.$this->tp_resp().'</h4>
-                  <h4><b>CARGO : </b>'.$this->session->userdata("cargo").'</h4>
-                  <h4><b>MES / GESTI&Oacute;N VIGENTE : '.$this->verif_mes[2].' / '.$this->gestion.'</b></h4>
-                  <h4><b>TRIMESTRE VIGENTE : </b>'.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</h4>
-                </div>
-                <div class="col-md-4" align="center">
-                  <img src="'.base_url('assets/img_v1.1/moni.png').'" style="width:85%;">
-                </div>
-            </div>';
-
-            $mensaje_alertas=$this->mensaje_sistema(); 
-                            
-
-
-
-
-
-
-
-
-            $data['resp']=$this->session->userdata('funcionario');
-            $data['dist_id']=$this->dist_id;
-            $data['res_dep']=$this->tp_resp();
-            $ddep = $this->model_proyecto->dep_dist($this->dist_id);
-            $data['dep_id']=$ddep[0]['dep_id'];
-            $data['tmes']=$this->model_evaluacion->trimestre();
-            $data['mes']=$this->verif_mes;
-            $data['gestiones']=$this->list_gestiones();
-            $data['list_trimestre']=$this->list_trimestre();
-            $rol=$this->model_funcionario->get_rol($this->fun_id);
-            $distritales=$this->model_proyecto->lista_distritales();
-
-            
-            $tabla='';
-            $tabla.='
-            <div class="modal fade" id="modal_seguimiento_nacional" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                  <div class="modal-body">
-                    <form id="form_seg" name="form_seg" class="form-horizontal" method="post">
-                        <h3 class="alert alert-info"><center>SEGUIMIENTO POA - '.$this->verif_mes[2].' / '.$this->gestion.'</center></h3>   
-                        <fieldset>
-                          <div class="form-group">
-                            <div class="col-md-12">
-                              <select name="seg_reg" id="seg_reg" class="form-control" required>
-                                <option value="0">seleccionar Distrital...</option>';
-                                foreach($distritales as $row){
-                                    $tabla.='<option value="'.$row['dist_id'].'">'.strtoupper($row['dist_distrital']).'</option>';
-                                }
-                            $tabla.='
-                              </select>
-                            </div>
-                          </div>
-                        </fieldset>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>';
-            $data['select_distrital']=$tabla;
-
-            $data['mensaje']='';
-            $data['seguimiento_poa']='';
-            $data['popup_saldos']='';
-            $data['popup_credenciales']='';
-            $data['solicitudes_pass']='';
-
-
-            //// ------ SOLICITUDES DE PASSWORD
-            $solicitudes_password=$this->model_funcionario->listado_solicitud_contraseñas();
-
-            if(count($solicitudes_password)!=0 & $this->fun_id==399){
-                $data['solicitudes_pass']='
-                <input name="base" type="hidden" value="'.base_url().'">
-                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
-                        <div class="modal-dialog modal-login" id="mdialTamanio_psw">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 style="color:blue; text-align:center"><b>Atención de Solicitudes de Contraseña</b></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div style="color:blue; font-size:10px;">Tienes ('.count($solicitudes_password).') Solicitudes por atender..</div>
-                                    <table class="table table-bordered">
-                                    <thead>
-                                      <tr title="" >
-                                        <th scope="col" style="text-align:center;">#</th>
-                                        <th scope="col" style="text-align:center;">TRABAJADOR</th>
-                                        <th scope="col" style="text-align:center;">USUARIO</th>
-                                        <th scope="col" style="text-align:center;">DISTRITAL</th>
-                                        <th scope="col" style="text-align:center;">CORREO ELECTRONICO</th>
-                                        <th scope="col" style="text-align:center;"></th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>';
-                                    $nro=0;
-                                    foreach($solicitudes_password as $row){
-                                        $nro++;
-                                        $data['solicitudes_pass'].='
-                                        <tr>
-                                            <td>'.$nro.'</td>
-                                            <td>'.$row['fun_nombre'].' '.$row['fun_paterno'].' '.$row['fun_materno'].'</td>
-                                            <td>'.$row['fun_usuario'].'</td>
-                                            <td>'.$row['dist_distrital'].'</td>
-                                            <td><b>'.$row['email'].'</b></td>
-                                            <td>
-                                                <a href="javascript:abreVentana(\''.site_url("").'/solpassw/'.$row['fun_id'].'\');" class="btn btn-default" title="GENERAR REPORTE"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>USUARIO</b></font></a>
-                                            </td>
-                                        </tr>';
-                                    }
-                                    $data['solicitudes_pass'].='
-                                    </tbody>
-                                    </table>                                  
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-            }
-
-
-            //// ------ CREDENCIALES (INACTIVO)
-            if(($this->conf_credenciales==1 || $this->fun_credencial==0) & $this->fun_id!=399){
-                $data['popup_credenciales']='
-                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
-                        <div class="modal-dialog modal-login" id="mdialTamanio_saldos">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 style="color:green; text-align:center"><b>ACTUALIZACIÓN DE CREDENCIALES DE ACCESO AL SIIPLAS.</b></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="alert alert-success" role="alert">
-                                        <p>Estimad@: <b>'.$this->session->userdata('funcionario').'</b>, para garantizar la seguridad de información, se implemento nuevas medidas de seguridad para proteger su cuenta de acceso al Sistema de Planificación <b>SIIPLAS.</b></p><br>
-                                        <p>Como parte de estas medidas es necesario que actualice sus Credenciales de Acceso. Esta acción es parte de nuestras politicas vigente en el <b>Plan de Seguridad de la Información PISI.</p>
-                                        <hr>
-
-                                        <div style="font-size:15px;"><b>POLITICA DE GESTIÓN DE CONTRASEÑAS - Version 1.1</b></div>
-                                        <br>
-                                 
-                                      <ul>
-                                        <li>La contraseña debe estar compuesta por una combinación de letras mayúsculas,minúsculas, números y símbolos especiales como ser: “~ ! @ # $ % ^ & * ( ) _ + - = { } | [ ] \ : " ;  < > ? , . /</li>
-                                        <li>Toda contraseña de usuarios internos en servicios, sistemas y/o aplicaciones institucionales de la CNS, debe tener una longitud mínima de doce (12) caracteres alfanuméricos y símbolos especiales.</li>
-                                        <li>Se debe implementar un historial de contraseñas en todo sistema institucional de la CNS que haga uso de credenciales de acceso, en el que se guarden las contraseñas antiguas para que los usuarios no reutilicen las mismas.</li>
-                                      </ul>
-
-                                    </div>
-                                    
-                                </div>
-                                <div class="modal-footer">
-                                <a href="'.base_url().'index.php/admin/logout" class="btn btn-danger">Cerrar sesion</a>
-                                <a href="'.base_url().'index.php/admin/mod_contra" class="btn btn-success">Actualizar ahora</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-            }
-
-
-            ///------- Verificando Saldos
-             // if($this->conf_ajuste_poa==1 & $this->dist_id!=10 & $this->dist_id!=3 & $this->dist_id!=4 & $this->dist_id!=5 & $this->gestion>2024){
-           if($this->conf_ajuste_poa==1){
-                if($this->verif_saldos_disponibles_distrital($this->dep_id,$this->dist_id)==1 & $this->dep_id!=10 & $this->gestion>2025){
-                
-                    $data['popup_saldos']='
-                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
-                        <div class="modal-dialog modal-login" id="mdialTamanio_saldos">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 style="color:red"><b>AJUSTAR DISTRIBUCION DE SALDOS - GESTIÓN '.$this->gestion.' !!!</b></h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="alert alert-danger" role="alert">
-                                      <p>Hola: <b>'.$this->session->userdata('funcionario').'</b>, la <b>'.strtoupper($ddep[0]['dist_distrital']).'</b> a la fecha presenta saldos en su POA '.$this->gestion.' que deben ser ajustados y/o inscritos a traves de Modificaciones POA, mientras no se encuentre ajustado no podra realizar <b>CERTIFICACIONES POA.</b></p>
-                                    </div>
-                                    '.$this->lista_unidades_con_saldo($this->dep_id,$this->dist_id).'
-                                </div>
-                                <div class="modal-footer">
-                                <a href="'.base_url().'index.php/admin/logout" class="btn btn-danger">salir de la sesion</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-                }
-            }
-
-            if($rol[0]['r_id']==11){ /// Usuario para ejecucion de proyectos de inversion
-                $data['mensaje']='<div class="alert alert-success" align="center">
-                  <a class="alert-link">EJECUCIÓN FINANCIERA DE INVERSIÓN - '.$this->verif_mes[2].' / '.$this->gestion.'</a>
-                </div>';
-            }
-            else{
-                $data['mensaje']=$this->mensaje_sistema();   
-
-                ///===================== CONF NOTIFICACION POA =========================
-                $dia_cambios = 17;
+            $data['mensaje_alertas']=$this->dashboard->mensaje_sistema_dasboard_seguimiento(); 
+            $data['modal_cambiar_gestion']=$this->dashboard->cambiar_gestion();
+            $data['cambiar_trimestre']=$this->dashboard->cambiar_trimestre();
+            $data['Notificacion_poa']='';
+            if($this->notificaciones==1){
+                $dia_cambios = 19;
                 $hoy = date("j");
-
                 if ($this->gestion>2025 & ($hoy == $dia_cambios)) {
                    if($this->dep_id==2){ //// Exclusivo para la Regional LA paz
                         $nro_poa=count($this->model_seguimientopoa->get_seguimiento_poa_mes_regional($this->dep_id,$this->verif_mes[1],$this->gestion));;
@@ -862,16 +384,26 @@ class User extends CI_Controller{
                     }
                     
                     if($nro_poa!=0){
-                        $data['seguimiento_poa']=$this->mensaje_ejecucion_operaciones_mes($nro_poa);
+                        $data['Notificacion_poa']=$this->dashboard->notificacion_poa_mensual($nro_poa); /// listado de actividades
                     }
                 }
                 else{
-                    $data['seguimiento_poa']='';
+                    $data['Notificacion_poa']='';
                 }
-                ///=================================================
-
-
             }
+
+            $data['modal_notificacion_poa']=$this->dashboard->modal_notificacion_poa_mensual();
+            $data['get_unidades_seguimiento_poa_mensual']=$this->dashboard->list_seguimiento_a_unidades();
+            $data['get_unidades_seguimiento_poa_mensual_nacional']=$this->dashboard->list_seguimiento_a_unidades_regional();
+            $data['select_distrital']=$this->dashboard->modal_distritales();
+
+            //// ------ SOLICITUDES DE PASSWORD
+            $data['solicitudes_pass']=$this->dashboard->solicitudes_password();
+            $data['popup_credenciales']=$this->dashboard->popup_credenciales_para_actualizar_contraseñas();
+            ///------- Verificando Saldos
+            $data['popup_saldos']=$this->dashboard->popup_ajustar_saldos();
+
+
 
             $this->load->view('admin/dashboard',$data);
             
@@ -880,6 +412,7 @@ class User extends CI_Controller{
             redirect('/','refresh');
         }
     }
+
 
 
     /*----- RESPUESTA A SOLICITUDES -----*/
@@ -950,132 +483,133 @@ class User extends CI_Controller{
 
 
     /*----- UNIDADES CON SALDOS A DISTRBUIR (DASHBOARD) -----*/
-    public function lista_unidades_con_saldo($dep_id,$dist_id){
-        $unidades=$this->model_ptto_sigep->lista_unidades_con_saldo_a_distribuir($dep_id,$dist_id); /// Lista de unidades con saldo disponible
-        $tabla='';
-        $tabla.='
-        <form action="/examples/actions/confirmation.php" method="post">
-            <table class="table table-bordered">
-              <thead>
-                <tr bgcolor="1c7368">
-                  <th style="width:1%;text-align:center;color:white;font-size:9px">#</th>
-                  <th style="width:20%;text-align:center;color:white;font-size:9px">UNIDAD / ESTABLECIMIENTO / PROY. INVERSIÓN</th>
-                  <th style="width:7%;text-align:center;color:white;font-size:9px">PPTO. ASIGNADO '.$this->gestion.' (APROBADO)</th>
-                  <th style="width:7%;text-align:center;color:white;font-size:9px">PPTO. PROGRAMADO '.$this->gestion.' (SIIPLAS)</th>
-                  <th style="width:7%;text-align:center;color:white;font-size:9px">SALDO '.$this->gestion.'</th>
-                  <th style="width:4%;text-align:center;color:white;font-size:9px">AJUSTAR POA</th>
-                  <th style="width:1%;text-align:center;color:white;font-size:9px"></th>
-                </tr>
-              </thead>
-              <tbody>';
-              $nro=0;
-              foreach ($unidades as $row){
-                  $nro++;
-                  $bg_color='#eef9f3';
-                  if($row['saldo']<0){
-                    $bg_color='#f9f1ee';
-                  }
-                  $tabla.='
-                  <tr title='.$row['proy_id'].' bgcolor='.$bg_color.'>
-                    <td style="text-align:center;font-size:8.5px">'.$nro.'</td>
-                    <td style="font-size:8.5px"><b>'.$row['prog'].' - '.$row['tipo'].' '.$row['proy_nombre'].' '.$row['abrev'].'</b></td>
-                    <td style="text-align:right;font-size:8.5px"><b>'.number_format($row['asignado'], 2, ',', '.').'</b></td>
-                    <td style="text-align:right;font-size:8.5px"><b>'.number_format($row['programado'], 2, ',', '.').'</b></td>
-                    <td style="text-align:right;font-size:8.5px"><b>'.number_format($row['saldo'], 2, ',', '.').'</b></td>
-                    <td style="text-align:center">
-                        <a href="'.site_url("").'/mod/form5/'.$row['proy_id'].'" title="AJUSTE POA" class="btn btn-default" onClick="imprimir_grafico1()">
-                            <img src="'.base_url().'assets/Iconos/page_edit.png" WIDTH="20" HEIGHT="20"/>
-                        </a>
-                    </td>
-                    <td style="text-align:center">
-                        <a href="javascript:abreVentana(\''.site_url("").'/proy/ptto_consolidado_comparativo/'.$row['proy_id'].'\');" class="btn btn-default" title="CUADRO COMPARATIVO"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="20" HEIGHT="20" /></a>
-                    </td>
-                  </tr>';
-                
-              }
-              $tabla.='
-              </tbody>
-            </table>
-            <div id="loading_saldo"></div>
-        </form>';
+   public function lista_unidades_con_saldo($dep_id, $dist_id) {
+    $unidades = $this->model_ptto_sigep->lista_unidades_con_saldo_a_distribuir($dep_id, $dist_id);
+    $tabla = '';
 
-        return $tabla;
+    $tabla .= '
+    <style>
+        .spin-custom {
+            width: 18px; height: 18px;
+            border: 3px solid rgba(0,0,0,.1);
+            border-top-color: #1c7368;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-table-opt { 
+            padding: 5px; background: white; border: 1px solid #ddd; border-radius: 4px; display: inline-block; cursor: pointer;
+        }
+    </style>
+
+    <form method="post">
+        <table class="table" style="width:100%; border-collapse: collapse; font-family: sans-serif; font-size: 11px;">
+          <thead>
+            <tr style="background-color: #1c7368; color: white;">
+              <th style="padding: 10px; text-align: center; border: 1px solid #165a52;">#</th>
+              <th style="padding: 10px; border: 1px solid #165a52;">UNIDAD ORGANIZACIONAL</th>
+              <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">PPTO. ASIGNADO</th>
+              <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">PPTO. PROGRAMADO</th>
+              <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">SALDO</th>
+              <th style="padding: 10px; text-align: center; border: 1px solid #165a52;">AJUSTAR</th>
+              <th style="padding: 10px; text-align: center; border: 1px solid #165a52;"></th>
+            </tr>
+          </thead>
+          <tbody>';
+
+    $nro = 0;
+    foreach ($unidades as $row) {
+        $nro++;
+        $bg_fila = ($row['saldo'] < 0) ? '#fff5f5' : '#f9fafb';
+        $color_texto = ($row['saldo'] < 0) ? '#c53030' : '#333';
+
+        $tabla .= '
+        <tr style="background-color: '.$bg_fila.'; color: '.$color_texto.'; border-bottom: 1px solid #eee;">
+            <td style="text-align: center; padding: 8px;">'.$nro.'</td>
+            <td style="padding: 8px;">
+                <small style="color: #666; display: block; font-size: 9px;">'.$row['prog'].'</small>
+                <b>'.$row['tipo'].' '.$row['proy_nombre'].'</b>
+            </td>
+            <td style="text-align: right; padding: 8px;">'.number_format($row['asignado'], 2, ',', '.').'</td>
+            <td style="text-align: right; padding: 8px;">'.number_format($row['programado'], 2, ',', '.').'</td>
+            <td style="text-align: right; padding: 8px; font-weight: bold;">'.number_format($row['saldo'], 2, ',', '.').'</td>
+            
+            <!-- Icono Ajustar con Loading -->
+            <td style="text-align: center; padding: 8px;">
+                <a href="javascript:void(0);" 
+                   onclick="irFormulario(this, \''.site_url("mod/form5/".$row['proy_id']).'\')" 
+                   class="btn-table-opt" title="AJUSTE POA">
+                    <img src="'.base_url().'assets/Iconos/page_edit.png" width="18" height="18"/>
+                </a>
+            </td>
+
+            <td style="text-align: center; padding: 8px;">
+                <a href="javascript:abreVentana(\''.site_url("proy/ptto_consolidado_comparativo/".$row['proy_id']).'\');" 
+                   class="btn-table-opt" title="COMPARATIVO">
+                    <img src="'.base_url().'assets/ifinal/requerimiento.png" width="18" height="18" />
+                </a>
+            </td>
+        </tr>';
     }
 
+    $tabla .= '</tbody></table></form>
 
-
-
-    /*---- LISTA DE OPERACIONES A SER EJECUTADAS EN EL MES ----*/
-    public function mensaje_ejecucion_operaciones_mes($nro){
-        $tabla='';
-        if($this->fun_id==592 || $this->fun_id==709){ /// Exclusivo La paz
-            $req=$this->model_notificacion->nro_requerimientos_acertificar_mensual_x_mes_regional($this->dep_id,$this->verif_mes[1]);
-        }
-        else{
-            $req=$this->model_notificacion->nro_requerimientos_acertificar_mensual_x_mes_distrital($this->dist_id,$this->verif_mes[1]);
-        }
-
+    <script>
+    function irFormulario(elemento, url) {
+        // Cambia el contenido del botón por el spinner de carga
+        elemento.innerHTML = \'<div class="spin-custom"></div>\';
+        elemento.style.pointerEvents = "none";
         
-        $ddep = $this->model_proyecto->dep_dist($this->dist_id);
-        //$nro_sol=count($this->model_certificacion->lista_solicitudes_cpoa_distrital($this->dist_id));
-        /*$solicitudes_cpoa='';
-        if($nro_sol!=0){
-            $solicitudes_cpoa='<a href="'.site_url("").'/ejec/mis_solicitudes_certpoa" class="btn btn-primary" target="_blanck" title="LISTA DE SOLICITUDES POA"><img src="'.base_url().'assets/Iconos/email_attach.png" width="20" height="20"/>&nbsp;('.$nro_sol.') Solicitud(es) de Certificación POA</a>';
-        }*/
-
-
-        $tit_requerimiento='';
-        
-        if(count($req)!=0){
-            $tit_requerimiento='y '.$req[0]['requerimientos'].' Requerimientos con un monto de Bs. '.number_format($req[0]['monto'], 2, ',', '.').' que deben ser <b>EVALUADOS</b> y <b>CERTIFICADOS</b>';
-        }
-
-        
-        $tabla.='
-            <div class="alert alert-success" role="alert" title='.$this->dist_id.' style="text-align:justify">
-                <h4 class="alert-heading"><b>PROCESO DE NOTIFICACIÓN POA '.$this->verif_mes[2].' / '.$this->gestion.' !!</b></h4>
-                <p>Hola '.$this->session->userdata('funcionario').', la '.strtoupper($ddep[0]['dist_distrital']).' tiene programado en su POA '.$this->gestion.' para el mes de '.$this->verif_mes[2].' : '.$nro.' Actividades </b> '.$tit_requerimiento.'. </p>
-                <hr>
-                <p class="mb-0">
-                    <a data-toggle="modal" data-target="#modal_form4_mes" id="'.$this->dist_id.'" class="btn btn-success form4_mes" title=""><img src="'.base_url().'assets/Iconos/application_cascade.png" width="20" height="20"/>&nbsp;<b style="font-size:10px">NOTIFICACIÓN GASTO CORRIENTE</b></a>';
-                    if(count($this->model_notificacion->list_requerimiento_pinversion_programado_al_mes_distrital($this->dist_id,$this->verif_mes[1]))!=0){
-                       $tabla.='&nbsp;<a data-toggle="modal" data-target="#modal_form5_pi_mes" id="'.$this->dist_id.'" class="btn btn-success pi_mes" title=""><img src="'.base_url().'assets/Iconos/application_cascade.png" width="20" height="20"/>&nbsp;<b style="font-size:10px">NOTIFICACIÓN PROY. INVERSIÓN</b></a>';
-                    }
-                    $tabla.='
-                    
-                </p>
-            </div>';
-
-        return $tabla;
+        // Redirige después de medio segundo
+        setTimeout(function() {
+            window.location.href = url;
+        }, 500);
     }
+    </script>';
+
+    return $tabla;
+}
+
+
+
+
+
 
 
     /*---- MENSAJE SISTEMA ----*/
-    public function mensaje_sistema(){
-        $conf = $this->model_configuracion->get_configuracion_session();
-        $tabla='';
+    // public function mensaje_sistema(){
+    //     $conf = $this->model_configuracion->get_configuracion_session();
+    //     $tabla = '';
 
-        if($conf[0]['tp_msn']==1){ 
-            $tabla.='
-            <div class="alert alert-danger" align="center">
-              <a class="alert-link">'.$conf[0]['conf_mensaje'].'</a>
-            </div>';
-        }
-        elseif ($conf[0]['tp_msn']==2) {
-            $tabla.='
-            <div class="alert alert-warning" align="center">
-              <a class="alert-link">'.$conf[0]['conf_mensaje'].'</a>
-            </div>';
-        }
-        elseif ($conf[0]['tp_msn']==3) {
-            $tabla.='
-            <div class="alert alert-success" align="center">
-              <a class="alert-link">'.$conf[0]['conf_mensaje'].'</a>
-            </div>';
-        }
+    //     if (!empty($conf)) {
+    //         // 1. Definimos los parámetros según el tipo de mensaje
+    //         $tipos = [
+    //             1 => ['clase' => 'danger',  'icono' => 'fa-ban',      'titulo' => 'ATENCIÓN'],
+    //             2 => ['clase' => 'warning', 'icono' => 'fa-warning',  'titulo' => 'ADVERTENCIA'],
+    //             3 => ['clase' => 'success', 'icono' => 'fa-check',    'titulo' => 'ÉXITO']
+    //         ];
 
-        return $tabla;
-    }
+    //         $t = $conf[0]['tp_msn'];
+    //         // Si el tipo no existe en el array, usamos 'warning' por defecto
+    //         $config = isset($tipos[$t]) ? $tipos[$t] : $tipos[2];
+
+    //         // 2. Construimos un único bloque de HTML dinámico
+    //         $tabla .= '
+    //         <div class="alert-modern alert-modern-'.$config['clase'].' fade-in-alert">
+    //             <i class="fa '.$config['icono'].' alert-bg-icon"></i>
+    //             <div class="alert-content-wrapper">
+    //                 <div class="alert-icon-main">
+    //                     <i class="fa '.$config['icono'].' fa-2x"></i>
+    //                 </div>
+    //                 <div class="alert-text-container">
+    //                 <b>comunicado :</b><br>
+    //                     <a class="alert-link-modern"><b>'.$conf[0]['conf_mensaje'].'</b></a>
+    //                 </div>
+    //             </div>
+    //         </div>';
+    //     }
+    // }
 
 
     /// DASHBOARD SEGUIMIENTO POA (UNIDAD ADMINISTRATIVA / ESTABLECIMIENTO DE SALUD) 2026

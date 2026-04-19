@@ -4,6 +4,7 @@
 class Dashboard extends CI_Controller{
     public function __construct (){
         parent::__construct();
+        $this->load->model('mantenimiento/model_funcionario');
         $this->load->model('programacion/model_proyecto');
         $this->load->model('mantenimiento/model_entidad_tras');
         $this->load->model('mantenimiento/model_partidas');
@@ -29,7 +30,8 @@ class Dashboard extends CI_Controller{
         $this->gestion = $this->session->userData('gestion');
         $this->adm = $this->session->userData('adm');
         //$this->rol = $this->session->userData('rol_id');
-        $this->dist = $this->session->userData('dist');
+       // $this->dist = $this->session->userData('dist');
+        $this->dist_id = $this->session->userData('dist');
         //$this->dist_tp = $this->session->userData('dist_tp');
         $this->tmes = $this->session->userData('trimestre');
         $this->fun_id = $this->session->userData('fun_id');
@@ -37,6 +39,11 @@ class Dashboard extends CI_Controller{
         $this->verif_mes=$this->session->userData('mes_actual');
         $this->resolucion=$this->session->userdata('rd_poa');
         $this->tp_adm = $this->session->userData('tp_adm');
+         $this->notificaciones=$this->session->userData('estado_notificaciones');
+        $this->verif_mes=$this->session->userdata('mes_actual');
+        $this->conf_ajuste_poa=$this->session->userdata('conf_ajuste_poa'); 
+        $this->conf_credenciales=$this->session->userdata('conf_psw'); /// configuracion de credenciales
+        $this->fun_credencial=$this->session->userdata('credencial_funcionario'); /// credenciales del funcionario
         
     }
 
@@ -418,6 +425,7 @@ class Dashboard extends CI_Controller{
     /*----- dashboard Administrativo 2026 -----*/
     public function dashboard_siiplas(){
 
+
     }
 
 
@@ -425,16 +433,47 @@ class Dashboard extends CI_Controller{
     public function menu_disponibles_administrativo(){
         $menu_disponibles=$this->model_configuracion->modulos_disponibles();
         $tabla='';
+
+        // 1. Estilos del Loading (Fondo Negro Formal)
+        $tabla.='
+        <style>
+            #formal-overlay {
+                display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: #000000; z-index: 99999; 
+                flex-direction: column; align-items: center; justify-content: center;
+                transition: all 0.5s;
+            }
+            .spinner-light {
+                width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1);
+                border-top: 3px solid #ffffff; border-radius: 50%;
+                animation: spin-formal 1s linear infinite;
+            }
+            @keyframes spin-formal { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            .loading-text {
+                color: white; margin-top: 20px; font-family: "Segoe UI", sans-serif;
+                letter-spacing: 4px; text-transform: uppercase; font-size: 13px; font-weight: 300;
+            }
+        </style>
+
+        <div id="formal-overlay">
+            <div class="spinner-light"></div>
+            <div class="loading-text">Ingresando al modulo, espere porfavor ....</div>
+            <div id="mod-target" style="color: #555; font-size: 10px; margin-top: 5px; letter-spacing: 2px;"></div>
+        </div>';
+
         $tabla.='<div class="row">';
         if(count($menu_disponibles)!=0){
             foreach($menu_disponibles as $row){
             $tabla.='
                 <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                    <a href="'.base_url().'index.php/'.$row['url'].'"  class="jarvismetro-tile big-cubes bg-color-greenLight">
-                    <div class="well1" align="center">
-                        <img class="img-circle" src="'.base_url().''.$row['icono_mod'].'"  style="margin-left:0px; width: 95px"/>
-                        <h1 style="font-size: 11px;"><b>'.$row['mod_descripcion'].'</b></h1>
-                    </div>
+                    <!-- Mantenemos tus clases originales y añadimos onclick -->
+                    <a href="'.base_url().'index.php/'.$row['url'].'" 
+                       class="jarvismetro-tile big-cubes bg-color-greenLight" 
+                       onclick="showFormalLoading(\''.$row['mod_descripcion'].'\')">
+                        <div class="well1" align="center">
+                            <img class="img-circle" src="'.base_url().''.$row['icono_mod'].'"  style="margin-left:0px; width: 95px"/>
+                            <h1 style="font-size: 11px;"><b>'.$row['mod_descripcion'].'</b></h1>
+                        </div>
                     </a>
                 </div>';
             }
@@ -443,6 +482,15 @@ class Dashboard extends CI_Controller{
             $tabla.='SIN MODULOS DISPONIBLES';
         }
         $tabla.='</div>';
+
+        // 2. Script de activación
+        $tabla.='
+        <script>
+            function showFormalLoading(nombre) {
+                document.getElementById("mod-target").innerText = nombre;
+                document.getElementById("formal-overlay").style.display = "flex";
+            }
+        </script>';
 
         return $tabla;
     }
@@ -612,6 +660,8 @@ class Dashboard extends CI_Controller{
         return $formulario;
     }
 
+
+    //// Mensaje Dashboard 2026
     public function mensaje_sistema_dasboard_seguimiento() {
         $conf = $this->model_configuracion->get_configuracion_session();
         $tabla = '';
@@ -630,6 +680,45 @@ class Dashboard extends CI_Controller{
 
             // 2. Construimos un único bloque de HTML dinámico
             $tabla .= '
+                <style>
+                    .alert-modern {
+                        position: relative;
+                        padding: 18px 25px;
+                        border-radius: 12px;
+                        color: #fff !important;
+                        margin-bottom: 20px;
+                        overflow: hidden;
+                        border: none;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                    }
+                    
+                    /* Colores con degradados suaves */
+                    .alert-modern-danger  { background: linear-gradient(135deg, #ed5565, #da4453); }
+                    .alert-modern-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+                    .alert-modern-success { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+
+                    .alert-content-wrapper { display: flex; align-items: center; position: relative; z-index: 5; }
+                    .alert-icon-main { margin-right: 20px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 20px; }
+                    
+                    .alert-title-tag { font-size: 0.75em; font-weight: 800; letter-spacing: 1px; opacity: 0.9; }
+                    .alert-link-modern { color: #fff !important; text-decoration: none !important; font-size: 1.15em; font-weight: 500; }
+
+                    .alert-bg-icon {
+                        position: absolute;
+                        right: -15px;
+                        bottom: -20px;
+                        font-size: 6em;
+                        opacity: 0.12;
+                        transform: rotate(-12deg);
+                        z-index: 1;
+                    }
+
+                    .fade-in-alert { animation: slideInDown 0.6s ease-out; }
+                    @keyframes slideInDown {
+                        from { opacity: 0; transform: translateY(-15px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                </style>
             <div class="alert-modern alert-modern-'.$config['clase'].' fade-in-alert">
                 <i class="fa '.$config['icono'].' alert-bg-icon"></i>
                 <div class="alert-content-wrapper">
@@ -646,6 +735,433 @@ class Dashboard extends CI_Controller{
 
         return $tabla;
     }
+
+
+    //// Cambio de Gestion 2026
+    /*----------- Lista de Gestiones Disponibles ---------*/
+    public function list_gestiones(){
+        $listar_gestion= $this->model_configuracion->lista_gestion();
+        $tabla='';
+
+        $tabla.='
+                <input type="hidden" name="gest" id="gest" value="'.$this->gestion.'">
+                <select name="gestion_usu" id="gestion_usu" class="form-control" required>
+                <option value="0">seleccionar gestión</option>'; 
+        foreach ($listar_gestion as $row) {
+            if($row['ide']==$this->gestion){
+                $tabla.='<option value="'.$row['ide'].'" select >'.$row['ide'].'</option>';
+            }
+            else{
+                $tabla.='<option value="'.$row['ide'].'" >'.$row['ide'].'</option>';
+            }
+        };
+        $tabla.='</select>';
+        return $tabla;
+    }
+
+    public function cambiar_gestion() {
+            $gestiones=$this->list_gestiones();
+            $cambiar_gestion='';
+            $cambiar_gestion.='
+                <div class="modal fade" id="modal_nuevo_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-body">
+                        <form action="'.site_url().'/cambiar_session" id="form_nuevo" name="form_nuevo" class="form-horizontal" method="post">
+                            <h3 class="alert alert-info"><center>CAMBIAR GESTI&Oacute;N - '.$this->gestion.'</center></h3>   
+                            <fieldset>
+                              <div class="form-group">
+                                  <div class="form-group">
+                                    <label class="col-md-2 control-label">GESTI&Oacute;N</label>
+                                    <div class="col-md-10">
+                                        '.$gestiones.'
+                                    </div>
+                                  </div>
+                              </div>
+                            </fieldset>                    
+                            <div class="form-actions">
+                                <div class="row">
+                                  <div class="col-md-12" align="right">
+                                    <button class="btn btn-default" data-dismiss="modal" id="cl" title="CANCELAR">CANCELAR</button>
+                                    <button type="button" name="subir_form" id="subir_form" class="btn btn-info" >CAMBIAR GESTI&Oacute;N</button>
+                                    <center><img id="load" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="50" height="50"></center>
+                                  </div>
+                                </div>
+                            </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>';
+
+        return $cambiar_gestion;
+    }
+    //// Fin Cambio de Gestion 2026
+
+    //// Cambiar Trimestre 2026
+    /*--- Lista de Gestiones Disponibles ---*/
+    public function list_trimestre(){
+        $listar_trimestre= $this->model_configuracion->get_mes_trimestre();
+        $tmes=$this->model_evaluacion->trimestre();
+        $tabla='';
+
+        $tabla.='
+                <input type="hidden" name="tmes" id="tmes" value="'.$this->tmes.'">
+                <select name="trimestre_usu" id="trimestre_usu" class="form-control" required>
+                <option value="0">seleccionar Trimestre</option>'; 
+        foreach ($listar_trimestre as $row) {
+                if($row['trm_id']!=0 & $row['trm_id']<4){
+                    if($row['trm_id']==$tmes[0]['trm_id']){
+                        $tabla.='<option value="'.$row['trm_id'].'" select>'.$row['trm_descripcion'].'</option>';
+                    }
+                    else{
+                        $tabla.='<option value="'.$row['trm_id'].'" >'.$row['trm_descripcion'].'</option>';
+                    }
+                }
+        };
+        $tabla.='</select>';
+        return $tabla;
+    }
+    public function cambiar_trimestre() {
+            $cambiar_trimestre='';
+            $cambiar_trimestre.='
+            <div class="modal fade" id="modal_nuevo_tr" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <form action="'.site_url().'/cambiar_session_trimestre" id="form_trimestre" name="form_trimestre" class="form-horizontal" method="post">
+                        <h4 class="alert alert-info"><center>CAMBIAR TRIMESTRE - '.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</center></h4>   
+                        <fieldset>
+                          <div class="form-group">
+                              <div class="form-group">
+                                  <label class="col-md-2 control-label">TRIMESTRE</label>
+                                  <div class="col-md-10">
+                                      '.$this->list_trimestre().'
+                                  </div>
+                              </div>
+                          </div>
+                        </fieldset>                    
+                        <div class="form-actions">
+                            <div class="row">
+                              <div class="col-md-12" align="right">
+                                <button class="btn btn-default" data-dismiss="modal" id="cl" title="CANCELAR">CANCELAR</button>
+                                <button type="button" name="subir_formt" id="subir_formt" class="btn btn-info" >CAMBIAR TRIMESTRE</button>
+                                <center><img id="loadt" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="50" height="50"></center>
+                              </div>
+                            </div>
+                        </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>';
+
+        return $cambiar_trimestre;
+    }
+    //// FIN Cambiar Trimestre 2026
+
+
+    /*---- GET LISTADO NOTIFICACION POA MENSUAL 2026 ----*/
+    public function notificacion_poa_mensual($nro){
+        $tabla='';
+        if($this->fun_id==592 || $this->fun_id==709){ /// Exclusivo La paz
+            $req=$this->model_notificacion->nro_requerimientos_acertificar_mensual_x_mes_regional($this->dep_id,$this->verif_mes[1]);
+        }
+        else{
+            $req=$this->model_notificacion->nro_requerimientos_acertificar_mensual_x_mes_distrital($this->dist_id,$this->verif_mes[1]);
+        }
+
+        
+        $ddep = $this->model_proyecto->dep_dist($this->dist_id);
+        $tit_requerimiento='';
+        
+        if(count($req)!=0){
+            $tit_requerimiento='y '.$req[0]['requerimientos'].' Requerimientos con un monto de Bs. '.number_format($req[0]['monto'], 2, ',', '.').' que deben ser <b>EVALUADOS</b> y <b>CERTIFICADOS</b>';
+        }
+
+        
+        $tabla.='
+            <div class="alert alert-success" role="alert" title='.$this->dist_id.' style="text-align:justify">
+                <h4 class="alert-heading"><b>PROCESO DE NOTIFICACIÓN POA '.$this->verif_mes[2].' / '.$this->gestion.' !!</b></h4>
+                <p>Hola '.$this->session->userdata('funcionario').', la '.strtoupper($ddep[0]['dist_distrital']).' tiene programado en su POA '.$this->gestion.' para el mes de '.$this->verif_mes[2].' : '.$nro.' Actividades </b> '.$tit_requerimiento.'. </p>
+                <hr>
+                <p class="mb-0">
+                    <a data-toggle="modal" data-target="#modal_form4_mes" id="'.$this->dist_id.'" class="btn btn-success form4_mes" title=""><img src="'.base_url().'assets/Iconos/application_cascade.png" width="20" height="20"/>&nbsp;<b style="font-size:10px">NOTIFICACIÓN GASTO CORRIENTE</b></a>';
+                    if(count($this->model_notificacion->list_requerimiento_pinversion_programado_al_mes_distrital($this->dist_id,$this->verif_mes[1]))!=0){
+                       $tabla.='&nbsp;<a data-toggle="modal" data-target="#modal_form4_mes" id="'.$this->dist_id.'" class="btn btn-success pi_mes" title=""><img src="'.base_url().'assets/Iconos/application_cascade.png" width="20" height="20"/>&nbsp;<b style="font-size:10px">NOTIFICACIÓN PROY. INVERSIÓN</b></a>';
+                    }
+                    $tabla.='
+                    
+                </p>
+            </div>';
+
+        return $tabla;
+    }
+
+    //// Modal para el listado de la notificacion poa
+    public function modal_notificacion_poa_mensual(){
+        $modal_notificacion_poa='';
+            $modal_notificacion_poa.='
+                <div class="modal fade" id="modal_form4_mes" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document" id="mdialTamanio">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                      </div>
+                      <div class="modal-body" align="center">
+                        <div id="Notificacion_formN4"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>';
+        return $modal_notificacion_poa;
+    }
+
+    ///// Solicitudes de Password
+    public function solicitudes_password(){
+        $tabla='';
+            $solicitudes_password=$this->model_funcionario->listado_solicitud_contraseñas();
+            if(count($solicitudes_password)!=0 & $this->fun_id==399){
+                $data['solicitudes_pass']='
+                <input name="base" type="hidden" value="'.base_url().'">
+                    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" style="">
+                        <div class="modal-dialog modal-login" id="mdialTamanio_psw">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 style="color:blue; text-align:center"><b>Atención de Solicitudes de Contraseña</b></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div style="color:blue; font-size:10px;">Tienes ('.count($solicitudes_password).') Solicitudes por atender..</div>
+                                    <table class="table table-bordered">
+                                    <thead>
+                                      <tr title="" >
+                                        <th scope="col" style="text-align:center;">#</th>
+                                        <th scope="col" style="text-align:center;">TRABAJADOR</th>
+                                        <th scope="col" style="text-align:center;">USUARIO</th>
+                                        <th scope="col" style="text-align:center;">DISTRITAL</th>
+                                        <th scope="col" style="text-align:center;">CORREO ELECTRONICO</th>
+                                        <th scope="col" style="text-align:center;"></th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>';
+                                    $nro=0;
+                                    foreach($solicitudes_password as $row){
+                                        $nro++;
+                                        $tabla.='
+                                        <tr>
+                                            <td>'.$nro.'</td>
+                                            <td>'.$row['fun_nombre'].' '.$row['fun_paterno'].' '.$row['fun_materno'].'</td>
+                                            <td>'.$row['fun_usuario'].'</td>
+                                            <td>'.$row['dist_distrital'].'</td>
+                                            <td><b>'.$row['email'].'</b></td>
+                                            <td>
+                                                <a href="javascript:abreVentana(\''.site_url("").'/solpassw/'.$row['fun_id'].'\');" class="btn btn-default" title="GENERAR REPORTE"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>USUARIO</b></font></a>
+                                            </td>
+                                        </tr>';
+                                    }
+                                    $tabla.='
+                                    </tbody>
+                                    </table>                                  
+                                </div>
+                            </div>
+                        </div>
+                    </div>';
+            }
+
+        return $tabla;
+    }
+
+
+    ///// popup para actualizar el Password
+    public function popup_credenciales_para_actualizar_contraseñas(){
+            //// ------ CREDENCIALES (INACTIVO)
+        $popup_credenciales='';
+            if(($this->conf_credenciales==1 || $this->fun_credencial==0) & $this->fun_id!=399){
+                $popup_credenciales = '
+                <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content" style="border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                            
+                            <!-- Cabecera con Gradiente de Seguridad (Verde) -->
+                            <div class="modal-header" style="background: linear-gradient(45deg, #1d976c, #93f9b9); color: white; padding: 20px; border: none;">
+                                <h4 class="modal-title" style="margin: 0; font-weight: bold; text-align: center; width: 100%; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                    <i class="fa fa-shield"></i> ACTUALIZACIÓN DE CREDENCIALES - SIIPLAS
+                                </h4>
+                            </div>
+
+                            <div class="modal-body" style="padding: 30px; font-family: sans-serif;">
+                                <!-- Mensaje de Introducción -->
+                                <div style="margin-bottom: 25px;">
+                                    <h5 style="color: #2d3e50;">Estimad@: <b>'.$this->session->userdata('funcionario').'</b></h5>
+                                    <p style="color: #4a5568; line-height: 1.6; text-align: justify;">
+                                        Para garantizar la integridad y seguridad de la información institucional, hemos implementado nuevas medidas de protección bajo las políticas del <b>Plan de Seguridad de la Información (PISI)</b>. Es obligatorio actualizar sus credenciales para continuar operando.
+                                    </p>
+                                </div>
+
+                                <!-- Recuadro de Políticas -->
+                                <div style="background-color: #f0fdf4; border-radius: 10px; padding: 20px; border: 1px solid #dcfce7;">
+                                    <h6 style="color: #166534; font-weight: bold; margin-top: 0; display: flex; align-items: center; gap: 10px;">
+                                        <i class="fa fa-lock"></i> POLÍTICA DE GESTIÓN DE CONTRASEÑAS (V. 1.1)
+                                    </h6>
+                                    <hr style="border: 0; border-top: 1px solid #bbf7d0; margin: 10px 0;">
+                                    
+                                    <ul style="color: #1e40af; font-size: 13px; padding-left: 20px; line-height: 1.8;">
+                                        <li><b>Complejidad:</b> Combine mayúsculas, minúsculas, números y símbolos (ej: @, #, $, %).</li>
+                                        <li><b>Longitud:</b> Mínimo de doce <b>(12)</b> caracteres alfanuméricos.</li>
+                                        <li><b>Historial:</b> El sistema no permitirá reutilizar contraseñas anteriores.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Footer con Acciones -->
+                            <div class="modal-footer" style="background: #f9fafb; padding: 20px; border-top: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center;">
+                                <a href="'.base_url().'index.php/admin/logout" style="color: #e53e3e; text-decoration: none; font-weight: bold; font-size: 13px;">
+                                    <i class="fa fa-sign-out"></i> Cerrar sesión
+                                </a>
+                                
+                                <a href="'.base_url().'index.php/admin/mod_contra" class="btn" style="background: #1d976c; color: white; border-radius: 25px; padding: 10px 25px; font-weight: bold; text-transform: uppercase; font-size: 12px; box-shadow: 0 4px 10px rgba(29, 151, 108, 0.3); border: none; transition: 0.3s;">
+                                    <i class="fa fa-refresh"></i> Actualizar ahora
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>';
+            }
+
+        return $popup_credenciales;
+    }
+
+
+    ///// popup para Ajustar Saldos
+    public function popup_ajustar_saldos(){
+        $popup_saldos='';
+            $ddep = $this->model_proyecto->dep_dist($this->dist_id);
+             if($this->conf_ajuste_poa==1){
+                if($this->verif_saldos_disponibles_distrital($this->dep_id,$this->dist_id)==1 & $this->dep_id!=10 & $this->gestion>2025){
+                
+                    $popup_saldos = '
+                        <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1">
+                            <div class="modal-dialog modal-lg" id="mdialTamanio_saldos">
+                                <div class="modal-content" style="border-radius: 15px; overflow: hidden; border: none;">
+                                    
+                                    <!-- Cabecera con Estilo -->
+                                    <div class="modal-header" style="background: linear-gradient(45deg, #ed213a, #93291e); color: white; padding: 20px;">
+                                        <h4 class="modal-title" style="margin: 0; font-weight: bold; text-align: center; width: 100%;">
+                                            <i class="fa fa-warning"></i> AJUSTAR DISTRIBUCIÓN DE SALDOS - GESTIÓN '.$this->gestion.'
+                                        </h4>
+                                    </div>
+
+                                    <div class="modal-body" style="padding: 25px;">
+                                        <!-- Alerta Mensaje -->
+                                        <div style="background-color: #fef2f2; border-left: 5px solid #ef4444; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                                            <h5 style="color: #991b1b; margin-top: 0;">Hola, <b>'.$this->session->userdata('funcionario').'</b></h5>
+                                            <p style="color: #7f1d1d; line-height: 1.6; margin-bottom: 0;">
+                                                La <b>'.strtoupper($ddep[0]['dist_distrital']).'</b> presenta saldos en su POA que deben ser ajustados o inscritos. 
+                                                Mientras no se regularice, las <b>CERTIFICACIONES POA</b> permanecerán inhabilitadas.
+                                            </p>
+                                        </div>
+
+                                        <!-- Lista de Unidades -->
+                                        <div style="max-height: 350px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; background: #fafafa;">
+                                            <p style="font-weight: bold; color: #4b5563; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                                <i class="fa fa-list"></i> Unidades con saldos pendientes:
+                                            </p>
+                                            '.$this->lista_unidades_con_saldo($this->dep_id, $this->dist_id).'
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer con cierre de sesión -->
+                                    <div class="modal-footer" style="background: #f9fafb; padding: 15px;">
+                                        <span style="font-size: 12px; color: #9ca3af; margin-right: auto;">Acceso restringido hasta ajuste.</span>
+                                        <a href="'.base_url().'index.php/admin/logout" class="btn btn-danger" style="border-radius: 20px; padding: 8px 20px; font-weight: bold; text-transform: uppercase; font-size: 12px;">
+                                            <i class="fa fa-sign-out"></i> Salir de la Sesión
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>';
+                }
+            }
+
+        return $popup_saldos;
+    }
+
+
+    ///// Modal muestra el listado de unidades para el seguimiewnto si cargaron o no el seguimiento poa
+    public function list_seguimiento_a_unidades(){
+        $get_unidades_seguimiento_poa_mensual='';
+            $get_unidades_seguimiento_poa_mensual.='
+            <div class="modal fade" id="modal_seguimiento" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document" id="mdialTamanio_saldos">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                  </div>
+                  <div class="modal-body" align="center">
+                    <div id="seg"></div>
+                  </div>
+                </div>
+              </div>
+            </div>';
+
+        return $get_unidades_seguimiento_poa_mensual;
+    }
+
+    ///// Modal lista de distritales para ver si registraron el seguimiento poa trimestral
+    public function modal_distritales(){
+        $distritales=$this->model_proyecto->lista_distritales();
+            $select_distrital='';
+            $select_distrital.='
+            <div class="modal fade" id="modal_seguimiento_nacional" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <form id="form_seg" name="form_seg" class="form-horizontal" method="post">
+                        <h3 class="alert alert-info"><center>SEGUIMIENTO POA - '.$this->verif_mes[2].' / '.$this->gestion.'</center></h3>   
+                        <fieldset>
+                          <div class="form-group">
+                            <div class="col-md-12">
+                              <select name="seg_reg" id="seg_reg" class="form-control" required>
+                                <option value="0">seleccionar Distrital...</option>';
+                                foreach($distritales as $row){
+                                    $select_distrital.='<option value="'.$row['dist_id'].'">'.strtoupper($row['dist_distrital']).'</option>';
+                                }
+                            $select_distrital.='
+                              </select>
+                            </div>
+                          </div>
+                        </fieldset>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>';
+
+        return $select_distrital;
+    }
+
+    ///// Modal muestra el listado de unidades para el seguimiewnto si cargaron o no el seguimiento poa por regional seleccionado
+    public function list_seguimiento_a_unidades_regional(){
+         $get_unidades_seguimiento_poa_mensual_nacional='';
+            $get_unidades_seguimiento_poa_mensual_nacional.='
+            <div class="modal fade" id="modal_respuesta" tabindex="-1" role="dialog" aria-labelledby="respuestaModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document" id="mdialTamanio_saldos"> <!-- Modal grande -->
+                      <div class="modal-content">
+                          <div class="modal-body">
+                              <div id="responsee"></div> <!-- Div para mostrar la respuesta -->
+                          </div>
+                          <div class="modal-footer">
+                              <div id="botones"></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>';
+
+        return $get_unidades_seguimiento_poa_mensual_nacional;
+    }
+
 
  /*----- estilo dashboard seguimiento -----*/
     public function style_dashboard_seguimiento(){
@@ -715,45 +1231,7 @@ class Dashboard extends CI_Controller{
 
 
     </style>
-    <style>
-        .alert-modern {
-            position: relative;
-            padding: 18px 25px;
-            border-radius: 12px;
-            color: #fff !important;
-            margin-bottom: 20px;
-            overflow: hidden;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-        }
-        
-        /* Colores con degradados suaves */
-        .alert-modern-danger  { background: linear-gradient(135deg, #ed5565, #da4453); }
-        .alert-modern-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
-        .alert-modern-success { background: linear-gradient(135deg, #2ecc71, #27ae60); }
 
-        .alert-content-wrapper { display: flex; align-items: center; position: relative; z-index: 5; }
-        .alert-icon-main { margin-right: 20px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 20px; }
-        
-        .alert-title-tag { font-size: 0.75em; font-weight: 800; letter-spacing: 1px; opacity: 0.9; }
-        .alert-link-modern { color: #fff !important; text-decoration: none !important; font-size: 1.15em; font-weight: 500; }
-
-        .alert-bg-icon {
-            position: absolute;
-            right: -15px;
-            bottom: -20px;
-            font-size: 6em;
-            opacity: 0.12;
-            transform: rotate(-12deg);
-            z-index: 1;
-        }
-
-        .fade-in-alert { animation: slideInDown 0.6s ease-out; }
-        @keyframes slideInDown {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
     <style>
         /* Animación de las barras (simulando hojas/datos) */
         .loader-document {

@@ -28,26 +28,86 @@ base = $('[name="base"]').val();
             }
           }
         }
-        function abreVentana(PDF){             
-          var direccion;
-          direccion = '' + PDF;
-          window.open(direccion, "IMPRESION" , "width=800,height=700,scrollbars=NO") ; 
+
+
+        $(document).on("click", ".btn-ajuste-loading", function(e) {
+          e.preventDefault();
+          const $boton = $(this);
+          const urlRedireccion = $boton.data('url');
+
+          // 1. Reemplazar el icono por un spinner de carga
+          $boton.html('<i class="fa fa-spinner fa-spin" style="font-size:18px; color:#2d3e50;"></i>');
+          
+          // 2. Deshabilitar para evitar clics repetidos
+          $boton.css({
+              'pointer-events': 'none',
+              'opacity': '0.7'
+          });
+
+          // 3. Pequeño delay para feedback visual antes de ir al formulario
+          setTimeout(function() {
+              window.location.href = urlRedireccion;
+          }, 400); 
+      });
+
+
+
+
+
+
+
+        function abreVentana(url) {
+            var elemento = window.event ? window.event.target.closest('a') : null;
+            var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";
+            var ancho = 1000;
+            var alto = 800;
+            var posicion_x = (screen.width / 2) - (ancho / 2);
+            var posicion_y = (screen.height / 2) - (alto / 2);
+
+            // 1. Abrimos la ventana vacía primero
+            var nuevaVentana = window.open('', '_blank', "width=" + ancho + ",height=" + alto + ",menubar=0,toolbar=0,directories=0,scrollbars=no,resizable=no,left=" + posicion_x + ",top=" + posicion_y);
+
+            // 2. Inyectamos un HTML de carga estético mientras llega la respuesta del servidor
+            nuevaVentana.document.write(`
+                <html>
+                    <head>
+                        <title>Cargando Reporte POA...</title>
+                        <style>
+                            body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+                            .loader-container { text-align: center; }
+                            .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #5B9360; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+                            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                            h2 { color: #333; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                            <h2>Generando ${tituloFinal}</h2>
+                            <p>Por favor, espere un momento.</p>
+                        </div>
+                    </body>
+                </html>
+            `);
+
+            // 3. Redirigimos la ventana a la URL real del reporte
+            nuevaVentana.location.href = url;
         }
 
-        function abreVentana2(PDF) {
-          var direccion = '' + PDF;
-          var ventana = window.open(direccion, "IMPRESION", "width=800,height=700,scrollbars=NO");
+      //   function abreVentana2(PDF) {
+      //     var direccion = '' + PDF;
+      //     var ventana = window.open(direccion, "IMPRESION", "width=800,height=700,scrollbars=NO");
 
-          // Esperar a que la ventana se cargue completamente
-            ventana.onload = function() {
-              ventana.print(); // Imprimir automáticamente
+      //     // Esperar a que la ventana se cargue completamente
+      //       ventana.onload = function() {
+      //         ventana.print(); // Imprimir automáticamente
 
-              // Cerrar la ventana después de un breve retraso
-              setTimeout(function() {
-                  ventana.close(); // Cerrar la ventana
-              }, 2000); // Ajusta el tiempo según sea necesario
-          };
-      }
+      //         // Cerrar la ventana después de un breve retraso
+      //         setTimeout(function() {
+      //             ventana.close(); // Cerrar la ventana
+      //         }, 2000); // Ajusta el tiempo según sea necesario
+      //     };
+      // }
 
 
 
@@ -55,70 +115,104 @@ base = $('[name="base"]').val();
             $('#myModal').modal('toggle')
         });
 
-        /*------ Evaluacion de Formulario N 4 ------*/
-        $(function () {
-          var prod_id = ''; var proy_id = '';
-          $(".form4_mes").on("click", function (e) {
-              dist_id = $(this).attr('id');
-              $('#operaciones').html('<div class="loading" align="center"><img src="'+base_url()+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Cargando lista de Actividades a ejecutar este mes ...</div>');
 
-              var url = base+"index.php/ejecucion/cseguimiento/get_form4_gc_mes";
-              var request;
-              if (request) {
-                  request.abort();
-              }
-              request = $.ajax({
-                  url: url,
+
+        /*------ Notificacion POA Gasto Corriente 2026 ------*/
+        $(function () {
+          $(".form4_mes").on("click", function(e) {
+              const dist_id = $(this).attr('id');
+              const $contenedor = $('#Notificacion_formN4');
+              
+              // Insertamos el loading con una estructura CSS limpia
+              $contenedor.html(`
+                  <div class="loading-container">
+                      <div class="spinner"></div>
+                      <p>Cargando actividades del mes...</p>
+                  </div>
+              `);
+
+              if (window.activeRequest) window.activeRequest.abort();
+
+              window.activeRequest = $.ajax({
+                  url: `${base}index.php/ejecucion/cseguimiento/get_form4_gc_mes`,
                   type: "POST",
                   dataType: 'json',
-                  data: "dist_id="+dist_id
-              });
-
-              request.done(function (response, textStatus, jqXHR) { 
-                  if (response.respuesta == 'correcto') {
-                      $('#operaciones').html(response.tabla);
+                  data: { dist_id: dist_id }
+              })
+              .done(response => {
+                  if (response.respuesta === 'correcto') {
+                      $contenedor.hide().html(response.tabla).fadeIn(); // Efecto visual suave
                   } else {
-                      alertify.error("ERROR AL RECUPERAR DATOS, PORFAVOR CONTACTESE CON EL ADMINISTRADOR"); 
+                      alertify.error("Error al recuperar datos.");
                   }
+              })
+              .fail((jqXHR, textStatus) => {
+                  if (textStatus !== "abort") $contenedor.html('<p>Error de conexión.</p>');
               });
           });
 
 
-          //// Proyectos de Inversion
-          $(".pi_mes").on("click", function (e) {
+          //// Notificacion Poa Proyectos de Inversion
+          $(".pi_mes").on("click", function(e) {
+              const dist_id = $(this).attr('id');
+              const $contenedor = $('#Notificacion_formN4');
+              
+              // Insertamos el loading con una estructura CSS limpia
+              $contenedor.html(`
+                  <div class="loading-container">
+                      <div class="spinner"></div>
+                      <p>Cargando Notificacion POA - Inversión del mes...</p>
+                  </div>
+              `);
 
-            dist_id = $(this).attr('id');
+              if (window.activeRequest) window.activeRequest.abort();
 
-            $('#pinversion').html('<div class="loading" align="center"><img src="'+base_url()+'/assets/img_v1.1/preloader.gif" alt="loading" alt="loading" /><br/>Cargando lista de Proyectos de Inversión a ejecutar este mes ...</div>');
-
-            var url = base+"index.php/ejecucion/cseguimiento/get_form5_pi_mes";
-            var request;
-            if (request) {
-                request.abort();
-            }
-            request = $.ajax({
-                url: url,
-                type: "POST",
-                dataType: 'json',
-                data: "dist_id="+dist_id
-            });
-
-            request.done(function (response, textStatus, jqXHR) { 
-                if (response.respuesta == 'correcto') {
-                    $('#pinversion').html(response.tabla);
-                } else {
-                    alertify.error("ERROR AL RECUPERAR DATOS, PORFAVOR CONTACTESE CON EL ADMINISTRADOR"); 
-                }
-            });
-
+              window.activeRequest = $.ajax({
+                  url: `${base}index.php/ejecucion/cseguimiento/get_form5_pi_mes`,
+                  type: "POST",
+                  dataType: 'json',
+                  data: { dist_id: dist_id }
+              })
+              .done(response => {
+                  if (response.respuesta === 'correcto') {
+                      $contenedor.hide().html(response.tabla).fadeIn(); // Efecto visual suave
+                  } else {
+                      alertify.error("Error al recuperar datos.");
+                  }
+              })
+              .fail((jqXHR, textStatus) => {
+                  if (textStatus !== "abort") $contenedor.html('<p>Error de conexión.</p>');
+              });
           });
+          ////// ------ FIN NOTIFICACIONES POA
 
 
-          //// Seguimiento POA a unidades por responsable poa Regional
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          //// Seguimiento POA a unidades por responsable poa Regional 2026
           $(".seg_uni").on("click", function (e) {
             dist_id = $(this).attr('id');
 
-            $('#seg').html('<div class="loading" align="center"><br/>Cargando lista de Proyectos de Inversión a ejecutar este mes ...</div>');
+            $('#seg').html('<div class="loading-container"><div class="spinner"><p>Cargando Listado ....</p></div></div>');
 
             var url = base+"index.php/ejecucion/cseguimiento/get_unidades_seguimiento_poa_mensual";
             var request;
@@ -177,7 +271,7 @@ base = $('[name="base"]').val();
 
 
 
-            $(function () {
+          $(function () {
           $("#subir_form").on("click", function () {
             val=document.getElementById("gestion_usu").value;
 

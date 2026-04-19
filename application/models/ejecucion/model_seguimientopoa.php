@@ -209,7 +209,7 @@ class Model_seguimientopoa extends CI_Model{
 
 
 
-    /*-- GET LISTA DE OPERACIONES PROGRAMADO EN EL MES (DISTRITAL)--*/
+    /*-- GET LISTA DE FORM 4 PROGRAMADO EN EL MES (DISTRITAL)--*/
     public function get_lista_operaciones_programados($dist_id,$mes_id,$gestion,$proy_id){
         $sql = '
                 select *

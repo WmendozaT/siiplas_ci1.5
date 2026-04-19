@@ -1385,7 +1385,7 @@ class Cseguimiento extends CI_Controller {
     }
 
 
-    /*--- LISTA DE OPERACIONES A EJECUTAR EN EL MES ----*/
+    /*--- NOTIFICACION POA LISTA DE FORM 4 A EJECUTAR EN EL MES ----*/
     public function seguimiento_form4_gc_mes($dist_id){
       if($this->dep_id==2){ /// Exclusivo La paz
         $unidades=$this->model_seguimientopoa->get_lista_unidad_operaciones_regional($this->dep_id,$this->verif_mes[1],$this->gestion);
@@ -1400,7 +1400,7 @@ class Cseguimiento extends CI_Controller {
           <div class="jarviswidget well transparent" id="wid-id-9" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
             <header>
               <span class="widget-icon"> <i class="fa fa-comments"></i> </span>
-              <h2>ACTIVIDADES PROGRAMADAS MES '.$this->verif_mes[2].' - '.$this->gestion.'</h2>
+              <h3>ACTIVIDADES PROGRAMADAS MES '.$this->verif_mes[2].' - '.$this->gestion.'</h3>
             </header>
             <div>
               <div class="jarviswidget-editbox">
@@ -1410,10 +1410,10 @@ class Cseguimiento extends CI_Controller {
                 $nro=0;
                   foreach ($unidades as $rowp) {
                     if($this->fun_id==592 || $this->fun_id==709){ /// Exclusivo la paz
-                      $operaciones=$this->model_seguimientopoa->get_lista_operaciones_programados_regional($this->dep_id,$this->verif_mes[1],$this->gestion,$rowp['proy_id']);
+                      $formN4=$this->model_seguimientopoa->get_lista_operaciones_programados_regional($this->dep_id,$this->verif_mes[1],$this->gestion,$rowp['proy_id']);
                     }
                     else{
-                      $operaciones=$this->model_seguimientopoa->get_lista_operaciones_programados($dist_id,$this->verif_mes[1],$this->gestion,$rowp['proy_id']);
+                      $formN4=$this->model_seguimientopoa->get_lista_operaciones_programados($dist_id,$this->verif_mes[1],$this->gestion,$rowp['proy_id']);
                     }
                   
                   $nro++;
@@ -1431,45 +1431,39 @@ class Cseguimiento extends CI_Controller {
                           <section class="col col-6" align=left>
                             <input id="searchTerm'.$nro.'" type="text" onkeyup="doSearch('.$nro.')" class="form-control" placeholder="BUSCADOR...." style="width:45%;"/><br>
                           </section>
-                            <table class="table table-bordered" border=1 style="width:100%;" id="datos'.$nro.'">
-                                <thead>
-                                  <tr align=center>
+                           <table class="table table-custom table-hover" id="datos'.$nro.'">
+                            <thead>
+                                <tr>
                                     <th style="width:1%;">#</th>
-                                    <th style="width:10%;" align=center>UNIDAD ORGANIZACIONAL</th>
-                                    <th style="width:10%;" align=center>UNIDAD RESPONSABLE</th>
-                                    <th style="width:25%;" align=center>ACTIVIDAD</th>
-                                    <th style="width:3%;" align=center>PROGRAMADO</th>
-                                    <th style="width:3%;" align=center>EJECUTADO</th>
-                                    <th style="width:1%;"></th>
-                                  </tr>
-                                </thead>
-                                <tbody>';
-                                $nro_ope=0;
-                                foreach ($operaciones as $row) {
-                                  $ejec=$this->model_producto->verif_ope_evaluado_mes($row['prod_id'],$this->verif_mes[1]);
-                                  $evaluado=0;
-                                  if(count($ejec)!=0){
-                                    $evaluado=$ejec[0]['pejec_fis'];
-                                  }
-                                  $nro_ope++;
-                                  $tabla.='
-                                  <tr>
-                                    <td align=center>'.$nro_ope.'</td>
-                                    <td><b>'.$row['aper_actividad'].' '.$row['tipo'].' '.$row['act_descripcion'].'</b></td>
-                                    <td>'.$row['serv_cod'].' '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</td>
-                                    <td bgcolor="#ddf8f5">'.$row['prod_cod'].' .- '.$row['prod_producto'].'</td>
-                                    <td bgcolor="#ddf8f5">'.round($row['pg_fis'],2).'</td>
-                                    <td bgcolor="#ddf8f5">'.round($evaluado,2).'</td>
-                                    <td bgcolor="#ddf8f5">
-                                      <a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$row['com_id'].'"  target="_blank" title="REALIZAR SEGUIMIENTO">
-                                        <img src="'.base_url().'assets/Iconos/application_go.png" WIDTH="20" HEIGHT="20"/></b>
-                                      </a>
+                                    <th style="width:10%;">UNIDAD RESPONSABLE</th>
+                                    <th style="width:50%;">ACTIVIDAD</th>
+                                    <th style="width:5%; text-align:center;">PROG.</th>
+                                    <th style="width:5%; text-align:center;">EJEC.</th>
+                                    <th style="width:2%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>';
+                            $nro_ope = 0;
+                            foreach ($formN4 as $row) {
+                                $ejec = $this->model_producto->verif_ope_evaluado_mes($row['prod_id'], $this->verif_mes[1]);
+                                $evaluado = count($ejec) != 0 ? $ejec[0]['pejec_fis'] : 0;
+                                $nro_ope++;
+                                
+                                $tabla .= '
+                                <tr>
+                                    <td class="text-center">'.$nro_ope.'</td>
+                                    <td><small>'.$row['serv_cod'].' '.$row['serv_descripcion'].'</small></td>
+                                    <td class="col-highlight">'.$row['prod_cod'].' .- '.$row['prod_producto'].'</td>
+                                    <td class="text-center font-weight-bold">'.round($row['pg_fis'], 2).'</td>
+                                    <td class="text-center font-weight-bold text-primary">'.round($evaluado, 2).'</td>
+                                    <td class="text-center">
+                                        <a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$row['com_id'].'" target="_blank" class="btn-action" title="REALIZAR SEGUIMIENTO">
+                                            <img src="'.base_url().'assets/Iconos/application_go.png" width="18" height="18"/>
+                                        </a>
                                     </td>
-                                  </tr>';
-                                }
-                            $tabla.=
-                          '</tbody>
-                        </table>';
+                                </tr>';
+                            }
+                        $tabla .= '</tbody></table>';
                       $tabla.='
                       </div>
                     </div>
@@ -1635,7 +1629,7 @@ class Cseguimiento extends CI_Controller {
           $dist_id = $_POST['value'];
           $tabla=$this->listado_unidades($dist_id,0);
           $reporte='
-          <a href="javascript:abreVentana2(\''.site_url("").'/seguimiento_a_unidades/'.$dist_id.'\');" title="REPORTE" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="25" HEIGHT="20"/></a>
+          <a href="javascript:abreVentana(\''.site_url("").'/seguimiento_a_unidades/'.$dist_id.'\');" title="REPORTE" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="25" HEIGHT="20"/></a>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>';
           // Ejemplo de respuesta
           $response = [
@@ -1724,103 +1718,102 @@ class Cseguimiento extends CI_Controller {
 
 
     /*--- LISTA DE UNIDADES QUE HICIERON EL SEGUIMIENTO POA----*/
-    public function listado_unidades($dist_id,$tp_reporte){
-        /// tp_reporte:  0 normal, 1 reporte
-        $tabla='';
-        $get_distrital=$this->model_proyecto->dep_dist($dist_id);
-        $unidades=$this->model_notificacion->lista_usuario_a_unidades($dist_id,0); /// parte administrativa
-        $salud=$this->model_notificacion->lista_usuario_a_unidades($dist_id,1); /// parte Salud
-        
-        $titulo='';
-        if($tp_reporte==0){
-          $titulo='<div class="alert alert-info">SEGUIMIENTO POA MENSUAL <b>'.strtoupper($get_distrital[0]['dist_distrital']).' AL MES DE '.$this->verif_mes[2].' / '.$this->gestion.'</b></div>';
-        }
-        
-        $tabla.='
-        '.$titulo.'
-        <table class="table table-bordered" border=1 style="width:100%;">
-          <thead>
+  public function listado_unidades($dist_id, $tp_reporte) {
+      $tabla = '';
+      $get_distrital = $this->model_proyecto->dep_dist($dist_id);
+      $unidades = $this->model_notificacion->lista_usuario_a_unidades($dist_id, 0); // Administrativa
+      $salud = $this->model_notificacion->lista_usuario_a_unidades($dist_id, 1);    // Salud
+      
+      // Título con el estilo de alerta que definimos antes
+      if ($tp_reporte == 0 && !empty($get_distrital)) {
+          $tabla .= '
+          <div style="background-color: #f0fdfa; border-left: 5px solid #1c7368; padding: 15px; margin-bottom: 15px; border-radius: 4px;">
+              <span style="color: #165a52; font-weight: bold; font-size: 14px;">
+                  <i class="fa fa-info-circle"></i> SEGUIMIENTO POA MENSUAL: '.strtoupper($get_distrital[0]['dist_distrital']).' - '.$this->verif_mes[2].' / '.$this->gestion.'
+              </span>
+          </div>';
+      }
+      
+      $tabla .= '
+      <style>
+          .table-seg { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 10px; border: 1px solid #e2e8f0; }
+          .table-seg thead th { background-color: #2d3e50; color: white; padding: 10px; font-size: 10px; text-transform: uppercase; border: 1px solid #1e293b; }
+          .table-seg tbody td { padding: 8px; border: 1px solid #e2e8f0; vertical-align: middle; }
+          .row-success { background-color: #f0fdf4 !important; } /* Verde suave para completados */
+          .badge-si { background-color: #16a34a; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+          .btn-report { display: inline-block; padding: 5px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; transition: 0.2s; }
+          .btn-report:hover { transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      </style>
+
+      <table class="table-seg">
+        <thead>
           <tr>
-            <th style="width:1%; text-align:center">#</th>
-            <th style="width:2%; text-align:center">APERTURA PROGRAMÁTICA</th>
-            <th style="width:5%; text-align:center">UNIDAD / ESTABLECIMIENTO</th>
-            <th style="width:5%; text-align:center">UNIDAD RESPONSABLE</th>
-            <th style="width:3%; text-align:center">USUARIO</th>
-            <th style="width:3%; text-align:center">FECHA DE INGRESO</th>
-            <th style="width:3%; text-align:center">REALIZO EL LLENADO DEL FORMULARIO?</th>';
-            if($tp_reporte==0){
-              $tabla.='<th style="width:3%; text-align:center">REPORTE DE SEGUIMIENTO</th>';
+            <th style="width:1%;">#</th>
+            <th style="width:10%;">APERTURA PROGRAMÁTICA</th>
+            <th style="width:20%;">UNIDAD / ESTABLECIMIENTO</th>
+            <th style="width:20%;">UNIDAD RESPONSABLE</th>
+            <th style="width:15%;">USUARIO</th>
+            <th style="width:10%;">FECHA INGRESO</th>
+            <th style="width:8%; text-align:center;">¿LLENÓ FORM?</th>';
+            if ($tp_reporte == 0) {
+              $tabla .= '<th style="width:5%; text-align:center;">REPORTE</th>';
             }
-            $tabla.='
+      $tabla .= '
           </tr>
-          </thead>
-          <tbody>';
-          $nro=0;
-          foreach ($unidades as $rowp) {
-            $nro++;
-            $get_registro=$this->model_notificacion->get_verif_registro_a_seguimiento($rowp['com_id'],$this->verif_mes[1]);
-            $fecha_ingreso='';$registro=''; $reporte='';
-            $color='';
-            if(count($get_registro)!=0){
-              $color='#eff5ed';
-              $fecha_ingreso=$get_registro[0]['ingreso_fecha'];
-              if($get_registro[0]['nro_act']==1){
-                $registro='SI';
-                $reporte='<center><a href="javascript:abreVentana(\''.site_url("").'/seguimiento_poa/reporte_seguimientopoa_mensual/'.$rowp['com_id'].'/'.$get_registro[0]['mes'].'\');" title="IMPRESION SEGUIMIENTO" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="20" HEIGHT="20"/></a></center>';
-              }
-            }
+        </thead>
+        <tbody>';
 
-            $tabla.='
-            <tr bgcolor='.$color.'>
-              <td style="font-size:12px; text-align:center;"><b>'.$nro.'</b></td>
-              <td style="font-size:12px;"><b>'.$rowp['aper_programa'].' '.$rowp['aper_proyecto'].' '.$rowp['aper_actividad'].'</b></td>
-              <td style="font-size:10.5px;">'.$rowp['tipo'].' '.$rowp['actividad'].' - '.$rowp['abrev'].'</td>
-              <td>'.$rowp['tipo_subactividad'].' '.$rowp['serv_descripcion'].'</td>
-              <td><b>'.$rowp['fun_usuario'].'</b></td>
-              <td>'.$fecha_ingreso.'</td>
-              <td style="font-size:15px; text-align:center;"><b>'.$registro.'</b></td>';
-              if($tp_reporte==0){
-                $tabla.='<td style="font-size:15px; text-align:center;">'.$reporte.'</td>';
+      $nro = 0;
+      // Combinamos ambos arreglos o los iteramos consecutivamente
+      $sectores = array($unidades, $salud);
+      
+      foreach ($sectores as $indice => $dataset) {
+          foreach ($dataset as $rowp) {
+              $nro++;
+              $get_registro = $this->model_notificacion->get_verif_registro_a_seguimiento($rowp['com_id'], $this->verif_mes[1]);
+              
+              $bg_class = '';
+              $fecha_ingreso = '-';
+              $registro = '';
+              $reporte = '';
+
+              if (count($get_registro) != 0) {
+                  $bg_class = 'row-success';
+                  $fecha_ingreso = '<b>'.date("d/m/Y", strtotime($get_registro[0]['ingreso_fecha'])).'</b>';
+                  
+                  if ($get_registro[0]['nro_act'] == 1) {
+                      $registro = '<span class="badge-si">SI</span>';
+                      $reporte = '
+                      <a href="javascript:abreVentana(\''.site_url("seguimiento_poa/reporte_seguimientopoa_mensual/".$rowp['com_id']."/".$get_registro[0]['mes']).'\');" 
+                         class="btn-report" title="IMPRIMIR">
+                          <img src="'.base_url().'assets/ifinal/requerimiento.png" width="18" height="18"/>
+                      </a>';
+                  }
               }
-              $tabla.='
-            </tr>';
+
+              // Definir Usuario según el dataset (Salud vs Admin)
+              $usuario = ($indice == 0) ? $rowp['fun_usuario'] : $rowp['dato_ingreso'];
+              $unidad_resp = ($indice == 0) ? $rowp['tipo_subactividad'].' '.$rowp['serv_descripcion'] : $rowp['com_componente'];
+
+              $tabla .= '
+              <tr class="'.$bg_class.'">
+                <td style="text-align:center;">'.$nro.'</td>
+                <td><b>'.$rowp['aper_programa'].' '.$rowp['aper_proyecto'].' '.$rowp['aper_actividad'].'</b></td>
+                <td><small>'.$rowp['tipo'].'</small><br><b>'.$rowp['actividad'].'</b></td>
+                <td>'.$unidad_resp.'</td>
+                <td><i class="fa fa-user" style="color:#94a3b8"></i> '.$usuario.'</td>
+                <td style="text-align:center;">'.$fecha_ingreso.'</td>
+                <td style="text-align:center;">'.$registro.'</td>';
+                if ($tp_reporte == 0) {
+                  $tabla .= '<td style="text-align:center;">'.$reporte.'</td>';
+                }
+              $tabla .= '</tr>';
           }
+      }
 
-          foreach ($salud as $rowp) {
-            $nro++;
-            $get_registro=$this->model_notificacion->get_verif_registro_a_seguimiento($rowp['com_id'],$this->verif_mes[1]);
-            $color='';$fecha_ingreso='';$registro='';$reporte='';
-            if(count($get_registro)!=0){
-              $color='#eff5ed';
-              $fecha_ingreso=$get_registro[0]['ingreso_fecha'];
-              if($get_registro[0]['nro_act']==1){
-                $registro='SI';
-                $reporte='<center><a href="javascript:abreVentana(\''.site_url("").'/seguimiento_poa/reporte_seguimientopoa_mensual/'.$rowp['com_id'].'/'.$get_registro[0]['mes'].'\');" title="IMPRESION SEGUIMIENTO" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="20" HEIGHT="20"/></a></center>';
-              }
-            }
-            $tabla.='
-            <tr bgcolor='.$color.'>
-              <td style="font-size:12px; text-align:center;"><b>'.$nro.'</b></td>
-              <td style="font-size:12px;"><b>'.$rowp['aper_programa'].' '.$rowp['aper_proyecto'].' '.$rowp['aper_actividad'].'</b></td>
-              <td style="font-size:10.5px;">'.$rowp['tipo'].' '.$rowp['actividad'].' - '.$rowp['abrev'].'</td>
-              <td>'.$rowp['com_componente'].'</td>
-              <td><b>'.$rowp['dato_ingreso'].'</b></td>
-              <td>'.$fecha_ingreso.'</td>
-              <td style="font-size:15px; text-align:center;"><b>'.$registro.'</b></td>';
-              if($tp_reporte==0){
-                $tabla.='<td style="font-size:15px; text-align:center;">'.$reporte.'</td>';
-              }
-              $tabla.='
-            </tr>';
-          }
-          $tabla.='
-          </tbody>
-        </table>';
-
-        return $tabla;
-
-    }
-
+      $tabla .= '</tbody></table>';
+      return $tabla;
+  }
 
 
 
@@ -1858,42 +1851,42 @@ class Cseguimiento extends CI_Controller {
                                 <section class="col col-6" align=left>
                                   <input id="searchTerm'.$rowp['aper_id'].'" type="text" onkeyup="doSearch('.$rowp['aper_id'].')" class="form-control" placeholder="BUSCADOR...." style="width:45%;"/><br>
                                 </section>
-                                <table class="table table-bordered" border=1 style="width:100%;" id="datos'.$rowp['aper_id'].'">
-                                    <thead>
-                                      <tr align=center>
-                                        <th style="width:1%;">#</th>
-                                        <th style="width:5%; text-align:center">COD. ACT.</th>
-                                        <th style="width:5% text-align:center;">PARTIDA</th>
-                                        <th style="width:30%; text-align:center">DETALLE REQUERIMIENTO</th>
-                                        <th style="width:10%; text-align:center">UNIDAD DE MEDIDA</th>
-                                        <th style="width:5%; text-align:center">CANTIDAD</th>
-                                        <th style="width:10%; text-align:center">PRECIO UNITARIO</th>
-                                        <th style="width:10%; text-align:center">PRECIO TOTAL</th>
-                                        <th style="width:10%; text-align:center">PROG. MES <br>'.$this->verif_mes[2].'</th>
-                                        <th style="width:15%; text-align:center">OBSERVACION</th>
+                                <table class="table table-custom table-hover" id="datos'.$rowp['aper_id'].'">
+                                  <thead>
+                                      <tr>
+                                          <th style="width:1%;">#</th>
+                                          <th style="width:5%;" class="text-center">COD. ACT.</th>
+                                          <th style="width:5%;" class="text-center">PARTIDA</th>
+                                          <th style="width:25%;">DETALLE REQUERIMIENTO</th>
+                                          <th style="width:10%;">U. MEDIDA</th>
+                                          <th style="width:7%;" class="text-center">CANT.</th>
+                                          <th style="width:10%;" class="text-right">P. UNITARIO</th>
+                                          <th style="width:10%;" class="text-right">COSTO TOTAL</th>
+                                          <th style="width:10%;" class="text-right bg-highlight">PROG. '.$this->verif_mes[2].'</th>
+                                          <th style="width:12%;">OBSERVACIÓN</th>
                                       </tr>
-                                    </thead>
-                                    <tbody>';
-                                    $nro_req=0;
-                                      foreach ($requerimientos as $row) {
-                                        $nro_req++;
-                                        $tabla.= '
-                                        <tr>
-                                          <td align=center style="height:10px; width:1%;">'.$nro_req.'</td>
-                                          <td align=center style="font-size: 13px; width:5%;"><b>'.$row['prod_cod'].'</b></td>
-                                          <td align=center style="font-size: 13px; width:5%;"><b>'.$row['par_codigo'].'</b></td>
-                                          <td style="width:30%;">'.$row['ins_detalle'].'</td>
-                                          <td style="width:10%;">'.$row['ins_unidad_medida'].'</td>
-                                          <td style="width:5%;" align=right>'.round($row['ins_cant_requerida'],2).'</td>
-                                          <td style="width:10%;" align=right>'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
-                                          <td style="width:10%;" align=right>'.number_format($row['ins_costo_total'], 2, ',', '.').'</td>
-                                          <td style="width:10%;" align=right><b>'.number_format($row['ipm_fis'], 2, ',', '.').'</b></td>
-                                          <td style="width:15%;" align=left>'.$row['ins_observacion'].'</td>
-                                        </tr>';
-                                      }
-                                  $tabla.=
-                                  '</tbody>
-                                </table>
+                                  </thead>
+                                  <tbody>';
+                                  $nro_req = 0;
+                                  foreach ($requerimientos as $row) {
+                                      $nro_req++;
+                                      $tabla .= '
+                                      <tr>
+                                          <td class="text-center">'.$nro_req.'</td>
+                                          <td class="text-center font-weight-bold">'.$row['prod_cod'].'</td>
+                                          <td class="text-center"><span class="badge-partida">'.$row['par_codigo'].'</span></td>
+                                          <td>'.$row['ins_detalle'].'</td>
+                                          <td>'.$row['ins_unidad_medida'].'</td>
+                                          <td class="text-center">'.round($row['ins_cant_requerida'], 2).'</td>
+                                          <td class="text-right">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
+                                          <td class="text-right font-weight-bold">'.number_format($row['ins_costo_total'], 2, ',', '.').'</td>
+                                          <td class="text-right bg-highlight font-weight-bold text-primary">
+                                              '.number_format($row['ipm_fis'], 2, ',', '.').'
+                                          </td>
+                                          <td class="text-muted"><small>'.$row['ins_observacion'].'</small></td>
+                                      </tr>';
+                                  }
+                              $tabla .= '</tbody></table>
                             </div>
                           </div>
                         </div>';
