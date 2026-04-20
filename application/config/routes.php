@@ -696,3 +696,4 @@ $route['reporte_ficha_tecnica_pinversion/(:any)'] = 'reporte_ejecucion_proyectos
 $route['Diagnostico_pei'] = 'Cdiagnostico_pei/CDiagnostico_pei/diagnostico_principal'; ///// Principal formulario de Diagnosticos
 
 
+

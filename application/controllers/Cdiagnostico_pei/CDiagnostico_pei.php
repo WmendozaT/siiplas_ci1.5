@@ -44,25 +44,26 @@ class CDiagnostico_pei extends CI_Controller {
     
     /*------- Selecciona Unidad Ejecutora -------*/
     public function Seleccion_unidadEjecutora(){
-      $UnidadEjecutora=$this->model_diagnosticoPei->lista_UnidadEjecutora();
+      $get_diagnostico=$this->model_diagnosticoPei->get_diagnostico_activo();
+      $UnidadEjecutora=$this->model_diagnosticoPei->lista_UnidadEjecutora(); /// Lista Distritales
       $tabla='';  
       $tabla.='
           <article class="col-sm-12">
             <input name="base" type="hidden" value="'.base_url().'">
             <div class="well">
               <form class="smart-form">
-                  <header>DIAGNOSTICO PEI</header>
+                  <header>DIAGNOSTICO PEI ('.$get_diagnostico[0]['g_id_inicio'].' - '.$get_diagnostico[0]['g_id_fin'].')</header>
                   <fieldset>          
                     <div class="row">
                       <section class="col col-3">
-                        <label class="label">Seleccione Unidad Ejecutora</label>
-                        <select class="form-control" id="dist_id" name="dist_id" title="SELECCIONE">
-                        <option value="0">Seleccione ..</option>';
-                        foreach($UnidadEjecutora as $row){
-                          $tabla.='<option value="'.$row['dist_id'].'">'.$row['dist_id'].'.- '.strtoupper($row['dist_distrital']).'</option>';
-                        }
-                        $tabla.='
-                        </select>
+                          <label class="label">Seleccione Unidad Ejecutora</label>
+                            <select class="form-control" id="dist_id" name="dist_id" title="SELECCIONE">
+                            <option value="0">Seleccione ..</option>';
+                            foreach($UnidadEjecutora as $row){
+                              $tabla.='<option value="'.$row['dist_id'].'">'.$row['dist_id'].'.- '.strtoupper($row['dist_distrital']).'</option>';
+                            }
+                            $tabla.='
+                          </select>
                       </section>
                     </div>
                   </fieldset>
@@ -81,10 +82,18 @@ class CDiagnostico_pei extends CI_Controller {
             $post = $this->input->post();
             // Cambiado de 'dist_id' a 'id' para que coincida con el JS
             $dist_id = $this->security->xss_clean($post['id']); 
+            $get_diagnostico=$this->model_diagnosticoPei->get_diagnostico_activo();
 
             // Aquí puedes cargar una vista y pasarla a string
-            // $tabla = $this->load->view('tu_vista_formulario', $data, TRUE);
-            $tabla = $this->unidad_ejecutora_eleccionado($dist_id); 
+            if(count($this->model_diagnosticoPei->get_distrital_formulario_diagnostico_activo($get_diagnostico[0]['pei_id'],$dist_id))==0){
+                $data_to_store = array(
+                 'pei_id' => $get_diagnostico[0]['pei_id'],
+                 'dist_id' => $dist_id,
+                );
+                $this->db->insert('formulario_diagnostico_pei', $data_to_store);
+            }
+           
+           $tabla = $this->unidad_ejecutora_eleccionado($get_diagnostico[0]['pei_id'],$dist_id);
 
             $result = array(
                 'respuesta' => 'correcto',
@@ -101,14 +110,15 @@ class CDiagnostico_pei extends CI_Controller {
     }
 
 
-    /*------- Formulario Regional / Distrital seleccionado -------*/
-    public function unidad_ejecutora_eleccionado($dist_id){
-      $distrital=$this->model_diagnosticoPei->get_distrital($dist_id);
+    /*------- Listado de formularios -------*/
+    public function unidad_ejecutora_eleccionado($pei_id,$dist_id){
+      $get_form_distrital=$this->model_diagnosticoPei->get_distrital_formulario_diagnostico_activo($pei_id,$dist_id);
+
       $tabla='';
       $tabla.='
           <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
               <div class="well well-sm well-light">
-              <h2>'.strtoupper($distrital[0]['dist_distrital']).'</h2>
+              <h2>'.strtoupper($get_form_distrital[0]['dist_distrital']).'</h2>
                 <div id="tabs">
                   <ul>
                     <li>
@@ -135,7 +145,237 @@ class CDiagnostico_pei extends CI_Controller {
                   </ul>
                   <div id="tabs-a">
                     <div class="row">
-                      a
+
+                <style>
+                .btn-imprimir { background-color: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; font-weight: bold; font-size: 16px; transition: 0.3s; }
+                .btn-imprimir:hover { background-color: #218838; }
+                
+                .viewport-container {
+                    background-color: #525659;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center; /* Centra horizontalmente */
+                   
+                    padding: 0 !important; 
+                    box-sizing: border-box;
+                    /* Permite scroll si el contenido es más grande que la pantalla (celulares) */
+                    overflow-x: auto; 
+                    width: 100%;
+                }
+
+                /* 2. LA HOJA (Tamaño Carta Fijo) */
+                .page { 
+                    background-color: white; 
+                    width: 8.5in; 
+                    min-width: 8.5in; /* Evita que se encoja en celulares */
+                    height: 11in; 
+                    padding: 0.6in 0.7in; 
+                    box-sizing: border-box; 
+                    position: relative; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #ccc;
+                }
+                
+                .fecha-impresion {
+                    position: absolute;
+                    top: 0.3in;
+                    right: 0.7in;
+                    font-size: 9pt;
+                    color: #333;
+                }
+                
+                .container {
+                    background-color: white;
+                    width: 900px;
+                    padding: 40px;
+                    border: 1px solid #ccc;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                }
+
+
+                .header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 5px; }
+                .header h1 { margin: 5px 0; font-size: 16pt; }
+
+                /* TABLA EDITABLE */
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 9pt; }
+                th { background-color: #FFC000 !important; border: 1px solid #000; padding: 8px; }
+                td { border: 1px solid #000; padding: 0; text-align: center; }
+                input { width: 100%; border: none; padding: 8px; text-align: center; box-sizing: border-box; font-size: 10pt; color:blue; background: transparent; }
+                .total-row { background-color: #FFFFCC !important; font-weight: bold; font-size: 11pt;}
+                .total-cell { background-color: #FFFF00 !important; font-weight: bold; padding: 8px; }
+
+                /* SECCIÓN DE FIRMA */
+                .firma-container {
+                    margin-top: 60px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    width: 300px; /* Ajustado para la firma */
+                }
+                .linea-firma {
+                    border-top: 1px dashed #000;
+                    width: 105%;
+                    margin-bottom: 5px;
+                }
+                .firma-texto {
+                    font-weight: bold;
+                    font-size: 8pt;
+                    text-align: center;
+                }
+
+                /* PIE DE PÁGINA */
+                .footer-nacional {
+                    position: absolute;
+                    bottom: 0.5in;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                    font-weight: bold;
+                    font-size: 7pt;
+                }
+
+                /* Estilo para el área de texto en pantalla */
+                .observaciones-input {
+                    width: 100%;
+                    height: 120px;
+                    margin-top: 10px;
+                    padding: 10px;
+                    border: 1px solid #ccc;
+                    font-family: Arial, sans-serif;
+                    font-size: 10pt;
+                    resize: none; /* Evita que el usuario deforme la hoja */
+                    box-sizing: border-box;
+                    background-color: #fafafa;
+              }
+
+                /* REGLAS DE IMPRESIÓN */
+                @media print {
+                    body { background: none; padding: 0; }
+                    body * { visibility: hidden; }
+                    .page, .page * { visibility: visible; }
+                    .page { 
+                        position: absolute; 
+                        left: 0; 
+                        top: 0; 
+                        width: 8.5in !important; 
+                        height: 11in !important; 
+                        box-shadow: none !important; 
+                    }
+                    .observaciones-input {
+                        border: 1px solid #000 !important; /* Borde negro sólido para impresión */
+                        background-color: transparent !important;
+                        overflow: hidden; /* Oculta barras de scroll en el papel */
+                    }
+                    .btn-imprimir { display: none !important; }
+                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    @page { size: letter; margin: 0; }
+                }
+
+            </style>
+    
+    <div class="viewport-container">
+    <br>
+    <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+
+    <!-- Este es el único div que se imprimirá -->
+
+    <div class="page">
+        <!-- Fecha de Impresión Automática -->
+        <div class="fecha-impresion">
+            Fecha: <span id="fecha-actual"></span>
+        </div>
+        <div class="header">
+            <p>CAJA NACIONAL DE SALUD</p>
+            <h1><b>DIAGNÓSTICO DE LA POBLACIÓN ASEGURADA</b></h1>
+        </div>
+
+        <div style="margin: 20px 0; font-weight: bold;">
+            Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+        </div>
+
+
+        <div style="font-weight: bold; margin-bottom: 10px;">1. Objetivo del relevamiento</div>
+        <div style="border: 1px solid #ccc; padding: 10px; font-size: 10.5pt; margin-bottom: 20px;">
+            Recopilar, validar y sistematizar información cuantitativa de la población afiliada (titulares y Beneficiarios) para analizar tendencias y cobertura y demanda potencial de la Caja Nacional de Salud.
+        </div>
+
+        <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada (2021 - 2025)</div>
+        
+        <table>
+            <thead>
+                <tr>
+                  <th colspan="5" style="text-align:center; width: 40%;">Tipo de población afiliada</th>
+                </tr>
+                <tr>
+                    <th style="width: 10%;text-align:center;">Gestión</th>
+                    <th style="width: 25%;text-align:center;">Cotizantes Titulares</th>
+                    <th style="width: 25%;text-align:center;">Cotizantes Pasivos</th>
+                    <th style="width: 25%;text-align:center;">Beneficiarios</th>
+                    <th style="width: 10%;text-align:center;">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                  <td style="font-size: 11pt;">2021</td>
+                  <td><input type="number" value="0"></td>
+                  <td><input type="number" value="0"></td>
+                  <td><input type="number" value="0"></td>
+                  <td class="total-row">10</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 11pt;">2022</td><td>11</td><td>15</td><td>16</td><td class="total-row">18</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 11pt;">2023</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 11pt;">2024</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 11pt;">2025</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                </tr>
+                <tr class="total-row">
+                  <td style="font-size: 11pt;">TOTAL</td><td>42</td><td>49</td><td>49</td><td class="total-row">33</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="border: 1px solid #000; padding: 15px; font-size: 10pt; margin-top: 20px;">
+            <strong>Recomendaciones:</strong><br>
+            • Recolección de datos.<br>
+            • Extraer información anual por cada categoría (2021 - 2025).<br>
+            • Verificar consistencia entre fuentes oficiales.
+        </div>
+
+        <input type="text" id="form_id" name="form_id" value='.strtoupper($get_form_distrital[0]['form_id']).'>
+        <input type="text" id="dist_id" name="dist_id" value='.$dist_id.'>
+        <div style="margin-top: 30px;">
+            <strong>3. Observaciones adicionales</strong>
+            <textarea class="observaciones-input" name="obs" id="obs" placeholder="Escriba aquí sus observaciones..."></textarea>
+        </div>
+
+                <!-- Firma -->
+        <div class="firma-container">
+            <div class="linea-firma"></div>
+            <div class="firma-texto">FIRMA: ADMINISTRADOR REGIONAL / AGENTE DISTRITAL</div>
+        </div>
+
+        <!-- Pie de página -->
+        <div class="footer-nacional">
+            DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+        </div>
+    </div>
+
+    <script>
+        // Función para la fecha automática
+        document.getElementById("fecha-actual").innerText = new Date().toLocaleDateString();
+    </script>
+    <hr>
+  </div>
+
+
                     </div>
                   </div>
 
@@ -186,10 +426,107 @@ class CDiagnostico_pei extends CI_Controller {
                 $(".ui-dialog :button").blur();
                 $("#tabs").tabs();
               })
-            </script>';
+
+
+            </script>
+            <script>
+$(document).ready(function() {
+    var timeout = null;
+    // Usamos una variable para la base_url para evitar errores de concatenación
+    var base_url = "'.base_url().'"; 
+
+    $("#obs").on("keyup", function() {
+        var texto = $(this).val();
+        var status = $("#status");
+        
+        status.show().text("Escribiendo...").css("color", "blue");
+        
+        clearTimeout(timeout);
+
+        timeout = setTimeout(function() {
+            $.ajax({
+                // Corregimos la ruta según el estándar de CI: controlador/metodo
+                url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                type: "POST",
+                dataType: "text", // Esperamos una respuesta de texto
+                data: {
+                    form_id: $("#form_id").val(),
+                    dist_id: $("#dist_id").val(),
+                    obs_nro: 1, // Enviamos el nro de observación para tu nueva tabla
+                    observacion: texto
+                },
+                success: function(response) {
+                    status.text("Guardado ✓").fadeOut(2000);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Detalle del error:", error);
+                    $("#status").text("Error al guardar").css("color", "red");
+                }
+            });
+        }, 800); 
+    });
+});
+</script>';
 
 
       return $tabla;
     }
     
+
+
+
+function guarda_observacion() {
+    $fid = $this->input->post('form_id');
+    $nro = $this->input->post('obs_nro');
+    $txt = $this->input->post('contenido');
+
+
+    
+    // Llamamos a una función que maneje el registro
+    $this->upsert_observacion($fid, $nro, $txt);
+    
+    echo "success";
+}
+
+
+
+function upsert_observacion($fid, $nro, $txt) {
+    // 1. Verificamos si ya existe esa observación para ese formulario
+    $this->db->where('form_id', $fid);
+    $this->db->where('obs_nro', $nro);
+    $query = $this->db->get('form_observacion');
+
+    $data = array(
+        'form_id'       => $fid,
+        'obs_nro'       => $nro,
+        'obs_contenido' => $txt
+    );
+
+    if ($query->num_rows() > 0) {
+        // 2. Si existe, actualizamos
+        $this->db->where('form_id', $fid);
+        $this->db->where('obs_nro', $nro);
+        return $this->db->update('form_observacion', $data);
+    } else {
+        // 3. Si no existe, insertamos
+        return $this->db->insert('form_observacion', $data);
+    }
+}
+
+
+    /*------- formulario -------*/
+    public function formulario_N1($dist_id){
+      $tabla='';
+
+
+
+
+    }
+
+
+
+
+
+
+
 }

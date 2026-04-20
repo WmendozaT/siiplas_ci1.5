@@ -12,7 +12,7 @@ base = $('[name="base"]').val();
   $(document).ready(function() {
     $('#dist_id').change(function() {
         var dist_id = $(this).val();
-     
+
         var $contenedor = $('#contenedor_formulario');
 
         // Si selecciona la opción "Seleccione..", limpiamos el contenedor
@@ -54,3 +54,6 @@ base = $('[name="base"]').val();
       });
     });
   });
+
+
+

@@ -230,3 +230,35 @@ SELECT
 FROM temporalidad_prog_insumo ti
 LEFT JOIN cert_temporalidad_prog_insumo cti ON ti.tins_id = cti.tins_id
 GROUP BY ti.ins_id, ti.g_id;
+
+
+================ creacion de tabla para el diagnostico
+create table Diagnostico_pei(
+  pei_id serial NOT NULL,
+  g_id_inicio integer,
+  g_id_fin integer,
+  estado integer DEFAULT 0,
+
+  primary key(pei_id)
+ );
+
+
+ //// formulario diagnostico
+ create table formulario_diagnostico_pei(
+  form_id serial NOT NULL,
+  pei_id integer,
+  dist_id integer,
+  form_estado integer DEFAULT 0,
+  primary key(form_id)
+ );
+
+
+create table form_observacion(
+  obs_id serial NOT NULL,
+  form_id integer,
+  obs_nro integer,
+  obs_contenido character varying(5000),
+  primary key(obs_id)
+ );
+ //// fin formulario diagnostico
+
