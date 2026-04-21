@@ -46,8 +46,9 @@ class CDiagnostico_pei extends CI_Controller {
     public function Seleccion_unidadEjecutora(){
       $get_diagnostico=$this->model_diagnosticoPei->get_diagnostico_activo();
       $UnidadEjecutora=$this->model_diagnosticoPei->lista_UnidadEjecutora(); /// Lista Distritales
-      $tabla='';  
-      $tabla.='
+      $tabla=''; 
+      if(count($get_diagnostico)!=0){
+        $tabla.='
           <article class="col-sm-12">
             <input name="base" type="hidden" value="'.base_url().'">
             <div class="well">
@@ -69,8 +70,16 @@ class CDiagnostico_pei extends CI_Controller {
                   </fieldset>
               </form>
               </div>
-            </article>';
-
+          </article>';
+      }
+      else{
+        $tabla.='
+        <div class="alert alert-block alert-danger">
+                <h4 class="alert-heading"><i class="fa fa-lock"></i> ¡Sin PEI asignado!</h4>
+                <p>Porfavor asigne datos del PEI .</p>
+            </div>';
+      }
+      
 
       return $tabla;
     }
@@ -117,6 +126,7 @@ class CDiagnostico_pei extends CI_Controller {
       $tabla='';
       $tabla.='
           <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+              '.$this->style_form().'
               <div class="well well-sm well-light">
               <h2>'.strtoupper($get_form_distrital[0]['dist_distrital']).'</h2>
                 <div id="tabs">
@@ -145,8 +155,352 @@ class CDiagnostico_pei extends CI_Controller {
                   </ul>
                   <div id="tabs-a">
                     <div class="row">
+                      '.$this->formulario_N1($get_form_distrital).'
+                    </div>
+                  </div>
 
-                <style>
+                  <div id="tabs-b">
+                    <div class="row">
+                     '.$this->formulario_N2($get_form_distrital).'
+                    </div>
+                  </div>
+                  
+                  <div id="tabs-c">
+                    <div class="row">
+                      c
+                    </div>
+                  </div>
+
+                  <div id="tabs-d">
+                    <div class="row">
+                    d
+                    </div>
+                  </div>
+                  
+                  <div id="tabs-e">
+                    <div class="row">
+                     e
+                    </div>
+                  </div>
+
+                  <div id="tabs-f">
+                    <div class="row">
+                         f
+                    </div>
+                  </div>
+
+                  <div id="tabs-g">
+                    <div class="row">
+                         g
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </article>
+
+            <script>
+              document.getElementById("fecha-actual").innerText = new Date().toLocaleDateString();
+            </script>
+            <script type="text/javascript">
+              // DO NOT REMOVE : GLOBAL FUNCTIONS!
+              $(document).ready(function() {
+                pageSetUp();
+                $("#menu").menu();
+                $(".ui-dialog :button").blur();
+                $("#tabs").tabs();
+              })
+
+
+            </script>
+            <script>
+              $(document).ready(function() {
+                  var timeout = null;
+                  var base_url = "'.base_url().'"; 
+
+                  $(".observaciones-input").on("keyup", function() {
+                      var $this = $(this); 
+                      
+                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                      var contenedor = $this.closest("div").parent(); 
+                      var form_id = contenedor.find(".form_id").val();
+                      var nro_obs = contenedor.find(".nro_obs").val();
+                      
+                      var texto = $this.val();
+                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                      if (!form_id || form_id == "0") {
+                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                          return;
+                      }
+
+                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                      
+                      clearTimeout(timeout);
+
+                      timeout = setTimeout(function() {
+                          $.ajax({
+                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                              type: "POST",
+                              data: {
+                                  form_id: form_id,
+                                  nro: nro_obs, 
+                                  observacion: texto
+                              },
+                              success: function(response) {
+
+                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                              },
+                              error: function() {
+                                  status.text("Error al guardar").css("color", "red");
+                              }
+                          });
+                      }, 800); 
+                  });
+              });
+          </script>';
+
+
+      return $tabla;
+    }
+    
+
+  //// Guarda Observacion
+  function guarda_observacion() {
+      $fid = $this->input->post('form_id');
+      $nro = $this->input->post('nro');
+      $txt = $this->input->post('observacion');
+
+     // 1. Verificamos si ya existe un registro en la tabla de observaciones
+     // Usamos el form_id como referencia
+      $this->db->where('form_id', $fid);
+      $this->db->where('obs_nro', $nro);
+      $query = $this->db->get('form_observacion');
+
+      $data = array(
+          'form_id'       => $fid,
+          'obs_nro'       => $nro, // Nota: Asegúrate de que obs_nro deba ser igual al form_id
+          'obs_contenido' => $txt
+      );
+
+      if ($query->num_rows() > 0) {
+          // 2. Si el registro YA EXISTE en la tabla, actualizamos
+          $this->db->where('form_id', $fid);
+          $this->db->where('obs_nro', $nro);
+          $this->db->update('form_observacion', $data);
+          echo "updated";
+      } else {
+          // 3. Si NO EXISTE, insertamos
+          $this->db->insert('form_observacion', $data);
+          echo "inserted";
+      }
+  }
+
+
+
+    /*------- formulario N 1 -------*/
+    public function formulario_N1($get_form_distrital){
+      $tabla='';
+      $tabla.='
+      <div class="viewport-container">
+                    <br>
+                    <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+                    <div class="page">
+                        <!-- Fecha de Impresión Automática -->
+                        <div class="fecha-impresion">
+                            Fecha: <span id="fecha-actual"></span>
+                        </div>
+                        <div class="header">
+                            <p>CAJA NACIONAL DE SALUD</p>
+                            <h1><b>DIAGNÓSTICO DE LA POBLACIÓN ASEGURADA</b></h1>
+                        </div>
+
+                        <div style="margin: 20px 0; font-weight: bold;">
+                            Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+                        </div>
+
+
+                        <div style="font-weight: bold; margin-bottom: 10px;">1. Objetivo del instrumento</div>
+                        <div style="border: 1px solid #ccc; padding: 10px; font-size: 9pt; margin-bottom: 20px;">
+                            Recopilar, validar y sistematizar información cuantitativa de la población afiliada (titulares y Beneficiarios) para analizar tendencias y cobertura y demanda potencial de la Caja Nacional de Salud.
+                        </div>
+
+                        <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada (2021 - 2025)</div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                  <th colspan="5" style="text-align:center; width: 40%;">Tipo de población afiliada</th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 10%;text-align:center;">Gestión</th>
+                                    <th style="width: 25%;text-align:center;">Cotizantes Titulares</th>
+                                    <th style="width: 25%;text-align:center;">Cotizantes Pasivos</th>
+                                    <th style="width: 25%;text-align:center;">Beneficiarios</th>
+                                    <th style="width: 10%;text-align:center;">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                  <td style="font-size: 11pt;">2021</td>
+                                  <td><input type="number" value="0"></td>
+                                  <td><input type="number" value="0"></td>
+                                  <td><input type="number" value="0"></td>
+                                  <td class="total-row">10</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2022</td><td>11</td><td>15</td><td>16</td><td class="total-row">18</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2023</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2024</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2025</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                                </tr>
+                                <tr class="total-row">
+                                  <td style="font-size: 11pt;">TOTAL</td><td>42</td><td>49</td><td>49</td><td class="total-row">33</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="border: 1px solid #000; padding: 15px; font-size: 8pt; margin-top: 20px;">
+                            <strong>Recomendaciones:</strong><br>
+                            • Extraer información anual por cada categoría (2021 - 2025).<br>
+                            • Verificar consistencia entre fuentes oficiales.
+                        </div>
+
+                        <input type="hidden"  class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
+                        <input type="hidden"  class="nro_obs" value="1">
+
+                        <div style="margin-top: 30px;">
+                            <strong>3. Observaciones adicionales</strong>
+                            <textarea class="observaciones-input" name="obs1" id="obs1" placeholder="Escriba aquí sus observaciones...">'.strtoupper($get_form_distrital[0]['observacion1']).'</textarea>
+                        </div>
+
+                                <!-- Firma -->
+                        <div class="firma-container">
+                            <div class="linea-firma"></div>
+                            <div class="firma-texto">FIRMA: ADMINISTRADOR REGIONAL / AGENTE DISTRITAL</div>
+                        </div>
+
+                        <!-- Pie de página -->
+                        <div class="footer-nacional">
+                            DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+                        </div>
+                    </div>
+                    <hr>
+                  </div>';
+
+
+        return $tabla;
+
+    }
+
+
+    public function formulario_N2($get_form_distrital){
+      $tabla='';
+      $tabla.='
+      <div class="viewport-container">
+                    <br>
+                    <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+                    <div class="page">
+                        <!-- Fecha de Impresión Automática -->
+                        <div class="fecha-impresion">
+                            Fecha: <span id="fecha-actual"></span>
+                        </div>
+                        <div class="header">
+                            <p>CAJA NACIONAL DE SALUD</p>
+                            <h1><b>DIAGNÓSTICO DE EMPRESAS</b></h1>
+                        </div>
+
+                        <div style="margin: 20px 0; font-weight: bold;">
+                            Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+                        </div>
+
+
+                        <div style="font-weight: bold; margin-bottom: 10px;">1. Objetivo del instrumento</div>
+                        <div style="border: 1px solid #ccc; padding: 10px; font-size: 9pt; margin-bottom: 20px;">
+                            Recolectar, validar y sistematizar información anual del número de empresas aportantes, permitiendo analizar su evolución, cobertura institucional y comportamiento contributivo.
+                        </div>
+
+                        <div style="font-weight: bold; margin-bottom: 10px;">2. Definición operativa</div>
+                        <div style="border: 1px solid #ccc; padding: 10px; font-size: 9pt; margin-bottom: 20px;">
+                            Empresa aportante: unidad económica registrada que realiza aportes al sistema en un periodo determinado, independientemente del número de trabajadores afiliados.
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                  <th colspan="5" style="text-align:center; width: 40%;">Tipo de población afiliada</th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 10%;text-align:center;">Gestión</th>
+                                    <th style="width: 25%;text-align:center;">Cotizantes Titulares</th>
+                                    <th style="width: 25%;text-align:center;">Cotizantes Pasivos</th>
+                                    <th style="width: 25%;text-align:center;">Beneficiarios</th>
+                                    <th style="width: 10%;text-align:center;">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                  <td style="font-size: 11pt;">2021</td>
+                                  <td><input type="number" value="0"></td>
+                                  <td><input type="number" value="0"></td>
+                                  <td><input type="number" value="0"></td>
+                                  <td class="total-row">10</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2022</td><td>11</td><td>15</td><td>16</td><td class="total-row">18</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2023</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2024</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-size: 11pt;">2025</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
+                                </tr>
+                                <tr class="total-row">
+                                  <td style="font-size: 11pt;">TOTAL</td><td>42</td><td>49</td><td>49</td><td class="total-row">33</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
+                        <input type="hidden" class="nro_obs" value="2">
+
+                        <div style="margin-top: 30px;">
+                            <strong>3. Observaciones adicionales</strong>
+                            <textarea class="observaciones-input" name="obs2" id="obs2" placeholder="Escriba aquí sus observaciones...">'.strtoupper($get_form_distrital[0]['observacion2']).'</textarea>
+                        </div>
+
+                                <!-- Firma -->
+                        <div class="firma-container">
+                            <div class="linea-firma"></div>
+                            <div class="firma-texto">FIRMA: ADMINISTRADOR REGIONAL / AGENTE DISTRITAL</div>
+                        </div>
+
+                        <!-- Pie de página -->
+                        <div class="footer-nacional">
+                            DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+                        </div>
+                    </div>
+                    <hr>
+                  </div>';
+
+
+        return $tabla;
+    }
+
+
+  public function style_form(){
+  $tabla='
+                  <style>
                 .btn-imprimir { background-color: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; font-weight: bold; font-size: 16px; transition: 0.3s; }
                 .btn-imprimir:hover { background-color: #218838; }
                 
@@ -272,260 +626,9 @@ class CDiagnostico_pei extends CI_Controller {
                     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                     @page { size: letter; margin: 0; }
                 }
-
-            </style>
-    
-    <div class="viewport-container">
-    <br>
-    <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
-
-    <!-- Este es el único div que se imprimirá -->
-
-    <div class="page">
-        <!-- Fecha de Impresión Automática -->
-        <div class="fecha-impresion">
-            Fecha: <span id="fecha-actual"></span>
-        </div>
-        <div class="header">
-            <p>CAJA NACIONAL DE SALUD</p>
-            <h1><b>DIAGNÓSTICO DE LA POBLACIÓN ASEGURADA</b></h1>
-        </div>
-
-        <div style="margin: 20px 0; font-weight: bold;">
-            Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
-        </div>
-
-
-        <div style="font-weight: bold; margin-bottom: 10px;">1. Objetivo del relevamiento</div>
-        <div style="border: 1px solid #ccc; padding: 10px; font-size: 10.5pt; margin-bottom: 20px;">
-            Recopilar, validar y sistematizar información cuantitativa de la población afiliada (titulares y Beneficiarios) para analizar tendencias y cobertura y demanda potencial de la Caja Nacional de Salud.
-        </div>
-
-        <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada (2021 - 2025)</div>
-        
-        <table>
-            <thead>
-                <tr>
-                  <th colspan="5" style="text-align:center; width: 40%;">Tipo de población afiliada</th>
-                </tr>
-                <tr>
-                    <th style="width: 10%;text-align:center;">Gestión</th>
-                    <th style="width: 25%;text-align:center;">Cotizantes Titulares</th>
-                    <th style="width: 25%;text-align:center;">Cotizantes Pasivos</th>
-                    <th style="width: 25%;text-align:center;">Beneficiarios</th>
-                    <th style="width: 10%;text-align:center;">TOTAL</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                  <td style="font-size: 11pt;">2021</td>
-                  <td><input type="number" value="0"></td>
-                  <td><input type="number" value="0"></td>
-                  <td><input type="number" value="0"></td>
-                  <td class="total-row">10</td>
-                </tr>
-                <tr>
-                  <td style="font-size: 11pt;">2022</td><td>11</td><td>15</td><td>16</td><td class="total-row">18</td>
-                </tr>
-                <tr>
-                  <td style="font-size: 11pt;">2023</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
-                </tr>
-                <tr>
-                  <td style="font-size: 11pt;">2024</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
-                </tr>
-                <tr>
-                  <td style="font-size: 11pt;">2025</td><td>26</td><td>29</td><td>25</td><td class="total-row">5</td>
-                </tr>
-                <tr class="total-row">
-                  <td style="font-size: 11pt;">TOTAL</td><td>42</td><td>49</td><td>49</td><td class="total-row">33</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div style="border: 1px solid #000; padding: 15px; font-size: 10pt; margin-top: 20px;">
-            <strong>Recomendaciones:</strong><br>
-            • Recolección de datos.<br>
-            • Extraer información anual por cada categoría (2021 - 2025).<br>
-            • Verificar consistencia entre fuentes oficiales.
-        </div>
-
-        <input type="text" id="form_id" name="form_id" value='.strtoupper($get_form_distrital[0]['form_id']).'>
-        <input type="text" id="dist_id" name="dist_id" value='.$dist_id.'>
-        <div style="margin-top: 30px;">
-            <strong>3. Observaciones adicionales</strong>
-            <textarea class="observaciones-input" name="obs" id="obs" placeholder="Escriba aquí sus observaciones..."></textarea>
-        </div>
-
-                <!-- Firma -->
-        <div class="firma-container">
-            <div class="linea-firma"></div>
-            <div class="firma-texto">FIRMA: ADMINISTRADOR REGIONAL / AGENTE DISTRITAL</div>
-        </div>
-
-        <!-- Pie de página -->
-        <div class="footer-nacional">
-            DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
-        </div>
-    </div>
-
-    <script>
-        // Función para la fecha automática
-        document.getElementById("fecha-actual").innerText = new Date().toLocaleDateString();
-    </script>
-    <hr>
-  </div>
-
-
-                    </div>
-                  </div>
-
-                  <div id="tabs-b">
-                    <div class="row">
-                     b
-                    </div>
-                  </div>
-                  
-                  <div id="tabs-c">
-                    <div class="row">
-                      c
-                    </div>
-                  </div>
-
-                  <div id="tabs-d">
-                    <div class="row">
-                    d
-                    </div>
-                  </div>
-                  
-                  <div id="tabs-e">
-                    <div class="row">
-                     e
-                    </div>
-                  </div>
-
-                  <div id="tabs-f">
-                    <div class="row">
-                         f
-                    </div>
-                  </div>
-
-                  <div id="tabs-g">
-                    <div class="row">
-                         g
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            </article>
-            <script type="text/javascript">
-              // DO NOT REMOVE : GLOBAL FUNCTIONS!
-              $(document).ready(function() {
-                pageSetUp();
-                $("#menu").menu();
-                $(".ui-dialog :button").blur();
-                $("#tabs").tabs();
-              })
-
-
-            </script>
-            <script>
-$(document).ready(function() {
-    var timeout = null;
-    // Usamos una variable para la base_url para evitar errores de concatenación
-    var base_url = "'.base_url().'"; 
-
-    $("#obs").on("keyup", function() {
-        var texto = $(this).val();
-        var status = $("#status");
-        
-        status.show().text("Escribiendo...").css("color", "blue");
-        
-        clearTimeout(timeout);
-
-        timeout = setTimeout(function() {
-            $.ajax({
-                // Corregimos la ruta según el estándar de CI: controlador/metodo
-                url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                type: "POST",
-                dataType: "text", // Esperamos una respuesta de texto
-                data: {
-                    form_id: $("#form_id").val(),
-                    dist_id: $("#dist_id").val(),
-                    obs_nro: 1, // Enviamos el nro de observación para tu nueva tabla
-                    observacion: texto
-                },
-                success: function(response) {
-                    status.text("Guardado ✓").fadeOut(2000);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Detalle del error:", error);
-                    $("#status").text("Error al guardar").css("color", "red");
-                }
-            });
-        }, 800); 
-    });
-});
-</script>';
-
-
-      return $tabla;
+            </style>';
+            return $tabla;
     }
-    
-
-
-
-function guarda_observacion() {
-    $fid = $this->input->post('form_id');
-    $nro = $this->input->post('obs_nro');
-    $txt = $this->input->post('contenido');
-
-
-    
-    // Llamamos a una función que maneje el registro
-    $this->upsert_observacion($fid, $nro, $txt);
-    
-    echo "success";
-}
-
-
-
-function upsert_observacion($fid, $nro, $txt) {
-    // 1. Verificamos si ya existe esa observación para ese formulario
-    $this->db->where('form_id', $fid);
-    $this->db->where('obs_nro', $nro);
-    $query = $this->db->get('form_observacion');
-
-    $data = array(
-        'form_id'       => $fid,
-        'obs_nro'       => $nro,
-        'obs_contenido' => $txt
-    );
-
-    if ($query->num_rows() > 0) {
-        // 2. Si existe, actualizamos
-        $this->db->where('form_id', $fid);
-        $this->db->where('obs_nro', $nro);
-        return $this->db->update('form_observacion', $data);
-    } else {
-        // 3. Si no existe, insertamos
-        return $this->db->insert('form_observacion', $data);
-    }
-}
-
-
-    /*------- formulario -------*/
-    public function formulario_N1($dist_id){
-      $tabla='';
-
-
-
-
-    }
-
-
-
-
 
 
 

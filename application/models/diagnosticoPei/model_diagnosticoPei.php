@@ -13,29 +13,51 @@ class model_diagnosticoPei extends CI_Model {
     public function get_diagnostico_activo(){
         $sql = '
                 SELECT *
-                from Diagnostico_pei
+                from diagnostico_pei
                 where estado=1';
 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
-    /*--------- Get Formulario Habilitado para el diagnostico ----------*/
+    /*--------- Get Formulario Habilitado para el diagnostico por Distrital----------*/
     public function get_distrital_formulario_diagnostico_activo($pei_id,$dist_id){
         $sql = '
-                SELECT ds.*,pei.*,form.*,obs.*
-                from Diagnostico_pei pei
-                Inner join formulario_diagnostico_pei form On form.pei_id=pei.pei_id
-                left join form_observacion obs On obs.form_id=form.form_id
-                Inner join _distritales ds On ds.dist_id=form.dist_id 
-                where pei.estado=1 and pei.pei_id='.$pei_id.' and form.dist_id='.$dist_id.'';
+                SELECT 
+                    ds.*, 
+                    pei.*, 
+                    form.*, 
+                    COALESCE(obs1.obs_id, 0) AS verif_obs1, -- Cambia null por 0
+                    obs1.obs_id,obs1.obs_nro as obs_nro1,obs1.obs_contenido as observacion1,
+                    COALESCE(obs2.obs_id, 0) AS verif_obs2, -- Cambia null por 0
+                    obs2.obs_id,obs2.obs_nro as obs_nro2,obs2.obs_contenido as observacion2,
+                    COALESCE(obs3.obs_id, 0) AS verif_obs3, -- Cambia null por 0
+                    obs3.obs_id,obs3.obs_nro as obs_nro3,obs3.obs_contenido as observacion3,
+                    COALESCE(obs4.obs_id, 0) AS verif_obs4, -- Cambia null por 0
+                    obs4.obs_id,obs4.obs_nro as obs_nro4,obs4.obs_contenido as observacion4,
+                    COALESCE(obs5.obs_id, 0) AS verif_obs5, -- Cambia null por 0
+                    obs5.obs_id,obs5.obs_nro as obs_nro5,obs5.obs_contenido as observacion5,
+                    COALESCE(obs6.obs_id, 0) AS verif_obs6, -- Cambia null por 0
+                    obs6.obs_id,obs6.obs_nro as obs_nro6,obs6.obs_contenido as observacion6,
+                    COALESCE(obs7.obs_id, 0) AS verif_obs7, -- Cambia null por 0
+                    obs7.obs_id,obs7.obs_nro as obs_nro7,obs7.obs_contenido as observacion7
+                FROM diagnostico_pei pei
+                INNER JOIN formulario_diagnostico_pei form ON form.pei_id = pei.pei_id
+                LEFT JOIN form_observacion obs1 ON obs1.form_id = form.form_id and obs1.obs_nro=1
+                LEFT JOIN form_observacion obs2 ON obs2.form_id = form.form_id and obs2.obs_nro=2
+                LEFT JOIN form_observacion obs3 ON obs3.form_id = form.form_id and obs3.obs_nro=3
+                LEFT JOIN form_observacion obs4 ON obs4.form_id = form.form_id and obs4.obs_nro=4
+                LEFT JOIN form_observacion obs5 ON obs5.form_id = form.form_id and obs5.obs_nro=5
+                LEFT JOIN form_observacion obs6 ON obs6.form_id = form.form_id and obs6.obs_nro=6
+                LEFT JOIN form_observacion obs7 ON obs7.form_id = form.form_id and obs7.obs_nro=7
+                INNER JOIN _distritales ds ON ds.dist_id = form.dist_id 
+                WHERE pei.estado = 1 
+                  AND pei.pei_id = '.$pei_id.' 
+                  AND form.dist_id = '.$dist_id.'';
 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
-
-
-
 
 
 
