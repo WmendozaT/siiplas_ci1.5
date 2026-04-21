@@ -3,7 +3,7 @@ class CDiagnostico_pei extends CI_Controller {
   public function __construct (){
       parent::__construct();
       if($this->session->userdata('fun_id')!=null){
-      $this->load->model('diagnosticoPei/model_diagnosticoPei');
+      $this->load->model('diagnosticoPei/model_diagnosticopei');
 
       $this->dist_id = $this->session->userData('dist');
       $this->dep_id = $this->session->userData('dep_id');
@@ -44,8 +44,8 @@ class CDiagnostico_pei extends CI_Controller {
     
     /*------- Selecciona Unidad Ejecutora -------*/
     public function Seleccion_unidadEjecutora(){
-      $get_diagnostico=$this->model_diagnosticoPei->get_diagnostico_activo();
-      $UnidadEjecutora=$this->model_diagnosticoPei->lista_UnidadEjecutora(); /// Lista Distritales
+      $get_diagnostico=$this->model_diagnosticopei->get_diagnostico_activo();
+      $UnidadEjecutora=$this->model_diagnosticopei->lista_UnidadEjecutora(); /// Lista Distritales
       $tabla=''; 
       if(count($get_diagnostico)!=0){
         $tabla.='
@@ -91,10 +91,10 @@ class CDiagnostico_pei extends CI_Controller {
             $post = $this->input->post();
             // Cambiado de 'dist_id' a 'id' para que coincida con el JS
             $dist_id = $this->security->xss_clean($post['id']); 
-            $get_diagnostico=$this->model_diagnosticoPei->get_diagnostico_activo();
+            $get_diagnostico=$this->model_diagnosticopei->get_diagnostico_activo();
 
             // Aquí puedes cargar una vista y pasarla a string
-            if(count($this->model_diagnosticoPei->get_distrital_formulario_diagnostico_activo($get_diagnostico[0]['pei_id'],$dist_id))==0){
+            if(count($this->model_diagnosticopei->get_distrital_formulario_diagnostico_activo($get_diagnostico[0]['pei_id'],$dist_id))==0){
                 $data_to_store = array(
                  'pei_id' => $get_diagnostico[0]['pei_id'],
                  'dist_id' => $dist_id,
@@ -121,7 +121,7 @@ class CDiagnostico_pei extends CI_Controller {
 
     /*------- Listado de formularios -------*/
     public function unidad_ejecutora_eleccionado($pei_id,$dist_id){
-      $get_form_distrital=$this->model_diagnosticoPei->get_distrital_formulario_diagnostico_activo($pei_id,$dist_id);
+      $get_form_distrital=$this->model_diagnosticopei->get_distrital_formulario_diagnostico_activo($pei_id,$dist_id);
 
       $tabla='';
       $tabla.='
@@ -330,7 +330,7 @@ class CDiagnostico_pei extends CI_Controller {
 
     /*------- formulario N 1 -------*/
     public function formulario_N1($get_form_distrital){
-      $detalle_form1=$this->model_diagnosticoPei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
+      $detalle_form1=$this->model_diagnosticopei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $tabla='';
       $tabla.='
       <div class="viewport-container">
@@ -523,7 +523,7 @@ class CDiagnostico_pei extends CI_Controller {
 
 
     public function formulario_N2($get_form_distrital){
-      $detalle_form2=$this->model_diagnosticoPei->get_formulario_N2($get_form_distrital[0]['dist_id']); /// listado de gestiones
+      $detalle_form2=$this->model_diagnosticopei->get_formulario_N2($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $tabla='';
       $tabla.='
       <div class="viewport-container">
