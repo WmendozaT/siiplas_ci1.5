@@ -22,43 +22,103 @@ class model_diagnosticoPei extends CI_Model {
 
     /*--------- Get Formulario Habilitado para el diagnostico por Distrital----------*/
     public function get_distrital_formulario_diagnostico_activo($pei_id,$dist_id){
-        $sql = '
-                SELECT 
-                    ds.*, 
-                    pei.*, 
-                    form.*, 
-                    COALESCE(obs1.obs_id, 0) AS verif_obs1, -- Cambia null por 0
-                    obs1.obs_id,obs1.obs_nro as obs_nro1,obs1.obs_contenido as observacion1,
-                    COALESCE(obs2.obs_id, 0) AS verif_obs2, -- Cambia null por 0
-                    obs2.obs_id,obs2.obs_nro as obs_nro2,obs2.obs_contenido as observacion2,
-                    COALESCE(obs3.obs_id, 0) AS verif_obs3, -- Cambia null por 0
-                    obs3.obs_id,obs3.obs_nro as obs_nro3,obs3.obs_contenido as observacion3,
-                    COALESCE(obs4.obs_id, 0) AS verif_obs4, -- Cambia null por 0
-                    obs4.obs_id,obs4.obs_nro as obs_nro4,obs4.obs_contenido as observacion4,
-                    COALESCE(obs5.obs_id, 0) AS verif_obs5, -- Cambia null por 0
-                    obs5.obs_id,obs5.obs_nro as obs_nro5,obs5.obs_contenido as observacion5,
-                    COALESCE(obs6.obs_id, 0) AS verif_obs6, -- Cambia null por 0
-                    obs6.obs_id,obs6.obs_nro as obs_nro6,obs6.obs_contenido as observacion6,
-                    COALESCE(obs7.obs_id, 0) AS verif_obs7, -- Cambia null por 0
-                    obs7.obs_id,obs7.obs_nro as obs_nro7,obs7.obs_contenido as observacion7
-                FROM diagnostico_pei pei
-                INNER JOIN formulario_diagnostico_pei form ON form.pei_id = pei.pei_id
-                LEFT JOIN form_observacion obs1 ON obs1.form_id = form.form_id and obs1.obs_nro=1
-                LEFT JOIN form_observacion obs2 ON obs2.form_id = form.form_id and obs2.obs_nro=2
-                LEFT JOIN form_observacion obs3 ON obs3.form_id = form.form_id and obs3.obs_nro=3
-                LEFT JOIN form_observacion obs4 ON obs4.form_id = form.form_id and obs4.obs_nro=4
-                LEFT JOIN form_observacion obs5 ON obs5.form_id = form.form_id and obs5.obs_nro=5
-                LEFT JOIN form_observacion obs6 ON obs6.form_id = form.form_id and obs6.obs_nro=6
-                LEFT JOIN form_observacion obs7 ON obs7.form_id = form.form_id and obs7.obs_nro=7
-                INNER JOIN _distritales ds ON ds.dist_id = form.dist_id 
-                WHERE pei.estado = 1 
-                  AND pei.pei_id = '.$pei_id.' 
-                  AND form.dist_id = '.$dist_id.'';
+        $sql = "
+            SELECT 
+                ds.*, 
+                CASE 
+                    WHEN ds.dist_tp = 1 THEN 'FIRMA ADMINISTRADOR REGIONAL'
+                    WHEN ds.dist_tp = 0 THEN 'FIRMA AGENTE DISTRITAL'
+                    ELSE 'RESPONSABLE'
+                END AS tipo_firma,
+                pei.*, 
+                form.*, 
+                COALESCE(obs1.obs_id, 0) AS verif_obs1, obs1.obs_id, obs1.obs_nro as obs_nro1, obs1.obs_contenido as observacion1,
+                COALESCE(obs2.obs_id, 0) AS verif_obs2, obs2.obs_id, obs2.obs_nro as obs_nro2, obs2.obs_contenido as observacion2,
+                COALESCE(obs3.obs_id, 0) AS verif_obs3, obs3.obs_id, obs3.obs_nro as obs_nro3, obs3.obs_contenido as observacion3,
+                COALESCE(obs4.obs_id, 0) AS verif_obs4, obs4.obs_id, obs4.obs_nro as obs_nro4, obs4.obs_contenido as observacion4,
+                COALESCE(obs5.obs_id, 0) AS verif_obs5, obs5.obs_id, obs5.obs_nro as obs_nro5, obs5.obs_contenido as observacion5,
+                COALESCE(obs6.obs_id, 0) AS verif_obs6, obs6.obs_id, obs6.obs_nro as obs_nro6, obs6.obs_contenido as observacion6,
+                COALESCE(obs7.obs_id, 0) AS verif_obs7, obs7.obs_id, obs7.obs_nro as obs_nro7, obs7.obs_contenido as observacion7
+            FROM diagnostico_pei pei
+            INNER JOIN formulario_diagnostico_pei form ON form.pei_id = pei.pei_id
+            INNER JOIN _distritales ds ON ds.dist_id = form.dist_id 
+            LEFT JOIN form_observacion obs1 ON obs1.form_id = form.form_id AND obs1.obs_nro = 1
+            LEFT JOIN form_observacion obs2 ON obs2.form_id = form.form_id AND obs2.obs_nro = 2
+            LEFT JOIN form_observacion obs3 ON obs3.form_id = form.form_id AND obs3.obs_nro = 3
+            LEFT JOIN form_observacion obs4 ON obs4.form_id = form.form_id AND obs4.obs_nro = 4
+            LEFT JOIN form_observacion obs5 ON obs5.form_id = form.form_id AND obs5.obs_nro = 5
+            LEFT JOIN form_observacion obs6 ON obs6.form_id = form.form_id AND obs6.obs_nro = 6
+            LEFT JOIN form_observacion obs7 ON obs7.form_id = form.form_id AND obs7.obs_nro = 7
+            WHERE pei.estado = 1 
+              AND pei.pei_id = ". (int)$pei_id ." 
+              AND form.dist_id = ". (int)$dist_id;
 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
+
+    /*--- Detalle formulario N1 ---*/
+    public function get_formulario_N1($dist_id){
+        $sql = 'WITH rango_pei AS (
+                    SELECT pei_id, g_id_inicio, g_id_fin 
+                    FROM Diagnostico_pei 
+                    WHERE estado = 1 
+                    LIMIT 1
+                ),
+                gestiones AS (
+                    SELECT pei_id, generate_series(g_id_inicio, g_id_fin) AS anio
+                    FROM rango_pei
+                )
+                SELECT 
+                    f.form_id,
+                    f.dist_id,
+                    g.anio AS gestion,
+                    COALESCE(d.nro_cot_tit, 0) AS titulares,
+                    COALESCE(d.nro_cot_pas, 0) AS pasivos,
+                    COALESCE(d.nro_cot_ben, 0) AS beneficiarios,
+                    (COALESCE(d.nro_cot_tit, 0) + COALESCE(d.nro_cot_pas, 0) + COALESCE(d.nro_cot_ben, 0)) AS total_gestion
+                FROM formulario_diagnostico_pei f
+                -- Cambiamos CROSS JOIN por INNER JOIN para poder usar ON
+                INNER JOIN gestiones g ON f.pei_id = g.pei_id 
+                LEFT JOIN formularion1_detalle d ON d.form_id = f.form_id AND d.g_id = g.anio
+                WHERE f.dist_id = '.$dist_id.'
+                ORDER BY g.anio ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    /*--- Detalle formulario N2 ---*/
+    public function get_formulario_N2($dist_id){
+        $sql = 'WITH rango_pei AS (
+                    SELECT pei_id, g_id_inicio, g_id_fin 
+                    FROM Diagnostico_pei 
+                    WHERE estado = 1 
+                    LIMIT 1
+                ),
+                gestiones AS (
+                    SELECT pei_id, generate_series(g_id_inicio, g_id_fin) AS anio
+                    FROM rango_pei
+                )
+                SELECT 
+                    f.form_id,
+                    f.dist_id,
+                    g.anio AS gestion,
+                    COALESCE(d.nro_empresas_reg, 0) AS empresas,
+                    COALESCE(d.nro_aportes_dia, 0) AS aportes,
+                    COALESCE(d.nro_empresa_mora, 0) AS mora,
+                    (COALESCE(d.nro_empresas_reg, 0) + COALESCE(d.nro_aportes_dia, 0) + COALESCE(d.nro_empresa_mora, 0)) AS total_gestion_empresas
+                FROM formulario_diagnostico_pei f
+                -- Cambiamos CROSS JOIN por INNER JOIN para poder usar ON
+                INNER JOIN gestiones g ON f.pei_id = g.pei_id 
+                LEFT JOIN formularion2_detalle d ON d.form_id = f.form_id AND d.g_id = g.anio
+                WHERE f.dist_id = '.$dist_id.'
+                ORDER BY g.anio ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
     /*--------- Lista de Unidades Ejecutoras ----------*/

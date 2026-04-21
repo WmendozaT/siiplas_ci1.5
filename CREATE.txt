@@ -262,3 +262,34 @@ create table form_observacion(
  );
  //// fin formulario diagnostico
 
+
+ ///// Detalle formulario N1
+ create table formularion1_detalle(
+  det_id serial NOT NULL,
+  form_id integer,
+  g_id integer,
+  nro_cot_tit integer,
+  nro_cot_pas integer,
+  nro_cot_ben integer,
+  fun_id integer,
+  fecha timestamp without time zone DEFAULT ('now'::text)::timestamp(0) with time zone,
+  num_ip character varying(100),
+  nom_ip character varying(100),
+  primary key(det_id)
+ );
+
+
+  ///// Detalle formulario N2
+ create table formularion2_detalle(
+  det2_id serial NOT NULL,
+  form_id integer,
+  g_id integer,
+  nro_empresas_reg integer,
+  nro_aportes_dia integer,
+  nro_empresa_mora integer,
+  fun_id integer,
+  fecha timestamp without time zone DEFAULT ('now'::text)::timestamp(0) with time zone,
+  num_ip character varying(100),
+  nom_ip character varying(100),
+  primary key(det2_id)
+ );
