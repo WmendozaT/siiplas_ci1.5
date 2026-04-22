@@ -121,6 +121,64 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--- Detalle formulario N3 ---*/
+    public function get_formulario_N3($dist_id,$tipo_perfil_cat){
+        $sql = '
+        WITH rango_pei AS (
+            SELECT pei_id, g_id_inicio, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
+        ),
+        diez_filas AS (
+            SELECT generate_series(1, 10) AS nro 
+        )
+        SELECT 
+            df.nro,
+            -- Gestión 2021
+            COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.nro_casos END), 0) AS casos_2021,
+            MAX(CASE WHEN mp.g_id = 2021 THEN dp.codigo_ce END) AS codigo_2021,
+            MAX(CASE WHEN mp.g_id = 2021 THEN dp.detalle_causa END) AS causa_2021,
+            
+            
+            -- Gestión 2022
+            COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.nro_casos END), 0) AS casos_2022,
+            MAX(CASE WHEN mp.g_id = 2022 THEN dp.codigo_ce END) AS codigo_2022,
+            MAX(CASE WHEN mp.g_id = 2022 THEN dp.detalle_causa END) AS causa_2022,
+            
+
+            -- Gestión 2023
+            COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.nro_casos END), 0) AS casos_2023,
+            MAX(CASE WHEN mp.g_id = 2023 THEN dp.codigo_ce END) AS codigo_2023,
+            MAX(CASE WHEN mp.g_id = 2023 THEN dp.detalle_causa END) AS causa_2023,
+            
+
+            -- Gestión 2024
+            COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.nro_casos END), 0) AS casos_2024,
+            MAX(CASE WHEN mp.g_id = 2024 THEN dp.codigo_ce END) AS codigo_2024,
+            MAX(CASE WHEN mp.g_id = 2024 THEN dp.detalle_causa END) AS causa_2024,
+            
+
+            -- Gestión 2025
+            COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.nro_casos END), 0) AS casos_2025,
+            MAX(CASE WHEN mp.g_id = 2025 THEN dp.codigo_ce END) AS codigo_2025,
+            MAX(CASE WHEN mp.g_id = 2025 THEN dp.detalle_causa END) AS causa_2025
+            
+
+        FROM diez_filas df
+        CROSS JOIN formulario_diagnostico_pei f
+        LEFT JOIN formularion3_detalle_perfil mp ON mp.form_id = f.form_id
+        LEFT JOIN detalle_form3_perfil dp ON dp.det3_id = mp.det3_id 
+             AND dp.tp_perfil = df.nro 
+             AND dp.tipo_perfil_cat = 1
+        WHERE f.dist_id = 1
+        GROUP BY df.nro
+        ORDER BY df.nro ASC';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
+
     /*--------- Lista de Unidades Ejecutoras ----------*/
     public function lista_UnidadEjecutora(){
         $sql = 'SELECT *

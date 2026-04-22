@@ -784,7 +784,7 @@ class User extends CI_Controller{
             'name_distrital' => $data[0]['dist_distrital'],
             'dist_tp' => $data[0]['dist_tp'],
             'dep_id' => $data[0]['dep_id'],
-            'conf_pei' => $gestion[0]['conf_pei'], /// Diagnostico Pei
+            'conf_pei' => $data[0]['conf_pei'], /// Diagnostico Pei
             'gestion' => $gestion[0]['ide'],
             'mes' => $gestion[0]['conf_mes'],
             'conf_ajuste_poa' => $gestion[0]['conf_ajuste_poa'],
