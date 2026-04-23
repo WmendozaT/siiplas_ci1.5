@@ -407,8 +407,96 @@ class CDiagnostico_pei extends CI_Controller {
   }
 
 
+  //// Guarda informacion de las tablas automaticamente form3
+    public function guarda_detalle_automatica_form3() {
+        // 1. Recibir datos por POST
+        $form_id  = $this->input->post('form_id');
+        $gestion  = $this->input->post('gestion');
+        $posicion = $this->input->post('nro_posicion'); // 1 al 10
+        $cat      = $this->input->post('categoria');    // tp perfil 1: Morbilidad, 2: Mortalidad
+        $columna  = $this->input->post('columna');     // nro_casos, ce_id o detalle_causa
+        $valor    = $this->input->post('valor');
 
+        // 2. Validación básica de seguridad
+        if (!$form_id || !$gestion || !$posicion) {
+            echo "error_datos_incompletos";
+            return;
+        }
 
+        // 3. Validar que la columna sea permitida para evitar inyecciones
+        $columnas_permitidas = array('nro_casos', 'ce_id', 'detalle_causa', 'tipo_perfil_cat');
+        if (!in_array($columna, $columnas_permitidas)) {
+            echo "error_columna_no_permitida";
+            return;
+        }
 
+        // 4. Preparar el array para el modelo
+        $params = array(
+            'form_id'    => (int)$form_id,
+            'g_id'       => (int)$gestion,
+            'posicion'   => (int)$posicion,
+            'categoria'  => (int)$cat,
+            'columna'    => $columna,
+            'valor'      => $valor
+        );
 
+        // 5. Llamar al modelo para procesar el Upsert
+        $resultado = $this->upsert_detalle_perfil($params);
+
+        if ($resultado) {
+            echo "success";
+        } else {
+            echo "error_en_db";
+        }
+
+    }
+
+    /// update form3
+    public function upsert_detalle_perfil($d) {
+        // 1. BUSCAR EL ID DE LA TABLA MAESTRA (formularion3_detalle_perfil)
+        // Necesitamos el det3_id para poder guardar en la tabla de detalles
+        $this->db->where('form_id', $d['form_id']);
+        $this->db->where('g_id', $d['g_id']);
+        $query_master = $this->db->get('formularion3_detalle_perfil');
+
+        if ($query_master->num_rows() > 0) {
+            $master = $query_master->row();
+            $det3_id = $master->det3_id;
+        } else {
+            // Si por alguna razón no existe el maestro para ese año, lo creamos
+            $data_master = array(
+                'form_id' => $d['form_id'],
+                'g_id'    => $d['g_id'],
+                'nro_causas' => 10
+            );
+            $this->db->insert('formularion3_detalle_perfil', $data_master);
+            $det3_id = $this->db->insert_id();
+        }
+
+        // 2. BUSCAR SI YA EXISTE EL DETALLE ESPECÍFICO
+        // Filtramos por el ID maestro, la posición (1-10) y la categoría (Morbilidad/Mortalidad)
+        $this->db->where('det3_id', $det3_id);
+        $this->db->where('tp_perfil', $d['posicion']);
+        $this->db->where('tipo_perfil_cat', $d['categoria']);
+        $query_detail = $this->db->get('detalle_form3_perfil');
+
+        // Preparamos los datos a guardar
+        $data_save = array(
+            $d['columna'] => $d['valor'] // Ej: nro_casos => 50
+        );
+
+        if ($query_detail->num_rows() > 0) {
+            // 3. ACTUALIZAR
+            $this->db->where('det3_id', $det3_id);
+            $this->db->where('tp_perfil', $d['posicion']);
+            $this->db->where('tipo_perfil_cat', $d['categoria']);
+            return $this->db->update('detalle_form3_perfil', $data_save);
+        } else {
+            // 4. INSERTAR
+            $data_save['det3_id'] = $det3_id;
+            $data_save['tp_perfil'] = $d['posicion'];
+            $data_save['tipo_perfil_cat'] = $d['categoria'];
+            return $this->db->insert('detalle_form3_perfil', $data_save);
+        }
+    }
 }

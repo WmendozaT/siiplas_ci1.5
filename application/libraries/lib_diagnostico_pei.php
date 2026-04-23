@@ -338,7 +338,7 @@ class lib_diagnostico_pei extends CI_Controller{
 
         /*------- Detalle formulario N 2 -------*/
     public function formulario_N3($get_form_distrital){
-      $detalle_form3=$this->model_diagnosticopei->get_formulario_N3($get_form_distrital[0]['dist_id'],1); /// listado de gestiones
+       
       $tabla='';
       $tabla.='
       <div class="viewport-container">
@@ -347,7 +347,7 @@ class lib_diagnostico_pei extends CI_Controller{
           <div class="page_horizontal">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
-                  Fecha: <span id="fecha-actual2"></span>
+                  Fecha: <span id="fecha-actual3"></span>
               </div>
               <div class="header">
                   <p>CAJA NACIONAL DE SALUD</p>
@@ -364,88 +364,8 @@ class lib_diagnostico_pei extends CI_Controller{
               </div>
               
               <div style="font-weight: bold; margin-bottom: 10px;">2. Perfil de morbilidad (Enfermedades prevalentes / 10 primeras causas de consulta Externa)</div>
-              <table>
-                  <thead>
-                    <tr style="text-align:center;">
-                        <th rowspan="3" class="nro-col">N.-</th>
-                        <th colspan="3" style="text-align:center;">2021</th>
-                        <th colspan="3" style="text-align:center;">2022</th>
-                        <th colspan="3" style="text-align:center;">2023</th>
-                        <th colspan="3" style="text-align:center;">2024</th>
-                        <th colspan="3" style="text-align:center;">2025</th>
-                    </tr>
-                    <tr>
-                        <th style="width:1.5px;">Nº casos</th><th style="width:5px;">Cod. CE10</th><th>10 primeras causas</th>
-                        <th style="width:1.5px;">Nº casos</th><th style="width:5px;">Cod. CE10</th><th>10 primeras causas</th>
-                        <th style="width:1.5px;">Nº casos</th><th style="width:5px;">Cod. CE10</th><th>10 primeras causas</th>
-                        <th style="width:1.5px;">Nº casos</th><th style="width:5px;">Cod. CE10</th><th>10 primeras causas</th>
-                        <th style="width:1.5px;">Nº casos</th><th style="width:5px;">Cod. CE10</th><th>10 primeras causas</th>
-                    </tr>
-                  </thead>
-                <tbody>';
-                   foreach($detalle_form3 as $row){
-                        $tabla.='
-                        <tr>
-                            <td class="nro-label">'.$row['nro'].'</td>
-                            <!-- Ejemplo para 2021 (Repetir lógica para los demás años cambiando data-gestion) -->
-                            <td><input type="number" class="input-perfil" 
-                                data-gestion="2021" data-nro="'.$row['nro'].'" data-col="nro_casos" 
-                                value="'.$row['casos_2021'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2021" data-nro="'.$row['nro'].'" data-col="codigo_ce" 
-                                value="'.$row['codigo_2021'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2021" data-nro="'.$row['nro'].'" data-col="detalle_causa" 
-                                value="'.$row['causa_2021'].'"></td>
-                                
-                            <!-- 2022 -->
-                            <td><input type="number" class="input-perfil" 
-                                data-gestion="2022" data-nro="'.$row['nro'].'" data-col="nro_casos" 
-                                value="'.$row['casos_2022'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2022" data-nro="'.$row['nro'].'" data-col="codigo_ce" 
-                                value="'.$row['codigo_2022'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2022" data-nro="'.$row['nro'].'" data-col="detalle_causa" 
-                                value="'.$row['causa_2022'].'"></td>
-                            
-                            <!-- 2023 -->
-                            <td><input type="number" class="input-perfil" 
-                                data-gestion="2023" data-nro="'.$row['nro'].'" data-col="nro_casos" 
-                                value="'.$row['casos_2023'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2023" data-nro="'.$row['nro'].'" data-col="codigo_ce" 
-                                value="'.$row['codigo_2023'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2023" data-nro="'.$row['nro'].'" data-col="detalle_causa" 
-                                value="'.$row['causa_2023'].'"></td>
-
-                            <!-- 2024 -->
-                            <td><input type="number" class="input-perfil" 
-                                data-gestion="2024" data-nro="'.$row['nro'].'" data-col="nro_casos" 
-                                value="'.$row['casos_2024'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2024" data-nro="'.$row['nro'].'" data-col="codigo_ce" 
-                                value="'.$row['codigo_2024'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2024" data-nro="'.$row['nro'].'" data-col="detalle_causa" 
-                                value="'.$row['causa_2024'].'"></td>
-
-                            <!-- 2025 -->
-                            <td><input type="number" class="input-perfil" 
-                                data-gestion="2025" data-nro="'.$row['nro'].'" data-col="nro_casos" 
-                                value="'.$row['casos_2025'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2025" data-nro="'.$row['nro'].'" data-col="codigo_ce" 
-                                value="'.$row['codigo_2025'].'"></td>
-                            <td><input type="text" class="input-perfil" 
-                                data-gestion="2025" data-nro="'.$row['nro'].'" data-col="detalle_causa" 
-                                value="'.$row['causa_2025'].'"></td>
-                        </tr>';
-                   }
-                  $tabla.='
-                  </tbody>
-              </table>
+              
+                '.$this->tabla_form3tp_perfil($get_form_distrital[0]['dist_id'],1).'
 
               <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
               <input type="hidden" class="nro_obs" value="3">
@@ -477,47 +397,138 @@ class lib_diagnostico_pei extends CI_Controller{
           <hr>
         </div>
         <script>
-          document.getElementById("fecha-actual2").innerText = new Date().toLocaleDateString();
+          document.getElementById("fecha-actual3").innerText = new Date().toLocaleDateString();
         </script>
         <script>
           $(document).ready(function() {
-              var timer = null;
-              var base_url = "'.base_url().'"; 
+            var timer_perfil = null;
+            var base_url = "'.base_url().'"; 
 
-              $(".auto-save").on("keyup change", function() {
-                  var $input = $(this);
-                  var $fila = $input.closest("tr");
-                  
-                  // Recalcular total visualmente de inmediato
-                  var t = parseFloat($fila.find("input[data-col=nro_empresas_reg]").val()) || 0;
-                  var p = parseFloat($fila.find("input[data-col=nro_aportes_dia]").val()) || 0;
-                  var b = parseFloat($fila.find("input[data-col=nro_empresa_mora]").val()) || 0;
-                  
-                  $fila.find(".total-row").text(t + p + b);
+            // Evento para Inputs (Números y Texto) y Selects
+            $(".auto-save, .select-perfil, .input-perfil").on("keyup change", function() {
+                var $el = $(this);
+                var esSelect = $el.is("select");
+                
+                // Si es escritura, esperamos 800ms. Si es un select, guardamos casi al instante.
+                var delay = esSelect ? 100 : 800;
 
-                  clearTimeout(timer);
+                clearTimeout(timer_perfil);
 
-                  timer = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form2",
-                          type: "POST",
-                          data: {
-                              form_id: $input.data("form"),
-                              gestion: $input.data("gestion"),
-                              columna: $input.data("col"),
-                              valor: $input.val()
-                          },
-                          success: function(resp) {
-                              
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
+                // Feedback visual en el status
+                $("#status").show().text("Sincronizando...").css("color", "blue");
+
+                timer_perfil = setTimeout(function() {
+                    $.ajax({
+                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form3",
+                        type: "POST",
+                        data: {
+                            form_id: $el.data("form"),
+                            gestion: $el.data("gestion"),
+                            nro_posicion: $el.data("nro"),
+                            categoria: $el.data("tp_perfil"),
+                            columna: $el.data("col"),
+                            valor: $el.val()
+                        },
+                        success: function(resp) {
+
+                            // Feedback de éxito
+                            $("#status").text("Guardado ✓").css("color", "green").fadeOut(2000);
+                            $("#toast-notificacion").fadeIn(400).delay(1500).fadeOut(400);
+                        },
+                        error: function() {
+                            $("#status").text("Error de red").css("color", "red");
+                        }
+                    });
+                }, delay);
+            });
+        });
         </script>';
         return $tabla;
     }
+
+
+    public function tabla_form3tp_perfil($dist_id,$tp){
+      $detalle_form3=$this->model_diagnosticopei->get_formulario_N3($dist_id,$tp); /// listado de gestiones
+      $cie10_list=$this->model_diagnosticopei->get_listado_cie10();
+      $tabla='';
+      $tabla.='<table>
+                  <thead>
+                    <tr style="text-align:center;">
+                        <th rowspan="3" class="nro-col">N.-</th>
+                        <th colspan="3" style="text-align:center;">2021</th>
+                        <th colspan="3" style="text-align:center;">2022</th>
+                        <th colspan="3" style="text-align:center;">2023</th>
+                        <th colspan="3" style="text-align:center;">2024</th>
+                        <th colspan="3" style="text-align:center;">2025</th>
+                    </tr>
+                    <tr>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
+                    </tr>
+                  </thead>
+                <tbody>';
+                   foreach($detalle_form3 as $row){
+                    $tabla.='
+                    <tr>
+                      <td class="nro-label">'.$row['nro'].'</td>';
+                      // Bucle para generar los 5 años (2021 al 2025)
+                      for ($anio = 2021; $anio <= 2025; $anio++) {
+                          $val_casos = $row['nro_casos_'.$anio];
+                          $val_ce_id = $row['ce_id_'.$anio]; // ID de la tabla CIE10
+                          $val_causa = $row['causa_'.$anio];
+
+                          $tabla.='
+                          <!-- '.$anio.' -->
+                          <td>
+                              <input type="number" 
+                                     class="auto-save" 
+                                     min="0"
+                                     onkeypress="return event.charCode >= 48"
+                                     data-form="'.$row['form_id'].'" 
+                                     data-tp_perfil="'.$tp.'" 
+                                     data-nro="'.$row['nro'].'"
+                                     data-gestion="'.$anio.'" 
+                                     data-col="nro_casos" 
+                                     value="'.$val_casos.'">
+                          </td>
+                          <td>
+                              <select class="select-perfil" 
+                                      data-gestion="'.$anio.'" 
+                                      data-form="'.$row['form_id'].'"
+                                      data-tp_perfil="'.$tp.'" 
+                                      data-nro="'.$row['nro'].'" 
+                                      data-col="ce_id" 
+                                      style="width: 100%; font-size: 8pt; border: none;">
+                                      <option value="0">Seleccione...</option>';
+                                      foreach($cie10_list as $cie){
+                                          // Corregido: Comparamos ID de enfermedad con el ce_id guardado
+                                          $selected = ($val_ce_id == $cie['id']) ? 'selected' : '';
+                                          $tabla.='<option value="'.$cie['id'].'" '.$selected.'>'.$cie['cod_3']." - ".$cie['descripcion'].'</option>';
+                                      }
+                          $tabla.='
+                              </select>
+                          </td>
+                          <td><input type="text" class="input-perfil" 
+                              data-gestion="'.$anio.'" data-nro="'.$row['nro'].'" data-tp_perfil="'.$tp.'"  data-form="'.$row['form_id'].'"  data-col="detalle_causa" 
+                              value="'.$val_causa.'">
+                          </td>';
+                      }
+                      
+                    $tabla.='</tr>';
+                  }
+                  $tabla.='
+                  </tbody>
+              </table>';
+
+      return $tabla;
+    }
+
+
+
+
 
 
 
