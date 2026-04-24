@@ -149,69 +149,69 @@ class CDiagnostico_pei extends CI_Controller {
               </div>
               <div class="well well-sm well-light">
               <h2>'.strtoupper($get_form_distrital[0]['dist_distrital']).'</h2>
-                <div id="tabs">
+                <div id="tabs" data-pei="'.$pei_id.'" data-dist="'.$dist_id.'">
                   <ul>
                     <li>
-                      <a href="#tabs-a"><b>I.- POBLACIÓN AFILIADA</b></a>
+                      <a href="#tabs-a" data-url="poblacion_afiliada"><b>I.- POBLACIÓN AFILIADA</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-b"><b>II.- EMPRESAS APORTANTES</b></a>
+                      <a href="#tabs-b" data-url="empresas_aportantes"><b>II.- EMPRESAS APORTANTES</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-c"><b>III.- PERFIL EPIDEMIOLOGICO</b></a>
+                      <a href="#tabs-c" data-url="perfil_epidemiologico"><b>III.- PERFIL EPIDEMIOLOGICO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-d"><b>IV.- INFRAESTRUCTURA</b></a>
+                      <a href="#tabs-d" data-url="infraestructura"><b>IV.- INFRAESTRUCTURA</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-e"><b>V.- EQUIPO</b></a>
+                      <a href="#tabs-e" data-url="equipamiento"><b>V.- EQUIPO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-f"><b>VI.- RECURSOS HUMANOS</b></a>
+                      <a href="#tabs-f" data-url="recursos_humanos"><b>VI.- RECURSOS HUMANOS</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-g"><b>VI.- COMPRA DE SERVICIOS</b></a>
+                      <a href="#tabs-g" data-url="compra_servicios"><b>VI.- COMPRA DE SERVICIOS</b></a>
                     </li>
                   </ul>
                   <div id="tabs-a">
                     <div class="row">
-                      '.$this->lib_diagnostico_pei->formulario_N1($get_form_distrital).'
+                      <div class="contenido-ajax"></div>
                     </div>
                   </div>
 
                   <div id="tabs-b">
                     <div class="row">
-                     '.$this->lib_diagnostico_pei->formulario_N2($get_form_distrital).'
+                      <div class="contenido-ajax"></div>
                     </div>
                   </div>
                   
                   <div id="tabs-c">
                     <div class="row">
-                      '.$this->lib_diagnostico_pei->formulario_N3($get_form_distrital).'
+                      <div class="contenido-ajax"></div>
                     </div>
                   </div>
 
                   <div id="tabs-d">
                     <div class="row">
-                    NO DISPONIBLE
+                      <div class="contenido-ajax"></div>
                     </div>
                   </div>
                   
                   <div id="tabs-e">
                     <div class="row">
-                     NO DISPONIBLE
+                      <div class="contenido-ajax"></div>
                     </div>
                   </div>
 
                   <div id="tabs-f">
                     <div class="row">
-                      NO DISPONIBLE
+                        <div class="contenido-ajax"></div>
                     </div>
                   </div>
 
                   <div id="tabs-g">
                     <div class="row">
-                      NO DISPONIBLE
+                      <div class="contenido-ajax"></div>
                     </div>
                   </div>
 
@@ -219,71 +219,41 @@ class CDiagnostico_pei extends CI_Controller {
               </div>
             </article>
 
-            
             <script type="text/javascript">
-              // DO NOT REMOVE : GLOBAL FUNCTIONS!
               $(document).ready(function() {
-                pageSetUp();
-                $("#menu").menu();
-                $(".ui-dialog :button").blur();
-                $("#tabs").tabs();
-              })
-            </script>
-            <script>
-              $(document).ready(function() {
-                  var timeout = null;
-                  var base_url = "'.base_url().'"; 
+                  $("#tabs").tabs({
+                      beforeActivate: function(event, ui) {
+                          var panel = $(ui.newPanel);
+                          var seccion = $(ui.newTab).find("a").attr("data-url");
 
-                  $(".observaciones-input").on("keyup", function() {
-                      var $this = $(this); 
-                      
-                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                      var contenedor = $this.closest("div").parent(); 
-                      var form_id = contenedor.find(".form_id").val();
-                      var nro_obs = contenedor.find(".nro_obs").val();
-                      
-                      var texto = $this.val();
-                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                          // CAPTURAMOS LOS VALORES DEL DIV PADRE
+                          var pei_id = $("#tabs").attr("data-pei");
+                          var dist_id = $("#tabs").attr("data-dist");
 
-                      if (!form_id || form_id == "0") {
-                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                          return;
+                          // Si el panel no tiene contenido real, cargamos
+                              panel.html("<div style=\'text-align:center; padding:50px;\'><i class=\'fa fa-spinner fa-spin\'></i> Cargando formulario ...</div>");
+                              
+                              $.post("'.base_url().'index.php/Cdiagnostico_pei/CDiagnostico_pei/cargar_formulario", { seccion: seccion,pei: pei_id,dist: dist_id }, function(data) {
+                                  panel.html(data);
+
+                              }).error(function() {
+                                  panel.html("Error al cargar datos.");
+                              });
+                          
                       }
+                  });
 
-                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                      
-                      clearTimeout(timeout);
-
-                      timeout = setTimeout(function() {
-                          $.ajax({
-                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                              type: "POST",
-                              data: {
-                                  form_id: form_id,
-                                  nro: nro_obs, 
-                                  observacion: texto
-                              },
-                              success: function(response) {
-
-                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                              },
-                              error: function() {
-                                  status.text("Error al guardar").css("color", "red");
-                                  $("#toast-notificacion")
-                                      .text("❌ Error al guardar")
-                                      .css("background-color", "#dc3545")
-                                      .fadeIn(400).delay(3000).fadeOut(400);
-                              }
-                          });
-                      }, 800); 
+                  // Carga manual de la primera pestaña al cargar la página
+                  var firstTab = $("#tabs ul li:first-child");
+                  var firstPanel = $("#tabs-a");
+                  $("#tabs").tabs("option", "beforeActivate")({}, {
+                      newPanel: firstPanel,
+                      newTab: firstTab
                   });
               });
-          </script>
+            </script>
 
           <script>
-           
             $(document).ready(function() {
                 // ... tu código anterior de guardado automático ...
 
@@ -305,12 +275,82 @@ class CDiagnostico_pei extends CI_Controller {
                     }
                 });
             });
-          </script>';
+          </script>
+            <script type="text/javascript">
+              // DO NOT REMOVE : GLOBAL FUNCTIONS!
+              $(document).ready(function() {
+                pageSetUp();
+                $("#menu").menu();
+                $(".ui-dialog :button").blur();
+                $("#tabs").tabs();
+              })
+            </script>';
 
 
       return $tabla;
     }
     
+
+    //// Cargar formulario view
+  function cargar_formulario() {
+      $seccion = $this->input->post('seccion');
+      $pei_id  = $this->input->post('pei');
+      $dist_id = $this->input->post('dist');
+      
+      // Importante: Aquí debes cargar tus datos necesarios
+      $get_form_distrital=$this->model_diagnosticopei->get_distrital_formulario_diagnostico_activo($pei_id,$dist_id); 
+
+      switch ($seccion) {
+          case 'poblacion_afiliada':
+              echo $this->lib_diagnostico_pei->formulario_N1($get_form_distrital);
+              break;
+          case 'empresas_aportantes':
+              echo $this->lib_diagnostico_pei->formulario_N2($get_form_distrital);
+              break;
+          case 'perfil_epidemiologico':
+              echo $this->lib_diagnostico_pei->formulario_N3($get_form_distrital);
+              break;
+          case 'infraestructura':
+              echo $this->lib_diagnostico_pei->formulario_N4($get_form_distrital);
+              break;
+          case 'equipamiento':
+              echo $this->lib_diagnostico_pei->trabajando($get_form_distrital);
+              break;
+          case 'compra_servicios':
+              echo $this->lib_diagnostico_pei->trabajando($get_form_distrital);
+              break;
+          case 'compra_servicios':
+              echo $this->lib_diagnostico_pei->trabajando($get_form_distrital);
+              break;
+          // ... otros casos
+          default:
+              echo "Sección no válida";
+              break;
+      }
+
+  }
+
+
+
+public function buscar_cie10_ajax() {
+    $search = $this->input->get('q'); // Palabra buscada
+    $this->db->select('id, cod_3, descripcion');
+    $this->db->from('tabla_cie10');
+    $this->db->like('cod_3', $search);
+    $this->db->or_like('descripcion', $search);
+    $this->db->limit(20); // Limitamos a 20 resultados para que sea veloz
+    $query = $this->db->get();
+
+    $resultados = array();
+    foreach ($query->result() as $row) {
+        $resultados[] = array(
+            'id'   => $row->id,
+            'text' => $row->cod_3 . " - " . $row->descripcion
+        );
+    }
+    echo json_encode($resultados);
+}
+
 
   //// Guarda Observacion al formulario
   function guarda_observacion() {

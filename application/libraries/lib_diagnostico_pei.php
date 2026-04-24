@@ -123,12 +123,6 @@ class lib_diagnostico_pei extends CI_Controller{
                   >'.strtoupper($get_form_distrital[0]['observacion1']).'</textarea>
               </div>
 
-              <!-- Firma -->
-              <div class="firma-container">
-                  <div class="linea-firma"></div>
-                  <div class="firma-texto">'.$get_form_distrital[0]['tipo_firma'].'</div>
-              </div>
-
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -175,7 +169,60 @@ class lib_diagnostico_pei extends CI_Controller{
                   }, 800); 
               });
           });
-        </script>';
+        </script>
+
+        <script>
+              $(document).ready(function() {
+                  var timeout = null;
+                  var base_url = "'.base_url().'"; 
+
+                  $(".observaciones-input").on("keyup", function() {
+                      var $this = $(this); 
+                      
+                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                      var contenedor = $this.closest("div").parent(); 
+                      var form_id = contenedor.find(".form_id").val();
+                      var nro_obs = contenedor.find(".nro_obs").val();
+                      
+                      var texto = $this.val();
+                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                      if (!form_id || form_id == "0") {
+                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                          return;
+                      }
+
+                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                      
+                      clearTimeout(timeout);
+
+                      timeout = setTimeout(function() {
+                          $.ajax({
+                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                              type: "POST",
+                              data: {
+                                  form_id: form_id,
+                                  nro: nro_obs, 
+                                  observacion: texto
+                              },
+                              success: function(response) {
+
+                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                              },
+                              error: function() {
+                                  status.text("Error al guardar").css("color", "red");
+                                  $("#toast-notificacion")
+                                      .text("❌ Error al guardar")
+                                      .css("background-color", "#dc3545")
+                                      .fadeIn(400).delay(3000).fadeOut(400);
+                              }
+                          });
+                      }, 800); 
+                  });
+              });
+          </script>';
         return $tabla;
     }
 
@@ -279,12 +326,6 @@ class lib_diagnostico_pei extends CI_Controller{
                   >'.strtoupper($get_form_distrital[0]['observacion2']).'</textarea>
               </div>
 
-              <!-- Firma -->
-              <div class="firma-container">
-                  <div class="linea-firma"></div>
-                  <div class="firma-texto">'.$get_form_distrital[0]['tipo_firma'].'</div>
-              </div>
-
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -331,14 +372,67 @@ class lib_diagnostico_pei extends CI_Controller{
                   }, 800); 
               });
           });
-        </script>';
+        </script>
+
+        <script>
+              $(document).ready(function() {
+                  var timeout = null;
+                  var base_url = "'.base_url().'"; 
+
+                  $(".observaciones-input").on("keyup", function() {
+                      var $this = $(this); 
+                      
+                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                      var contenedor = $this.closest("div").parent(); 
+                      var form_id = contenedor.find(".form_id").val();
+                      var nro_obs = contenedor.find(".nro_obs").val();
+                      
+                      var texto = $this.val();
+                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                      if (!form_id || form_id == "0") {
+                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                          return;
+                      }
+
+                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                      
+                      clearTimeout(timeout);
+
+                      timeout = setTimeout(function() {
+                          $.ajax({
+                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                              type: "POST",
+                              data: {
+                                  form_id: form_id,
+                                  nro: nro_obs, 
+                                  observacion: texto
+                              },
+                              success: function(response) {
+
+                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                              },
+                              error: function() {
+                                  status.text("Error al guardar").css("color", "red");
+                                  $("#toast-notificacion")
+                                      .text("❌ Error al guardar")
+                                      .css("background-color", "#dc3545")
+                                      .fadeIn(400).delay(3000).fadeOut(400);
+                              }
+                          });
+                      }, 800); 
+                  });
+              });
+          </script>';
         return $tabla;
     }
 
 
-        /*------- Detalle formulario N 2 -------*/
+
+    /*------- Detalle formulario N 2 -------*/
     public function formulario_N3($get_form_distrital){
-       
       $tabla='';
       $tabla.='
       <div class="viewport-container">
@@ -363,10 +457,16 @@ class lib_diagnostico_pei extends CI_Controller{
                   Recolectar, organizar y analizar información epidemiológica de la población afiliada, identificando tendencias de morbilidad, mortalidad y factores de riesgo en el periodo '.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].'.
               </div>
               
+
               <div style="font-weight: bold; margin-bottom: 10px;">2. Perfil de morbilidad (Enfermedades prevalentes / 10 primeras causas de consulta Externa)</div>
-              
                 '.$this->tabla_form3tp_perfil($get_form_distrital[0]['dist_id'],1).'
 
+              <div style="font-weight: bold; margin-bottom: 10px;">3. Perfil de morbilidad (Enfermedades prevalentes / 10 primeras causas de consulta Hospitalaria)</div>
+                '.$this->tabla_form3tp_perfil($get_form_distrital[0]['dist_id'],2).'
+
+              <div style="font-weight: bold; margin-bottom: 10px;">4. Perfil de mortalidad (principales causas)</div>
+                  '.$this->tabla_form3tp_perfil($get_form_distrital[0]['dist_id'],3).'
+                  
               <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
               <input type="hidden" class="nro_obs" value="3">
 
@@ -376,73 +476,196 @@ class lib_diagnostico_pei extends CI_Controller{
                       class="observaciones-input" 
                       name="obs" 
                       id="obs" 
-                      data-nro="2"
+                      data-nro="3"
                       onpaste="return false;" 
                       placeholder="Escriba aquí sus observaciones..."
                       style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion2']).'</textarea>
-              </div>
-
-              <!-- Firma -->
-              <div class="firma-container">
-                  <div class="linea-firma"></div>
-                  <div class="firma-texto">'.$get_form_distrital[0]['tipo_firma'].'</div>
+                  >'.strtoupper($get_form_distrital[0]['observacion3']).'</textarea>
               </div>
 
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
               </div>
+            </div>
           </div>
           <hr>
         </div>
+
         <script>
           document.getElementById("fecha-actual3").innerText = new Date().toLocaleDateString();
         </script>
         <script>
-          $(document).ready(function() {
             var timer_perfil = null;
-            var base_url = "'.base_url().'"; 
+            var base_url = "' . base_url() . '";
 
-            // Evento para Inputs (Números y Texto) y Selects
-            $(".auto-save, .select-perfil, .input-perfil").on("keyup change", function() {
-                var $el = $(this);
-                var esSelect = $el.is("select");
-                
-                // Si es escritura, esperamos 800ms. Si es un select, guardamos casi al instante.
-                var delay = esSelect ? 100 : 800;
+            // 1. FUNCIÓN CENTRALIZADA DE GUARDADO
+            function ejecutarGuardado($el) {
+              //alert($el.data("form")+"-"+$el.data("gestion")+"-"+$el.data("nro")+"-"+$el.data("tp_perfil")+"-"+$el.data("col")+"-"+$el.val())
+                $("#status").stop(true, true).show().text("Sincronizando...").css("color", "blue");
 
-                clearTimeout(timer_perfil);
+                $.ajax({
+                    url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form3",
+                    type: "POST",
+                    data: {
+                        form_id: $el.data("form"),
+                        gestion: $el.data("gestion"),
+                        nro_posicion: $el.data("nro"),
+                        categoria: $el.data("tp_perfil"),
+                        columna: $el.data("col"),
+                        valor: $el.val()
+                    },
+                    success: function(resp) {
+                        $("#status").text("Guardado ✓").css("color", "green").fadeOut(2000);
+                        $("#toast-notificacion").fadeIn(400).delay(1500).fadeOut(400);
+                    },
+                    error: function() {
+                        $("#status").text("Error de red").css("color", "red");
+                    }
+                });
+            }
 
-                // Feedback visual en el status
-                $("#status").show().text("Sincronizando...").css("color", "blue");
+            $(document).ready(function() {
+                // 2. EVENTO PARA INPUTS MANUALES (Nº Casos y Detalle Causa)
+                $(".auto-save, .input-perfil").on("keyup change", function() {
+                    var $el = $(this);
 
-                timer_perfil = setTimeout(function() {
-                    $.ajax({
-                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form3",
-                        type: "POST",
-                        data: {
-                            form_id: $el.data("form"),
-                            gestion: $el.data("gestion"),
-                            nro_posicion: $el.data("nro"),
-                            categoria: $el.data("tp_perfil"),
-                            columna: $el.data("col"),
-                            valor: $el.val()
-                        },
-                        success: function(resp) {
+                    clearTimeout(timer_perfil);
+                    timer_perfil = setTimeout(function() {
+                        ejecutarGuardado($el);
+                    }, 800);
+                });
 
-                            // Feedback de éxito
-                            $("#status").text("Guardado ✓").css("color", "green").fadeOut(2000);
-                            $("#toast-notificacion").fadeIn(400).delay(1500).fadeOut(400);
-                        },
-                        error: function() {
-                            $("#status").text("Error de red").css("color", "red");
-                        }
-                    });
-                }, delay);
+                // 3. LIMPIEZA DE CEROS
+                $(".auto-save[type=\'number\']").on("focus", function() {
+                    if ($(this).val() == "0") $(this).val("");
+                }).on("blur", function() {
+                    if ($(this).val() === "") $(this).val("0");
+                });
             });
-        });
-        </script>';
+
+            // 4. LÓGICA DEL MODAL BUSCADOR
+            var gestionActual, nroActual;
+
+            function abrirBuscador(gestion, nro, tp) {
+                gestionActual = gestion;
+                nroActual = nro;
+                tpActual = tp; 
+
+                // Definimos los títulos según el tipo de perfil (tp)
+                var titulo = "";
+                switch(parseInt(tp)) {
+                    case 1:
+                        titulo = "BUSCADOR CIE-10 (MORBILIDAD: Consulta Externa)";
+                        break;
+                    case 2:
+                        titulo = "BUSCADOR CIE-10 (MORBILIDAD: Hospitalaria)";
+                        break;
+                    case 3:
+                        titulo = "BUSCADOR CIE-10 (MORTALIDAD)";
+                        break;
+                    default:
+                        titulo = "BUSCADOR CIE-10";
+                }
+
+                // Actualizamos el título en el modal
+                $("#modalBuscador .modal-title b").text(titulo);
+
+                // Mostramos el modal
+                $("#modalBuscador").modal("show");
+                setTimeout(function(){ 
+                    $("#txtBuscar").val("").focus(); 
+                }, 500);
+                $("#listaResultados").html("");
+            }
+
+            function filtrarCIE10() {
+                var query = $("#txtBuscar").val();
+                if(query.length < 2) return;
+
+                $.get(base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/buscar_cie10_ajax?q=" + query, function(data) {
+                    var resp = JSON.parse(data);
+                    var html = "<div class=\'list-group\'>";
+                    $.each(resp, function(i, item) {
+                        html += "<a href=\'javascript:void(0)\' class=\'list-group-item\' onclick=\'seleccionarEnfermedad(\"" + item.id + "\", \"" + item.text + "\")\'>" + item.text + "</a>";
+                    });
+                    html += "</div>";
+                    $("#listaResultados").html(html);
+                });
+            }
+
+            function seleccionarEnfermedad(id, texto) {
+                // 1. Identificamos los elementos
+                var idCompuesto = "#id_" + tpActual + "_" + gestionActual + "_" + nroActual;
+                var descCompuesto = "#desc_" + tpActual + "_" + gestionActual + "_" + nroActual;
+
+                var inputId   = $(idCompuesto); 
+                var inputDesc = $(descCompuesto); 
+                
+                // 2. Actualizamos el valor del input
+                inputId.val(id);
+                inputDesc.val(texto); 
+
+                // 3. ACTUALIZACIÓN DEL TITLE: Esto permite ver la descripción completa al pasar el mouse
+                inputDesc.attr("title", texto); 
+                
+                // 4. Actualizamos metadatos y guardamos
+                inputId.attr("data-tp_perfil", tpActual);
+                $("#modalBuscador").modal("hide");
+                
+                ejecutarGuardado(inputId);
+            }
+        </script>
+        <script>
+              $(document).ready(function() {
+                  var timeout = null;
+                  var base_url = "'.base_url().'"; 
+
+                  $(".observaciones-input").on("keyup", function() {
+                      var $this = $(this); 
+                      
+                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                      var contenedor = $this.closest("div").parent(); 
+                      var form_id = contenedor.find(".form_id").val();
+                      var nro_obs = contenedor.find(".nro_obs").val();
+                      
+                      var texto = $this.val();
+                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                      if (!form_id || form_id == "0") {
+                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                          return;
+                      }
+
+                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                      clearTimeout(timeout);
+                      timeout = setTimeout(function() {
+                          $.ajax({
+                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                              type: "POST",
+                              data: {
+                                  form_id: form_id,
+                                  nro: nro_obs, 
+                                  observacion: texto
+                              },
+                              success: function(response) {
+
+                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                              },
+                              error: function() {
+                                  status.text("Error al guardar").css("color", "red");
+                                  $("#toast-notificacion")
+                                      .text("❌ Error al guardar")
+                                      .css("background-color", "#dc3545")
+                                      .fadeIn(400).delay(3000).fadeOut(400);
+                              }
+                          });
+                      }, 800); 
+                  });
+              });
+          </script>';
         return $tabla;
     }
 
@@ -451,10 +674,26 @@ class lib_diagnostico_pei extends CI_Controller{
       $detalle_form3=$this->model_diagnosticopei->get_formulario_N3($dist_id,$tp); /// listado de gestiones
       $cie10_list=$this->model_diagnosticopei->get_listado_cie10();
       $tabla='';
-      $tabla.='<table>
+      $tabla.='
+                <div class="modal fade" id="modalBuscador" tabindex="-1" role="dialog" style="z-index: 9999;">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background:#FFC000">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title"><b>BUSCADOR CIE-10 (TIPO: '.$tp.')</b></h4>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" id="txtBuscar" class="form-control" placeholder="Escriba el código o enfermedad..." onkeyup="filtrarCIE10()" >
+                                <hr>
+                                <div id="listaResultados" style="max-height: 350px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table>
                   <thead>
                     <tr style="text-align:center;">
-                        <th rowspan="3" class="nro-col">N.-</th>
+                        <th rowspan="3" class="nro-col">N.- '.$tp.'</th>
                         <th colspan="3" style="text-align:center;">2021</th>
                         <th colspan="3" style="text-align:center;">2022</th>
                         <th colspan="3" style="text-align:center;">2023</th>
@@ -462,11 +701,11 @@ class lib_diagnostico_pei extends CI_Controller{
                         <th colspan="3" style="text-align:center;">2025</th>
                     </tr>
                     <tr>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CE10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
+                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
                     </tr>
                   </thead>
                 <tbody>';
@@ -475,48 +714,55 @@ class lib_diagnostico_pei extends CI_Controller{
                     <tr>
                       <td class="nro-label">'.$row['nro'].'</td>';
                       // Bucle para generar los 5 años (2021 al 2025)
-                      for ($anio = 2021; $anio <= 2025; $anio++) {
-                          $val_casos = $row['nro_casos_'.$anio];
-                          $val_ce_id = $row['ce_id_'.$anio]; // ID de la tabla CIE10
-                          $val_causa = $row['causa_'.$anio];
+                       for ($anio = 2021; $anio <= 2025; $anio++) {
+                      $val_casos = $row['nro_casos_'.$anio];
+                      $val_ce_id = $row['ce_id_'.$anio]; 
+                      $val_causa = $row['causa_'.$anio];
+                      $cod_cie   = $row['codigo_cie_'.$anio];
 
-                          $tabla.='
-                          <!-- '.$anio.' -->
-                          <td>
-                              <input type="number" 
-                                     class="auto-save" 
-                                     min="0"
-                                     onkeypress="return event.charCode >= 48"
-                                     data-form="'.$row['form_id'].'" 
-                                     data-tp_perfil="'.$tp.'" 
-                                     data-nro="'.$row['nro'].'"
-                                     data-gestion="'.$anio.'" 
-                                     data-col="nro_casos" 
-                                     value="'.$val_casos.'">
-                          </td>
-                          <td>
-                              <select class="select-perfil" 
-                                      data-gestion="'.$anio.'" 
-                                      data-form="'.$row['form_id'].'"
-                                      data-tp_perfil="'.$tp.'" 
-                                      data-nro="'.$row['nro'].'" 
-                                      data-col="ce_id" 
-                                      style="width: 100%; font-size: 8pt; border: none;">
-                                      <option value="0">Seleccione...</option>';
-                                      foreach($cie10_list as $cie){
-                                          // Corregido: Comparamos ID de enfermedad con el ce_id guardado
-                                          $selected = ($val_ce_id == $cie['id']) ? 'selected' : '';
-                                          $tabla.='<option value="'.$cie['id'].'" '.$selected.'>'.$cie['cod_3']." - ".$cie['descripcion'].'</option>';
-                                      }
-                          $tabla.='
-                              </select>
-                          </td>
-                          <td><input type="text" class="input-perfil" 
-                              data-gestion="'.$anio.'" data-nro="'.$row['nro'].'" data-tp_perfil="'.$tp.'"  data-form="'.$row['form_id'].'"  data-col="detalle_causa" 
-                              value="'.$val_causa.'">
-                          </td>';
-                      }
+                      $tabla .= '
+                      <!-- COLUMNA CASOS -->
+                      <td>
+                          <input type="number" class="auto-save" min="0"
+                                 data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'" 
+                                 data-nro="'.$row['nro'].'" data-gestion="'.$anio.'" 
+                                 data-col="nro_casos" value="'.$val_casos.'" 
+                                 style="width:100%; text-align:center; border:none;">
+                      </td>
                       
+                      <!-- COLUMNA BUSCADOR (ID y CODIGO) -->
+                      <td>
+                          <div class="input-group" style="display: flex; width: 100%;">
+                              <input type="text" 
+                                      class="form-control input-sm" 
+                                      id="desc_' . $tp . '_' . $anio . '_' . $row['nro'] . '"  
+                                      value="' . $cod_cie . '" 
+                                      readonly 
+                                      title="' . $cod_cie . '" 
+                                      style="width: 80%; font-size: 7.5pt; height: 24px; border-radius: 4px 0 0 4px;">
+                              
+                              <button type="button" class="btn btn-primary btn-xs" style="height: 24px; width: 20%;"
+                                      onclick="abrirBuscador(\''.$anio.'\', \''.$row['nro'].'\', \''.$tp.'\')">
+                                  <i class="fa fa-search"></i>
+                              </button>
+
+                              <input type="hidden" class="ce_id_input auto-save" id="id_' . $tp . '_' . $anio . '_' . $row['nro'] . '" 
+                                     data-gestion="'.$anio.'" data-nro="'.$row['nro'].'"
+                                     data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'"
+                                     data-col="ce_id" value="'.$val_ce_id.'">
+                          </div>
+                      </td>
+
+                      <!-- COLUMNA DETALLE TEXTO -->
+                      <td>
+                          <input type="text" class="input-perfil auto-save" 
+                                 data-gestion="'.$anio.'" data-nro="'.$row['nro'].'" 
+                                 data-tp_perfil="'.$tp.'" data-form="'.$row['form_id'].'" 
+                                 data-col="detalle_causa" value="'.$val_causa.'"
+                                 style="width:100%; font-size: 8pt; border:none;">
+                      </td>';
+                  }
+                            
                     $tabla.='</tr>';
                   }
                   $tabla.='
@@ -525,12 +771,159 @@ class lib_diagnostico_pei extends CI_Controller{
 
       return $tabla;
     }
+    //// ------------------------- END FORM 3
 
 
+    /*------- Detalle formulario N 2 -------*/
+    public function formulario_N4($get_form_distrital){
+      $tabla='';
+      $tabla.='
+      <div class="viewport-container">
+          <br>
+          <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+          <div class="page">
+              <!-- Fecha de Impresión Automática -->
+              <div class="fecha-impresion">
+                  Fecha: <span id="fecha-actual3"></span>
+              </div>
+              <div class="header">
+                  <p>CAJA NACIONAL DE SALUD</p>
+                  <h1><b>DIAGNÓSTICO DE INFRAESTRUCTURA</b></h1>
+              </div>
+
+              <div style="margin: 20px 0; font-weight: bold;">
+                  Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+              </div>
+
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Objetivo</div>
+              <div style="border: 1px solid #ccc; padding: 10px; font-size: 8.5pt; margin-bottom: 20px;">
+                  Identificar, registrar y evaluar las condiciones de la infraestructura de los establecimientos de salud, para determinar su capacidad operativa y soporte a la demanda poblacional.
+              </div>
+              
+
+              <div style="font-weight: bold; margin-bottom: 10px;">2. Matriz de inventario de establecimientos PRIMER NIVEL</div>
+                '.$this->tabla_form4Tp_infraestructura($get_form_distrital[0]['dist_id'],1).'
+
+              <div style="font-weight: bold; margin-bottom: 10px;">3. Matriz de inventario de establecimientos SEGUNDO Y TERCER NIVEL</div>
+                '.$this->tabla_form4Tp_infraestructura($get_form_distrital[0]['dist_id'],2).'
+                  
+              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
+              <input type="hidden" class="nro_obs" value="4">
+
+              <div style="margin-top: 30px;">
+                  <strong>3. Observaciones adicionales</strong>
+                  <textarea 
+                      class="observaciones-input" 
+                      name="obs" 
+                      id="obs" 
+                      data-nro="4"
+                      onpaste="return false;" 
+                      placeholder="Escriba aquí sus observaciones..."
+                      style="width: 100%; height: 100px; resize: none;"
+                  >'.strtoupper($get_form_distrital[0]['observacion4']).'</textarea>
+              </div>
+
+              <!-- Pie de página -->
+              <div class="footer-nacional">
+                  DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
 
 
+        
+        <script>
+          document.getElementById("fecha-actual3").innerText = new Date().toLocaleDateString();
+        </script>
+
+        <script>
+              $(document).ready(function() {
+                  var timeout = null;
+                  var base_url = "'.base_url().'"; 
+
+                  $(".observaciones-input").on("keyup", function() {
+                      var $this = $(this); 
+                      
+                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                      var contenedor = $this.closest("div").parent(); 
+                      var form_id = contenedor.find(".form_id").val();
+                      var nro_obs = contenedor.find(".nro_obs").val();
+                      
+                      var texto = $this.val();
+                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                      if (!form_id || form_id == "0") {
+                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                          return;
+                      }
+
+                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                      clearTimeout(timeout);
+                      timeout = setTimeout(function() {
+                          $.ajax({
+                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                              type: "POST",
+                              data: {
+                                  form_id: form_id,
+                                  nro: nro_obs, 
+                                  observacion: texto
+                              },
+                              success: function(response) {
+
+                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                              },
+                              error: function() {
+                                  status.text("Error al guardar").css("color", "red");
+                                  $("#toast-notificacion")
+                                      .text("❌ Error al guardar")
+                                      .css("background-color", "#dc3545")
+                                      .fadeIn(400).delay(3000).fadeOut(400);
+                              }
+                          });
+                      }, 800); 
+                  });
+              });
+          </script>';
+        return $tabla;
+    }
+
+ public function tabla_form4Tp_infraestructura($dist_id,$tp){
+     // $detalle_form3=$this->model_diagnosticopei->get_formulario_N3($dist_id,$tp); /// listado de gestiones
+     // $cie10_list=$this->model_diagnosticopei->get_listado_cie10();
+      $tabla='';
+      $tabla.='
+          <table>
+            <thead>
+              <tr>
+                
+                  <th style="width:30%;">Establecimiento</th>
+                  <th style="width:15%;">Tipo</th>
+                  <th style="width:25%;">Ubicación</th>
+                  <th style="width:15%;">Nro. consultorios fisicos</th>
+                  <th style="width:15%;">1. Propia<br>2. Alquilada<br>3. Otros (detalle)</th>
+              </tr>
+            </thead>
+          <tbody>';
+            
+            $tabla.='
+            </tbody>
+        </table>';
+
+      return $tabla;
+    }
 
 
+    /*------- Trabajando -------*/
+    public function trabajando($get_form_distrital){
+      $tabla='';
+      $tabla.='TRABAJANDO';
+
+      return $tabla;
+    }
 
 
   public function style_form(){
@@ -588,7 +981,7 @@ class lib_diagnostico_pei extends CI_Controller{
                     /* Invertimos: Ancho ahora es 11 pulgadas y alto 8.5 */
                     width: 22in; 
                     min-width: 22in; /* Mantiene el ancho horizontal en celulares con scroll */
-                    height: 8.5in; 
+                    height: 21in; 
                     padding: 0.4in 0.5in; /* Reducimos un poco el padding para ganar espacio */
                     box-sizing: border-box; 
                     position: relative; 

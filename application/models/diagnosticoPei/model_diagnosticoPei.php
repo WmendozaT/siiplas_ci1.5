@@ -138,31 +138,31 @@ class model_diagnosticoPei extends CI_Model {
         COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.nro_casos END), 0) AS nro_casos_2021,
         COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.ce_id END), 0) AS ce_id_2021,
         COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN cie21.cod_3 || ' - ' || cie21.descripcion END), '') AS codigo_cie_2021,
-        MAX(CASE WHEN mp.g_id = 2021 THEN cie21.descripcion END) AS causa_2021,
+        MAX(CASE WHEN mp.g_id = 2021 THEN dp.detalle_causa END) AS causa_2021,
         
         -- Gestión 2022
         COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.nro_casos END), 0) AS nro_casos_2022,
         COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.ce_id END), 0) AS ce_id_2022,
         COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN cie22.cod_3 || ' - ' || cie22.descripcion END), '') AS codigo_cie_2022,
-        MAX(CASE WHEN mp.g_id = 2022 THEN cie22.descripcion END) AS causa_2022,
+        MAX(CASE WHEN mp.g_id = 2022 THEN dp.detalle_causa END) AS causa_2022,
 
         -- Gestión 2023
         COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.nro_casos END), 0) AS nro_casos_2023,
         COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.ce_id END), 0) AS ce_id_2023,
         COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN cie23.cod_3 || ' - ' || cie23.descripcion END), '') AS codigo_cie_2023,
-        MAX(CASE WHEN mp.g_id = 2023 THEN cie23.descripcion END) AS causa_2023,
+        MAX(CASE WHEN mp.g_id = 2023 THEN dp.detalle_causa END) AS causa_2023,
 
         -- Gestión 2024
         COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.nro_casos END), 0) AS nro_casos_2024,
         COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.ce_id END), 0) AS ce_id_2024,
         COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN cie24.cod_3 || ' - ' || cie24.descripcion END), '') AS codigo_cie_2024,
-        MAX(CASE WHEN mp.g_id = 2024 THEN cie24.descripcion END) AS causa_2024,
+        MAX(CASE WHEN mp.g_id = 2024 THEN dp.detalle_causa END) AS causa_2024,
 
         -- Gestión 2025
         COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.nro_casos END), 0) AS nro_casos_2025,
         COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.ce_id END), 0) AS ce_id_2025,
         COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN cie25.cod_3 || ' - ' || cie25.descripcion END), '') AS codigo_cie_2025,
-        MAX(CASE WHEN mp.g_id = 2025 THEN cie25.descripcion END) AS causa_2025
+        MAX(CASE WHEN mp.g_id = 2025 THEN dp.detalle_causa END) AS causa_2025
         
     FROM diez_filas df
     CROSS JOIN formulario_diagnostico_pei f
@@ -219,39 +219,4 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
-    /*--------- Detalle General  ----------*/
-    // public function general_diagnostico_pei(){
-    //     $sql = 'WITH rango AS (
-    //             SELECT g_id_inicio, g_id_fin 
-    //             FROM public.Diagnostico_pei 
-    //             WHERE estado = 1 
-    //             LIMIT 1
-    //         ),
-    //         gestiones AS (
-    //             SELECT generate_series(r.g_id_inicio, r.g_id_fin) AS anio
-    //             FROM rango r
-    //         )
-    //         SELECT 
-    //             di.dist_id,
-    //             di.dist_distrital AS regional_distrital,
-    //             g.anio AS gestion,
-    //             COALESCE(df.det_from1_nro_coti_titular, 0) AS form1_titulares,
-    //             COALESCE(df.det_form1_nro_coti_pasivo, 0) AS form1_pasivos,
-    //             COALESCE(df.det_form1_nro_coti_benef, 0) AS form1_beneficiarios,
-    //             -- Suma horizontal por fila (titulares + pasivos + beneficiarios)
-    //             (COALESCE(df.det_from1_nro_coti_titular, 0) + 
-    //              COALESCE(df.det_form1_nro_coti_pasivo, 0) + 
-    //              COALESCE(df.det_form1_nro_coti_benef, 0)) AS total_form1_gestion,
-    //             f1.form1_observacion
-    //         FROM public._distritales di
-    //         CROSS JOIN gestiones g
-    //         LEFT JOIN formN1_diagnostico_pei f1 ON di.dist_id = f1.dist_id
-    //         LEFT JOIN detalle_form1 df ON f1.form1_id = df.form1_id 
-    //              AND df.det_form1_g_id = g.anio
-    //         WHERE di.dist_estado = 1 AND di.dist_id NOT IN (0, 22)
-    //         ORDER BY di.dist_id ASC, g.anio ASC;';
-
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
 }
