@@ -26,6 +26,7 @@ class lib_diagnostico_pei extends CI_Controller{
         <div class="viewport-container">
           <br>
           <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+          <a href="javascript:abreVentana_poa(\''.site_url("").'/Diagnostico_pei/rep_diagnostico_form/'.$get_form_distrital[0]['dist_id'].'\');" class="btn btn-default" title="REPORTE FORMULARIO SPO N° 4 - ACTIVIDADES"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°4</b></font></a>
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">

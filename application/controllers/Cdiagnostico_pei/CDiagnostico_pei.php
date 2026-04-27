@@ -12,6 +12,8 @@ class CDiagnostico_pei extends CI_Controller {
       $this->conf_pei = $this->session->userData('conf_pei'); /// Conf Pei
       $this->tp_adm = $this->session->userdata("tp_adm");
       $this->load->library('lib_diagnostico_pei');
+      $this->load->library('lib_diagnosticopei_reporte');
+      //$this->load->library('lib_diagnosticopei_reporte');
      
       }else{
           redirect('/','refresh');
@@ -330,26 +332,31 @@ class CDiagnostico_pei extends CI_Controller {
 
   }
 
+  /// Reporte Formulario Diagnostico Pei
+  public function reporte_formulario_pei($dist_id) {
+      // Llamado al método
+      echo $this->lib_diagnosticopei_reporte->reporte_diagnostico_pei();
+  }
 
+  /// Buscador select CIe10
+  public function buscar_cie10_ajax() {
+      $search = $this->input->get('q'); // Palabra buscada
+      $this->db->select('id, cod_3, descripcion');
+      $this->db->from('tabla_cie10');
+      $this->db->like('cod_3', $search);
+      $this->db->or_like('descripcion', $search);
+      $this->db->limit(20); // Limitamos a 20 resultados para que sea veloz
+      $query = $this->db->get();
 
-public function buscar_cie10_ajax() {
-    $search = $this->input->get('q'); // Palabra buscada
-    $this->db->select('id, cod_3, descripcion');
-    $this->db->from('tabla_cie10');
-    $this->db->like('cod_3', $search);
-    $this->db->or_like('descripcion', $search);
-    $this->db->limit(20); // Limitamos a 20 resultados para que sea veloz
-    $query = $this->db->get();
-
-    $resultados = array();
-    foreach ($query->result() as $row) {
-        $resultados[] = array(
-            'id'   => $row->id,
-            'text' => $row->cod_3 . " - " . $row->descripcion
-        );
-    }
-    echo json_encode($resultados);
-}
+      $resultados = array();
+      foreach ($query->result() as $row) {
+          $resultados[] = array(
+              'id'   => $row->id,
+              'text' => $row->cod_3 . " - " . $row->descripcion
+          );
+      }
+      echo json_encode($resultados);
+  }
 
 
   //// Guarda Observacion al formulario
