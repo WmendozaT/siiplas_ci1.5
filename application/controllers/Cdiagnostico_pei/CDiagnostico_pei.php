@@ -13,7 +13,12 @@ class CDiagnostico_pei extends CI_Controller {
       $this->tp_adm = $this->session->userdata("tp_adm");
       $this->load->library('lib_diagnostico_pei');
       $this->load->library('lib_diagnosticopei_reporte');
-      //$this->load->library('lib_diagnosticopei_reporte');
+        // Si CI no creó la propiedad, la asignamos nosotros a mano
+        if (!isset($this->lib_diagnosticopei_reporte)) {
+            $CI =& get_instance();
+            $this->lib_diagnosticopei_reporte = $CI->lib_diagnosticopei_reporte;
+        }
+
      
       }else{
           redirect('/','refresh');
@@ -255,29 +260,7 @@ class CDiagnostico_pei extends CI_Controller {
               });
             </script>
 
-          <script>
-            $(document).ready(function() {
-                // ... tu código anterior de guardado automático ...
-
-                // 1. Al entrar al input (Focus)
-                $(".auto-save").on("focus", function() {
-                    var valor = $(this).val();
-                    // Si el valor es 0, lo dejamos vacío para que el usuario escriba directo
-                    if (valor == "0") {
-                        $(this).val("");
-                    }
-                });
-
-                // 2. Al salir del input (Blur)
-                $(".auto-save").on("blur", function() {
-                    var valor = $(this).val();
-                    // Si el usuario no escribió nada, le devolvemos el 0 por defecto
-                    if (valor === "") {
-                        $(this).val("0");
-                    }
-                });
-            });
-          </script>
+          
             <script type="text/javascript">
               // DO NOT REMOVE : GLOBAL FUNCTIONS!
               $(document).ready(function() {
@@ -333,10 +316,12 @@ class CDiagnostico_pei extends CI_Controller {
   }
 
   /// Reporte Formulario Diagnostico Pei
-  public function reporte_formulario_pei($dist_id) {
-      // Llamado al método
-      echo $this->lib_diagnosticopei_reporte->reporte_diagnostico_pei();
+  public function reporte_formulario_pei($form,$dist_id){
+    $data['reporte']= $this->lib_diagnosticopei_reporte->select_reporte_diagnostico_pei($form,$dist_id);
+    $data['pie_rep']='dnp';
+    $this->load->view('admin/diagnostico_pei/View_report_form_diagpei', $data);
   }
+
 
   /// Buscador select CIe10
   public function buscar_cie10_ajax() {

@@ -24,9 +24,14 @@ class lib_diagnostico_pei extends CI_Controller{
       $tabla='';
       $tabla.='
         <div class="viewport-container">
-          <br>
-          <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
-          <a href="javascript:abreVentana_poa(\''.site_url("").'/Diagnostico_pei/rep_diagnostico_form/'.$get_form_distrital[0]['dist_id'].'\');" class="btn btn-default" title="REPORTE FORMULARIO SPO N° 4 - ACTIVIDADES"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/><br><font size=1><b>FORM. N°4</b></font></a>
+            <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/1/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -223,6 +228,29 @@ class lib_diagnostico_pei extends CI_Controller{
                       }, 800); 
                   });
               });
+          </script>
+          <script>
+            $(document).ready(function() {
+                // ... tu código anterior de guardado automático ...
+
+                // 1. Al entrar al input (Focus)
+                $(".auto-save").on("focus", function() {
+                    var valor = $(this).val();
+                    // Si el valor es 0, lo dejamos vacío para que el usuario escriba directo
+                    if (valor == "0") {
+                        $(this).val("");
+                    }
+                });
+
+                // 2. Al salir del input (Blur)
+                $(".auto-save").on("blur", function() {
+                    var valor = $(this).val();
+                    // Si el usuario no escribió nada, le devolvemos el 0 por defecto
+                    if (valor === "") {
+                        $(this).val("0");
+                    }
+                });
+            });
           </script>';
         return $tabla;
     }
@@ -233,8 +261,14 @@ class lib_diagnostico_pei extends CI_Controller{
       $tabla='';
       $tabla.='
       <div class="viewport-container">
-          <br>
-          <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+          <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/2/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -426,6 +460,29 @@ class lib_diagnostico_pei extends CI_Controller{
                       }, 800); 
                   });
               });
+          </script>
+          <script>
+            $(document).ready(function() {
+                // ... tu código anterior de guardado automático ...
+
+                // 1. Al entrar al input (Focus)
+                $(".auto-save").on("focus", function() {
+                    var valor = $(this).val();
+                    // Si el valor es 0, lo dejamos vacío para que el usuario escriba directo
+                    if (valor == "0") {
+                        $(this).val("");
+                    }
+                });
+
+                // 2. Al salir del input (Blur)
+                $(".auto-save").on("blur", function() {
+                    var valor = $(this).val();
+                    // Si el usuario no escribió nada, le devolvemos el 0 por defecto
+                    if (valor === "") {
+                        $(this).val("0");
+                    }
+                });
+            });
           </script>';
         return $tabla;
     }
@@ -437,8 +494,14 @@ class lib_diagnostico_pei extends CI_Controller{
       $tabla='';
       $tabla.='
       <div class="viewport-container">
-          <br>
-          <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+          <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/3/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
           <div class="page_horizontal">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -694,6 +757,100 @@ class lib_diagnostico_pei extends CI_Controller{
                 <table>
                   <thead>
                     <tr style="text-align:center;">
+                        <th rowspan="2" class="nro-col">N.- '.$tp.'</th>
+                        <th colspan="2" style="text-align:center;">2021</th>
+                        <th colspan="2" style="text-align:center;">2022</th>
+                        <th colspan="2" style="text-align:center;">2023</th>
+                        <th colspan="2" style="text-align:center;">2024</th>
+                        <th colspan="2" style="text-align:center;">2025</th>
+                    </tr>
+                    <tr>
+                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
+                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
+                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
+                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
+                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
+                    </tr>
+                  </thead>
+                <tbody>';
+                   foreach($detalle_form3 as $row){
+                    $tabla.='
+                    <tr>
+                      <td class="nro-label">'.$row['nro'].'</td>';
+                      // Bucle para generar los 5 años (2021 al 2025)
+                       for ($anio = 2021; $anio <= 2025; $anio++) {
+                      $val_casos = $row['nro_casos_'.$anio];
+                      $val_ce_id = $row['ce_id_'.$anio]; 
+                      $val_causa = $row['causa_'.$anio];
+                      $cod_cie   = $row['codigo_cie_'.$anio];
+
+                      $tabla .= '
+                      <!-- COLUMNA CASOS -->
+                      <td>
+                          <input type="number" class="auto-save" min="0"
+                                 data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'" 
+                                 data-nro="'.$row['nro'].'" data-gestion="'.$anio.'" 
+                                 data-col="nro_casos" value="'.$val_casos.'" 
+                                 style="width:100%; text-align:center; border:none;">
+                      </td>
+                      
+                      <!-- COLUMNA BUSCADOR (ID y CODIGO) -->
+                      <td>
+                          <div class="input-group" style="display: flex; width: 100%;">
+                              <input type="text" 
+                                      class="form-control input-sm" 
+                                      id="desc_' . $tp . '_' . $anio . '_' . $row['nro'] . '"  
+                                      value="' . $cod_cie . '" 
+                                      readonly 
+                                      title="' . $cod_cie . '" 
+                                      style="width: 80%; font-size: 7.5pt; height: 24px; border-radius: 4px 0 0 4px; text-align:left;">
+                              
+                              <button type="button" class="btn btn-primary btn-xs" style="height: 24px; width: 20%;"
+                                      onclick="abrirBuscador(\''.$anio.'\', \''.$row['nro'].'\', \''.$tp.'\')">
+                                  <i class="fa fa-search"></i>
+                              </button>
+
+                              <input type="hidden" class="ce_id_input auto-save" id="id_' . $tp . '_' . $anio . '_' . $row['nro'] . '" 
+                                     data-gestion="'.$anio.'" data-nro="'.$row['nro'].'"
+                                     data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'"
+                                     data-col="ce_id" value="'.$val_ce_id.'">
+                          </div>
+                      </td>';
+                  }
+                            
+                    $tabla.='</tr>';
+                  }
+                  $tabla.='
+                  </tbody>
+              </table>';
+
+      return $tabla;
+    }
+
+      /// desactivado anterior completo
+      public function tabla_form3tp_perfil2($dist_id,$tp){
+      $detalle_form3=$this->model_diagnosticopei->get_formulario_N3($dist_id,$tp); /// listado de gestiones
+      $cie10_list=$this->model_diagnosticopei->get_listado_cie10();
+      $tabla='';
+      $tabla.='
+                <div class="modal fade" id="modalBuscador" tabindex="-1" role="dialog" style="z-index: 9999;">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background:#FFC000">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title"><b>BUSCADOR CIE-10 (TIPO: '.$tp.')</b></h4>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" id="txtBuscar" class="form-control" placeholder="Escriba el código o enfermedad..." onkeyup="filtrarCIE10()" >
+                                <hr>
+                                <div id="listaResultados" style="max-height: 350px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table>
+                  <thead>
+                    <tr style="text-align:center;">
                         <th rowspan="3" class="nro-col">N.- '.$tp.'</th>
                         <th colspan="3" style="text-align:center;">2021</th>
                         <th colspan="3" style="text-align:center;">2022</th>
@@ -780,8 +937,14 @@ class lib_diagnostico_pei extends CI_Controller{
       $tabla='';
       $tabla.='
       <div class="viewport-container">
-          <br>
-          <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Formulario</button>
+          <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/4/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -946,8 +1109,7 @@ class lib_diagnostico_pei extends CI_Controller{
             }
             </style>
               <style>
-                .btn-imprimir { background-color: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; font-weight: bold; font-size: 16px; transition: 0.3s; }
-                .btn-imprimir:hover { background-color: #218838; }
+                
                 
                 .viewport-container {
                     background-color: #525659;
@@ -1064,28 +1226,20 @@ class lib_diagnostico_pei extends CI_Controller{
                     background-color: #fafafa;
               }
 
-                /* REGLAS DE IMPRESIÓN */
-                @media print {
-                    body { background: none; padding: 0; }
-                    body * { visibility: hidden; }
-                    .page, .page * { visibility: visible; }
-                    .page { 
-                        position: absolute; 
-                        left: 0; 
-                        top: 0; 
-                        width: 8.5in !important; 
-                        height: 11in !important; 
-                        box-shadow: none !important; 
-                    }
-                    .observaciones-input {
-                        border: 1px solid #000 !important; /* Borde negro sólido para impresión */
-                        background-color: transparent !important;
-                        overflow: hidden; /* Oculta barras de scroll en el papel */
-                    }
-                    .btn-imprimir { display: none !important; }
-                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                    @page { size: letter; margin: 0; }
-                }
+
+                  /* Estilo del Botón */
+                  .btn-imprimir {
+                      display: inline-block;
+                      background-color: green;
+                      color: white !important;
+                      padding: 10px 20px;
+                      text-decoration: none !important;
+                      border-radius: 4px;
+                      font-weight: bold;
+                      font-family: Arial, sans-serif;
+                      border: 1px solid #green;
+                      transition: background 0.3s;
+                  }
             </style>';
             return $tabla;
     }

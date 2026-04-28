@@ -79,6 +79,9 @@ class Certificacionpoa extends CI_Controller{
     return $tabla;
   }
 
+
+
+
   /*---- TIPO DE RESPONSABLE ---*/
   public function tp_resp(){
     $ddep = $this->model_proyecto->dep_dist($this->dist);
