@@ -20,6 +20,17 @@ class model_diagnosticoPei extends CI_Model {
         return $query->result_array();
     }
 
+    /*--------- Get Formulario diganostico ----------*/
+    public function get_formulario_diagnostico($form_id){
+        $sql = '
+                SELECT *
+                from formulario_diagnostico_pei
+                where form_id='.$form_id.'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     /*--------- Get Formulario Habilitado para el diagnostico por Distrital----------*/
     public function get_distrital_formulario_diagnostico_activo($pei_id,$dist_id){
         $sql = "
@@ -58,7 +69,7 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
-    /*--- Detalle formulario N1 ---*/
+    /*--- Detalle formulario N1 - Poblacion afiliada ---*/
     public function get_formulario_N1($dist_id){
         $sql = 'WITH rango_pei AS (
                     SELECT pei_id, g_id_inicio, g_id_fin 
@@ -88,6 +99,68 @@ class model_diagnosticoPei extends CI_Model {
         $query = $this->db->query($sql);
         return $query->result_array();
     }
+
+
+    /*--- Detalle formulario N1 - Poblacion afiliada por grupo etareo---*/
+    public function get_formulario_N1_etareo($dist_id){
+        $sql = 'WITH rango_pei AS (
+            SELECT pei_id, g_id_inicio, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        universo AS (
+            SELECT eta_id, grupo_etareo 
+            FROM tabla_grupo_etareo 
+            WHERE estado = 1
+        )
+        SELECT 
+            f.form_id,
+            f.dist_id, 
+            u.eta_id,
+            u.grupo_etareo,
+            -- GESTIÓN 2021
+            SUM(CASE WHEN det.g_id = 2021 THEN det.nro_masculino ELSE 0 END) as m_2021,
+            SUM(CASE WHEN det.g_id = 2021 THEN det.nro_femenino ELSE 0 END) as f_2021,
+            SUM(CASE WHEN det.g_id = 2021 THEN det.total_poblacion ELSE 0 END) as t_2021,
+            
+            -- GESTIÓN 2022
+            SUM(CASE WHEN det.g_id = 2022 THEN det.nro_masculino ELSE 0 END) as m_2022,
+            SUM(CASE WHEN det.g_id = 2022 THEN det.nro_femenino ELSE 0 END) as f_2022,
+            SUM(CASE WHEN det.g_id = 2022 THEN det.total_poblacion ELSE 0 END) as t_2022,
+            
+            -- GESTIÓN 2023
+            SUM(CASE WHEN det.g_id = 2023 THEN det.nro_masculino ELSE 0 END) as m_2023,
+            SUM(CASE WHEN det.g_id = 2023 THEN det.nro_femenino ELSE 0 END) as f_2023,
+            SUM(CASE WHEN det.g_id = 2023 THEN det.total_poblacion ELSE 0 END) as t_2023,
+            
+            -- GESTIÓN 2024
+            SUM(CASE WHEN det.g_id = 2024 THEN det.nro_masculino ELSE 0 END) as m_2024,
+            SUM(CASE WHEN det.g_id = 2024 THEN det.nro_femenino ELSE 0 END) as f_2024,
+            SUM(CASE WHEN det.g_id = 2024 THEN det.total_poblacion ELSE 0 END) as t_2024,
+            
+            -- GESTIÓN 2025
+            SUM(CASE WHEN det.g_id = 2025 THEN det.nro_masculino ELSE 0 END) as m_2025,
+            SUM(CASE WHEN det.g_id = 2025 THEN det.nro_femenino ELSE 0 END) as f_2025,
+            SUM(CASE WHEN det.g_id = 2025 THEN det.total_poblacion ELSE 0 END) as t_2025
+        FROM universo u
+        CROSS JOIN rango_pei r 
+        LEFT JOIN formulario_diagnostico_pei f ON (
+            f.pei_id = r.pei_id 
+            AND f.dist_id ='.$dist_id.' -- Reemplazar por $dist_id
+        )
+        LEFT JOIN formularion1_grupo_etareo det ON (
+            det.form_id = f.form_id 
+            AND det.eta_id = u.eta_id
+        )
+        GROUP BY f.form_id, u.eta_id, u.grupo_etareo
+        ORDER BY f.dist_id,u.eta_id ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
 
     /*--- Detalle formulario N2 ---*/
     public function get_formulario_N2($dist_id){

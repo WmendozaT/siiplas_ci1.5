@@ -241,7 +241,8 @@ class Crep_evalform2 extends CI_Controller {
       $regional=$this->model_proyecto->get_departamento($dep_id);
 
       $titulo=strtoupper($regional[0]['dep_departamento']).' / '.$this->gestion;
-      $nro=count($this->model_objetivogestion->get_list_ogestion_por_regional($dep_id));
+      //$nro=count($this->model_objetivogestion->get_list_ogestion_por_regional($dep_id));
+      $nro=count($this->model_objetivogestion->get_list_ogestion_por_regional_priorizado($dep_id));
       $matriz=$this->eval_oregional->matriz_cumplimiento_operaciones_regional($dep_id); /// Cumplimiento de Operaciones trimestral y anual 
       $cabecera=$this->eval_oregional->cabecera_reporte_grafico($regional);
       $calificacion_anual=$this->eval_oregional->calificacion_total_form2_regional($dep_id,1); /// cumplimiento Acumulado Anual
@@ -764,7 +765,8 @@ class Crep_evalform2 extends CI_Controller {
     foreach($regionales as $reg){
         
         /// -----------------------------------------------------------------------------------------
-        $lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional($reg['dep_id']);
+        //$lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional($reg['dep_id']);
+        $lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional_priorizado($reg['dep_id']);
         $nro_prog=count($lista_ogestion);
         $suma_cumplimiento_trimestral=0;
         $suma_cumplimiento_gestion=0;

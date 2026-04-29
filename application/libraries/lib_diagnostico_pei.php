@@ -17,9 +17,8 @@ class lib_diagnostico_pei extends CI_Controller{
 
 
 
-/*------- Detalle formulario N 1 -------*/
+    /*---- Detalle formulario N 1 - Poblacion Afiliada ----*/
     public function formulario_N1($get_form_distrital){
-
       $detalle_form1=$this->model_diagnosticopei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $tabla='';
       $tabla.='
@@ -51,7 +50,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Recopilar, validar y sistematizar información cuantitativa de la población afiliada (titulares y Beneficiarios) para analizar tendencias y cobertura y demanda potencial de la Caja Nacional de Salud.
               </div>
 
-              <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada (2021 - 2025)</div>
+              <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</div>
               <table>
                   <thead>
                       <tr>
@@ -109,7 +108,8 @@ class lib_diagnostico_pei extends CI_Controller{
 
               <div style="border: 1px solid #000; padding: 15px; font-size: 8pt; margin-top: 20px;">
                   <strong>Recomendaciones:</strong><br>
-                  • Extraer información anual por cada categoría (2021 - 2025).<br>
+                  • Recolección de datos.
+                  • Extraer información anual por cada categoría ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].').<br>
                   • Verificar consistencia entre fuentes oficiales.
               </div>
 
@@ -125,7 +125,7 @@ class lib_diagnostico_pei extends CI_Controller{
                       data-nro="1"
                       onpaste="return false;" 
                       placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
+                      style="width: 100%; height: 150px; resize: none;"
                   >'.strtoupper($get_form_distrital[0]['observacion1']).'</textarea>
               </div>
 
@@ -255,6 +255,241 @@ class lib_diagnostico_pei extends CI_Controller{
         return $tabla;
     }
 
+
+    /*---- Detalle formulario N 1-1 - Poblacion Afiliada por Grupo etareo ----*/
+    public function formulario_N1_1($get_form_distrital){
+
+      $detalle_form1_etareo=$this->model_diagnosticopei->get_formulario_N1_etareo($get_form_distrital[0]['dist_id']); /// listado de gestiones
+      $tabla='';
+      $tabla.='
+        <div class="viewport-container">
+            <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/2/".$get_form_distrital[0]['form_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
+          <div class="page_horizontal_corto">
+              <!-- Fecha de Impresión Automática -->
+              <div class="fecha-impresion">
+                  Fecha: <span id="fecha-actual1_1"></span>
+              </div>
+              <div class="header">
+                  <p>CAJA NACIONAL DE SALUD</p>
+                  <h1><b>DIAGNÓSTICO DE LA POBLACIÓN PROTEGIDA POR GRUPOS ETAREOS</b></h1>
+              </div>
+
+              <div style="margin: 20px 0; font-weight: bold;">
+                  Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+              </div>
+
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Objetivo del instrumento</div>
+              <div style="border: 1px solid #ccc; padding: 10px; font-size: 9pt; margin-bottom: 20px;">
+                  Recopilar, validar y sistematizar información cuantitativa de la población afiliada (titulares y Beneficiarios) para analizar tendencias y cobertura y demanda potencial de la Caja Nacional de Salud.
+              </div>
+
+              <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada (2021 - 2025)</div>
+              <table>
+                  <thead>
+                    <tr style="text-align:center;">
+                        <th rowspan="3" class="nro-col">GRUPO ETAREO</th>
+                        <th colspan="3" style="text-align:center;">2021</th>
+                        <th colspan="3" style="text-align:center;">2022</th>
+                        <th colspan="3" style="text-align:center;">2023</th>
+                        <th colspan="3" style="text-align:center;">2024</th>
+                        <th colspan="3" style="text-align:center;">2025</th>
+                    </tr>
+                    <tr>
+                        <th style="width:6%;">Nº Masculino</th><th style="width:6%;">Nº Femenino</th><th style="width:6%;">Total </th>
+                        <th style="width:6%;">Nº Masculino</th><th style="width:6%;">Nº Femenino</th><th style="width:6%;">Total </th>
+                        <th style="width:6%;">Nº Masculino</th><th style="width:6%;">Nº Femenino</th><th style="width:6%;">Total </th>
+                        <th style="width:6%;">Nº Masculino</th><th style="width:6%;">Nº Femenino</th><th style="width:6%;">Total </th>
+                        <th style="width:6%;">Nº Masculino</th><th style="width:6%;">Nº Femenino</th><th style="width:6%;">Total </th>
+                    </tr>
+                  </thead>
+                  <tbody>';
+                   foreach($detalle_form1_etareo as $row){
+                    $tabla.='
+                    <tr>
+                      <td class="nro-label" style="font-size:15px;"><b>'.$row['grupo_etareo'].'</b></td>';
+                      // Bucle para generar los 5 años (2021 al 2025)
+                       for ($anio = 2021; $anio <= 2025; $anio++) {
+                          $m = $row['m_'.$anio];
+                          $f = $row['f_'.$anio];
+                          $t = $row['t_'.$anio];
+
+                          $tabla.='
+                          <!-- Masculino -->
+                          <td>
+                              <input type="number" class="auto-save" min="0"
+                                  value="'.$m.'" 
+                                  data-form="'.$row['form_id'].'" 
+                                  data-dist="'.$row['dist_id'].'" 
+                                  data-eta="'.$row['eta_id'].'" 
+                                  data-gestion="'.$anio.'" 
+                                  data-campo="nro_masculino" 
+                                  style="width:100%;">
+                          </td>
+                          <!-- Femenino -->
+                          <td>
+                              <input type="number" class="auto-save" min="0" 
+                                  value="'.$f.'" 
+                                  data-form="'.$row['form_id'].'" 
+                                  data-dist="'.$row['dist_id'].'" 
+                                  data-eta="'.$row['eta_id'].'" 
+                                  data-gestion="'.$anio.'" 
+                                  data-campo="nro_femenino" 
+                                  style="width:100%;">
+                          </td>
+                          <!-- Total (Solo lectura) -->
+                          <td>
+                              <input type="number" class="form-control total-'.$anio.'-'.$row['eta_id'].'" 
+                                  value="'.$t.'" 
+                                  readonly 
+                                  style="width:100%; background-color: #eee; font-weight: bold;">
+                          </td>';
+                      }
+                            
+                    $tabla.='</tr>';
+                   }
+                  $tabla.='
+                    <tr style="background-color: #f2f2f2; font-weight: bold;">
+                        <td style="text-align:right;">TOTALES POR GESTIÓN:</td>';
+                        for ($anio = 2021; $anio <= 2025; $anio++) {
+                            $tabla.='
+                            <td colspan="2" style="text-align:center;">Gestión '.$anio.'</td>
+                            <td style="text-align:center; background-color: #d9edf7;">
+                                <span id="suma_total_'.$anio.'" style="font-size: 16px; color: #000;">0.00</span>
+                            </td>';
+                        }
+                    $tabla.='</tr>
+                  </tbody>
+              </table>
+
+              <!-- Pie de página -->
+              <div class="footer-nacional">
+                  DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+              </div>
+          </div>
+          <hr>
+        </div>
+        <script>
+          document.getElementById("fecha-actual1_1").innerText = new Date().toLocaleDateString();
+        </script>
+
+        <script>
+          $(document).ready(function() {
+              var timer = null;
+              var base_url = "'.base_url().'";
+
+              // --- FUNCIÓN PARA SUMAR TODAS LAS FILAS POR GESTIÓN ---
+              function calcularTotalesPorGestion() {
+                  for (var anio = 2021; anio <= 2025; anio++) {
+                      var suma_gestion = 0;
+                      // Sumamos todos los inputs de total de ese año específico
+                      $("input[class*=\'total-" + anio + "-\']").each(function() {
+                          suma_gestion += parseFloat($(this).val()) || 0;
+                      });
+                      // Actualizamos el span en la fila de abajo
+                      $("#suma_total_" + anio).text(suma_gestion.toLocaleString(\'en-US\', {minimumFractionDigits: 2}));
+                  }
+              }
+
+              // Ejecutar al cargar la página por primera vez
+              calcularTotalesPorGestion();
+
+              $(".auto-save").on("keyup change", function() {
+                  var $input = $(this);
+                  var $fila = $input.closest("tr");
+                  var gestion = $input.data("gestion");
+                  var eta_id  = $input.data("eta");
+
+                  // 1. Recalcular total de la FILA (M + F)
+                  var m = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_masculino\']").val()) || 0;
+                  var f = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_femenino\']").val()) || 0;
+                  var suma = (m + f).toFixed(2);
+                  
+                  $fila.find(".total-" + gestion + "-" + eta_id).val(suma);
+
+                  // --- LLAMADA A LA SUMATORIA GLOBAL ---
+                  calcularTotalesPorGestion();
+
+                  clearTimeout(timer);
+                  timer = setTimeout(function() {
+                      $.ajax({
+                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form1_etareo",
+                          type: "POST",
+                          dataType: "json",
+                          data: {
+                              form_id: $input.data("form"),
+                              dist_id: $input.data("dist"),
+                              eta_id:  eta_id,
+                              gestion: gestion,
+                              campo:   $input.data("campo"),
+                              valor:   $input.val()
+                          },
+                          success: function(resp) {
+                              var $toast = $("#toast-notificacion");
+                              if(resp.status == "success") {
+                                  $input.css("background-color", "#d4edda");
+                                  $toast.text(resp.msg).css({"background-color": "#28a745", "color": "white"}).fadeIn(400).delay(1000).fadeOut(400);
+                              } else {
+                                  $input.css("background-color", "#f8d7da").val("");
+                                  
+                                  // Recalcular totales si hubo error y se borró el valor
+                                  var m2 = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_masculino\']").val()) || 0;
+                                  var f2 = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_femenino\']").val()) || 0;
+                                  $fila.find(".total-" + gestion + "-" + eta_id).val((m2 + f2).toFixed(2));
+                                  
+                                  calcularTotalesPorGestion(); // Actualizar sumatoria global de nuevo
+
+                                  $toast.text("❌ " + resp.msg).css({"background-color": "#dc3545", "color": "white"}).fadeIn(400).delay(3000).fadeOut(400);
+                              }
+                              setTimeout(function(){ $input.css("background-color", ""); }, 1500);
+                          },
+                          error: function() {
+                              $input.css("background-color", "#f8d7da").val("");
+                              calcularTotalesPorGestion();
+                              alert("Error de conexión");
+                          }
+                      });
+                  }, 800); 
+              });
+          });
+          </script>
+
+          <script>
+            $(document).ready(function() {
+                // ... tu código anterior de guardado automático ...
+
+                // 1. Al entrar al input (Focus)
+                $(".auto-save").on("focus", function() {
+                    var valor = $(this).val();
+                    // Si el valor es 0, lo dejamos vacío para que el usuario escriba directo
+                    if (valor == "0") {
+                        $(this).val("");
+                    }
+                });
+
+                // 2. Al salir del input (Blur)
+                $(".auto-save").on("blur", function() {
+                    var valor = $(this).val();
+                    // Si el usuario no escribió nada, le devolvemos el 0 por defecto
+                    if (valor === "") {
+                        $(this).val("0");
+                    }
+                });
+            });
+          </script>';
+        return $tabla;
+    }
+
+
+
+
+
     /*------- Detalle formulario N 2 -------*/
     public function formulario_N2($get_form_distrital){
       $detalle_form2=$this->model_diagnosticopei->get_formulario_N2($get_form_distrital[0]['dist_id']); /// listado de gestiones
@@ -263,7 +498,7 @@ class lib_diagnostico_pei extends CI_Controller{
       <div class="viewport-container">
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
-                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/2/".$get_form_distrital[0]['dist_id']).'\');" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/3/".$get_form_distrital[0]['dist_id']).'\');" 
                    class="btn-imprimir" 
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
@@ -496,7 +731,7 @@ class lib_diagnostico_pei extends CI_Controller{
       <div class="viewport-container">
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
-                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/3/".$get_form_distrital[0]['dist_id']).'\');" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/4/".$get_form_distrital[0]['dist_id']).'\');" 
                    class="btn-imprimir" 
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
@@ -1154,6 +1389,23 @@ class lib_diagnostico_pei extends CI_Controller{
                     border: 1px solid #ccc;
                     overflow: hidden; /* Evita que el contenido "chorree" fuera de la hoja */
                 }
+
+                .page_horizontal_corto { 
+                    background-color: white; 
+                    /* Invertimos: Ancho ahora es 11 pulgadas y alto 8.5 */
+                    width: 18in; 
+                    min-width: 18in; /* Mantiene el ancho horizontal en celulares con scroll */
+                    height: 12in; 
+                    padding: 0.4in 0.5in; /* Reducimos un poco el padding para ganar espacio */
+                    box-sizing: border-box; 
+                    position: relative; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #ccc;
+                    overflow: hidden; /* Evita que el contenido "chorree" fuera de la hoja */
+                }
+
                 .fecha-impresion {
                     position: absolute;
                     top: 0.3in;

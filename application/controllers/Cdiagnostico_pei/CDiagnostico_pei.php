@@ -162,22 +162,25 @@ class CDiagnostico_pei extends CI_Controller {
                       <a href="#tabs-a" data-url="poblacion_afiliada"><b>I.- POBLACIÓN AFILIADA</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-b" data-url="empresas_aportantes"><b>II.- EMPRESAS APORTANTES</b></a>
+                      <a href="#tabs-b" data-url="grupo_etareo"><b>II.- POBLACIÓN POR GRUPO ETAREO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-c" data-url="perfil_epidemiologico"><b>III.- PERFIL EPIDEMIOLOGICO</b></a>
+                      <a href="#tabs-c" data-url="empresas_aportantes"><b>III.- EMPRESAS APORTANTES</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-d" data-url="infraestructura"><b>IV.- INFRAESTRUCTURA</b></a>
+                      <a href="#tabs-d" data-url="perfil_epidemiologico"><b>IV.- PERFIL EPIDEMIOLOGICO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-e" data-url="equipamiento"><b>V.- EQUIPO</b></a>
+                      <a href="#tabs-e" data-url="infraestructura"><b>V.- INFRAESTRUCTURA</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-f" data-url="recursos_humanos"><b>VI.- RECURSOS HUMANOS</b></a>
+                      <a href="#tabs-f" data-url="equipamiento"><b>VI.- EQUIPO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-g" data-url="compra_servicios"><b>VI.- COMPRA DE SERVICIOS</b></a>
+                      <a href="#tabs-g" data-url="recursos_humanos"><b>VII.- RECURSOS HUMANOS</b></a>
+                    </li>
+                    <li>
+                      <a href="#tabs-h" data-url="compra_servicios"><b>VIII.- COMPRA DE SERVICIOS</b></a>
                     </li>
                   </ul>
                   <div id="tabs-a">
@@ -217,6 +220,12 @@ class CDiagnostico_pei extends CI_Controller {
                   </div>
 
                   <div id="tabs-g">
+                    <div class="row">
+                      <div class="contenido-ajax"></div>
+                    </div>
+                  </div>
+
+                  <div id="tabs-h">
                     <div class="row">
                       <div class="contenido-ajax"></div>
                     </div>
@@ -289,6 +298,9 @@ class CDiagnostico_pei extends CI_Controller {
           case 'poblacion_afiliada':
               echo $this->lib_diagnostico_pei->formulario_N1($get_form_distrital);
               break;
+          case 'grupo_etareo':
+              echo $this->lib_diagnostico_pei->formulario_N1_1($get_form_distrital);
+              break;
           case 'empresas_aportantes':
               echo $this->lib_diagnostico_pei->formulario_N2($get_form_distrital);
               break;
@@ -316,10 +328,12 @@ class CDiagnostico_pei extends CI_Controller {
   }
 
   /// Reporte Formulario Diagnostico Pei
-  public function reporte_formulario_pei($form,$dist_id){
-    $data['reporte']= $this->lib_diagnosticopei_reporte->select_reporte_diagnostico_pei($form,$dist_id);
-    $data['pie_rep']='dnp';
-    $this->load->view('admin/diagnostico_pei/View_report_form_diagpei', $data);
+  public function reporte_formulario_pei($tp_rep,$form_id){
+    $get_formulario=$this->model_diagnosticopei->get_formulario_diagnostico($form_id);
+   // echo "pei : ".$get_formulario[0]['pei_id'].'---->'."Dist : ".$get_formulario[0]['dist_id'];
+     $data['reporte']= $this->lib_diagnosticopei_reporte->select_reporte_diagnostico_pei($tp_rep,$get_formulario);
+     $data['pie_rep']='dnp';
+     $this->load->view('admin/diagnostico_pei/View_report_form_diagpei', $data);
   }
 
 
@@ -407,6 +421,68 @@ class CDiagnostico_pei extends CI_Controller {
     }
 
 
+    //// Guarda informacion de las tablas automaticamente form 1 Grupo Etareo
+    public function guarda_detalle_automatica_form1_etareo() {
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        $form_id = $this->input->post('form_id');
+        $eta_id  = $this->input->post('eta_id');
+        $gestion = $this->input->post('gestion');
+        $campo   = $this->input->post('campo');
+        $valor   = ($this->input->post('valor') == '' || $this->input->post('valor') < 0) ? 0 : $this->input->post('valor');
+
+        // 1. Buscamos si el registro ya existe
+        $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion, 'eta_id' => $eta_id));
+        $fila = $this->db->get('formularion1_grupo_etareo')->row();
+
+        if ($fila) {
+            // Determinamos los valores finales de ambos campos
+            $nro_mas = ($campo == 'nro_masculino') ? $valor : $fila->nro_masculino;
+            $nro_fem = ($campo == 'nro_femenino') ? $valor : $fila->nro_femenino;
+
+            // REGLA: Si AMBOS son 0, se elimina de la tabla
+            if ($nro_mas == 0 && $nro_fem == 0) {
+                $this->db->where('det_etareo_id', $fila->det_etareo_id);
+                $res = $this->db->delete('formularion1_grupo_etareo');
+                $msg = '🗑️ Registro eliminado por ser ambos valores 0';
+            } else {
+                // Si al menos uno no es 0, actualizamos
+                $data_update = array(
+                    $campo => $valor,
+                    'total_poblacion' => ($nro_mas + $nro_fem)
+                );
+                $this->db->where('det_etareo_id', $fila->det_etareo_id);
+                $res = $this->db->update('formularion1_grupo_etareo', $data_update);
+                $msg = '✅ Información Actualizada correctamente !!';
+            }
+        } else {
+            // Si no existe y el valor es mayor a 0, insertamos
+            if ($valor > 0) {
+                $data_insert = array(
+                    'form_id' => $form_id,
+                    'g_id'    => $gestion,
+                    'eta_id'  => $eta_id,
+                    $campo    => $valor,
+                    'total_poblacion' => $valor 
+                );
+                $res = $this->db->insert('formularion1_grupo_etareo', $data_insert);
+                $msg = '✅ Información Guardada';
+            } else {
+                // Si el valor es 0 y no existe el registro, no hacemos nada
+                echo json_encode(array('status' => 'success', 'msg' => 'Nada que guardar (valor 0)'));
+                return;
+            }
+        }
+
+        if ($res) {
+            echo json_encode(array('status' => 'success', 'msg' => $msg));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'Error en la Base de Datos'));
+        }
+    }
     
   //// Guarda informacion de las tablas automaticamente form2
   public function guarda_detalle_automatica_form2() {
