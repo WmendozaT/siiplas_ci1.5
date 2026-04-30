@@ -574,7 +574,7 @@ class Eval_oregional extends CI_Controller{
               }
 
               $cumplimiento_gestion=0;
-              if($suma_total_prog!=0){
+              if(count($suma_total_prog)!=0){
                 $cumplimiento_gestion=round((($suma_ejec/$suma_total_prog[0]['pg_fis'])*100),2);
               }
 

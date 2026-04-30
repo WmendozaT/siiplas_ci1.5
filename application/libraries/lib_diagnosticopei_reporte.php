@@ -34,6 +34,9 @@ class Lib_diagnosticopei_reporte {
         elseif($tp_rep == 2){
             return $this->form_pdf1_1('landscape',$get_form_distrital); //// horizontal
         }
+        elseif($tp_rep == 3){
+            return $this->form_pdf2('portrait',$get_form_distrital); //// vertital
+        }
         else{
             return "Trabajando ... ";
         }
@@ -48,8 +51,9 @@ class Lib_diagnosticopei_reporte {
                         <td style="width: 50%; text-align: left; font-weight: bold;">
                             FORMULARIO PEI N° '.$nro_rep.'
                         </td>
-                        <td style="width: 50%; text-align: right; font-weight: bold;">
-                            Fecha: '.date('d/m/Y').'
+                        <td style="width: 50%; font-size:9px; text-align: right; font-weight: bold;">
+                            Fecha de Impresión: '.date('d/m/Y').' <br>
+                            Hora: '.date('H:i:s').'
                         </td>
                     </tr>
                 </table>
@@ -105,7 +109,7 @@ class Lib_diagnosticopei_reporte {
                             <td>'.$row['titulares'].'</td>
                             <td>'.$row['pasivos'].'</td>
                             <td>'.$row['beneficiarios'].'</td>
-                            <td class="bold">'.$row['total_gestion'].'</td>
+                            <td class="bold" style="background-color: #d9edf7>'.$row['total_gestion'].'</td>
                         </tr>';
                        }
                     $tabla.='
@@ -137,59 +141,135 @@ class Lib_diagnosticopei_reporte {
 
     /// formulario reporte 1 1
     public function form_pdf1_1($orientacion,$get_form_distrital) {
+        $detalle_form1=$this->CI->model_diagnosticopei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
         $detalle_form1_etareo=$this->CI->model_diagnosticopei->get_formulario_N1_etareo($get_form_distrital[0]['dist_id']); /// listado de gestiones
         $tabla='';
+        $totales_gestion = array();
+        for ($i = 2021; $i <= 2025; $i++) {
+            $totales_gestion[$i] = 0;
+        }
         $tabla.='
         '.$this->style_report().'
         <!-- Definición de página para HTML2PDF -->
         <page orientation="'.$orientacion.'" backtop="15mm" backbottom="15mm" backleft="15mm" backright="15mm">
                 <div class="contenedor-reporte">
                 '.$this->cabecera_report(2,'DIAGNÓSTICO DE LA POBLACIÓN PROTEGIDA POR GRUPOS ETAREOS',$get_form_distrital[0]['dist_distrital']).'
-                <table class="tabla-datos">
+                <table class="tabla-datos" style="font-size:8.7px;" >
                     <thead>
-                        <tr>
-                            <th rowspan="2" class="nro-col">GRUPO ETÁREO</th>
-                            <th colspan="3">2021</th>
-                            <th colspan="3">2022</th>
-                            <th colspan="3">2023</th>
-                            <th colspan="3">2024</th>
-                            <th colspan="3">2025</th>
+                        <tr style="text-align:center">
+                            <th rowspan="2" class="nro-col" >GRUPO ETÁREO</th>
+                            <th colspan="3" >2021</th>
+                            <th colspan="3" >2022</th>
+                            <th colspan="3" >2023</th>
+                            <th colspan="3" >2024</th>
+                            <th colspan="3" >2025</th>
                         </tr>
-                        <tr>
+                        <tr style="text-align:center">
                             <!-- Usamos M, F, T para que no se amontone el texto -->
-                            <th class="col-dato">M</th><th class="col-dato">F</th><th class="col-dato">T</th>
-                            <th class="col-dato">M</th><th class="col-dato">F</th><th class="col-dato">T</th>
-                            <th class="col-dato">M</th><th class="col-dato">F</th><th class="col-dato">T</th>
-                            <th class="col-dato">M</th><th class="col-dato">F</th><th class="col-dato">T</th>
-                            <th class="col-dato">M</th><th class="col-dato">F</th><th class="col-dato">T</th>
+                            <th class="col-dato" style="width:5.9%;">M</th><th class="col-dato" style="width:5.9%;">F</th><th class="col-dato" style="width:5.9%;">Total</th>
+                            <th class="col-dato" style="width:5.9%;">M</th><th class="col-dato" style="width:5.9%;">F</th><th class="col-dato" style="width:5.9%;">Total</th>
+                            <th class="col-dato" style="width:5.9%;">M</th><th class="col-dato" style="width:5.9%;">F</th><th class="col-dato" style="width:5.9%;">Total</th>
+                            <th class="col-dato" style="width:5.9%;">M</th><th class="col-dato" style="width:5.9%;">F</th><th class="col-dato" style="width:5.9%;">Total</th>
+                            <th class="col-dato" style="width:5.9%;">M</th><th class="col-dato" style="width:5.9%;">F</th><th class="col-dato" style="width:5.9%;">Total</th>
                         </tr>
                     </thead>
                     <tbody>';
                     foreach($detalle_form1_etareo as $row){
                     $tabla.='
                     <tr>
-                      <td class="nro-label" style="font-size:15px;"><b>'.$row['grupo_etareo'].'</b></td>';
+                      <td style="font-size:12px;"><b>'.$row['grupo_etareo'].'</b></td>';
                       // Bucle para generar los 5 años (2021 al 2025)
                        for ($anio = 2021; $anio <= 2025; $anio++) {
                           $m = round($row['m_'.$anio],2);
                           $f = round($row['f_'.$anio],2);
                           $t = round($row['t_'.$anio],2);
-
+                          $totales_gestion[$anio] += $t;
                           $tabla.='
                           <!-- Masculino -->
-                          <td>'.$m.'</td>
+                          <td>'.number_format($m, 2, '.', ',').'</td>
                           <!-- Femenino -->
-                          <td>'.$f.'</td>
-                          <td>'.$t.'</td>';
+                          <td>'.number_format($f, 2, '.', ',').'</td>
+                          <td style="background-color: #d9edf7;"><b>'.number_format($t, 2, '.', ',').'</b></td>';
                       }
                             
                     $tabla.='</tr>';
                    }
+                    $tabla .= '
+                        <tr style="background-color: #EEEEEE; font-weight: bold;">
+                            <td style="text-align:right; font-size:8.5px;">TOTALES POR GESTIÓN:</td>';
+                            
+                            for ($anio = 2021; $anio <= 2025; $anio++) {
+                                $tabla .= '
+                                <td colspan="2" style="text-align:center; font-size:9px;">Total '.$anio.'</td>
+                                <td style="text-align:center; background-color: #d9edf7; font-size:10.5px;">
+                                    '.number_format($totales_gestion[$anio], 2, '.', ',').'
+                                </td>';
+                            }
+                            
+                    $tabla .= '
+                        </tr>
+                    </tbody>
+                </table>
+
+                <br><br><br><br>
+                <p style="text-align:center;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
+            </div>
+        </page>';
+
+        return $tabla;
+    }
+
+
+    /// formulario reporte 2
+    public function form_pdf2($orientacion,$get_form_distrital) {
+        $detalle_form2=$this->CI->model_diagnosticopei->get_formulario_N2($get_form_distrital[0]['dist_id']); /// listado de gestiones
+        $tabla='';
+        $tabla.='
+        '.$this->style_report().'
+        <!-- Definición de página para HTML2PDF -->
+        <page orientation="'.$orientacion.'" backtop="15mm" backbottom="15mm" backleft="15mm" backright="15mm">
+                <div class="contenedor-reporte">
+                '.$this->cabecera_report(3,'DIAGNÓSTICO DE EMPRESAS',$get_form_distrital[0]['dist_distrital']).'
+                <p class="bold">1. Objetivo del instrumento</p>
+                <div class="box-container" style="border: 1px solid #000;">
+                    Recolectar, validar y sistematizar información anual del número de empresas aportantes, permitiendo analizar su evolución, cobertura institucional y comportamiento contributivo.
+                </div>
+
+                <p class="bold">2. Definición Operativa</p>
+                <div class="box-container" style="border: 1px solid #000;">
+                    Empresa aportante: unidad económica registrada que realiza aportes al sistema en un periodo determinado, independientemente del número de trabajadores afiliados.
+                </div>
+                
+                <table class="tabla-datos">
+                    <thead>
+                        <tr>
+                          <th style="width: 10%;text-align:center;">GESTIÓN</th>
+                          <th style="width: 25%;text-align:center;">N° DE EMPRESAS REGISTRADAS</th>
+                          <th style="width: 25%;text-align:center;">CON APORTES AL DIA</th>
+                          <th style="width: 25%;text-align:center;">EN MORA</th>
+                          <th style="width: 15%;text-align:center;">TOTAL</th>
+                      </tr>
+                    </thead>
+                    <tbody>';
+                       foreach($detalle_form2 as $row){
+                        $tabla.='
+                        <tr>
+                            <td><b>'.$row['gestion'].'</b></td>
+                            <td>'.$row['empresas'].'</td>
+                            <td>'.$row['aportes'].'</td>
+                            <td>'.$row['mora'].'</td>
+                            <td class="bold" style="background-color: #d9edf7>'.$row['total_gestion_empresas'].'</td>
+                        </tr>';
+                       }
                     $tabla.='
                     </tbody>
                 </table>
 
-                <br>
+                <p class="bold">3. Observaciones adicionales</p>
+                <div class="box-container" style="height: 150px; border: 1px solid #000;">
+                    '.strtoupper($get_form_distrital[0]['observacion2']).'
+                </div>
+                <br><br><br><br>
                 <p style="text-align:center;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
                 <br><br><br>
                 <div class="footer">
@@ -200,9 +280,6 @@ class Lib_diagnosticopei_reporte {
 
         return $tabla;
     }
-
-
-
 
 
 

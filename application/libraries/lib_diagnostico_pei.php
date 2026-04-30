@@ -258,15 +258,25 @@ class lib_diagnostico_pei extends CI_Controller{
 
     /*---- Detalle formulario N 1-1 - Poblacion Afiliada por Grupo etareo ----*/
     public function formulario_N1_1($get_form_distrital){
-
+      $detalle_form1=$this->model_diagnosticopei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $detalle_form1_etareo=$this->model_diagnosticopei->get_formulario_N1_etareo($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $tabla='';
       $tabla.='
+      <style>
+          .btn-disabled {
+              background-color: #ccc !important;
+              color: #666 !important;
+              cursor: not-allowed !important;
+              pointer-events: none; /* Bloquea el clic */
+              border-color: #bbb !important;
+          }
+      </style>
         <div class="viewport-container">
-            <div style="padding: 15px 0;">
+            <div style="padding: 15px 0;" class="no-print">
                 <a href="javascript:void(0);" 
+                   id="btn-reporte"
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/2/".$get_form_distrital[0]['form_id']).'\');" 
-                   class="btn-imprimir" 
+                   class="btn-imprimir btn-disabled" 
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
@@ -285,12 +295,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
               </div>
 
-              <div style="font-weight: bold; margin-bottom: 10px;">1. Objetivo del instrumento</div>
-              <div style="border: 1px solid #ccc; padding: 10px; font-size: 9pt; margin-bottom: 20px;">
-                  Recopilar, validar y sistematizar información cuantitativa de la población afiliada (titulares y Beneficiarios) para analizar tendencias y cobertura y demanda potencial de la Caja Nacional de Salud.
-              </div>
-
-              <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada (2021 - 2025)</div>
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Relevamiento de poblacion afiliada por grupo etareo ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</div>
               <table>
                   <thead>
                     <tr style="text-align:center;">
@@ -356,12 +361,37 @@ class lib_diagnostico_pei extends CI_Controller{
                    }
                   $tabla.='
                     <tr style="background-color: #f2f2f2; font-weight: bold;">
-                        <td style="text-align:right;">TOTALES POR GESTIÓN:</td>';
+                        <td style="text-align:left;">TOTALES POR GESTIÓN:</td>';
                         for ($anio = 2021; $anio <= 2025; $anio++) {
                             $tabla.='
                             <td colspan="2" style="text-align:center;">Gestión '.$anio.'</td>
                             <td style="text-align:center; background-color: #d9edf7;">
                                 <span id="suma_total_'.$anio.'" style="font-size: 16px; color: #000;">0.00</span>
+                            </td>';
+                        }
+                    $tabla.='
+                    </tr>
+                    <tr style="background-color: #f2f2f2; font-weight: bold;">
+                      <td style="text-align:left;">REFERENCIA FORM. 1</td>';
+                      foreach($detalle_form1 as $f1) {
+                          $tabla .= '
+                          <td colspan="2" style="text-align:center; font-size:11px;">
+                              Form. N° 1 Gestión: '.$f1['gestion'].'
+                          </td>
+                          <td style="text-align:center;">
+                              <!-- ID corregido con el año -->
+                              <span id="ref_f1_'.$f1['gestion'].'" style="font-size: 16px; color: #000;">'.number_format($f1['total_gestion'], 2, '.', ',').'</span>
+                          </td>';
+                      }
+                  $tabla.='
+                    </tr>
+                    <tr style="background-color: #f2f2f2; font-weight: bold;">
+                        <td style="text-align:left;">DIFERENCIA (F1 - ETÁREOS)</td>';
+                        for ($anio = 2021; $anio <= 2025; $anio++) {
+                            $tabla.='
+                            <td colspan="2" style="text-align:center; font-size:11px; color: #555;">Faltante / Sobrante</td>
+                            <td style="text-align:center;" id="celda_diff_'.$anio.'">
+                                <span id="diff_'.$anio.'" style="font-size: 16px;">0.00</span>
                             </td>';
                         }
                     $tabla.='</tr>
@@ -400,6 +430,59 @@ class lib_diagnostico_pei extends CI_Controller{
               // Ejecutar al cargar la página por primera vez
               calcularTotalesPorGestion();
 
+              function verificarIncoherencias() {
+                var errores = 0;
+                var gestiones_vacias = 0;
+
+                for (var anio = 2021; anio <= 2025; anio++) {
+                    var total_etareo = parseFloat($("#suma_total_" + anio).text().replace(/,/g, "")) || 0;
+                    var total_f1 = parseFloat($("#ref_f1_" + anio).text().replace(/,/g, "")) || 0;
+                    
+                    var diferencia = (total_f1 - total_etareo).toFixed(2);
+                    var $span_diff = $("#diff_" + anio);
+                    var $celda_diff = $("#celda_diff_" + anio);
+                    
+                    $span_diff.text(diferencia);
+
+                    // CONDICIÓN 1: Verificar si hay diferencia con Form 1
+                    if (Math.abs(diferencia) > 0.01) {
+                        $celda_diff.css("background-color", "#f8d7da"); 
+                        errores++;
+                    } 
+                    // CONDICIÓN 2: Verificar si el total es 0 (está vacío)
+                    else if (total_etareo === 0) {
+                        $celda_diff.css("background-color", "#fff3cd"); // Amarillo: Sin datos
+                        $span_diff.text("Sin datos").css("color", "#856404");
+                        gestiones_vacias++;
+                    }
+                    else {
+                        $celda_diff.css("background-color", "#d4edda"); 
+                        $span_diff.text("0.00 ✅").css("color", "#28a745");
+                    }
+                }
+
+                var $btn = $("#btn-reporte");
+                
+                // Solo habilitar si NO hay errores Y al menos una gestión tiene DATOS (> 0)
+                // Si quieres que las 5 gestiones tengan datos obligatoriamente, usa: (gestiones_vacias === 0)
+                if (errores === 0 && gestiones_vacias < 5) {
+                    $btn.removeClass("btn-disabled")
+                        .attr("title", "Imprimir Formulario")
+                        .css("pointer-events", "auto");
+                } else {
+                    $btn.addClass("btn-disabled")
+                        .css("pointer-events", "none");
+                        
+                    if (gestiones_vacias === 5) {
+                        $btn.attr("title", "No hay datos registrados para imprimir");
+                    } else {
+                        $btn.attr("title", "Existen diferencias con el Formulario N° 1");
+                    }
+                }
+            }
+
+            verificarIncoherencias();
+
               $(".auto-save").on("keyup change", function() {
                   var $input = $(this);
                   var $fila = $input.closest("tr");
@@ -415,6 +498,7 @@ class lib_diagnostico_pei extends CI_Controller{
 
                   // --- LLAMADA A LA SUMATORIA GLOBAL ---
                   calcularTotalesPorGestion();
+                  verificarIncoherencias();
 
                   clearTimeout(timer);
                   timer = setTimeout(function() {

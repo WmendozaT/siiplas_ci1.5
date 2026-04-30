@@ -330,7 +330,6 @@ class CDiagnostico_pei extends CI_Controller {
   /// Reporte Formulario Diagnostico Pei
   public function reporte_formulario_pei($tp_rep,$form_id){
     $get_formulario=$this->model_diagnosticopei->get_formulario_diagnostico($form_id);
-   // echo "pei : ".$get_formulario[0]['pei_id'].'---->'."Dist : ".$get_formulario[0]['dist_id'];
      $data['reporte']= $this->lib_diagnosticopei_reporte->select_reporte_diagnostico_pei($tp_rep,$get_formulario);
      $data['pie_rep']='dnp';
      $this->load->view('admin/diagnostico_pei/View_report_form_diagpei', $data);
