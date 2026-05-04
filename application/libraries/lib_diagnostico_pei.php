@@ -545,25 +545,39 @@ class lib_diagnostico_pei extends CI_Controller{
           </script>
 
           <script>
-            $(document).ready(function() {
-                // ... tu código anterior de guardado automático ...
+              $(document).ready(function() {
+                var timer_perfil = null;
+                var base_url = "'.base_url().'"; 
 
-                // 1. Al entrar al input (Focus)
-                $(".auto-save").on("focus", function() {
-                    var valor = $(this).val();
-                    // Si el valor es 0, lo dejamos vacío para que el usuario escriba directo
-                    if (valor == "0") {
-                        $(this).val("");
+                // 2. EVENTO PARA INPUTS MANUALES
+                $(".auto-save, .auto-save-infra").on("keyup change", function() {
+                    var $el = $(this);
+
+                    // VALIDACIÓN DE NEGATIVOS
+                    if ($el.attr("type") === "number") {
+                        if (parseFloat($el.val()) < 0) {
+                            $el.val(0); // Forzamos a cero
+                            return false; // Bloqueamos el guardado
+                        }
                     }
+
+                    clearTimeout(timer_perfil);
+                    timer_perfil = setTimeout(function() {
+                        // Aquí llamas a tu función de guardado
+                        if(typeof ejecutarGuardado === "function") {
+                            ejecutarGuardado($el);
+                        } else {
+                            // Si no tienes la función externa, el código AJAX iría aquí
+                            console.log("Guardando dato...");
+                        }
+                    }, 800);
                 });
 
-                // 2. Al salir del input (Blur)
-                $(".auto-save").on("blur", function() {
-                    var valor = $(this).val();
-                    // Si el usuario no escribió nada, le devolvemos el 0 por defecto
-                    if (valor === "") {
-                        $(this).val("0");
-                    }
+                // 3. LIMPIEZA DE CEROS
+                $(".auto-save[type=\'number\']").on("focus", function() {
+                    if ($(this).val() == "0") $(this).val("");
+                }).on("blur", function() {
+                    if ($(this).val() === "") $(this).val("0");
                 });
             });
           </script>';
@@ -782,24 +796,38 @@ class lib_diagnostico_pei extends CI_Controller{
           </script>
           <script>
             $(document).ready(function() {
-                // ... tu código anterior de guardado automático ...
+                var timer_perfil = null;
+                var base_url = "'.base_url().'"; 
 
-                // 1. Al entrar al input (Focus)
-                $(".auto-save").on("focus", function() {
-                    var valor = $(this).val();
-                    // Si el valor es 0, lo dejamos vacío para que el usuario escriba directo
-                    if (valor == "0") {
-                        $(this).val("");
+                // 2. EVENTO PARA INPUTS MANUALES
+                $(".auto-save, .auto-save-infra").on("keyup change", function() {
+                    var $el = $(this);
+
+                    // VALIDACIÓN DE NEGATIVOS
+                    if ($el.attr("type") === "number") {
+                        if (parseFloat($el.val()) < 0) {
+                            $el.val(0); // Forzamos a cero
+                            return false; // Bloqueamos el guardado
+                        }
                     }
+
+                    clearTimeout(timer_perfil);
+                    timer_perfil = setTimeout(function() {
+                        // Aquí llamas a tu función de guardado
+                        if(typeof ejecutarGuardado === "function") {
+                            ejecutarGuardado($el);
+                        } else {
+                            // Si no tienes la función externa, el código AJAX iría aquí
+                            console.log("Guardando dato...");
+                        }
+                    }, 800);
                 });
 
-                // 2. Al salir del input (Blur)
-                $(".auto-save").on("blur", function() {
-                    var valor = $(this).val();
-                    // Si el usuario no escribió nada, le devolvemos el 0 por defecto
-                    if (valor === "") {
-                        $(this).val("0");
-                    }
+                // 3. LIMPIEZA DE CEROS
+                $(".auto-save[type=\'number\']").on("focus", function() {
+                    if ($(this).val() == "0") $(this).val("");
+                }).on("blur", function() {
+                    if ($(this).val() === "") $(this).val("0");
                 });
             });
           </script>';
@@ -908,24 +936,45 @@ class lib_diagnostico_pei extends CI_Controller{
                 });
             }
 
-            $(document).ready(function() {
-                // 2. EVENTO PARA INPUTS MANUALES (Nº Casos y Detalle Causa)
-                $(".auto-save, .input-perfil").on("keyup change", function() {
-                    var $el = $(this);
+        // LIMPIA LOS VALORES CEROS
+        $(document).ready(function() {
+            var timer_perfil = null;
+            var base_url = "'.base_url().'"; 
 
-                    clearTimeout(timer_perfil);
-                    timer_perfil = setTimeout(function() {
+            // 2. EVENTO PARA INPUTS MANUALES
+            $(".auto-save, .auto-save-infra").on("keyup change", function() {
+                var $el = $(this);
+
+                // VALIDACIÓN DE NEGATIVOS
+                if ($el.attr("type") === "number") {
+                    if (parseFloat($el.val()) < 0) {
+                        $el.val(0); // Forzamos a cero
+                        return false; // Bloqueamos el guardado
+                    }
+                }
+
+                clearTimeout(timer_perfil);
+                timer_perfil = setTimeout(function() {
+                    // Aquí llamas a tu función de guardado
+                    if(typeof ejecutarGuardado === "function") {
                         ejecutarGuardado($el);
-                    }, 800);
-                });
-
-                // 3. LIMPIEZA DE CEROS
-                $(".auto-save[type=\'number\']").on("focus", function() {
-                    if ($(this).val() == "0") $(this).val("");
-                }).on("blur", function() {
-                    if ($(this).val() === "") $(this).val("0");
-                });
+                    } else {
+                        // Si no tienes la función externa, el código AJAX iría aquí
+                        console.log("Guardando dato...");
+                    }
+                }, 800);
             });
+
+            // 3. LIMPIEZA DE CEROS
+            $(".auto-save[type=\'number\']").on("focus", function() {
+                if ($(this).val() == "0") $(this).val("");
+            }).on("blur", function() {
+                if ($(this).val() === "") $(this).val("0");
+            });
+        });
+    
+
+
 
             // 4. LÓGICA DEL MODAL BUSCADOR
             var gestionActual, nroActual;
@@ -1251,8 +1300,15 @@ class lib_diagnostico_pei extends CI_Controller{
     //// ------------------------- END FORM 3
 
 
-    /*------- Detalle formulario N 2 -------*/
+    /*------- Detalle formulario N 4 -------*/
     public function formulario_N4($get_form_distrital){
+      $detalle_form4_1er=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'1'); /// 1er nivel
+      $detalle_form4_2do=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'2,3'); /// 2 y 3 nivel
+      $nro=count($detalle_form4_1er)+count($detalle_form4_2do);
+      $page='page';
+      if($nro>=13){
+        $page='page_long';
+      }
       $tabla='';
       $tabla.='
       <div class="viewport-container">
@@ -1264,10 +1320,10 @@ class lib_diagnostico_pei extends CI_Controller{
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
             </div>
-          <div class="page">
+          <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
-                  Fecha: <span id="fecha-actual3"></span>
+                  Fecha: <span id="fecha-actual4"></span>
               </div>
               <div class="header">
                   <p>CAJA NACIONAL DE SALUD</p>
@@ -1283,29 +1339,16 @@ class lib_diagnostico_pei extends CI_Controller{
                   Identificar, registrar y evaluar las condiciones de la infraestructura de los establecimientos de salud, para determinar su capacidad operativa y soporte a la demanda poblacional.
               </div>
               
-
               <div style="font-weight: bold; margin-bottom: 10px;">2. Matriz de inventario de establecimientos PRIMER NIVEL</div>
-                '.$this->tabla_form4Tp_infraestructura($get_form_distrital[0]['dist_id'],1).'
+                '.$this->tabla_form4Tp_infraestructura($detalle_form4_1er).'';
 
-              <div style="font-weight: bold; margin-bottom: 10px;">3. Matriz de inventario de establecimientos SEGUNDO Y TERCER NIVEL</div>
-                '.$this->tabla_form4Tp_infraestructura($get_form_distrital[0]['dist_id'],2).'
-                  
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="4">
-
-              <div style="margin-top: 30px;">
-                  <strong>3. Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="4"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion4']).'</textarea>
-              </div>
-
+              if(count($detalle_form4_2do)!=0){
+                $tabla.='
+                <div style="font-weight: bold; margin-bottom: 10px;">3. Matriz de inventario de establecimientos SEGUNDO Y TERCER NIVEL</div>
+                '.$this->tabla_form4Tp_infraestructura($detalle_form4_2do).'';
+              }
+              
+              $tabla.='
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -1315,85 +1358,118 @@ class lib_diagnostico_pei extends CI_Controller{
           <hr>
         </div>
 
-
-        
         <script>
-          document.getElementById("fecha-actual3").innerText = new Date().toLocaleDateString();
+          document.getElementById("fecha-actual4").innerText = new Date().toLocaleDateString();
         </script>
-
         <script>
-              $(document).ready(function() {
-                  var timeout = null;
-                  var base_url = "'.base_url().'"; 
+        $(document).ready(function() {
+            var timer_infra = null;
+            var base_url = "'.base_url().'"; 
 
-                  $(".observaciones-input").on("keyup", function() {
-                      var $this = $(this); 
-                      
-                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                      var contenedor = $this.closest("div").parent(); 
-                      var form_id = contenedor.find(".form_id").val();
-                      var nro_obs = contenedor.find(".nro_obs").val();
-                      
-                      var texto = $this.val();
-                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+            // EVENTO UNIFICADO PARA INPUTS
+            $(".auto-save4, .auto-save-infra").on("keyup change", function() {
+                var $el = $(this);
 
-                      if (!form_id || form_id == "0") {
-                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                          return;
-                      }
+                // 1. VALIDACIÓN DE NEGATIVOS
+                if ($el.attr("type") === "number") {
+                    if (parseFloat($el.val()) < 0) {
+                        $el.val(0); 
+                        return false; 
+                    }
+                }
 
-                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                      clearTimeout(timeout);
-                      timeout = setTimeout(function() {
-                          $.ajax({
-                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                              type: "POST",
-                              data: {
-                                  form_id: form_id,
-                                  nro: nro_obs, 
-                                  observacion: texto
-                              },
-                              success: function(response) {
+                // 2. INDICADOR VISUAL (Borde naranja mientras espera)
+                $el.css("border-color", "#ffc107");
 
-                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                              },
-                              error: function() {
-                                  status.text("Error al guardar").css("color", "red");
-                                  $("#toast-notificacion")
-                                      .text("❌ Error al guardar")
-                                      .css("background-color", "#dc3545")
-                                      .fadeIn(400).delay(3000).fadeOut(400);
-                              }
-                          });
-                      }, 800); 
-                  });
-              });
-          </script>';
+                // 3. TEMPORIZADOR ÚNICO DE GUARDADO
+                clearTimeout(timer_infra);
+                timer_infra = setTimeout(function() {
+                    $.ajax({
+                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_infraestructura_form4",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            form_id: $el.data("form"),
+                            act_id:  $el.data("act"),
+                            gestion: $el.data("gestion"),
+                            campo:   $el.data("campo"),
+                            valor:   $el.val()
+                        },
+                        success: function(resp) {
+                            if(resp.status == "success") {
+                                status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                            } else {
+                                $el.css("border-color", "#dc3545").val("");
+                                alert("Error: " + resp.msg);
+                            }
+                          setTimeout(function(){ $el.css("border-color", ""); }, 1500);
+                        },
+                        error: function() {
+                            $el.css("border-color", "#dc3545").val("");
+                            alert("Error de conexión con el servidor");
+                        }
+                    });
+                }, 800);
+            });
+
+            // 4. LIMPIEZA DE CEROS (Mantiene el comportamiento de tus otros formularios)
+            $(".auto-save4").on("focus", function() {
+                if ($(this).val() == "0") $(this).val("");
+            }).on("blur", function() {
+                if ($(this).val() === "") $(this).val("0");
+            });
+        });
+        </script>';
         return $tabla;
     }
 
- public function tabla_form4Tp_infraestructura($dist_id,$tp){
-     // $detalle_form3=$this->model_diagnosticopei->get_formulario_N3($dist_id,$tp); /// listado de gestiones
-     // $cie10_list=$this->model_diagnosticopei->get_listado_cie10();
+    public function tabla_form4Tp_infraestructura($detalle){
       $tabla='';
       $tabla.='
           <table>
             <thead>
               <tr>
-                
-                  <th style="width:30%;">Establecimiento</th>
-                  <th style="width:15%;">Tipo</th>
-                  <th style="width:25%;">Ubicación</th>
-                  <th style="width:15%;">Nro. consultorios fisicos</th>
-                  <th style="width:15%;">1. Propia<br>2. Alquilada<br>3. Otros (detalle)</th>
+                <th style="width:25%;">Establecimiento</th>
+                <th style="width:10%;">Tipo</th>
+                <th style="width:30%;">Ubicación</th>
+                <th style="width:10%;">Nro. consultorios fisicos</th>
+                <th style="width:20%;">1. Propia<br>2. Alquilada<br>3. Otros (detalle)</th>
               </tr>
             </thead>
           <tbody>';
-            
+            foreach($detalle as $row) {
+            $tabla .= '<tr>
+                <td>'.$row['act_descripcion'].'</td>
+                <td>'.$row['tipo'].'</td>
+                <td>
+                    <input type="text" class="form-control auto-save-infra" 
+                        value="'.$row['ubicacion'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-act="'.$row['act_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="ubicacion">
+                </td>
+                <td>
+                    <input type="number" class="auto-save4" min="0" 
+                        value="'.$row['nro_consultorios'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-act="'.$row['act_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="nro_consultorios">
+                </td>
+                <td>
+                    <input type="text" class="form-control auto-save-infra" 
+                        value="'.$row['tipo_situacion'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-act="'.$row['act_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="tipo_situacion">
+                </td>
+            </tr>';
+            }
             $tabla.='
-            </tbody>
+          </tbody>
         </table>';
 
       return $tabla;
@@ -1449,6 +1525,21 @@ class lib_diagnostico_pei extends CI_Controller{
                     width: 8.5in; 
                     min-width: 8.5in; /* Evita que se encoja en celulares */
                     height: 11in; 
+                    padding: 0.6in 0.7in; 
+                    box-sizing: border-box; 
+                    position: relative; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #ccc;
+                }
+
+                /* 2. LA HOJA (Tamaño Carta Largo) */
+                .page_long { 
+                    background-color: white; 
+                    width: 8.5in; 
+                    min-width: 8.5in; /* Evita que se encoja en celulares */
+                    height: 18in; 
                     padding: 0.6in 0.7in; 
                     box-sizing: border-box; 
                     position: relative; 

@@ -268,7 +268,45 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--- Detalle formulario N5 ---*/
+    public function get_infraestructura_por_nivel($dist_id,$tn_ids){
+    $sql = "
+            WITH rango_pei AS (
+                SELECT pei_id, g_id_fin 
+                FROM Diagnostico_pei 
+                WHERE estado = 1 
+                LIMIT 1
+            ),
+            establecimientos AS (
+                SELECT v.act_id, v.act_descripcion, v.tipo, v.establecimiento, v.tn_id, v.nivel
+                FROM vlista_establecimientos_salud v
+                INNER JOIN rango_pei r ON v.aper_gestion = r.g_id_fin
+                WHERE v.dist_id = $dist_id 
+                  AND v.tn_id IN ($tn_ids) -- Aquí usamos IN para permitir múltiples IDs
+            )
+            SELECT 
+                r.g_id_fin AS gestion_pei,
+                f.form_id,
+                f.dist_id,
+                est.*,
+                COALESCE(inf.tp_infra, 1) AS tp_infra,
+                COALESCE(inf.ubicacion, '') AS ubicacion,
+                COALESCE(inf.nro_consultorios, 0) AS nro_consultorios,
+                COALESCE(inf.tipo_situacion, '') AS tipo_situacion,
+                inf.infra_id
+            FROM establecimientos est
+            CROSS JOIN rango_pei r
+            LEFT JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id = $dist_id)
+            LEFT JOIN formularion4_detalle_infra det4 ON (det4.form_id = f.form_id AND det4.g_id = r.g_id_fin)
+            LEFT JOIN infraestructura_form4 inf ON (inf.det4_id = det4.det4_id AND inf.act_id = est.act_id)
+            ORDER BY est.nivel ASC, est.act_descripcion ASC";
 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    
     /*--------- Lista de Unidades Ejecutoras ----------*/
     public function lista_UnidadEjecutora(){
         $sql = 'SELECT *

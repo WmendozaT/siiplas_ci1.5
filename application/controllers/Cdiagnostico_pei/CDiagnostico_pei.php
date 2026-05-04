@@ -606,4 +606,71 @@ class CDiagnostico_pei extends CI_Controller {
             return $this->db->insert('detalle_form3_perfil', $data_save);
         }
     }
+
+
+    //// Validacion 
+    public function guarda_detalle_infraestructura_form4() {
+        // 1. Verificación de seguridad AJAX
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        // 2. Recepción de parámetros del script
+        $form_id = $this->input->post('form_id');
+        $act_id  = $this->input->post('act_id');
+        $gestion = $this->input->post('gestion');
+        $campo   = $this->input->post('campo');
+        $valor   = $this->input->post('valor');
+
+        // 3. Validación de Negativos para campos numéricos
+        if ($campo == 'nro_consultorios') {
+            $valor = (is_numeric($valor) && $valor >= 0) ? $valor : 0;
+        }
+
+        // 4. ASEGURAR CABECERA (formularion4_detalle_infra)
+        // Buscamos si ya existe el registro para este formulario y gestión
+        $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+        $cabecera = $this->db->get('formularion4_detalle_infra')->row();
+
+        if ($cabecera) {
+            $det4_id = $cabecera->det4_id;
+        } else {
+            // Si no existe, creamos la cabecera automáticamente
+            $data_cabecera = array(
+                'form_id'      => $form_id,
+                'g_id'         => $gestion,
+                'form4_estado' => 1
+            );
+            $this->db->insert('formularion4_detalle_infra', $data_cabecera);
+            $det4_id = $this->db->insert_id();
+        }
+
+        // 5. GUARDAR DETALLE (infraestructura_form4)
+        // Verificamos si ya existe el registro para este establecimiento (act_id)
+        $this->db->where(array('det4_id' => $det4_id, 'act_id' => $act_id));
+        $infra = $this->db->get('infraestructura_form4')->row();
+
+        if ($infra) {
+            // ACTUALIZACIÓN
+            $this->db->where('infra_id', $infra->infra_id);
+            $res = $this->db->update('infraestructura_form4', array($campo => $valor));
+        } else {
+            // INSERCIÓN (Aquí forzamos tp_infra = 1 por ser establecimiento alineado)
+            $data_insert = array(
+                'det4_id'  => $det4_id,
+                'act_id'   => $act_id,
+                'tp_infra' => 1, 
+                $campo     => $valor
+            );
+            $res = $this->db->insert('infraestructura_form4', $data_insert);
+        }
+
+        // 6. Respuesta JSON para el Script
+        if ($res) {
+            echo json_encode(array('status' => 'success', 'msg' => '✅ Información sincronizada'));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => '❌ Error al guardar en la base de datos'));
+        }
+    }
 }
