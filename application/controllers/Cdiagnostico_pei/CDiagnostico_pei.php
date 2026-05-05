@@ -608,55 +608,49 @@ class CDiagnostico_pei extends CI_Controller {
     }
 
 
-    //// Validacion 
+    //// Validacion form 4 - Establecimientos inscritos en el poa
     public function guarda_detalle_infraestructura_form4() {
-        // 1. Verificación de seguridad AJAX
-        if (!$this->input->is_ajax_request()) {
-            show_404();
-            return;
-        }
+        if (!$this->input->is_ajax_request()) { show_404(); return; }
 
-        // 2. Recepción de parámetros del script
         $form_id = $this->input->post('form_id');
         $act_id  = $this->input->post('act_id');
         $gestion = $this->input->post('gestion');
         $campo   = $this->input->post('campo');
         $valor   = $this->input->post('valor');
 
-        // 3. Validación de Negativos para campos numéricos
         if ($campo == 'nro_consultorios') {
             $valor = (is_numeric($valor) && $valor >= 0) ? $valor : 0;
         }
 
-        // 4. ASEGURAR CABECERA (formularion4_detalle_infra)
-        // Buscamos si ya existe el registro para este formulario y gestión
+        // 1. Iniciar Transacción para evitar que dos procesos escriban al mismo tiempo
+        $this->db->trans_start();
+
+        // 2. Asegurar Cabecera
         $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
         $cabecera = $this->db->get('formularion4_detalle_infra')->row();
 
         if ($cabecera) {
             $det4_id = $cabecera->det4_id;
         } else {
-            // Si no existe, creamos la cabecera automáticamente
-            $data_cabecera = array(
-                'form_id'      => $form_id,
-                'g_id'         => $gestion,
+            $this->db->insert('formularion4_detalle_infra', array(
+                'form_id' => $form_id,
+                'g_id' => $gestion,
                 'form4_estado' => 1
-            );
-            $this->db->insert('formularion4_detalle_infra', $data_cabecera);
+            ));
             $det4_id = $this->db->insert_id();
         }
 
-        // 5. GUARDAR DETALLE (infraestructura_form4)
-        // Verificamos si ya existe el registro para este establecimiento (act_id)
+        // 3. VERIFICACIÓN CRÍTICA: ¿Existe ya este act_id para este det4_id?
+        // Usamos select(1) para rapidez
         $this->db->where(array('det4_id' => $det4_id, 'act_id' => $act_id));
-        $infra = $this->db->get('infraestructura_form4')->row();
+        $existe = $this->db->get('infraestructura_form4')->row();
 
-        if ($infra) {
-            // ACTUALIZACIÓN
-            $this->db->where('infra_id', $infra->infra_id);
+        if ($existe) {
+            // ACTUALIZACIÓN ESTRICTA por ID primario
+            $this->db->where('infra_id', $existe->infra_id);
             $res = $this->db->update('infraestructura_form4', array($campo => $valor));
         } else {
-            // INSERCIÓN (Aquí forzamos tp_infra = 1 por ser establecimiento alineado)
+            // INSERCIÓN: Solo si el valor no es vacío o cero (opcional, para no llenar basura)
             $data_insert = array(
                 'det4_id'  => $det4_id,
                 'act_id'   => $act_id,
@@ -666,11 +660,112 @@ class CDiagnostico_pei extends CI_Controller {
             $res = $this->db->insert('infraestructura_form4', $data_insert);
         }
 
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            echo json_encode(array('status' => 'error', 'msg' => '❌ Error de concurrencia'));
+        } else {
+            echo json_encode(array('status' => 'success', 'msg' => '✅ Guardado correctamente ..'));
+        }
+    }
+
+
+
+    //// agregamos nueva fila para otros establecimientos
+    public function nuevo_infra_otro() {
+        $form_id = $this->input->post('form_id');
+        $gestion = $this->input->post('gestion');
+
+        // 1. Asegurar det4_id (Cabecera)
+        $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+        $cabecera = $this->db->get('formularion4_detalle_infra')->row();
+        
+        if ($cabecera) {
+            $det4_id = $cabecera->det4_id;
+        } else {
+            $this->db->insert('formularion4_detalle_infra', array('form_id' => $form_id, 'g_id' => $gestion, 'form4_estado' => 1));
+            $det4_id = $this->db->insert_id();
+        }
+
+        // 2. Insertar registro en blanco en la tabla de Otros
+        $res = $this->db->insert('infraestructura_otros_form4', array(
+            'det4_id' => $det4_id,
+            'tp_infra' => 0,
+            'nro_consultorios' => 0
+        ));
+        $nuevo_id = $this->db->insert_id();
+
+        echo json_encode(array('status' => $res ? 'success' : 'error', 'id' => $nuevo_id));
+    }
+
+    //// guarda informacion de otros establecimientos
+    public function guarda_infra_otros_automatica() {
+        // 1. Verificación de seguridad para peticiones AJAX
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        // 2. Recepción de parámetros desde el JS
+        $infra_otro_id = $this->input->post('id');      // ID primario de la tabla otros
+        $form_id       = $this->input->post('form_id'); // ID del formulario diagnóstico
+        $gestion       = $this->input->post('gestion'); // Año (ej. 2025)
+        $campo         = $this->input->post('campo');   // Columna a modificar
+        $valor         = $this->input->post('valor');   // Valor ingresado
+
+        // 3. Validación de Negativos para campos numéricos
+        if ($campo == 'nro_consultorios') {
+            $valor = (is_numeric($valor) && $valor >= 0) ? $valor : 0;
+        }
+
+        // 4. ASEGURAR CABECERA (formularion4_detalle_infra)
+        // Buscamos si ya existe el vínculo con el diagnóstico pei
+        $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+        $cabecera = $this->db->get('formularion4_detalle_infra')->row();
+
+        if ($cabecera) {
+            $det4_id = $cabecera->det4_id;
+        } else {
+            // Si no existe (caso de fila nueva), creamos la cabecera automáticamente
+            $data_cabecera = array(
+                'form_id'      => $form_id,
+                'g_id'         => $gestion,
+                'form4_estado' => 1
+            );
+            $this->db->insert('formularion4_detalle_infra', $data_cabecera);
+            $det4_id = $this->db->insert_id();
+        }
+
+        // 5. ACTUALIZAR EL REGISTRO DE "OTROS"
+        // Aseguramos que el det4_id esté actualizado por si se acaba de crear
+        $data_update = array(
+            'det4_id' => $det4_id,
+            $campo    => $valor
+        );
+
+        $this->db->where('infra_otro_id', $infra_otro_id);
+        $res = $this->db->update('infraestructura_otros_form4', $data_update);
+
         // 6. Respuesta JSON para el Script
         if ($res) {
-            echo json_encode(array('status' => 'success', 'msg' => '✅ Información Guardada correctamente'));
+            echo json_encode(array('status' => 'success', 'msg' => '✅ Informacion guardado correctamente ...'));
         } else {
-            echo json_encode(array('status' => 'error', 'msg' => '❌ Error al guardar en la base de datos'));
+            echo json_encode(array('status' => 'error', 'msg' => '❌ Error al actualizar registro'));
+        }
+    }
+
+    public function eliminar_infra_otro() {
+        if (!$this->input->is_ajax_request()) return;
+
+        $id = $this->input->post('id');
+
+        if ($id) {
+            $this->db->where('infra_otro_id', $id);
+            $res = $this->db->delete('infraestructura_otros_form4');
+            
+            echo json_encode(array('status' => $res ? 'success' : 'error'));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'ID no válido'));
         }
     }
 }

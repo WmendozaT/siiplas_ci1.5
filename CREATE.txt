@@ -375,7 +375,7 @@ create table formularion4_detalle_infra(
   primary key(det4_id)
 );
 
-
+///// establecimientos que ya se encuentran disponibles en el poa
 create table infraestructura_form4(
   infra_id serial NOT NULL,
   det4_id integer,
@@ -384,5 +384,22 @@ create table infraestructura_form4(
   ubicacion character varying(1000),
   nro_consultorios integer,
   tipo_situacion character varying(1000),
+  serv_internet character varying(100),
   primary key(infra_id)
+);
+
+
+///// otros establecimientos, servicios que no estan en el poa
+create table infraestructura_otros_form4(
+  infra_otro_id serial NOT NULL,
+  det4_id integer,
+  tp_infra integer DEFAULT 0,
+  otro_establecimiento character varying(1000),
+  tipo_establecimiento character varying(200),
+  nivel_establecimiento character varying(500),
+  ubicacion character varying(1000),
+  nro_consultorios integer,
+  tipo_situacion character varying(1000),
+  serv_internet character varying(100),
+  primary key(infra_otro_id)
 );

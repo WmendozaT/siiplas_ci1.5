@@ -268,7 +268,7 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
-    /*--- Detalle formulario N5 ---*/
+    /*--- Detalle formulario N5 Infraestructura en establecimientos inscritos en el poa---*/
     public function get_infraestructura_por_nivel($dist_id,$tn_ids){
     $sql = "
             WITH rango_pei AS (
@@ -293,6 +293,7 @@ class model_diagnosticoPei extends CI_Model {
                 COALESCE(inf.ubicacion, '') AS ubicacion,
                 COALESCE(inf.nro_consultorios, 0) AS nro_consultorios,
                 COALESCE(inf.tipo_situacion, '') AS tipo_situacion,
+                COALESCE(inf.serv_internet, '') AS serv_internet,
                 inf.infra_id
             FROM establecimientos est
             CROSS JOIN rango_pei r
@@ -305,6 +306,39 @@ class model_diagnosticoPei extends CI_Model {
         return $query->result_array();
     }
 
+
+    /*--- Detalle formulario N5 Infraestructura que no estan establecimientos inscritos en el poa---*/
+    public function get_otros_infraestructura_por_nivel($dist_id){
+    $sql = "
+            WITH rango_pei AS (
+                -- Obtenemos el PEI activo y su gestión final
+                SELECT pei_id, g_id_fin 
+                FROM Diagnostico_pei 
+                WHERE estado = 1 
+                LIMIT 1
+            )
+            SELECT 
+                r.g_id_fin AS gestion_pei,
+                f.form_id,
+                f.dist_id,
+                inf.infra_otro_id,
+                inf.otro_establecimiento, -- El nombre que el usuario escribe manualmente
+                inf.tipo_establecimiento,
+                inf.nivel_establecimiento,
+                inf.ubicacion,
+                inf.nro_consultorios,
+                inf.tipo_situacion,
+                inf.serv_internet,
+                COALESCE(inf.tp_infra, 0) AS tp_infra -- 0 para otros (no alineados)
+            FROM rango_pei r
+            INNER JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id =$dist_id)
+            INNER JOIN formularion4_detalle_infra det4 ON (det4.form_id = f.form_id AND det4.g_id = r.g_id_fin)
+            INNER JOIN infraestructura_otros_form4 inf ON (inf.det4_id = det4.det4_id)
+            ORDER BY inf.infra_otro_id ASC";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     
     /*--------- Lista de Unidades Ejecutoras ----------*/

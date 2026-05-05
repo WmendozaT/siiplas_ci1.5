@@ -1304,6 +1304,8 @@ class lib_diagnostico_pei extends CI_Controller{
     public function formulario_N4($get_form_distrital){
       $detalle_form4_1er=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'1'); /// 1er nivel
       $detalle_form4_2do=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'2,3'); /// 2 y 3 nivel
+      $detalle_form4_otros=$this->model_diagnosticopei->get_otros_infraestructura_por_nivel($get_form_distrital[0]['dist_id']); /// Otros Establecimientos
+      
       $nro=count($detalle_form4_1er)+count($detalle_form4_2do);
       $page='page_horizontal_corto';
       if($nro>=13){
@@ -1340,15 +1342,23 @@ class lib_diagnostico_pei extends CI_Controller{
               </div>
               
               <div style="font-weight: bold; margin-bottom: 10px;">2. Matriz de inventario de establecimientos PRIMER NIVEL</div>
-                '.$this->tabla_form4Tp_infraestructura($detalle_form4_1er).'';
+                '.$this->tabla_form4Tp_infraestructura($detalle_form4_1er,1).'';
 
               if(count($detalle_form4_2do)!=0){
                 $tabla.='
                 <div style="font-weight: bold; margin-bottom: 10px;">3. Matriz de inventario de establecimientos SEGUNDO Y TERCER NIVEL</div>
-                '.$this->tabla_form4Tp_infraestructura($detalle_form4_2do).'';
+                '.$this->tabla_form4Tp_infraestructura($detalle_form4_2do,1).'';
               }
               
               $tabla.='
+              <div style="font-weight: bold; margin-bottom: 10px;">Otros Establecimientos</div>
+              <div style="padding-bottom: 10px;">
+                  <button type="button" class="btn btn-success btn-sm" onclick="agregarNuevoEstablecimientoOtros('.$get_form_distrital[0]['form_id'].', '.$get_form_distrital[0]['g_id_fin'].');">
+                      <i class="glyphicon glyphicon-plus"></i> Agregar otro Establecimiento
+                  </button>
+              </div>
+                '.$this->tabla_form4Tp_infraestructura($detalle_form4_otros,0).'
+
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -1420,6 +1430,22 @@ class lib_diagnostico_pei extends CI_Controller{
                     }
                 }
 
+                if (campo_actual === "serv_internet") {
+                    // Transformación automática de códigos
+                    if (valor === "1") {
+                        $el.val("SI");
+                        valor = "SI";
+                    } else if (valor === "0") {
+                        $el.val("NO");
+                        valor = "NO";
+                    }
+                    
+                    // Limitar a 100 caracteres si es una descripción (opción 3)
+                    if (valor.length > 100) {
+                        $el.val(valor.substring(0, 100));
+                        valor = valor.substring(0, 100);
+                    }
+                }
 
                 // INDICADOR VISUAL (Borde naranja)
                 $el.css("border-color", "#ffc107");
@@ -1467,127 +1493,244 @@ class lib_diagnostico_pei extends CI_Controller{
         });
         </script>
 
+        ///// Agregando nueva fila para la inscripcion de otros establecimientos
+        <script>
+        function agregarNuevoEstablecimientoOtros(form_id, gestion) {
+            var base_url = "'.base_url().'";
+            $.post(base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/nuevo_infra_otro", 
+            { form_id: form_id, gestion: gestion }, 
+            function(resp) {
+                if(resp.status == "success") {
+                    var nuevaFila = `
+                    <tr id="fila_otro_${resp.id}" style="display:none; background-color: #fcf8e3;">
+                        <td><input type="text" class="form-control auto-save-otros" data-id="${resp.id}" data-form="${form_id}" data-gestion="${gestion}" data-campo="otro_establecimiento" style="text-transform: uppercase;"></td>
+                        <td><input type="text" class="form-control auto-save-otros" data-id="${resp.id}" data-form="${form_id}" data-gestion="${gestion}" data-campo="tipo_establecimiento" style="text-transform: uppercase;"></td>
+                        <td><input type="text" class="form-control auto-save-otros" data-id="${resp.id}" data-form="${form_id}" data-gestion="${gestion}" data-campo="nivel_establecimiento" style="text-transform: uppercase;"></td>
+                        <td><input type="text" class="form-control auto-save-otros" data-id="${resp.id}" data-form="${form_id}" data-gestion="${gestion}" data-campo="ubicacion" style="text-transform: uppercase;"></td>
+                        <td><input type="number" class="auto-save5" data-id="${resp.id}" data-form="${form_id}" data-gestion="${gestion}" data-campo="nro_consultorios" min="0" value="0"></td>
+                        <td><input type="text" class="form-control auto-save-otros" data-id="${resp.id}" data-form="${form_id}" data-gestion="${gestion}" data-campo="serv_internet" placeholder="1 , 0"></td>
+                        <td><input type="text" class="form-control auto-save-otros" data-id="${resp.id}" data-form="${form_id}" data-gestion="${gestion}" data-campo="tipo_situacion" placeholder="1, 2 o Detalle (3)"></td>
+                        <!-- BOTÓN ELIMINAR AJUSTADO -->
+                        <td style="text-align:center;">
+                            <a href="javascript:void(0);" 
+                               onclick="eliminarRegistroOtro(${resp.id});" 
+                               class="btn btn-danger btn-xs" 
+                               title="Eliminar Registro">
+                               <i class="glyphicon glyphicon-trash"></i>
+                            </a>
+                        </td>
+                    </tr>`;
 
+                    $("#tabla_otros_body").append(nuevaFila);
+                    $("#fila_otro_" + resp.id).fadeIn(600); // Efecto de entrada
+                    $("#toast-notificacion").text("✅ Fila lista para registrar").fadeIn().delay(1000).fadeOut();
+                }
+            }, "json");
+        }
+        </script>
+
+        //// guarda automaticamente los campos del establecimiento
         <script>
         $(document).ready(function() {
-            var timer_infra = null;
+            var timer_otros = null;
             var base_url = "'.base_url().'";
 
-            // --- 1. FUNCIÓN PARA CREAR MÚLTIPLES REGISTROS ---
-            window.crearMultiplesRegistros = function() {
-                var $btn = $(this);
-                var datos = {
-                    form_id: "'.$get_form_distrital[0]['form_id'].'",
-                    gestion: "'.$get_form_distrital[0]['g_id_fin'].'",
-                    establecimiento: $("#add_est").val().toUpperCase(),
-                    tipo: $("#add_tipo").val().toUpperCase(),
-                    nivel: $("#add_nivel").val().toUpperCase(),
-                    ubicacion: $("#add_ubi").val().toUpperCase(),
-                    consultorios: $("#add_cons").val()
-                };
-
-                if(datos.establecimiento == "") { 
-                    alert("Debe ingresar el nombre del establecimiento"); 
-                    $("#add_est").focus();
-                    return; 
-                }
-
-                $.ajax({
-                    url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/registrar_infra_manual",
-                    type: "POST",
-                    dataType: "json",
-                    data: datos,
-                    success: function(resp) {
-                        if(resp.status == "success") {
-                            // Inyectamos la nueva fila al final del body
-                            var nuevaFila = "<tr>" +
-                                "<td style=\'font-size:15px;\'><b>" + datos.establecimiento + "</b></td>" +
-                                "<td>" + datos.tipo + "</td>" +
-                                "<td>" + datos.nivel + "</td>" +
-                                "<td><input type=\'text\' class=\'form-control auto-save-infra\' value=\'"+datos.ubicacion+"\' data-form=\'"+datos.form_id+"\' data-act=\'"+resp.act_id+"\' data-gestion=\'"+datos.gestion+"\' data-campo=\'ubicacion\' style=\'text-transform:uppercase;\'></td>" +
-                                "<td><input type=\'number\' class=\'auto-save4\' value=\'"+datos.consultorios+"\' data-form=\'"+datos.form_id+"\' data-act=\'"+resp.act_id+"\' data-gestion=\'"+datos.gestion+"\' data-campo=\'nro_consultorios\' min=\'0\'></td>" +
-                                "<td><input type=\'text\' class=\'form-control auto-save-infra\' value=\'\' data-form=\'"+datos.form_id+"\' data-act=\'"+resp.act_id+"\' data-gestion=\'"+datos.gestion+"\' data-campo=\'tipo_situacion\'></td>" +
-                            "</tr>";
-
-                            $("#body-infra").append(nuevaFila);
-                            
-                            // Limpiamos los campos de carga
-                            $("#add_est, #add_tipo, #add_nivel, #add_ubi").val("");
-                            $("#add_cons").val(0);
-                            $("#add_est").focus();
-                            
-                            $("#toast-notificacion").text("✅ Registro Adicionado").fadeIn(400).delay(1500).fadeOut(400);
-                        }
-                    }
-                });
-            };
-
-            // --- 2. EVENTO PARA GUARDADO AUTOMÁTICO (EXISTENTES Y NUEVOS) ---
-            $(document).on("keyup change", ".auto-save4, .auto-save-infra", function() {
+            $(document).on("keyup change", ".auto-save-otros, .auto-save5", function() {
                 var $el = $(this);
-                var campo = $el.data("campo");
+                var campo_actual = $el.data("campo"); // Definimos la variable campo
+                var valor = $el.val().trim();
 
-                if ($el.attr("type") === "number" && parseFloat($el.val()) < 0) {
-                    $el.val(0); return false;
+                // 1. VALIDACIÓN DE NEGATIVOS
+                if ($el.attr("type") === "number") {
+                    if (parseFloat($el.val()) < 0) {
+                        $el.val(0);
+                        return false;
+                    }
                 }
 
-                if (campo === "tipo_situacion") {
-                    var v = $el.val().trim();
-                    if (v === "1") $el.val("PROPIA");
-                    if (v === "2") $el.val("ALQUILADA");
+                // 2. VALIDACIÓN DE LONGITUD (UBICACIÓN)
+                if (campo_actual === "ubicacion") {
+                    if (valor.length > 500) {
+                        $el.val(valor.substring(0, 500));
+                    }
                 }
 
+                // 3. TRANSFORMACIÓN AUTOMÁTICA DE TIPO
+                if (campo_actual === "tipo_establecimiento") {
+                    var $fila = $el.closest("tr");
+                    var $inputNivel = $fila.find(\'input[data-campo="nivel_establecimiento"]\');
+                    var nivelVal = "";
+
+                    // 1. Mapeo de valores
+                    if (valor === "1") { $el.val("CIS"); nivelVal = "PRIMER NIVEL"; } 
+                    else if (valor === "2") { $el.val("CIMFA"); nivelVal = "PRIMER NIVEL"; }
+                    else if (valor === "3") { $el.val("PAISE"); nivelVal = "SEGUNDO NIVEL"; }
+                    else if (valor === "4") { $el.val("HIS"); nivelVal = "SEGUNDO NIVEL"; }
+                    else if (valor === "5") { $el.val("HAIG"); nivelVal = "TERCER NIVEL"; }
+
+                    // 2. Si hay un nivel detectado, bloqueamos firmemente
+                    if (nivelVal !== "") {
+                        $inputNivel.val(nivelVal);
+                        $inputNivel.prop("readonly", true).css({
+                            "background-color": "#eeeeee", 
+                            "cursor": "not-allowed",
+                            "border": "1px solid #ccc"
+                        });
+
+                        // Disparar guardado del nivel con retraso para evitar colisión de timers
+                        setTimeout(function() {
+                            $inputNivel.trigger("change");
+                        }, 1200); 
+                    } 
+                    // 3. Solo si el usuario BORRA el tipo, desbloqueamos el nivel
+                    else if (valor === "") {
+                        $inputNivel.val("");
+                        $inputNivel.prop("readonly", false).css({
+                            "background-color": "#ffffff", 
+                            "cursor": "text",
+                            "border": "1px solid #000"
+                        });
+                        
+                        setTimeout(function() {
+                            $inputNivel.trigger("change");
+                        }, 1200);
+                    }
+                }
+
+
+                // 3. TRANSFORMACIÓN AUTOMÁTICA DE CÓDIGOS (SITUACIÓN)
+                if (campo_actual === "tipo_situacion") {
+                    if (valor === "1") { $el.val("PROPIA"); } 
+                    else if (valor === "2") { $el.val("ALQUILADA"); }
+                    
+                    if ($el.val().length > 100) {
+                        $el.val($el.val().substring(0, 100));
+                    }
+                }
+
+                // 4. TRANSFORMACIÓN AUTOMÁTICA (INTERNET)
+                if (campo_actual === "serv_internet") {
+                    if (valor === "1") { $el.val("SI"); } 
+                    else if (valor === "0") { $el.val("NO"); }
+                }
+
+                // INDICADOR VISUAL
                 $el.css("border-color", "#ffc107");
 
-                clearTimeout(timer_infra);
-                timer_infra = setTimeout(function() {
+                // TEMPORIZADOR DE GUARDADO
+                clearTimeout(timer_otros);
+                timer_otros = setTimeout(function() {
                     $.ajax({
-                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_infraestructura_form4",
+                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_infra_otros_automatica",
                         type: "POST",
                         dataType: "json",
                         data: {
+                            id:      $el.data("id"),
                             form_id: $el.data("form"),
-                            act_id:  $el.data("act"),
                             gestion: $el.data("gestion"),
-                            campo:   campo,
-                            valor:   $el.val().toUpperCase()
+                            campo:   campo_actual,
+                            valor:   $el.val().toUpperCase() // Guardar siempre en MAYÚSCULAS
                         },
                         success: function(resp) {
-                            if(resp.status == "success") {
+                            if (resp.status == "success") {
                                 $el.css({"background-color": "#d4edda", "border-color": "#28a745"});
+                                $("#toast-notificacion").fadeIn(400).delay(1000).fadeOut(400);
+
+                            } else {
+                                $el.css("border-color", "#dc3545");
                             }
-                            setTimeout(function(){ $el.css({"background-color": "", "border-color": ""}); }, 1000);
+                            setTimeout(function(){ $el.css("border-color", ""); }, 1000);
+                        },
+                        error: function() {
+                            $el.css("border-color", "#dc3545");
                         }
                     });
                 }, 800);
             });
 
-            // Bloquear pegado en ubicación
-            $(document).on("paste", ".auto-save-infra", function(e) {
-                if($(this).data("campo") === "ubicacion") e.preventDefault();
+            // LIMPIEZA DE CEROS
+            $(document).on("focus", ".auto-save5", function() {
+                if ($(this).val() == "0") $(this).val("");
+            }).on("blur", ".auto-save5", function() {
+                if ($(this).val() === "") $(this).val("0");
             });
         });
-        </script>';
+        </script>
+
+        <script>
+          function eliminarRegistroOtro(id) {
+              if (confirm("¿Está seguro de eliminar este registro? Esta acción no se puede deshacer.")) {
+                  var base_url = "'.base_url().'";
+                  
+                  $.ajax({
+                      url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/eliminar_infra_otro",
+                      type: "POST",
+                      dataType: "json",
+                      data: { id: id },
+                      success: function(resp) {
+                          if (resp.status == "success") {
+                              // Eliminamos la fila visualmente con un efecto
+                              $("#fila_otro_" + id).fadeOut(400, function() {
+                                  $(this).remove();
+                              });
+                              $("#toast-notificacion").text("✅ Registro eliminado").fadeIn().delay(1000).fadeOut();
+                          } else {
+                              alert("Error: No se pudo eliminar el registro.");
+                          }
+                      },
+                      error: function() {
+                          alert("Error de conexión con el servidor.");
+                      }
+                  });
+              }
+          }
+        </script>
+        ';
+
+
         return $tabla;
     }
 
-    public function tabla_form4Tp_infraestructura($detalle){
+    //// lsiat de establecimientos alineados al poa
+    public function tabla_form4Tp_infraestructura($detalle,$tp_infra){
+      //// 1 : se encuentra en el poa
+      //// 0 : nose encuentra en el poa
       $tabla='';
       $tabla.='
           <table>
             <thead>
               <tr>
-                <th style="width:25%; text-align:center;">Establecimiento</th>
-                <th style="width:10%; text-align:center;">Tipo</th>
-                <th style="width:10%; text-align:center;">Nivel</th>
+                <th style="width:20%; text-align:center;">Establecimiento</th>';
+                if($tp_infra==1){
+                  $tabla.='<th style="width:10%; text-align:center;">Tipo</th>
+                  <th style="width:10%; text-align:center;">Nivel</th>';
+                }
+                else{
+                  $tabla.='<th style="width:10%; text-align:center;">Tipo<br>
+                            <small style="font-weight:normal;"><b>(1=CIS, 2=CIMFA, 3=PAISE, 4=HIS, 5=HAIG)</b></small>
+                          </th>
+                          <th style="width:10%; text-align:center;">Nivel<br>
+                            <small style="font-weight:normal;"><b>(1=PRIMER NIVEL, 2=SEGUNDO NIVEL, 3=TERCER NIVEL)</b></small>
+                          </th>';
+                }
+                $tabla.='
                 <th style="width:30%; text-align:center;">Ubicación</th>
                 <th style="width:10%; text-align:center;">Nro. consultorios fisicos</th>
+                <th style="width:10%; text-align:center;">Cuenta con Internet<br>
+                  <small style="font-weight:normal;"><b>(1=SI, 0=NO)</b></small>
+                </th>
                 <th style="width:20%; text-align:center;">Situación Técnico Legal<br>
                   <small style="font-weight:normal;">(1=PROPIA, 2=ALQUILADA, o escriba detalle)</small>
-                </th>
+                </th>';
+                if($tp_infra==0){
+                  $tabla.='<th style="width:5%; text-align:center;"></th>';
+                }
+                $tabla.='
               </tr>
             </thead>
-          <tbody id="contenedor-filas-infra">';
+          ';
+          if($tp_infra==1){
+            $tabla.='<tbody>';
             foreach($detalle as $row) {
             $tabla .= '<tr>
                 <td>'.$row['act_descripcion'].'</td>
@@ -1616,6 +1759,16 @@ class lib_diagnostico_pei extends CI_Controller{
                 </td>
                 <td>
                     <input type="text" class="form-control auto-save-infra" 
+                        value="'.$row['serv_internet'].'" 
+                        maxlength="10"
+                        data-form="'.$row['form_id'].'" 
+                        data-act="'.$row['act_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="serv_internet"
+                        placeholder="1 , 0">
+                </td>
+                <td>
+                    <input type="text" class="form-control auto-save-infra" 
                         value="'.$row['tipo_situacion'].'" 
                         maxlength="100"
                         data-form="'.$row['form_id'].'" 
@@ -1626,22 +1779,97 @@ class lib_diagnostico_pei extends CI_Controller{
                 </td>
             </tr>';
             }
-            $tabla.='
-          </tbody>
-          <tfoot>
-            <tr style="background-color: #e8f4fd;">
-                <td><input type="text" id="add_est" class="form-control" placeholder="NOMBRE ESTABLECIMIENTO" style="text-transform:uppercase; font-weight:bold;"></td>
-                <td><input type="text" id="add_tipo" class="form-control" placeholder="TIPO" style="text-transform:uppercase;"></td>
-                <td><input type="text" id="add_nivel" class="form-control" placeholder="NIVEL" style="text-transform:uppercase;"></td>
-                <td><input type="text" id="add_ubi" class="form-control" placeholder="UBICACIÓN" style="text-transform:uppercase;"></td>
-                <td><input type="number" id="add_cons" class="form-control" min="0" value="0"></td>
+            $tabla.='</tbody>';
+          }
+          else{
+            $tabla.='<tbody id="tabla_otros_body">';
+            foreach($detalle as $row) {
+              $readonly = (!empty($row['nivel_establecimiento'])) ? 'readonly style="background-color: #eeeeee; cursor: not-allowed;"' : '';
+            $tabla .= '<tr id="fila_otro_'.$row['infra_otro_id'].'">
                 <td>
-                    <button type="button" class="btn btn-primary btn-block" onclick="crearMultiplesRegistros();">
-                        <i class="fa fa-plus"></i> ADICIONAR
-                    </button>
+                    <input type="text" class="form-control auto-save-otros" 
+                        value="'.strtoupper($row['otro_establecimiento']).'" 
+                        data-id="'.$row['infra_otro_id'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="otro_establecimiento"
+                        style="text-transform: uppercase;">
                 </td>
-            </tr>
-          </tfoot>
+                <td>
+                    <input type="text" class="form-control auto-save-otros" 
+                        value="'.strtoupper($row['tipo_establecimiento']).'" 
+                        data-id="'.$row['infra_otro_id'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="tipo_establecimiento"
+                        style="text-transform: uppercase";
+                        placeholder="1, 2, 3, 4, 5">
+                </td>
+                <td>
+                    <input type="text" class="form-control auto-save-otros" 
+                        value="'.strtoupper($row['nivel_establecimiento']).'" 
+                        data-id="'.$row['infra_otro_id'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'"  
+                        data-campo="nivel_establecimiento"
+                        '.$readonly.'>
+                </td>
+                <td>
+                    <input type="text" class="form-control auto-save-otros" 
+                        value="'.strtoupper($row['ubicacion']).'" 
+                        maxlength="500" 
+                        onpaste="return false;"
+                        autocomplete="off"
+                        data-id="'.$row['infra_otro_id'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'"   
+                        data-campo="ubicacion"
+                        style="text-transform: uppercase;" 
+                        placeholder="MÁX. 500 CARACTERES">
+                </td>
+                <td>
+                    <input type="number" class="auto-save5" min="0" 
+                        value="'.$row['nro_consultorios'].'" 
+                        data-id="'.$row['infra_otro_id'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="nro_consultorios">
+                </td>
+                <td>
+                    <input type="text" class="form-control auto-save-otros" 
+                        value="'.$row['serv_internet'].'" 
+                        maxlength="10"
+                        data-id="'.$row['infra_otro_id'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="serv_internet"
+                        placeholder="1 , 0">
+                </td>
+                <td>
+                    <input type="text" class="form-control auto-save-otros" 
+                        value="'.$row['tipo_situacion'].'" 
+                        maxlength="100"
+                        data-id="'.$row['infra_otro_id'].'" 
+                        data-form="'.$row['form_id'].'" 
+                        data-gestion="'.$row['gestion_pei'].'" 
+                        data-campo="tipo_situacion"
+                        placeholder="1, 2 o Detalle (3)">
+                </td>
+                <td style="text-align:center;">
+                    <a href="javascript:void(0);" 
+                       onclick="eliminarRegistroOtro('.$row['infra_otro_id'].');" 
+                       class="btn btn-danger btn-xs" 
+                       title="Eliminar Registro">
+                       <i class="glyphicon glyphicon-trash"></i>
+                    </a>
+                </td>
+            </tr>';
+            }
+            $tabla.='</tbody>';
+          }
+            
+            $tabla.='
+          
         </table>';
 
       return $tabla;
