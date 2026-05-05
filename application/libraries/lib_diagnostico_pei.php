@@ -1305,9 +1305,9 @@ class lib_diagnostico_pei extends CI_Controller{
       $detalle_form4_1er=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'1'); /// 1er nivel
       $detalle_form4_2do=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'2,3'); /// 2 y 3 nivel
       $nro=count($detalle_form4_1er)+count($detalle_form4_2do);
-      $page='page';
+      $page='page_horizontal_corto';
       if($nro>=13){
-        $page='page_long';
+        $page='page_horizontal';
       }
       $tabla='';
       $tabla.='
@@ -1361,16 +1361,29 @@ class lib_diagnostico_pei extends CI_Controller{
         <script>
           document.getElementById("fecha-actual4").innerText = new Date().toLocaleDateString();
         </script>
-        <script>
+       <script>
         $(document).ready(function() {
             var timer_infra = null;
             var base_url = "'.base_url().'"; 
 
-            // EVENTO UNIFICADO PARA INPUTS
+            // 1. BLOQUEAR PEGADO (Corregido el conflicto de comillas)
+            $(document).on("paste", ".auto-save-infra", function(e) {
+                if ($(this).data("campo") === "ubicacion") {
+                    e.preventDefault();
+                    var $toast = $("#toast-notificacion");
+                    $toast.text("⚠️ No se permite pegar texto en este campo")
+                          .css({"background-color": "#dc3545", "color": "white", "display": "block"})
+                          .fadeIn(400).delay(2000).fadeOut(400);
+                    return false;
+                }
+            });
+
+            // 2. EVENTO UNIFICADO PARA INPUTS
             $(".auto-save4, .auto-save-infra").on("keyup change", function() {
                 var $el = $(this);
+                var campo_actual = $el.data("campo"); // Definimos la variable correctamente
 
-                // 1. VALIDACIÓN DE NEGATIVOS
+                // VALIDACIÓN DE NEGATIVOS
                 if ($el.attr("type") === "number") {
                     if (parseFloat($el.val()) < 0) {
                         $el.val(0); 
@@ -1378,10 +1391,39 @@ class lib_diagnostico_pei extends CI_Controller{
                     }
                 }
 
-                // 2. INDICADOR VISUAL (Borde naranja mientras espera)
+                // VALIDACIÓN DE LONGITUD MÁXIMA
+                if (campo_actual === "ubicacion") {
+                    if ($el.val().length > 500) {
+                        $el.val($el.val().substring(0, 500));
+                        return false;
+                    }
+                }
+
+
+
+                var valor = $el.val().trim();
+
+                if (campo_actual === "tipo_situacion") {
+                    // Transformación automática de códigos
+                    if (valor === "1") {
+                        $el.val("PROPIA");
+                        valor = "PROPIA";
+                    } else if (valor === "2") {
+                        $el.val("ALQUILADA");
+                        valor = "ALQUILADA";
+                    }
+                    
+                    // Limitar a 100 caracteres si es una descripción (opción 3)
+                    if (valor.length > 100) {
+                        $el.val(valor.substring(0, 100));
+                        valor = valor.substring(0, 100);
+                    }
+                }
+
+
+                // INDICADOR VISUAL (Borde naranja)
                 $el.css("border-color", "#ffc107");
 
-                // 3. TEMPORIZADOR ÚNICO DE GUARDADO
                 clearTimeout(timer_infra);
                 timer_infra = setTimeout(function() {
                     $.ajax({
@@ -1392,32 +1434,137 @@ class lib_diagnostico_pei extends CI_Controller{
                             form_id: $el.data("form"),
                             act_id:  $el.data("act"),
                             gestion: $el.data("gestion"),
-                            campo:   $el.data("campo"),
-                            valor:   $el.val()
+                            campo:   campo_actual,
+                            valor:   valor // <--- Usamos la variable transformada
                         },
                         success: function(resp) {
+                            var $toast = $("#toast-notificacion");
                             if(resp.status == "success") {
-                                status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                                $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                $el.css({"background-color": "#d4edda", "border-color": "#28a745"});
+                                $toast.text(resp.msg).css({"background-color": "#28a745", "color": "white"}).fadeIn(400).delay(1000).fadeOut(400);
                             } else {
-                                $el.css("border-color", "#dc3545").val("");
-                                alert("Error: " + resp.msg);
+                                $el.css({"background-color": "#f8d7da", "border-color": "#dc3545"}).val("");
+                                $toast.text("❌ " + resp.msg).css({"background-color": "#dc3545", "color": "white"}).fadeIn(400).delay(3000).fadeOut(400);
                             }
-                          setTimeout(function(){ $el.css("border-color", ""); }, 1500);
+                            setTimeout(function(){ 
+                                $el.css({"background-color": "", "border-color": ""}); 
+                            }, 1500);
                         },
                         error: function() {
-                            $el.css("border-color", "#dc3545").val("");
-                            alert("Error de conexión con el servidor");
+                            $el.css({"background-color": "#f8d7da", "border-color": "#dc3545"}).val("");
+                            alert("Error de conexión");
                         }
                     });
                 }, 800);
             });
 
-            // 4. LIMPIEZA DE CEROS (Mantiene el comportamiento de tus otros formularios)
+            // 4. LIMPIEZA DE CEROS
             $(".auto-save4").on("focus", function() {
                 if ($(this).val() == "0") $(this).val("");
             }).on("blur", function() {
                 if ($(this).val() === "") $(this).val("0");
+            });
+        });
+        </script>
+
+
+        <script>
+        $(document).ready(function() {
+            var timer_infra = null;
+            var base_url = "'.base_url().'";
+
+            // --- 1. FUNCIÓN PARA CREAR MÚLTIPLES REGISTROS ---
+            window.crearMultiplesRegistros = function() {
+                var $btn = $(this);
+                var datos = {
+                    form_id: "'.$get_form_distrital[0]['form_id'].'",
+                    gestion: "'.$get_form_distrital[0]['g_id_fin'].'",
+                    establecimiento: $("#add_est").val().toUpperCase(),
+                    tipo: $("#add_tipo").val().toUpperCase(),
+                    nivel: $("#add_nivel").val().toUpperCase(),
+                    ubicacion: $("#add_ubi").val().toUpperCase(),
+                    consultorios: $("#add_cons").val()
+                };
+
+                if(datos.establecimiento == "") { 
+                    alert("Debe ingresar el nombre del establecimiento"); 
+                    $("#add_est").focus();
+                    return; 
+                }
+
+                $.ajax({
+                    url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/registrar_infra_manual",
+                    type: "POST",
+                    dataType: "json",
+                    data: datos,
+                    success: function(resp) {
+                        if(resp.status == "success") {
+                            // Inyectamos la nueva fila al final del body
+                            var nuevaFila = "<tr>" +
+                                "<td style=\'font-size:15px;\'><b>" + datos.establecimiento + "</b></td>" +
+                                "<td>" + datos.tipo + "</td>" +
+                                "<td>" + datos.nivel + "</td>" +
+                                "<td><input type=\'text\' class=\'form-control auto-save-infra\' value=\'"+datos.ubicacion+"\' data-form=\'"+datos.form_id+"\' data-act=\'"+resp.act_id+"\' data-gestion=\'"+datos.gestion+"\' data-campo=\'ubicacion\' style=\'text-transform:uppercase;\'></td>" +
+                                "<td><input type=\'number\' class=\'auto-save4\' value=\'"+datos.consultorios+"\' data-form=\'"+datos.form_id+"\' data-act=\'"+resp.act_id+"\' data-gestion=\'"+datos.gestion+"\' data-campo=\'nro_consultorios\' min=\'0\'></td>" +
+                                "<td><input type=\'text\' class=\'form-control auto-save-infra\' value=\'\' data-form=\'"+datos.form_id+"\' data-act=\'"+resp.act_id+"\' data-gestion=\'"+datos.gestion+"\' data-campo=\'tipo_situacion\'></td>" +
+                            "</tr>";
+
+                            $("#body-infra").append(nuevaFila);
+                            
+                            // Limpiamos los campos de carga
+                            $("#add_est, #add_tipo, #add_nivel, #add_ubi").val("");
+                            $("#add_cons").val(0);
+                            $("#add_est").focus();
+                            
+                            $("#toast-notificacion").text("✅ Registro Adicionado").fadeIn(400).delay(1500).fadeOut(400);
+                        }
+                    }
+                });
+            };
+
+            // --- 2. EVENTO PARA GUARDADO AUTOMÁTICO (EXISTENTES Y NUEVOS) ---
+            $(document).on("keyup change", ".auto-save4, .auto-save-infra", function() {
+                var $el = $(this);
+                var campo = $el.data("campo");
+
+                if ($el.attr("type") === "number" && parseFloat($el.val()) < 0) {
+                    $el.val(0); return false;
+                }
+
+                if (campo === "tipo_situacion") {
+                    var v = $el.val().trim();
+                    if (v === "1") $el.val("PROPIA");
+                    if (v === "2") $el.val("ALQUILADA");
+                }
+
+                $el.css("border-color", "#ffc107");
+
+                clearTimeout(timer_infra);
+                timer_infra = setTimeout(function() {
+                    $.ajax({
+                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_infraestructura_form4",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            form_id: $el.data("form"),
+                            act_id:  $el.data("act"),
+                            gestion: $el.data("gestion"),
+                            campo:   campo,
+                            valor:   $el.val().toUpperCase()
+                        },
+                        success: function(resp) {
+                            if(resp.status == "success") {
+                                $el.css({"background-color": "#d4edda", "border-color": "#28a745"});
+                            }
+                            setTimeout(function(){ $el.css({"background-color": "", "border-color": ""}); }, 1000);
+                        }
+                    });
+                }, 800);
+            });
+
+            // Bloquear pegado en ubicación
+            $(document).on("paste", ".auto-save-infra", function(e) {
+                if($(this).data("campo") === "ubicacion") e.preventDefault();
             });
         });
         </script>';
@@ -1430,25 +1577,34 @@ class lib_diagnostico_pei extends CI_Controller{
           <table>
             <thead>
               <tr>
-                <th style="width:25%;">Establecimiento</th>
-                <th style="width:10%;">Tipo</th>
-                <th style="width:30%;">Ubicación</th>
-                <th style="width:10%;">Nro. consultorios fisicos</th>
-                <th style="width:20%;">1. Propia<br>2. Alquilada<br>3. Otros (detalle)</th>
+                <th style="width:25%; text-align:center;">Establecimiento</th>
+                <th style="width:10%; text-align:center;">Tipo</th>
+                <th style="width:10%; text-align:center;">Nivel</th>
+                <th style="width:30%; text-align:center;">Ubicación</th>
+                <th style="width:10%; text-align:center;">Nro. consultorios fisicos</th>
+                <th style="width:20%; text-align:center;">Situación Técnico Legal<br>
+                  <small style="font-weight:normal;">(1=PROPIA, 2=ALQUILADA, o escriba detalle)</small>
+                </th>
               </tr>
             </thead>
-          <tbody>';
+          <tbody id="contenedor-filas-infra">';
             foreach($detalle as $row) {
             $tabla .= '<tr>
                 <td>'.$row['act_descripcion'].'</td>
                 <td>'.$row['tipo'].'</td>
+                <td>'.$row['nivel'].'</td>
                 <td>
                     <input type="text" class="form-control auto-save-infra" 
-                        value="'.$row['ubicacion'].'" 
+                        value="'.strtoupper($row['ubicacion']).'" 
+                        maxlength="500" 
+                        onpaste="return false;"
+                        autocomplete="off"
                         data-form="'.$row['form_id'].'" 
                         data-act="'.$row['act_id'].'" 
                         data-gestion="'.$row['gestion_pei'].'" 
-                        data-campo="ubicacion">
+                        data-campo="ubicacion"
+                        style="text-transform: uppercase;" 
+                        placeholder="MÁX. 500 CARACTERES">
                 </td>
                 <td>
                     <input type="number" class="auto-save4" min="0" 
@@ -1461,15 +1617,31 @@ class lib_diagnostico_pei extends CI_Controller{
                 <td>
                     <input type="text" class="form-control auto-save-infra" 
                         value="'.$row['tipo_situacion'].'" 
+                        maxlength="100"
                         data-form="'.$row['form_id'].'" 
                         data-act="'.$row['act_id'].'" 
                         data-gestion="'.$row['gestion_pei'].'" 
-                        data-campo="tipo_situacion">
+                        data-campo="tipo_situacion"
+                        placeholder="1, 2 o Detalle (3)">
                 </td>
             </tr>';
             }
             $tabla.='
           </tbody>
+          <tfoot>
+            <tr style="background-color: #e8f4fd;">
+                <td><input type="text" id="add_est" class="form-control" placeholder="NOMBRE ESTABLECIMIENTO" style="text-transform:uppercase; font-weight:bold;"></td>
+                <td><input type="text" id="add_tipo" class="form-control" placeholder="TIPO" style="text-transform:uppercase;"></td>
+                <td><input type="text" id="add_nivel" class="form-control" placeholder="NIVEL" style="text-transform:uppercase;"></td>
+                <td><input type="text" id="add_ubi" class="form-control" placeholder="UBICACIÓN" style="text-transform:uppercase;"></td>
+                <td><input type="number" id="add_cons" class="form-control" min="0" value="0"></td>
+                <td>
+                    <button type="button" class="btn btn-primary btn-block" onclick="crearMultiplesRegistros();">
+                        <i class="fa fa-plus"></i> ADICIONAR
+                    </button>
+                </td>
+            </tr>
+          </tfoot>
         </table>';
 
       return $tabla;
@@ -1552,8 +1724,8 @@ class lib_diagnostico_pei extends CI_Controller{
                 .page_horizontal { 
                     background-color: white; 
                     /* Invertimos: Ancho ahora es 11 pulgadas y alto 8.5 */
-                    width: 22in; 
-                    min-width: 22in; /* Mantiene el ancho horizontal en celulares con scroll */
+                    width: 20in; 
+                    min-width: 20in; /* Mantiene el ancho horizontal en celulares con scroll */
                     height: 21in; 
                     padding: 0.4in 0.5in; /* Reducimos un poco el padding para ganar espacio */
                     box-sizing: border-box; 

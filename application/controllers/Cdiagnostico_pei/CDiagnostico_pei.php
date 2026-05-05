@@ -668,7 +668,7 @@ class CDiagnostico_pei extends CI_Controller {
 
         // 6. Respuesta JSON para el Script
         if ($res) {
-            echo json_encode(array('status' => 'success', 'msg' => '✅ Información sincronizada'));
+            echo json_encode(array('status' => 'success', 'msg' => '✅ Información Guardada correctamente'));
         } else {
             echo json_encode(array('status' => 'error', 'msg' => '❌ Error al guardar en la base de datos'));
         }
