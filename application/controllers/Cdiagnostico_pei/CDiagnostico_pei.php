@@ -66,8 +66,8 @@ class CDiagnostico_pei extends CI_Controller {
 
     /*------- Selecciona Unidad Ejecutora -------*/
     public function Seleccion_unidadEjecutora(){
-      $get_diagnostico=$this->model_diagnosticopei->get_diagnostico_activo();
-      $UnidadEjecutora=$this->model_diagnosticopei->lista_UnidadEjecutora(); /// Lista Distritales
+        $get_diagnostico=$this->model_diagnosticopei->get_diagnostico_activo();
+      $UnidadEjecutora=$this->model_diagnosticopei->lista_UnidadEjecutora(); 
       $tabla=''; 
       if(count($get_diagnostico)!=0){
         $tabla.='
@@ -88,6 +88,14 @@ class CDiagnostico_pei extends CI_Controller {
                             $tabla.='
                           </select>
                       </section>
+
+                      <!-- BOTÓN PARA DESCARGAR CONSOLIDADO -->
+                      <section class="col col-3">
+                          <label class="label">&nbsp;</label>
+                          <a href="'.site_url("Diagnostico_pei/exportar_consolidado_excel/".$get_diagnostico[0]['pei_id']."/0").'" class="btn btn-success btn-sm" style="padding: 10px; width: 100%; text-align: center; color: white;">
+                            <i class="fa fa-file-excel-o"></i> DESCARGAR CONSOLIDADO
+                          </a>
+                      </section>
                     </div>
                   </fieldset>
               </form>
@@ -102,7 +110,6 @@ class CDiagnostico_pei extends CI_Controller {
             </div>';
       }
       
-
       return $tabla;
     }
 
@@ -162,25 +169,25 @@ class CDiagnostico_pei extends CI_Controller {
                       <a href="#tabs-a" data-url="poblacion_afiliada"><b>I.- POBLACIÓN AFILIADA</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-b" data-url="grupo_etareo"><b>II.- POBLACIÓN POR GRUPO ETAREO</b></a>
+                      <a href="#tabs-b" data-url="grupo_etareo"><b>I.I.- POBLACIÓN POR GRUPO ETAREO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-c" data-url="empresas_aportantes"><b>III.- EMPRESAS APORTANTES</b></a>
+                      <a href="#tabs-c" data-url="empresas_aportantes"><b>II.- EMPRESAS APORTANTES</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-d" data-url="perfil_epidemiologico"><b>IV.- PERFIL EPIDEMIOLOGICO</b></a>
+                      <a href="#tabs-d" data-url="perfil_epidemiologico"><b>III.- PERFIL EPIDEMIOLOGICO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-e" data-url="infraestructura"><b>V.- INFRAESTRUCTURA</b></a>
+                      <a href="#tabs-e" data-url="infraestructura"><b>IV.- INFRAESTRUCTURA</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-f" data-url="equipamiento"><b>VI.- EQUIPO</b></a>
+                      <a href="#tabs-f" data-url="equipamiento"><b>V.- EQUIPO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-g" data-url="recursos_humanos"><b>VII.- RECURSOS HUMANOS</b></a>
+                      <a href="#tabs-g" data-url="recursos_humanos"><b>VI.- RECURSOS HUMANOS</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-h" data-url="compra_servicios"><b>VIII.- COMPRA DE SERVICIOS</b></a>
+                      <a href="#tabs-h" data-url="compra_servicios"><b>VII.- COMPRA DE SERVICIOS</b></a>
                     </li>
                   </ul>
                   <div id="tabs-a">
@@ -328,13 +335,52 @@ class CDiagnostico_pei extends CI_Controller {
   }
 
   /// Reporte Formulario Diagnostico Pei
-  public function reporte_formulario_pei($tp_rep,$form_id){
-    $get_formulario=$this->model_diagnosticopei->get_formulario_diagnostico($form_id);
+  public function reporte_formulario_pei($tp_rep,$dist_id){
+    $get_formulario=$this->model_diagnosticopei->get_dist_formulario_diagnostico($dist_id);
      $data['reporte']= $this->lib_diagnosticopei_reporte->select_reporte_diagnostico_pei($tp_rep,$get_formulario);
      $data['pie_rep']='dnp';
      $this->load->view('admin/diagnostico_pei/View_report_form_diagpei', $data);
   }
 
+  /// Exportar Diagnostico en Excel
+  public function exportar_consolidado_excel($tp_rep,$dist_id){
+    // 1. Cargar librería (Depende de la que tengas instalada)
+      $this->load->library('excel'); 
+      $objPHPExcel = new PHPExcel();
+      $objPHPExcel->getProperties()->setTitle("Consolidado Institucional PEI");
+
+      // --- PESTAÑA 1: FORMULARIO 1 (POBLACIÓN) ---
+      $objPHPExcel->setActiveSheetIndex(0);
+      $sheet1 = $objPHPExcel->getActiveSheet();
+      $sheet1->setTitle('Población Afiliada');
+      $sheet1->setCellValue('A1', 'UNIDAD EJECUTORA');
+      $sheet1->setCellValue('B1', 'GESTIÓN');
+      $sheet1->setCellValue('C1', 'TITULARES');
+      // ... Cargar datos del modelo y hacer bucle para llenar filas ...
+
+      // --- PESTAÑA 2: FORMULARIO 2 (GRUPOS ETÁREOS) ---
+      $objPHPExcel->createSheet();
+      $objPHPExcel->setActiveSheetIndex(1);
+      $sheet2 = $objPHPExcel->getActiveSheet();
+      $sheet2->setTitle('Grupos Etáreos');
+      $sheet2->setCellValue('A1', 'UNIDAD EJECUTORA');
+      $sheet2->setCellValue('B1', 'GRUPO ETÁREO');
+      // ... Bucle de datos ...
+
+      // --- PESTAÑA 3: FORMULARIO 4 (INFRAESTRUCTURA) ---
+      $objPHPExcel->createSheet();
+      $objPHPExcel->setActiveSheetIndex(2);
+      $sheet3 = $objPHPExcel->getActiveSheet();
+      $sheet3->setTitle('Infraestructura');
+      // ... Bucle de datos ...
+
+      // Descarga del archivo
+      header('Content-Type: application/vnd.ms-excel');
+      header('Content-Disposition: attachment;filename="Consolidado_Institucional_PEI.xls"');
+      header('Cache-Control: max-age=0');
+      $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+      $objWriter->save('php://output');
+  }
 
   /// Buscador select CIe10
   public function buscar_cie10_ajax() {

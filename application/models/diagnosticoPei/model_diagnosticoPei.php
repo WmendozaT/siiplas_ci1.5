@@ -31,6 +31,18 @@ class model_diagnosticoPei extends CI_Model {
         return $query->result_array();
     }
 
+
+    /*--------- Get Formulario diganostico x distrital ----------*/
+    public function get_dist_formulario_diagnostico($dist_id){
+        $sql = '
+                SELECT *
+                from formulario_diagnostico_pei
+                where dist_id='.$dist_id.'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     /*--------- Get Formulario Habilitado para el diagnostico por Distrital----------*/
     public function get_distrital_formulario_diagnostico_activo($pei_id,$dist_id){
         $sql = "
@@ -101,6 +113,41 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--- Detalle formulario N1 - Poblacion afiliada CONSOLIDADO---*/
+    public function get_formulario_N1_consolidado(){
+        $sql = 'WITH rango_pei AS (
+            SELECT pei_id, g_id_inicio, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        gestiones AS (
+            SELECT pei_id, generate_series(g_id_inicio, g_id_fin) AS anio
+            FROM rango_pei
+        )
+        SELECT 
+            f.form_id,
+            dist.dist_id,
+            dist.dist_distrital AS regional,
+            dist.abrev AS abreviatura,
+            g.anio AS gestion,
+            COALESCE(d.nro_cot_tit, 0) AS titulares,
+            COALESCE(d.nro_cot_pas, 0) AS pasivos,
+            COALESCE(d.nro_cot_ben, 0) AS beneficiarios,
+            (COALESCE(d.nro_cot_tit, 0) + COALESCE(d.nro_cot_pas, 0) + COALESCE(d.nro_cot_ben, 0)) AS total_gestion
+        FROM public._distritales dist
+        CROSS JOIN gestiones g
+        LEFT JOIN formulario_diagnostico_pei f ON f.dist_id = dist.dist_id AND f.pei_id = g.pei_id
+        LEFT JOIN formularion1_detalle d ON d.form_id = f.form_id AND d.g_id = g.anio
+        WHERE dist.dist_estado = 1 
+          AND dist.dist_id > 0  -- <--- EXCLUIMOS EL ID 0 AQUÍ
+        ORDER BY dist.dist_id, g.anio ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
     /*--- Detalle formulario N1 - Poblacion afiliada por grupo etareo---*/
     public function get_formulario_N1_etareo($dist_id){
         $sql = 'WITH rango_pei AS (
@@ -161,6 +208,67 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--- Detalle formulario N1 - Poblacion afiliada por grupo etareo---*/
+    public function get_formulario_N1_etareo_consolidado(){
+        $sql = 'WITH rango_pei AS (
+                    SELECT pei_id, g_id_inicio, g_id_fin 
+                    FROM Diagnostico_pei 
+                    WHERE estado = 1 
+                    LIMIT 1
+                ),
+                universo_etareo AS (
+                    SELECT eta_id, grupo_etareo 
+                    FROM tabla_grupo_etareo 
+                    WHERE estado = 1
+                ),
+                distritales AS (
+                    -- Filtramos el universo de distritales reales
+                    SELECT dist_id, dist_distrital, abrev 
+                    FROM public._distritales 
+                    WHERE dist_estado = 1 AND dist_id > 0
+                )
+                SELECT 
+                    d.dist_id,
+                    d.dist_distrital AS regional,
+                    d.abrev AS abreviatura,
+                    u.eta_id,
+                    u.grupo_etareo,
+                    -- GESTIÓN 2021
+                    SUM(CASE WHEN det.g_id = 2021 THEN det.nro_masculino ELSE 0 END) as m_2021,
+                    SUM(CASE WHEN det.g_id = 2021 THEN det.nro_femenino ELSE 0 END) as f_2021,
+                    SUM(CASE WHEN det.g_id = 2021 THEN det.total_poblacion ELSE 0 END) as t_2021,
+                    
+                    -- GESTIÓN 2022
+                    SUM(CASE WHEN det.g_id = 2022 THEN det.nro_masculino ELSE 0 END) as m_2022,
+                    SUM(CASE WHEN det.g_id = 2022 THEN det.nro_femenino ELSE 0 END) as f_2022,
+                    SUM(CASE WHEN det.g_id = 2022 THEN det.total_poblacion ELSE 0 END) as t_2022,
+                    
+                    -- GESTIÓN 2023
+                    SUM(CASE WHEN det.g_id = 2023 THEN det.nro_masculino ELSE 0 END) as m_2023,
+                    SUM(CASE WHEN det.g_id = 2023 THEN det.nro_femenino ELSE 0 END) as f_2023,
+                    SUM(CASE WHEN det.g_id = 2023 THEN det.total_poblacion ELSE 0 END) as t_2023,
+                    
+                    -- GESTIÓN 2024
+                    SUM(CASE WHEN det.g_id = 2024 THEN det.nro_masculino ELSE 0 END) as m_2024,
+                    SUM(CASE WHEN det.g_id = 2024 THEN det.nro_femenino ELSE 0 END) as f_2024,
+                    SUM(CASE WHEN det.g_id = 2024 THEN det.total_poblacion ELSE 0 END) as t_2024,
+                    
+                    -- GESTIÓN 2025
+                    SUM(CASE WHEN det.g_id = 2025 THEN det.nro_masculino ELSE 0 END) as m_2025,
+                    SUM(CASE WHEN det.g_id = 2025 THEN det.nro_femenino ELSE 0 END) as f_2025,
+                    SUM(CASE WHEN det.g_id = 2025 THEN det.total_poblacion ELSE 0 END) as t_2025
+                FROM universo_etareo u
+                CROSS JOIN distritales d -- Crea la matriz Grupo x Regional
+                CROSS JOIN rango_pei r 
+                LEFT JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id = d.dist_id)
+                LEFT JOIN formularion1_grupo_etareo det ON (det.form_id = f.form_id AND det.eta_id = u.eta_id)
+                GROUP BY d.dist_id, d.dist_distrital, d.abrev, u.eta_id, u.grupo_etareo
+                ORDER BY d.dist_id, u.eta_id ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
 
     /*--- Detalle formulario N2 ---*/
     public function get_formulario_N2($dist_id){
@@ -194,63 +302,187 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--- Detalle formulario N2 Consolidado---*/
+    public function get_formulario_N2_consolidado(){
+        $sql = 'WITH rango_pei AS (
+                    SELECT pei_id, g_id_inicio, g_id_fin 
+                    FROM Diagnostico_pei 
+                    WHERE estado = 1 
+                    LIMIT 1
+                ),
+                gestiones AS (
+                    SELECT pei_id, generate_series(g_id_inicio, g_id_fin) AS anio
+                    FROM rango_pei
+                ),
+                distritales AS (
+                    -- Filtramos el universo de distritales reales excluyendo ID 0
+                    SELECT dist_id, dist_distrital, abrev 
+                    FROM public._distritales 
+                    WHERE dist_estado = 1 AND dist_id > 0
+                )
+                SELECT 
+                    d.dist_id,
+                    d.dist_distrital AS regional,
+                    d.abrev AS abreviatura,
+                    g.anio AS gestion,
+                    f.form_id,
+                    COALESCE(det.nro_empresas_reg, 0) AS empresas,
+                    COALESCE(det.nro_aportes_dia, 0) AS aportes,
+                    COALESCE(det.nro_empresa_mora, 0) AS mora,
+                    (COALESCE(det.nro_empresas_reg, 0) + COALESCE(det.nro_aportes_dia, 0) + COALESCE(det.nro_empresa_mora, 0)) AS total_gestion_empresas
+                FROM distritales d
+                CROSS JOIN gestiones g
+                CROSS JOIN rango_pei r
+                LEFT JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id = d.dist_id)
+                LEFT JOIN formularion2_detalle det ON (det.form_id = f.form_id AND det.g_id = g.anio)
+                ORDER BY d.dist_id, g.anio ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
     /*--- Detalle formulario N3 ---*/
     public function get_formulario_N3($dist_id,$tipo_perfil_cat){
         $sql = "
-    WITH rango_pei AS (
-        SELECT pei_id, g_id_inicio, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
-    ),
-    diez_filas AS (
-        SELECT generate_series(1, 10) AS nro 
-    )
-    SELECT 
-        df.nro,
-        f.form_id,   -- Agregado
-        f.dist_id,   -- Agregado
-        -- Gestión 2021
-        COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.nro_casos END), 0) AS nro_casos_2021,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.ce_id END), 0) AS ce_id_2021,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN cie21.cod_3 || ' - ' || cie21.descripcion END), '') AS codigo_cie_2021,
-        MAX(CASE WHEN mp.g_id = 2021 THEN dp.detalle_causa END) AS causa_2021,
-        
-        -- Gestión 2022
-        COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.nro_casos END), 0) AS nro_casos_2022,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.ce_id END), 0) AS ce_id_2022,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN cie22.cod_3 || ' - ' || cie22.descripcion END), '') AS codigo_cie_2022,
-        MAX(CASE WHEN mp.g_id = 2022 THEN dp.detalle_causa END) AS causa_2022,
+            WITH rango_pei AS (
+                SELECT pei_id, g_id_inicio, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
+            ),
+            diez_filas AS (
+                SELECT generate_series(1, 10) AS nro 
+            )
+            SELECT 
+                df.nro,
+                f.form_id,   -- Agregado
+                f.dist_id,   -- Agregado
+                -- Gestión 2021
+                COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.nro_casos END), 0) AS nro_casos_2021,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.ce_id END), 0) AS ce_id_2021,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN cie21.cod_3 || ' - ' || cie21.descripcion END), '') AS codigo_cie_2021,
+                MAX(CASE WHEN mp.g_id = 2021 THEN dp.detalle_causa END) AS causa_2021,
+                
+                -- Gestión 2022
+                COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.nro_casos END), 0) AS nro_casos_2022,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.ce_id END), 0) AS ce_id_2022,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN cie22.cod_3 || ' - ' || cie22.descripcion END), '') AS codigo_cie_2022,
+                MAX(CASE WHEN mp.g_id = 2022 THEN dp.detalle_causa END) AS causa_2022,
 
-        -- Gestión 2023
-        COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.nro_casos END), 0) AS nro_casos_2023,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.ce_id END), 0) AS ce_id_2023,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN cie23.cod_3 || ' - ' || cie23.descripcion END), '') AS codigo_cie_2023,
-        MAX(CASE WHEN mp.g_id = 2023 THEN dp.detalle_causa END) AS causa_2023,
+                -- Gestión 2023
+                COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.nro_casos END), 0) AS nro_casos_2023,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.ce_id END), 0) AS ce_id_2023,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN cie23.cod_3 || ' - ' || cie23.descripcion END), '') AS codigo_cie_2023,
+                MAX(CASE WHEN mp.g_id = 2023 THEN dp.detalle_causa END) AS causa_2023,
 
-        -- Gestión 2024
-        COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.nro_casos END), 0) AS nro_casos_2024,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.ce_id END), 0) AS ce_id_2024,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN cie24.cod_3 || ' - ' || cie24.descripcion END), '') AS codigo_cie_2024,
-        MAX(CASE WHEN mp.g_id = 2024 THEN dp.detalle_causa END) AS causa_2024,
+                -- Gestión 2024
+                COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.nro_casos END), 0) AS nro_casos_2024,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.ce_id END), 0) AS ce_id_2024,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN cie24.cod_3 || ' - ' || cie24.descripcion END), '') AS codigo_cie_2024,
+                MAX(CASE WHEN mp.g_id = 2024 THEN dp.detalle_causa END) AS causa_2024,
 
-        -- Gestión 2025
-        COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.nro_casos END), 0) AS nro_casos_2025,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.ce_id END), 0) AS ce_id_2025,
-        COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN cie25.cod_3 || ' - ' || cie25.descripcion END), '') AS codigo_cie_2025,
-        MAX(CASE WHEN mp.g_id = 2025 THEN dp.detalle_causa END) AS causa_2025
-        
-    FROM diez_filas df
-    CROSS JOIN formulario_diagnostico_pei f
-    LEFT JOIN formularion3_detalle_perfil mp ON mp.form_id = f.form_id
-    LEFT JOIN detalle_form3_perfil dp ON dp.det3_id = mp.det3_id 
-         AND dp.tp_perfil = df.nro 
-         AND dp.tipo_perfil_cat = " . (int)$tipo_perfil_cat . "
-    LEFT JOIN public.tabla_cie10 cie21 ON cie21.id = dp.ce_id AND mp.g_id = 2021
-    LEFT JOIN public.tabla_cie10 cie22 ON cie22.id = dp.ce_id AND mp.g_id = 2022
-    LEFT JOIN public.tabla_cie10 cie23 ON cie23.id = dp.ce_id AND mp.g_id = 2023
-    LEFT JOIN public.tabla_cie10 cie24 ON cie24.id = dp.ce_id AND mp.g_id = 2024
-    LEFT JOIN public.tabla_cie10 cie25 ON cie25.id = dp.ce_id AND mp.g_id = 2025
-    WHERE f.dist_id = " . (int)$dist_id . "
-    GROUP BY df.nro, f.form_id, f.dist_id -- Actualizado para incluir form y dist
-    ORDER BY df.nro ASC";
+                -- Gestión 2025
+                COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.nro_casos END), 0) AS nro_casos_2025,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.ce_id END), 0) AS ce_id_2025,
+                COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN cie25.cod_3 || ' - ' || cie25.descripcion END), '') AS codigo_cie_2025,
+                MAX(CASE WHEN mp.g_id = 2025 THEN dp.detalle_causa END) AS causa_2025
+                
+            FROM diez_filas df
+            CROSS JOIN formulario_diagnostico_pei f
+            LEFT JOIN formularion3_detalle_perfil mp ON mp.form_id = f.form_id
+            LEFT JOIN detalle_form3_perfil dp ON dp.det3_id = mp.det3_id 
+                 AND dp.tp_perfil = df.nro 
+                 AND dp.tipo_perfil_cat = " . (int)$tipo_perfil_cat . "
+            LEFT JOIN public.tabla_cie10 cie21 ON cie21.id = dp.ce_id AND mp.g_id = 2021
+            LEFT JOIN public.tabla_cie10 cie22 ON cie22.id = dp.ce_id AND mp.g_id = 2022
+            LEFT JOIN public.tabla_cie10 cie23 ON cie23.id = dp.ce_id AND mp.g_id = 2023
+            LEFT JOIN public.tabla_cie10 cie24 ON cie24.id = dp.ce_id AND mp.g_id = 2024
+            LEFT JOIN public.tabla_cie10 cie25 ON cie25.id = dp.ce_id AND mp.g_id = 2025
+            WHERE f.dist_id = " . (int)$dist_id . "
+            GROUP BY df.nro, f.form_id, f.dist_id -- Actualizado para incluir form y dist
+            ORDER BY df.nro ASC";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*--- Detalle formulario N3 - Consolidado---*/
+    public function get_formulario_N3_consolidado(){
+        $sql = "
+            WITH rango_pei AS (
+            SELECT pei_id, g_id_inicio, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        diez_filas AS (
+            SELECT generate_series(1, 10) AS nro 
+        ),
+        categorias_perfil AS (
+            -- Generamos los 3 tipos de perfil para la matriz
+            SELECT generate_series(1, 3) AS cat_id
+        ),
+        distritales AS (
+            -- Universo de distritales reales excluyendo ID 0
+            SELECT dist_id, dist_distrital, abrev 
+            FROM public._distritales 
+            WHERE dist_estado = 1 AND dist_id > 0
+        )
+        SELECT 
+            d.dist_id,
+            d.dist_distrital AS regional,
+            d.abrev AS abreviatura,
+            cp.cat_id AS tipo_perfil_cat, -- 1, 2 o 3
+            CASE 
+                WHEN cp.cat_id = 1 THEN 'MORBILIDAD'
+                WHEN cp.cat_id = 2 THEN 'MORTALIDAD'
+                WHEN cp.cat_id = 3 THEN 'CONSULTA EXTERNA'
+            END AS nombre_perfil,
+            df.nro AS tp_perfil, -- Posición 1 al 10
+            f.form_id,
+            
+            -- Gestión 2021
+            COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN dp.nro_casos END), 0) AS nro_casos_2021,
+            COALESCE(MAX(CASE WHEN mp.g_id = 2021 THEN cie21.cod_3 || ' - ' || cie21.descripcion END), '') AS codigo_cie_2021,
+            MAX(CASE WHEN mp.g_id = 2021 THEN dp.detalle_causa END) AS causa_2021,
+            
+            -- Gestión 2022
+            COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN dp.nro_casos END), 0) AS nro_casos_2022,
+            COALESCE(MAX(CASE WHEN mp.g_id = 2022 THEN cie22.cod_3 || ' - ' || cie22.descripcion END), '') AS codigo_cie_2022,
+            MAX(CASE WHEN mp.g_id = 2022 THEN dp.detalle_causa END) AS causa_2022,
+
+            -- Gestión 2023
+            COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN dp.nro_casos END), 0) AS nro_casos_2023,
+            COALESCE(MAX(CASE WHEN mp.g_id = 2023 THEN cie23.cod_3 || ' - ' || cie23.descripcion END), '') AS codigo_cie_2023,
+            MAX(CASE WHEN mp.g_id = 2023 THEN dp.detalle_causa END) AS causa_2023,
+
+            -- Gestión 2024
+            COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN dp.nro_casos END), 0) AS nro_casos_2024,
+            COALESCE(MAX(CASE WHEN mp.g_id = 2024 THEN cie24.cod_3 || ' - ' || cie24.descripcion END), '') AS codigo_cie_2024,
+            MAX(CASE WHEN mp.g_id = 2024 THEN dp.detalle_causa END) AS causa_2024,
+
+            -- Gestión 2025
+            COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN dp.nro_casos END), 0) AS nro_casos_2025,
+            COALESCE(MAX(CASE WHEN mp.g_id = 2025 THEN cie25.cod_3 || ' - ' || cie25.descripcion END), '') AS codigo_cie_2025,
+            MAX(CASE WHEN mp.g_id = 2025 THEN dp.detalle_causa END) AS causa_2025
+            
+        FROM distritales d
+        CROSS JOIN diez_filas df
+        CROSS JOIN categorias_perfil cp -- Multiplicamos por los 3 tipos de perfil
+        CROSS JOIN rango_pei r
+        LEFT JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id = d.dist_id)
+        LEFT JOIN formularion3_detalle_perfil mp ON mp.form_id = f.form_id
+        LEFT JOIN detalle_form3_perfil dp ON dp.det3_id = mp.det3_id 
+             AND dp.tp_perfil = df.nro 
+             AND dp.tipo_perfil_cat = cp.cat_id -- Unimos dinámicamente por categoría
+        LEFT JOIN public.tabla_cie10 cie21 ON cie21.id = dp.ce_id AND mp.g_id = 2021
+        LEFT JOIN public.tabla_cie10 cie22 ON cie22.id = dp.ce_id AND mp.g_id = 2022
+        LEFT JOIN public.tabla_cie10 cie23 ON cie23.id = dp.ce_id AND mp.g_id = 2023
+        LEFT JOIN public.tabla_cie10 cie24 ON cie24.id = dp.ce_id AND mp.g_id = 2024
+        LEFT JOIN public.tabla_cie10 cie25 ON cie25.id = dp.ce_id AND mp.g_id = 2025
+
+        GROUP BY d.dist_id, d.dist_distrital, d.abrev, cp.cat_id, df.nro, f.form_id
+        ORDER BY d.dist_id ASC, cp.cat_id ASC, df.nro ASC;";
 
         $query = $this->db->query($sql);
         return $query->result_array();

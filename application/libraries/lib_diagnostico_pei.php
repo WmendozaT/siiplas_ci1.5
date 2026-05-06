@@ -34,7 +34,10 @@ class lib_diagnostico_pei extends CI_Controller{
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
-                  Fecha: <span id="fecha-actual"></span>
+                  Fecha: <span id="fecha-actual"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
                   <p>CAJA NACIONAL DE SALUD</p>
@@ -284,7 +287,10 @@ class lib_diagnostico_pei extends CI_Controller{
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
-                  Fecha: <span id="fecha-actual1_1"></span>
+                  Fecha: <span id="fecha-actual1_1"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
                   <p>CAJA NACIONAL DE SALUD</p>
@@ -605,7 +611,10 @@ class lib_diagnostico_pei extends CI_Controller{
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
-                  Fecha: <span id="fecha-actual2"></span>
+                  Fecha: <span id="fecha-actual2"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
                   <p>CAJA NACIONAL DE SALUD</p>
@@ -852,7 +861,10 @@ class lib_diagnostico_pei extends CI_Controller{
           <div class="page_horizontal">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
-                  Fecha: <span id="fecha-actual3"></span>
+                  Fecha: <span id="fecha-actual3"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
                   <p>CAJA NACIONAL DE SALUD</p>
@@ -1300,7 +1312,7 @@ class lib_diagnostico_pei extends CI_Controller{
     //// ------------------------- END FORM 3
 
 
-    /*------- Detalle formulario N 4 -------*/
+    /*------- Detalle formulario N 4 Infraestructura -------*/
     public function formulario_N4($get_form_distrital){
       $detalle_form4_1er=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'1'); /// 1er nivel
       $detalle_form4_2do=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'2,3'); /// 2 y 3 nivel
@@ -1316,7 +1328,7 @@ class lib_diagnostico_pei extends CI_Controller{
       <div class="viewport-container">
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
-                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/4/".$get_form_distrital[0]['dist_id']).'\');" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/5/".$get_form_distrital[0]['dist_id']).'\');" 
                    class="btn-imprimir" 
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
@@ -1325,11 +1337,14 @@ class lib_diagnostico_pei extends CI_Controller{
           <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
-                  Fecha: <span id="fecha-actual4"></span>
+                  Fecha: <span id="fecha-actual4"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
                   <p>CAJA NACIONAL DE SALUD</p>
-                  <h1><b>DIAGNÓSTICO DE INFRAESTRUCTURA</b></h1>
+                  <h1><b>DIAGNÓSTICO DE INFRAESTRUCTURA DE SALUD</b></h1>
               </div>
 
               <div style="margin: 20px 0; font-weight: bold;">
@@ -1341,12 +1356,12 @@ class lib_diagnostico_pei extends CI_Controller{
                   Identificar, registrar y evaluar las condiciones de la infraestructura de los establecimientos de salud, para determinar su capacidad operativa y soporte a la demanda poblacional.
               </div>
               
-              <div style="font-weight: bold; margin-bottom: 10px;">2. Matriz de inventario de establecimientos PRIMER NIVEL</div>
+              <div style="font-weight: bold; margin-bottom: 10px;">2. Matriz de inventario de establecimientos de PRIMER NIVEL (segun poa '.$get_form_distrital[0]['g_id_fin'].')</div>
                 '.$this->tabla_form4Tp_infraestructura($detalle_form4_1er,1).'';
 
               if(count($detalle_form4_2do)!=0){
                 $tabla.='
-                <div style="font-weight: bold; margin-bottom: 10px;">3. Matriz de inventario de establecimientos SEGUNDO Y TERCER NIVEL</div>
+                <div style="font-weight: bold; margin-bottom: 10px;">3. Matriz de inventario de establecimientos de SEGUNDO Y TERCER NIVEL (segun poa '.$get_form_distrital[0]['g_id_fin'].')</div>
                 '.$this->tabla_form4Tp_infraestructura($detalle_form4_2do,1).'';
               }
               
@@ -1359,6 +1374,21 @@ class lib_diagnostico_pei extends CI_Controller{
               </div>
                 '.$this->tabla_form4Tp_infraestructura($detalle_form4_otros,0).'
 
+              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
+              <input type="hidden" class="nro_obs" value="4">
+
+              <div style="margin-top: 30px;">
+                  <strong>Observaciones adicionales</strong>
+                  <textarea 
+                      class="observaciones-input" 
+                      name="obs" 
+                      id="obs" 
+                      data-nro="4"
+                      onpaste="return false;" 
+                      placeholder="Escriba aquí sus observaciones..."
+                      style="width: 100%; height: 100px; resize: none;"
+                  >'.strtoupper($get_form_distrital[0]['observacion4']).'</textarea>
+              </div>
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -1685,7 +1715,59 @@ class lib_diagnostico_pei extends CI_Controller{
               }
           }
         </script>
-        ';
+        
+        <script>
+          $(document).ready(function() {
+              var timeout = null;
+              var base_url = "'.base_url().'"; 
+
+              $(".observaciones-input").on("keyup", function() {
+                  var $this = $(this); 
+                  
+                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                  var contenedor = $this.closest("div").parent(); 
+                  var form_id = contenedor.find(".form_id").val();
+                  var nro_obs = contenedor.find(".nro_obs").val();
+                  
+                  var texto = $this.val();
+                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                  if (!form_id || form_id == "0") {
+                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                      return;
+                  }
+
+                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                  
+                  clearTimeout(timeout);
+
+                  timeout = setTimeout(function() {
+                      $.ajax({
+                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                          type: "POST",
+                          data: {
+                              form_id: form_id,
+                              nro: nro_obs, 
+                              observacion: texto
+                          },
+                          success: function(response) {
+
+                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                          },
+                          error: function() {
+                              status.text("Error al guardar").css("color", "red");
+                              $("#toast-notificacion")
+                                  .text("❌ Error al guardar")
+                                  .css("background-color", "#dc3545")
+                                  .fadeIn(400).delay(3000).fadeOut(400);
+                          }
+                      });
+                  }, 800); 
+              });
+          });
+      </script>';
 
 
         return $tabla;
@@ -1733,7 +1815,7 @@ class lib_diagnostico_pei extends CI_Controller{
             $tabla.='<tbody>';
             foreach($detalle as $row) {
             $tabla .= '<tr>
-                <td>'.$row['act_descripcion'].'</td>
+                <td style="text-align:left;">'.$row['act_descripcion'].'</td>
                 <td>'.$row['tipo'].'</td>
                 <td>'.$row['nivel'].'</td>
                 <td>
@@ -1970,7 +2052,7 @@ class lib_diagnostico_pei extends CI_Controller{
                     /* Invertimos: Ancho ahora es 11 pulgadas y alto 8.5 */
                     width: 18in; 
                     min-width: 18in; /* Mantiene el ancho horizontal en celulares con scroll */
-                    height: 12in; 
+                    height: 15in; 
                     padding: 0.4in 0.5in; /* Reducimos un poco el padding para ganar espacio */
                     box-sizing: border-box; 
                     position: relative; 
