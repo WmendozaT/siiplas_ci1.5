@@ -181,10 +181,10 @@ class CDiagnostico_pei extends CI_Controller {
                       <a href="#tabs-e" data-url="infraestructura"><b>IV.- INFRAESTRUCTURA</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-f" data-url="equipamiento"><b>V.- EQUIPO</b></a>
+                      <a href="#tabs-f" data-url="diagnostico_camas"><b>V.- DIAGNOSTICO CAMAS</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-g" data-url="recursos_humanos"><b>VI.- RECURSOS HUMANOS</b></a>
+                      <a href="#tabs-g" data-url="equipo"><b>VI.- EQUIPO</b></a>
                     </li>
                     <li>
                       <a href="#tabs-h" data-url="compra_servicios"><b>VII.- COMPRA DE SERVICIOS</b></a>
@@ -317,10 +317,10 @@ class CDiagnostico_pei extends CI_Controller {
           case 'infraestructura':
               echo $this->lib_diagnostico_pei->formulario_N4($get_form_distrital);
               break;
-          case 'equipamiento':
-              echo $this->lib_diagnostico_pei->trabajando($get_form_distrital);
+          case 'diagnostico_camas':
+              echo $this->lib_diagnostico_pei->formulario_N5($get_form_distrital);
               break;
-          case 'compra_servicios':
+          case 'equipamiento':
               echo $this->lib_diagnostico_pei->trabajando($get_form_distrital);
               break;
           case 'compra_servicios':
@@ -437,29 +437,41 @@ class CDiagnostico_pei extends CI_Controller {
 
     //// Guarda informacion de las tablas automaticamente form 1
 public function guarda_detalle_automatica_form1() {
+    // Seguridad para solo aceptar AJAX
+    if (!$this->input->is_ajax_request()) return;
+
     $form_id = $this->input->post('form_id');
     $gestion = $this->input->post('gestion');
     $columna = $this->input->post('columna');
     $valor   = $this->input->post('valor');
 
+    // Validación de columnas
     $columnas_permitidas = array('nro_cot_tit', 'nro_cot_pas', 'nro_cot_ben');
-    if (!in_array($columna, $columnas_permitidas)) return;
+    if (!in_array($columna, $columnas_permitidas)) {
+        echo json_encode(array('status' => 'error', 'msg' => 'Columna no permitida'));
+        return;
+    }
+
+    // Asegurar que el valor sea numérico y no pase de 999,999,999
+    $valor = (is_numeric($valor) && $valor >= 0) ? substr($valor, 0, 9) : 0;
 
     $where = array('form_id' => $form_id, 'g_id' => $gestion);
-    $existe = $this->db->get_where('formularion1_detalle', $where)->num_rows();
+    $this->db->where($where);
+    $existe = $this->db->get('formularion1_detalle')->num_rows();
 
     if ($existe > 0) {
         $this->db->where($where);
-        $this->db->update('formularion1_detalle', array($columna => $valor));
+        $res = $this->db->update('formularion1_detalle', array($columna => $valor));
     } else {
-        $this->db->insert('formularion1_detalle', array(
+        $res = $this->db->insert('formularion1_detalle', array(
             'form_id' => $form_id,
             'g_id'    => $gestion,
             $columna  => $valor
         ));
     }
 
-    echo "ok"; // Esto garantiza que el AJAX reciba el 'success'
+    // Devolvemos el JSON que el script espera
+    echo json_encode(array('status' => $res ? 'success' : 'error'));
 }
 
 
@@ -813,5 +825,79 @@ public function guarda_detalle_automatica_form2() {
         } else {
             echo json_encode(array('status' => 'error', 'msg' => 'ID no válido'));
         }
+    }
+
+
+    ///// Guarda formulario 5
+    public function guarda_produccion_cama_automatica() {
+        // 1. Verificación de seguridad AJAX
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        // 2. Recepción de parámetros
+        $form_id = $this->input->post('form_id');
+        $act_id  = $this->input->post('act_id');
+        $gestion = $this->input->post('gestion');
+        $campo   = $this->input->post('campo');
+        $valor   = $this->input->post('valor');
+
+        // 3. Validación de datos en el servidor
+         // VALIDACIÓN EN EL SERVIDOR
+        if ($campo == 'ocupacion') {
+            if (!is_numeric($valor) || $valor < 0) {
+                $valor = 0;
+            } elseif ($valor > 100) {
+                $valor = 100; // Truncamos al máximo permitido
+            }
+        } else {
+            // Para los otros campos numéricos (camas, estancia, giro)
+            $valor = (is_numeric($valor) && $valor >= 0) ? $valor : 0;
+        }
+
+        // 4. ASEGURAR CABECERA (formularion5_produccion_cama)
+        $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+        $cabecera = $this->db->get('formularion5_produccion_cama')->row();
+
+        if ($cabecera) {
+            $det5_id = $cabecera->det5_id;
+        } else {
+            // Si no existe para esa gestión, la creamos
+            $this->db->insert('formularion5_produccion_cama', array(
+                'form_id' => $form_id,
+                'g_id'    => $gestion,
+                'form3_estado' => 1
+            ));
+            $det5_id = $this->db->insert_id();
+        }
+
+        // 5. GUARDADO DEL DETALLE (Upsert eficiente)
+        // Intentamos actualizar primero
+        $this->db->where(array('det5_id' => $det5_id, 'act_id' => $act_id));
+        $this->db->update('detalle_form5_produccion_cama', array($campo => $valor));
+
+        // Si no se afectó ninguna fila, es que el registro no existe
+        if ($this->db->affected_rows() == 0) {
+            // Verificamos si realmente no existe (por si el valor era el mismo)
+            $this->db->where(array('det5_id' => $det5_id, 'act_id' => $act_id));
+            $check = $this->db->get('detalle_form5_produccion_cama')->num_rows();
+
+            if ($check == 0) {
+                $data_insert = array(
+                    'det5_id' => $det5_id,
+                    'act_id'  => $act_id,
+                    $campo    => $valor
+                );
+                $res = $this->db->insert('detalle_form5_produccion_cama', $data_insert);
+            } else {
+                $res = true; // El registro existía pero el valor enviado era igual al actual
+            }
+        } else {
+            $res = true; // Update exitoso
+        }
+
+        // 6. Respuesta para el script
+        echo json_encode(array('status' => $res ? 'success' : 'error'));
     }
 }

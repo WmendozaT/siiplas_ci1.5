@@ -249,11 +249,10 @@ class Lib_diagnosticopei_reporte {
                 <table class="tabla-datos">
                     <thead>
                         <tr>
-                          <th style="width: 10%;text-align:center;">GESTIÓN</th>
+                          <th style="width: 25%;text-align:center;">GESTIÓN</th>
                           <th style="width: 25%;text-align:center;">N° DE EMPRESAS REGISTRADAS</th>
                           <th style="width: 25%;text-align:center;">CON APORTES AL DIA</th>
                           <th style="width: 25%;text-align:center;">EN MORA</th>
-                          <th style="width: 15%;text-align:center;">TOTAL</th>
                         </tr>
                     </thead>
                     <tbody>';
@@ -261,10 +260,9 @@ class Lib_diagnosticopei_reporte {
                         $tabla.='
                         <tr>
                             <td><b>'.$row['gestion'].'</b></td>
-                            <td>'.$row['empresas'].'</td>
+                            <td><b>'.$row['empresas'].'</b></td>
                             <td>'.$row['aportes'].'</td>
                             <td>'.$row['mora'].'</td>
-                            <td class="bold" style="background-color: #d9edf7>'.$row['total_gestion_empresas'].'</td>
                         </tr>';
                        }
                     $tabla.='

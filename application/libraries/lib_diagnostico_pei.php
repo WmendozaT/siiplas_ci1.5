@@ -54,60 +54,72 @@ class lib_diagnostico_pei extends CI_Controller{
               </div>
 
               <div style="font-weight: bold; margin-bottom: 10px;">2. Relevamiento de poblacion afiliada ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</div>
-              <table>
-                  <thead>
-                      <tr>
-                        <th colspan="5" style="text-align:center; width: 40%;">Tipo de población afiliada</th>
-                      </tr>
-                      <tr>
-                          <th style="width: 10%;text-align:center;">Gestión</th>
-                          <th style="width: 25%;text-align:center;">Cotizantes Titulares</th>
-                          <th style="width: 25%;text-align:center;">Cotizantes Pasivos</th>
-                          <th style="width: 25%;text-align:center;">Beneficiarios</th>
-                          <th style="width: 10%;text-align:center;">TOTAL</th>
-                      </tr>
-                  </thead>
-                  <tbody>';
-                   foreach($detalle_form1 as $row){
-                        $tabla.='
-                        <tr class="fila-dato">
-                            <td style="font-size: 11pt;">'.$row['gestion'].'</td>
-                            <td>
-                                <input type="number" 
-                                       class="auto-save" 
-                                       min="0"
-                                       onkeypress="return event.charCode >= 48"
-                                       data-form="'.$row['form_id'].'" 
-                                       data-gestion="'.$row['gestion'].'" 
-                                       data-col="nro_cot_tit" 
-                                       value="'.$row['titulares'].'">
-                            </td>
-                            <td>
-                            <input type="number" 
-                                       class="auto-save" 
-                                       min="0"
-                                       onkeypress="return event.charCode >= 48"
-                                       data-form="'.$row['form_id'].'" 
-                                       data-gestion="'.$row['gestion'].'" 
-                                       data-col="nro_cot_pas" 
-                                       value="'.$row['pasivos'].'">
-                            </td>
-                            <td>
-                            <input type="number" 
-                                       class="auto-save" 
-                                       min="0"
-                                       onkeypress="return event.charCode >= 48"
-                                       data-form="'.$row['form_id'].'" 
-                                       data-gestion="'.$row['gestion'].'" 
-                                       data-col="nro_cot_ben" 
-                                       value="'.$row['beneficiarios'].'">
-                            </td>
-                            <td class="total-row" style="font-weight:bold;">'.$row['total_gestion'].'</td>
-                        </tr>';
-                   }
-                  $tabla.='
-                  </tbody>
-              </table>
+              <table  >
+            <thead>
+                <tr style="background: #fdfdfd; color: #666; font-size: 11px;">
+                    <th style="width: 15%; text-align:center; padding: 10px;">GESTIÓN</th>
+                    <th style="width: 20%; text-align:center;">COT. TITULARES</th>
+                    <th style="width: 20%; text-align:center;">COT. PASIVOS</th>
+                    <th style="width: 20%; text-align:center;">BENEFICIARIOS</th>
+                    <th style="width: 25%; text-align:center; background: #f5f5f5;">TOTAL GESTIÓN</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+            foreach($detalle_form1 as $row){
+                $tabla.='
+                <tr class="fila-dato">
+                    <td style="font-size: 13px; text-align: center; vertical-align: middle; background: #f9f9f9;">
+                        <b>'.$row['gestion'].'</b>
+                    </td>
+                    <td style="padding: 8px;">
+                        <input type="number" 
+                               class="form-control auto-save limpiar-cero" 
+                               style="text-align: right; font-weight: 500; border-radius: 4px;"
+                               min="0"
+                               max="999999999"
+                               oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 9"
+                               data-form="'.$row['form_id'].'" 
+                               data-gestion="'.$row['gestion'].'" 
+                               data-col="nro_cot_tit" 
+                               value="'.$row['titulares'].'">
+                    </td>
+                    <td style="padding: 8px;">
+                        <input type="number" 
+                               class="form-control auto-save limpiar-cero" 
+                               style="text-align: right; font-weight: 500; border-radius: 4px;"
+                               min="0"
+                               max="999999999"
+                               oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 9"
+                               data-form="'.$row['form_id'].'" 
+                               data-gestion="'.$row['gestion'].'" 
+                               data-col="nro_cot_pas" 
+                               value="'.$row['pasivos'].'">
+                    </td>
+                    <td style="padding: 8px;">
+                        <input type="number" 
+                               class="form-control auto-save limpiar-cero" 
+                               style="text-align: right; font-weight: 500; border-radius: 4px;"
+                               min="0"
+                               max="999999999"
+                               oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 9"
+                               data-form="'.$row['form_id'].'" 
+                               data-gestion="'.$row['gestion'].'" 
+                               data-col="nro_cot_ben" 
+                               value="'.$row['beneficiarios'].'">
+                    </td>
+                    <td class="total-gestion-val" style="font-weight:bold; font-size: 14px; text-align: right; vertical-align: middle; background-color: #f5f5f5; color: #333; padding-right: 15px;">
+                        '.number_format($row['total_gestion'], 0, '.', ',').'
+                    </td>
+                </tr>';
+            }
+
+            $tabla.='
+            </tbody>
+        </table>
 
               <div style="border: 1px solid #000; padding: 15px; font-size: 8pt; margin-top: 20px;">
                   <strong>Recomendaciones:</strong><br>
@@ -146,23 +158,47 @@ class lib_diagnostico_pei extends CI_Controller{
         $(document).ready(function() {
             var base_url = "'.base_url().'"; 
 
+            // --- A. LIMPIEZA DE CEROS AL ENTRAR ---
+            $(document).on("focus", ".limpiar-cero", function() {
+                var $el = $(this);
+                if (parseInt($el.val()) === 0) $el.val("");
+                $el.select();
+            });
+
+            $(document).on("blur", ".limpiar-cero", function() {
+                var $el = $(this);
+                if ($el.val() === "" || $el.val() === null) $el.val("0");
+            });
+
+            // --- B. PROCESO DE GUARDADO Y CÁLCULO ---
             $(".auto-save").on("keyup change", function() {
                 var $input = $(this);
                 var $fila = $input.closest("tr");
                 
-                // Totales visuales instantáneos
-                var t = parseFloat($fila.find("input[data-col=nro_cot_tit]").val()) || 0;
-                var p = parseFloat($fila.find("input[data-col=nro_cot_pas]").val()) || 0;
-                var b = parseFloat($fila.find("input[data-col=nro_cot_ben]").val()) || 0;
-                $fila.find(".total-row").text(t + p + b);
+                // 1. Validación de 9 dígitos
+                if ($input.val().length > 9) {
+                    $input.val($input.val().slice(0, 9));
+                }
 
-                // --- CADA INPUT MANEJA SU PROPIO TIEMPO ---
+                // 2. Cálculo de Totales Visuales
+                var t = parseInt($fila.find("input[data-col=nro_cot_tit]").val()) || 0;
+                var p = parseInt($fila.find("input[data-col=nro_cot_pas]").val()) || 0;
+                var b = parseInt($fila.find("input[data-col=nro_cot_ben]").val()) || 0;
+                var suma = t + p + b;
+                
+                // Formateo con comas (estilo 1,250,000)
+                $fila.find(".total-gestion-val").text(suma.toLocaleString("en-US"));
+
+                // 3. Temporizador independiente
                 clearTimeout($input.data("h_timer"));
 
                 var t_id = setTimeout(function() {
+                    $input.css("border-color", "#ffc107"); // Naranja: Procesando
+
                     $.ajax({
                         url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form1",
                         type: "POST",
+                        dataType: "json", // Esperamos JSON del controlador
                         data: {
                             form_id: $input.data("form"),
                             gestion: $input.data("gestion"),
@@ -170,12 +206,19 @@ class lib_diagnostico_pei extends CI_Controller{
                             valor: $input.val()
                         },
                         success: function(resp) {
-                            $input.css("border-color", "green");
-                            setTimeout(function(){ $input.css("border-color", ""); }, 1000);
-                            $("#toast-notificacion").fadeIn(200).delay(800).fadeOut(200);
+                            if(resp.status === "success") {
+                                $input.css("border-color", "green");
+                                $("#toast-notificacion").text("✅ Guardado").stop(true,true).fadeIn(200).delay(800).fadeOut(200);
+                            } else {
+                                $input.css("border-color", "red");
+                            }
+                            setTimeout(function(){ $input.css("border-color", ""); }, 1500);
+                        },
+                        error: function() {
+                            $input.css("border-color", "red");
                         }
                     });
-                }, 400); // 400ms es suficiente para capturar la intención de guardado
+                }, 600); 
 
                 $input.data("h_timer", t_id);
             });
@@ -234,29 +277,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   });
               });
           </script>
-          <script>
-            $(document).ready(function() {
-                // ... tu código anterior de guardado automático ...
-
-                // 1. Al entrar al input (Focus)
-                $(".auto-save").on("focus", function() {
-                    var valor = $(this).val();
-                    // Si el valor es 0, lo dejamos vacío para que el usuario escriba directo
-                    if (valor == "0") {
-                        $(this).val("");
-                    }
-                });
-
-                // 2. Al salir del input (Blur)
-                $(".auto-save").on("blur", function() {
-                    var valor = $(this).val();
-                    // Si el usuario no escribió nada, le devolvemos el 0 por defecto
-                    if (valor === "") {
-                        $(this).val("0");
-                    }
-                });
-            });
-          </script>';
+         ';
         return $tabla;
     }
 
@@ -326,54 +347,63 @@ class lib_diagnostico_pei extends CI_Controller{
                    foreach($detalle_form1_etareo as $row){
                     $tabla.='
                     <tr>
-                      <td class="nro-label" style="font-size:15px;"><b>'.$row['grupo_etareo'].'</b></td>';
-                      // Bucle para generar los 5 años (2021 al 2025)
-                       for ($anio = 2021; $anio <= 2025; $anio++) {
-                          $m = $row['m_'.$anio];
-                          $f = $row['f_'.$anio];
-                          $t = $row['t_'.$anio];
+                      <td class="nro-label" style="font-size:12px; width:5%;"><b>'.$row['grupo_etareo'].'</b></td>';
+                      
+                      for ($anio = 2021; $anio <= 2025; $anio++) {
+                          $m = round($row['m_'.$anio],2);
+                          $f = round($row['f_'.$anio],2);
+                          $t = round($row['t_'.$anio],2);
 
                           $tabla.='
                           <!-- Masculino -->
                           <td>
-                              <input type="number" class="auto-save" min="0"
+                              <input type="number" class="auto-save" 
+                                  min="0" 
+                                  max="9999"
+                                  style="text-align: right;"
+                                  oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);"
+                                  onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 5"
                                   value="'.$m.'" 
                                   data-form="'.$row['form_id'].'" 
                                   data-dist="'.$row['dist_id'].'" 
                                   data-eta="'.$row['eta_id'].'" 
                                   data-gestion="'.$anio.'" 
                                   data-campo="nro_masculino" 
-                                  style="width:100%;">
+                                  style="width:55px; text-align:right;">
                           </td>
                           <!-- Femenino -->
                           <td>
-                              <input type="number" class="auto-save" min="0" 
+                              <input type="number" class="auto-save" 
+                                  min="0" 
+                                  max="9999"
+                                  style="text-align: right;"
+                                  oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);"
+                                  onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 5"
                                   value="'.$f.'" 
                                   data-form="'.$row['form_id'].'" 
                                   data-dist="'.$row['dist_id'].'" 
                                   data-eta="'.$row['eta_id'].'" 
                                   data-gestion="'.$anio.'" 
                                   data-campo="nro_femenino" 
-                                  style="width:100%;">
+                                  style="width:55px; text-align:right;">
                           </td>
-                          <!-- Total (Solo lectura) -->
-                          <td>
-                              <input type="number" class="form-control total-'.$anio.'-'.$row['eta_id'].'" 
+                          <!-- Total Fila (Calculado por JS) -->
+                          <td style="background-color: #f2f2f2;">
+                              <input type="text" class="total-fila-etareo total-'.$anio.'-'.$row['eta_id'].'" 
                                   value="'.$t.'" 
                                   readonly 
-                                  style="width:100%; background-color: #eee; font-weight: bold;">
+                                  style="width:60px; border:none; background:transparent; text-align:right; font-weight:bold;">
                           </td>';
                       }
-                            
                     $tabla.='</tr>';
-                   }
+                }
                   $tabla.='
                     <tr style="background-color: #f2f2f2; font-weight: bold;">
                         <td style="text-align:left;">TOTALES POR GESTIÓN:</td>';
                         for ($anio = 2021; $anio <= 2025; $anio++) {
                             $tabla.='
                             <td colspan="2" style="text-align:center;">Gestión '.$anio.'</td>
-                            <td style="text-align:center; background-color: #d9edf7;">
+                            <td style="text-align:right; background-color: #d9edf7;">
                                 <span id="suma_total_'.$anio.'" style="font-size: 16px; color: #000;">0.00</span>
                             </td>';
                         }
@@ -386,7 +416,7 @@ class lib_diagnostico_pei extends CI_Controller{
                           <td colspan="2" style="text-align:center; font-size:11px;">
                               Form. N° 1 Gestión: '.$f1['gestion'].'
                           </td>
-                          <td style="text-align:center;">
+                          <td style="text-align:right;">
                               <!-- ID corregido con el año -->
                               <span id="ref_f1_'.$f1['gestion'].'" style="font-size: 16px; color: #000;">'.number_format($f1['total_gestion'], 2, '.', ',').'</span>
                           </td>';
@@ -398,7 +428,7 @@ class lib_diagnostico_pei extends CI_Controller{
                         for ($anio = 2021; $anio <= 2025; $anio++) {
                             $tabla.='
                             <td colspan="2" style="text-align:center; font-size:11px; color: #555;">Faltante / Sobrante</td>
-                            <td style="text-align:center;" id="celda_diff_'.$anio.'">
+                            <td style="text-align:right;" id="celda_diff_'.$anio.'">
                                 <span id="diff_'.$anio.'" style="font-size: 16px;">0.00</span>
                             </td>';
                         }
@@ -607,51 +637,55 @@ class lib_diagnostico_pei extends CI_Controller{
               <table>
                   <thead>
                       <tr>
-                          <th style="width: 10%;text-align:center;">Gestión</th>
-                          <th style="width: 25%;text-align:center;">N° de empresas registradas</th>
-                          <th style="width: 25%;text-align:center;">con aportes al dia</th>
-                          <th style="width: 25%;text-align:center;">en mora</th>
-                          <th style="width: 10%;text-align:center;">TOTAL</th>
+                          <th style="width: 20%;text-align:center;">Gestión</th>
+                          <th style="width: 20%;text-align:center;">N° de empresas registradas</th>
+                          <th style="width: 20%;text-align:center;">con aportes al dia</th>
+                          <th style="width: 20%;text-align:center;">en mora</th>
                       </tr>
                   </thead>
                   <tbody>';
                    foreach($detalle_form2 as $row){
-                        $tabla.='
-                        <tr class="fila-dato">
-                            <td style="font-size: 11pt;">'.$row['gestion'].'</td>
-                            <td>
-                                <input type="number" 
-                                       class="auto-save" 
-                                       min="0"
-                                       onkeypress="return event.charCode >= 48"
-                                       data-form="'.$row['form_id'].'" 
-                                       data-gestion="'.$row['gestion'].'" 
-                                       data-col="nro_empresas_reg" 
-                                       value="'.$row['empresas'].'">
-                            </td>
-                            <td>
+                    $tabla.='
+                    <tr class="fila-dato">
+                        <td style="font-size: 11pt; text-align: center;"><b>'.$row['gestion'].'</b></td>
+                        <td>
                             <input type="number" 
-                                       class="auto-save" 
-                                       min="0"
-                                       onkeypress="return event.charCode >= 48"
-                                       data-form="'.$row['form_id'].'" 
-                                       data-gestion="'.$row['gestion'].'" 
-                                       data-col="nro_aportes_dia" 
-                                       value="'.$row['aportes'].'">
-                            </td>
-                            <td>
+                                   class="auto-save nro_empresas_reg"
+                                   style="text-align: right; background-color: #eee; font-weight: bold;"
+                                   readonly
+                                   data-form="'.$row['form_id'].'" 
+                                   data-gestion="'.$row['gestion'].'" 
+                                   data-col="nro_empresas_reg" 
+                                   value="'.$row['empresas'].'">
+                        </td>
+                        <td>
                             <input type="number" 
-                                       class="auto-save" 
-                                       min="0"
-                                       onkeypress="return event.charCode >= 48"
-                                       data-form="'.$row['form_id'].'" 
-                                       data-gestion="'.$row['gestion'].'" 
-                                       data-col="nro_empresa_mora" 
-                                       value="'.$row['mora'].'">
-                            </td>
-                            <td class="total-row" style="font-weight:bold;">'.$row['total_gestion_empresas'].'</td>
-                        </tr>';
-                   }
+                                   class="auto-save" 
+                                   style="text-align: right;"
+                                   min="0"
+                                   max="999999999"
+                                   oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 9"
+                                   data-form="'.$row['form_id'].'" 
+                                   data-gestion="'.$row['gestion'].'" 
+                                   data-col="nro_aportes_dia" 
+                                   value="'.$row['aportes'].'">
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   class="auto-save" 
+                                   style="text-align: right;"
+                                   min="0"
+                                   max="999999999"
+                                   oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 9"
+                                   data-form="'.$row['form_id'].'" 
+                                   data-gestion="'.$row['gestion'].'" 
+                                   data-col="nro_empresa_mora" 
+                                   value="'.$row['mora'].'">
+                        </td>
+                    </tr>';
+                }
                   $tabla.='
                   </tbody>
               </table>
@@ -682,58 +716,73 @@ class lib_diagnostico_pei extends CI_Controller{
         <script>
           document.getElementById("fecha-actual2").innerText = new Date().toLocaleDateString();
         </script>
-<script>
-$(document).ready(function() {
-    var base_url = "'.base_url().'";
+        <script>
+        $(document).ready(function() {
+            var base_url = "'.base_url().'";
 
-    // EVENTO UNIFICADO: Cada input maneja su propio proceso
-    $(".auto-save").on("keyup change", function() {
-        var $input = $(this);
-        var $fila = $input.closest("tr");
-        
-        // 1. Recalculo visual instantáneo (UX rápida)
-        var e = parseFloat($fila.find("input[data-col=nro_empresas_reg]").val()) || 0;
-        var a = parseFloat($fila.find("input[data-col=nro_aportes_dia]").val()) || 0;
-        var m = parseFloat($fila.find("input[data-col=nro_empresa_mora]").val()) || 0;
-        $fila.find(".total-row").text(e + a + m);
+            $(".auto-save").on("keyup change", function() {
+                var $input = $(this);
+                var $fila = $input.closest("tr");
+                var columna = $input.data("col");
+                
+                // 1. LÓGICA DE SUMA (Solo si se tocan los campos de aportes o mora)
+                if (columna === "nro_aportes_dia" || columna === "nro_empresa_mora") {
+                    var a = parseFloat($fila.find("input[data-col=nro_aportes_dia]").val()) || 0;
+                    var m = parseFloat($fila.find("input[data-col=nro_empresa_mora]").val()) || 0;
+                    var total = a + m;
 
-        // 2. INDICADOR VISUAL: El borde se pone amarillo (está pendiente)
-        $input.css("border", "1px solid #ffc107");
-
-        // 3. TIMER INDEPENDIENTE POR CELDA
-        // Usamos .data("h_timer") para que una celda no cancele a la otra
-        clearTimeout($input.data("h_timer"));
-
-        var t_id = setTimeout(function() {
-            $.ajax({
-                url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form2",
-                type: "POST",
-                data: {
-                    form_id: $input.data("form"),
-                    gestion: $input.data("gestion"),
-                    columna: $input.data("col"),
-                    valor:   $input.val()
-                },
-                success: function(resp) {
-                    // ÉXITO: Borde verde y notificación rápida
-                    $input.css("border", "1px solid #28a745");
-                    $("#toast-notificacion").stop(true, true).fadeIn(200).delay(800).fadeOut(200);
+                    // Buscamos el input readonly por su clase específica
+                    var $inputTotal = $fila.find(".nro_empresas_reg");
                     
-                    // Limpiar borde tras 1 segundo
-                    setTimeout(function(){ $input.css("border", ""); }, 1000);
-                },
-                error: function() {
-                    // ERROR: Borde rojo
-                    $input.css("border", "2px solid #dc3545");
-                }
-            });
-        }, 400); // 400ms es el tiempo ideal para no saturar y ser rápido
+                    if ($inputTotal.val() != total) { // Solo si el valor cambió
+                        $inputTotal.val(total); 
 
-        // Guardamos el ID del timer específicamente en ESTE input
-        $input.data("h_timer", t_id);
-    });
-});
-</script>
+                        // Disparamos el guardado automático del total
+                        clearTimeout($inputTotal.data("h_timer"));
+                        var t_id_total = setTimeout(function() {
+                            ejecutarGuardado($inputTotal);
+                        }, 800); // Un poco más de tiempo para el total
+                        $inputTotal.data("h_timer", t_id_total);
+                    }
+                }
+
+                // 2. GUARDADO DEL CAMPO QUE SE ESTÁ ESCRIBIENDO
+                $input.css("border", "1px solid #ffc107");
+                clearTimeout($input.data("h_timer"));
+
+                var t_id = setTimeout(function() {
+                    // Evitamos guardar el total aquí si es readonly para que no se duplique la petición
+                    if (!$input.prop("readonly")) {
+                        ejecutarGuardado($input);
+                    }
+                }, 400);
+
+                $input.data("h_timer", t_id);
+            });
+
+            // FUNCIÓN ÚNICA DE AJAX
+            function ejecutarGuardado($el) {
+                $.ajax({
+                    url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form2",
+                    type: "POST",
+                    data: {
+                        form_id: $el.data("form"),
+                        gestion: $el.data("gestion"),
+                        columna: $el.data("col"),
+                        valor:   $el.val()
+                    },
+                    success: function(resp) {
+                        $el.css("border", "1px solid #28a745");
+                        $("#toast-notificacion").stop(true, true).fadeIn(200).delay(800).fadeOut(200);
+                        setTimeout(function(){ $el.css("border", ""); }, 1000);
+                    },
+                    error: function() {
+                        $el.css("border", "2px solid #dc3545");
+                    }
+                });
+            }
+        });
+        </script>
 
         <script>
               $(document).ready(function() {
@@ -970,8 +1019,6 @@ $(document).ready(function() {
         });
     
 
-
-
             // 4. LÓGICA DEL MODAL BUSCADOR
             var gestionActual, nroActual;
 
@@ -980,27 +1027,28 @@ $(document).ready(function() {
                 nroActual = nro;
                 tpActual = tp; 
 
-                // Definimos los títulos según el tipo de perfil (tp)
                 var titulo = "";
+                // Usamos parseInt para asegurar la comparación numérica
                 switch(parseInt(tp)) {
                     case 1:
-                        titulo = "BUSCADOR CIE-10 (MORBILIDAD: Consulta Externa)";
+                        titulo = "BUSCADOR CIE-10 (MORBILIDAD: Consulta Externa)<br><small>Fila: "+nro+" - Gestión: "+gestion+"</small>";
                         break;
                     case 2:
-                        titulo = "BUSCADOR CIE-10 (MORBILIDAD: Hospitalaria)";
+                        titulo = "BUSCADOR CIE-10 (MORBILIDAD: Hospitalaria)<br><small>Fila: "+nro+" - Gestión: "+gestion+"</small>";
                         break;
                     case 3:
-                        titulo = "BUSCADOR CIE-10 (MORTALIDAD)";
+                        titulo = "BUSCADOR CIE-10 (MORTALIDAD)<br><small>Fila: "+nro+" - Gestión: "+gestion+"</small>";
                         break;
                     default:
                         titulo = "BUSCADOR CIE-10";
                 }
 
-                // Actualizamos el título en el modal
-                $("#modalBuscador .modal-title b").text(titulo);
+                // IMPORTANTE: Usar .html() para que procese el <br> o <small>
+                $("#modalBuscador .modal-title b").html(titulo);
 
                 // Mostramos el modal
                 $("#modalBuscador").modal("show");
+                
                 setTimeout(function(){ 
                     $("#txtBuscar").val("").focus(); 
                 }, 500);
@@ -1118,7 +1166,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                 </div>
-                <table>
+                <table style="width:100%;">
                   <thead>
                     <tr style="text-align:center;">
                         <th rowspan="2" class="nro-col">N.- '.$tp.'</th>
@@ -1129,11 +1177,11 @@ $(document).ready(function() {
                         <th colspan="2" style="text-align:center;">2025</th>
                     </tr>
                     <tr>
-                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
-                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
-                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
-                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
-                        <th style="width:3%;">Nº casos</th><th style="width:17%;">Cod. CIE-10</th>
+                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
+                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
+                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
+                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
+                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
                     </tr>
                   </thead>
                 <tbody>';
@@ -1151,7 +1199,12 @@ $(document).ready(function() {
                       $tabla .= '
                       <!-- COLUMNA CASOS -->
                       <td>
-                          <input type="number" class="auto-save" min="0"
+                          <input type="number" class="auto-save"
+                                  style="text-align: right;"
+                                   min="0"
+                                   max="999999"
+                                   oninput="if(this.value.length > 7) this.value = this.value.slice(0, 7);"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 7"
                                  data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'" 
                                  data-nro="'.$row['nro'].'" data-gestion="'.$anio.'" 
                                  data-col="nro_casos" value="'.$val_casos.'" 
@@ -1179,109 +1232,6 @@ $(document).ready(function() {
                                      data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'"
                                      data-col="ce_id" value="'.$val_ce_id.'">
                           </div>
-                      </td>';
-                  }
-                            
-                    $tabla.='</tr>';
-                  }
-                  $tabla.='
-                  </tbody>
-              </table>';
-
-      return $tabla;
-    }
-
-      /// desactivado anterior completo
-      public function tabla_form3tp_perfil2($dist_id,$tp){
-      $detalle_form3=$this->model_diagnosticopei->get_formulario_N3($dist_id,$tp); /// listado de gestiones
-      $cie10_list=$this->model_diagnosticopei->get_listado_cie10();
-      $tabla='';
-      $tabla.='
-                <div class="modal fade" id="modalBuscador" tabindex="-1" role="dialog" style="z-index: 9999;">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header" style="background:#FFC000">
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                <h4 class="modal-title"><b>BUSCADOR CIE-10 (TIPO: '.$tp.')</b></h4>
-                            </div>
-                            <div class="modal-body">
-                                <input type="text" id="txtBuscar" class="form-control" placeholder="Escriba el código o enfermedad..." onkeyup="filtrarCIE10()" >
-                                <hr>
-                                <div id="listaResultados" style="max-height: 350px; overflow-y: auto;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <table>
-                  <thead>
-                    <tr style="text-align:center;">
-                        <th rowspan="3" class="nro-col">N.- '.$tp.'</th>
-                        <th colspan="3" style="text-align:center;">2021</th>
-                        <th colspan="3" style="text-align:center;">2022</th>
-                        <th colspan="3" style="text-align:center;">2023</th>
-                        <th colspan="3" style="text-align:center;">2024</th>
-                        <th colspan="3" style="text-align:center;">2025</th>
-                    </tr>
-                    <tr>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
-                        <th style="width:3.5%;">Nº casos</th><th style="width:6%;">Cod. CIE-10</th><th style="width:10%;">10 primeras causas</th>
-                    </tr>
-                  </thead>
-                <tbody>';
-                   foreach($detalle_form3 as $row){
-                    $tabla.='
-                    <tr>
-                      <td class="nro-label">'.$row['nro'].'</td>';
-                      // Bucle para generar los 5 años (2021 al 2025)
-                       for ($anio = 2021; $anio <= 2025; $anio++) {
-                      $val_casos = $row['nro_casos_'.$anio];
-                      $val_ce_id = $row['ce_id_'.$anio]; 
-                      $val_causa = $row['causa_'.$anio];
-                      $cod_cie   = $row['codigo_cie_'.$anio];
-
-                      $tabla .= '
-                      <!-- COLUMNA CASOS -->
-                      <td>
-                          <input type="number" class="auto-save" min="0"
-                                 data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'" 
-                                 data-nro="'.$row['nro'].'" data-gestion="'.$anio.'" 
-                                 data-col="nro_casos" value="'.$val_casos.'" 
-                                 style="width:100%; text-align:center; border:none;">
-                      </td>
-                      
-                      <!-- COLUMNA BUSCADOR (ID y CODIGO) -->
-                      <td>
-                          <div class="input-group" style="display: flex; width: 100%;">
-                              <input type="text" 
-                                      class="form-control input-sm" 
-                                      id="desc_' . $tp . '_' . $anio . '_' . $row['nro'] . '"  
-                                      value="' . $cod_cie . '" 
-                                      readonly 
-                                      title="' . $cod_cie . '" 
-                                      style="width: 80%; font-size: 7.5pt; height: 24px; border-radius: 4px 0 0 4px;">
-                              
-                              <button type="button" class="btn btn-primary btn-xs" style="height: 24px; width: 20%;"
-                                      onclick="abrirBuscador(\''.$anio.'\', \''.$row['nro'].'\', \''.$tp.'\')">
-                                  <i class="fa fa-search"></i>
-                              </button>
-
-                              <input type="hidden" class="ce_id_input auto-save" id="id_' . $tp . '_' . $anio . '_' . $row['nro'] . '" 
-                                     data-gestion="'.$anio.'" data-nro="'.$row['nro'].'"
-                                     data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'"
-                                     data-col="ce_id" value="'.$val_ce_id.'">
-                          </div>
-                      </td>
-
-                      <!-- COLUMNA DETALLE TEXTO -->
-                      <td>
-                          <input type="text" class="input-perfil auto-save" 
-                                 data-gestion="'.$anio.'" data-nro="'.$row['nro'].'" 
-                                 data-tp_perfil="'.$tp.'" data-form="'.$row['form_id'].'" 
-                                 data-col="detalle_causa" value="'.$val_causa.'"
-                                 style="width:100%; font-size: 8pt; border:none;">
                       </td>';
                   }
                             
@@ -1544,96 +1494,61 @@ $(document).ready(function() {
         </script>
 
         //// guarda automaticamente los campos del establecimiento
-        <script>
+       <script>
         $(document).ready(function() {
-            var timer_otros = null;
             var base_url = "'.base_url().'";
 
-            $(document).on("keyup change", ".auto-save-otros, .auto-save5", function() {
+            // --- 1. EVENTO PRINCIPAL: GUARDADO INDEPENDIENTE Y TRANSFORMACIONES ---
+            $(document).on("keyup change", ".auto-save-otros, .auto-save5", function(e) {
                 var $el = $(this);
-                var campo_actual = $el.data("campo"); // Definimos la variable campo
+                var campo_actual = $el.data("campo");
                 var valor = $el.val().trim();
 
-                // 1. VALIDACIÓN DE NEGATIVOS
-                if ($el.attr("type") === "number") {
-                    if (parseFloat($el.val()) < 0) {
-                        $el.val(0);
-                        return false;
-                    }
+                // VALIDACIÓN DE NEGATIVOS
+                if ($el.attr("type") === "number" && parseFloat($el.val()) < 0) {
+                    $el.val(0);
+                    return false;
                 }
 
-                // 2. VALIDACIÓN DE LONGITUD (UBICACIÓN)
-                if (campo_actual === "ubicacion") {
-                    if (valor.length > 500) {
-                        $el.val(valor.substring(0, 500));
-                    }
-                }
-
-                // 3. TRANSFORMACIÓN AUTOMÁTICA DE TIPO
+                // TRANSFORMACIÓN AUTOMÁTICA DE TIPO Y NIVEL
                 if (campo_actual === "tipo_establecimiento") {
                     var $fila = $el.closest("tr");
                     var $inputNivel = $fila.find(\'input[data-campo="nivel_establecimiento"]\');
                     var nivelVal = "";
 
-                    // 1. Mapeo de valores
                     if (valor === "1") { $el.val("CIS"); nivelVal = "PRIMER NIVEL"; } 
                     else if (valor === "2") { $el.val("CIMFA"); nivelVal = "PRIMER NIVEL"; }
                     else if (valor === "3") { $el.val("PAISE"); nivelVal = "SEGUNDO NIVEL"; }
                     else if (valor === "4") { $el.val("HIS"); nivelVal = "SEGUNDO NIVEL"; }
                     else if (valor === "5") { $el.val("HAIG"); nivelVal = "TERCER NIVEL"; }
 
-                    // 2. Si hay un nivel detectado, bloqueamos firmemente
-                    if (nivelVal !== "") {
-                        $inputNivel.val(nivelVal);
-                        $inputNivel.prop("readonly", true).css({
-                            "background-color": "#eeeeee", 
-                            "cursor": "not-allowed",
-                            "border": "1px solid #ccc"
-                        });
-
-                        // Disparar guardado del nivel con retraso para evitar colisión de timers
-                        setTimeout(function() {
-                            $inputNivel.trigger("change");
-                        }, 1200); 
+                    if (nivelVal !== "" && $inputNivel.val() !== nivelVal) {
+                        $inputNivel.val(nivelVal).prop("readonly", true).css({
+                            "background-color": "#eeeeee", "cursor": "not-allowed"
+                        }).trigger("change"); 
                     } 
-                    // 3. Solo si el usuario BORRA el tipo, desbloqueamos el nivel
-                    else if (valor === "") {
-                        $inputNivel.val("");
-                        $inputNivel.prop("readonly", false).css({
-                            "background-color": "#ffffff", 
-                            "cursor": "text",
-                            "border": "1px solid #000"
-                        });
-                        
-                        setTimeout(function() {
-                            $inputNivel.trigger("change");
-                        }, 1200);
+                    else if (valor === "" && $inputNivel.val() !== "") {
+                        $inputNivel.val("").prop("readonly", false).css({
+                            "background-color": "#ffffff", "cursor": "text"
+                        }).trigger("change");
                     }
                 }
 
-
-                // 3. TRANSFORMACIÓN AUTOMÁTICA DE CÓDIGOS (SITUACIÓN)
+                // TRANSFORMACIONES RÁPIDAS (SITUACIÓN E INTERNET)
                 if (campo_actual === "tipo_situacion") {
-                    if (valor === "1") { $el.val("PROPIA"); } 
-                    else if (valor === "2") { $el.val("ALQUILADA"); }
-                    
-                    if ($el.val().length > 100) {
-                        $el.val($el.val().substring(0, 100));
-                    }
+                    if (valor === "1") $el.val("PROPIA");
+                    else if (valor === "2") $el.val("ALQUILADA");
                 }
-
-                // 4. TRANSFORMACIÓN AUTOMÁTICA (INTERNET)
                 if (campo_actual === "serv_internet") {
-                    if (valor === "1") { $el.val("SI"); } 
-                    else if (valor === "0") { $el.val("NO"); }
+                    if (valor === "1") $el.val("SI");
+                    else if (valor === "0") $el.val("NO");
                 }
 
-                // INDICADOR VISUAL
-                $el.css("border-color", "#ffc107");
+                // GESTIÓN DE TIMER INDEPENDIENTE POR INPUT
+                clearTimeout($el.data("h_timer"));
+                if (e.type === "keyup") $el.css("border-color", "#ffc107"); // Naranja al escribir
 
-                // TEMPORIZADOR DE GUARDADO
-                clearTimeout(timer_otros);
-                timer_otros = setTimeout(function() {
+                var t_id = setTimeout(function() {
                     $.ajax({
                         url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_infra_otros_automatica",
                         type: "POST",
@@ -1643,32 +1558,49 @@ $(document).ready(function() {
                             form_id: $el.data("form"),
                             gestion: $el.data("gestion"),
                             campo:   campo_actual,
-                            valor:   $el.val().toUpperCase() // Guardar siempre en MAYÚSCULAS
+                            valor:   $el.val().toUpperCase()
                         },
                         success: function(resp) {
                             if (resp.status == "success") {
-                                $el.css({"background-color": "#d4edda", "border-color": "#28a745"});
-                                $("#toast-notificacion").fadeIn(400).delay(1000).fadeOut(400);
-
-                            } else {
-                                $el.css("border-color", "#dc3545");
+                                $el.css({"border-color": "#28a745"}); // Verde éxito
+                                $("#toast-notificacion").stop(true, true).fadeIn(100).delay(600).fadeOut(100);
                             }
-                            setTimeout(function(){ $el.css("border-color", ""); }, 1000);
-                        },
-                        error: function() {
-                            $el.css("border-color", "#dc3545");
+                            setTimeout(function(){ $el.css("border-color", ""); }, 800);
                         }
                     });
-                }, 800);
+                }, 350); 
+
+                $el.data("h_timer", t_id);
             });
 
-            // LIMPIEZA DE CEROS
+            // --- 2. SALTO INTELIGENTE CON ENTER (OMITE READONLY) ---
+            $(document).on("keypress", ".auto-save-otros, .auto-save5", function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    var $inputs = $(\'.auto-save-otros, .auto-save5\');
+                    var $editables = $inputs.filter(function() {
+                        return !$(this).prop(\'readonly\') && $(this).is(\':visible\');
+                    });
+                    var index = $editables.index(this);
+                    if (index > -1 && index + 1 < $editables.length) {
+                        $editables.eq(index + 1).focus().select();
+                    } else {
+                        // Si es el último, intentamos crear una fila nueva automáticamente
+                        if(typeof agregarNuevoEstablecimientoOtros === "function") {
+                            agregarNuevoEstablecimientoOtros($(this).data("form"), $(this).data("gestion"));
+                        }
+                    }
+                }
+            });
+
+            // --- 3. LIMPIEZA DE CEROS AL ENTRAR (FOCUS) ---
             $(document).on("focus", ".auto-save5", function() {
                 if ($(this).val() == "0") $(this).val("");
             }).on("blur", ".auto-save5", function() {
                 if ($(this).val() === "") $(this).val("0");
             });
         });
+
         </script>
 
         <script>
@@ -1799,9 +1731,9 @@ $(document).ready(function() {
             $tabla.='<tbody>';
             foreach($detalle as $row) {
             $tabla .= '<tr>
-                <td style="text-align:left;">'.$row['act_descripcion'].'</td>
-                <td>'.$row['tipo'].'</td>
-                <td>'.$row['nivel'].'</td>
+                <td style="text-align:left;"><b>'.$row['act_descripcion'].'</></td>
+                <td><b>'.$row['tipo'].'</b></td>
+                <td><b>'.$row['nivel'].'</b></td>
                 <td>
                     <input type="text" class="form-control auto-save-infra" 
                         value="'.strtoupper($row['ubicacion']).'" 
@@ -1816,7 +1748,12 @@ $(document).ready(function() {
                         placeholder="MÁX. 500 CARACTERES">
                 </td>
                 <td>
-                    <input type="number" class="auto-save4" min="0" 
+                    <input type="number" class="auto-save4"
+                        style="text-align: right;"
+                        min="0"
+                        max="999999"
+                        oninput="if(this.value.length > 7) this.value = this.value.slice(0, 7);"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 7"
                         value="'.$row['nro_consultorios'].'" 
                         data-form="'.$row['form_id'].'" 
                         data-act="'.$row['act_id'].'" 
@@ -1847,7 +1784,7 @@ $(document).ready(function() {
             }
             $tabla.='</tbody>';
           }
-          else{
+          else{ //// establecimientos que no estan alineados al poa
             $tabla.='<tbody id="tabla_otros_body">';
             foreach($detalle as $row) {
               $readonly = (!empty($row['nivel_establecimiento'])) ? 'readonly style="background-color: #eeeeee; cursor: not-allowed;"' : '';
@@ -1933,13 +1870,281 @@ $(document).ready(function() {
             }
             $tabla.='</tbody>';
           }
-            
             $tabla.='
-          
         </table>';
-
       return $tabla;
     }
+
+
+    /*------- Detalle formulario N 5 -------*/
+    public function formulario_N5($get_form_distrital){
+      $establecimientos=$this->model_diagnosticopei->get_diagnostico_camas($get_form_distrital[0]['dist_id']);
+      $nro_est=count($establecimientos);
+      $tabla='';
+      if($nro_est==0){
+        $tabla.='Sin Formulario !!!';
+      }
+      else{
+      $tabla.='
+      <div class="viewport-container">
+          <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/6/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
+          <div class="page">
+              <!-- Fecha de Impresión Automática -->
+              <div class="fecha-impresion">
+                  Fecha: <span id="fecha-actual5"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
+              </div>
+              <div class="header">
+                  <p>CAJA NACIONAL DE SALUD</p>
+                  <h1><b>DIAGNÓSTICO CAMAS</b></h1>
+              </div>
+
+              <div style="margin: 20px 0; font-weight: bold;">
+                  Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+              </div>
+
+              <div style="font-weight: bold; margin-bottom: 10px;">* Matriz de gestion de camas Hospitalarias</div>';
+             
+             if ($nro_est > 1) {
+                  // CASO: Múltiples establecimientos (USAR ACORDEÓN)
+                  $tabla .= '<div class="panel-group smart-accordion-default" id="accordion-produccion">';
+              }
+
+              foreach ($establecimientos as $row) {
+                  $collapse_id = "hosp_" . $row['act_id'];
+
+                  if ($nro_est > 1) {
+                      // Estructura de Cabecera para Acordeón
+                      $tabla .= '
+                      <div class="panel panel-default">
+                          <div class="panel-heading" style="background-color: #f2f2f2;">
+                              <h4 class="panel-title">
+                                  <a data-toggle="collapse" data-parent="#accordion-produccion" href="#' . $collapse_id . '" class="collapsed" style="text-decoration:none; display: block; width: 100%;"> 
+                                      <i class="fa fa-lg fa-angle-down pull-right"></i> 
+                                      <b>' . strtoupper($row['act_descripcion']) . '</b> <small>(' . $row['tipo'] . ')</small>
+                                  </a>
+                              </h4>
+                          </div>
+                          <div id="' . $collapse_id . '" class="panel-collapse collapse">';
+                  } else {
+                      // Estructura de Título simple para un solo establecimiento
+                      $tabla .= '
+                      <div class="well well-sm" style="background-color: #f2f2f2; border: 1px solid #ccc;">
+                          <h4 style="margin:0;"><b>' . strtoupper($row['act_descripcion']) . '</b> <small>(' . $row['tipo'] . ')</small></h4>
+                      </div>
+                      <div class="bloque-unico">';
+                  }
+
+                  // Contenido de la Tabla (Común para ambos casos)
+                  $tabla .= '
+                      <div class="panel-body no-padding">
+                          <table class="table table-bordered table-condensed" style="width:100%; margin-bottom:0;">
+                              <thead>
+                                  <tr style="text-align:center; background-color: #fafafa; font-size: 11px; color: #666;">
+                                      <th style="width:10%;">GESTIÓN</th>
+                                      <th style="width:20%;">NRO. DE CAMAS</th>
+                                      <th style="width:20%;">% DE OCUPACIÓN</th>
+                                      <th style="width:25%;">ESTANCIA MEDIA</th>
+                                      <th style="width:25%;">GIRO CAMA</th>
+                                  </tr>
+                              </thead>
+                              <tbody>';
+
+                  for ($anio = 2021; $anio <= 2025; $anio++) {
+                      $tabla .= '
+                      <tr>
+                        <td style="text-align:center; vertical-align:middle; font-weight:bold; background-color: #f9f9f9;">' . $anio . '</td>
+                        
+                        <!-- Nro de Camas -->
+                        <td>
+                            <input type="number" class="form-control auto-save-cama limpiar-cero" 
+                                value="' . $row['camas_'.$anio] . '" 
+                                data-form="' . $row['form_id'] . '" data-act="' . $row['act_id'] . '" data-gestion="' . $anio . '" data-campo="nro_camas" 
+                                style="text-align:right;">
+                        </td>
+                        
+                        <!-- % Ocupación con estilo de grupo -->
+                        <td>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control auto-save-cama limpiar-cero" 
+                                    value="' . round($row['ocupacion_'.$anio],2) . '" 
+                                    data-form="' . $row['form_id'] . '" data-act="' . $row['act_id'] . '" data-gestion="' . $anio . '" data-campo="ocupacion" 
+                                    style="text-align:right;">
+                                <span class="input-group-addon" style="padding: 4px 7px; font-weight: bold;">%</span>
+                            </div>
+                        </td>
+                        
+                        <!-- Estancia Media -->
+                        <td>
+                            <input type="number" class="form-control auto-save-cama limpiar-cero" 
+                                value="' . $row['estancia_'.$anio] . '" 
+                                data-form="' . $row['form_id'] . '" data-act="' . $row['act_id'] . '" data-gestion="' . $anio . '" data-campo="nro_estancia_media" 
+                                style="text-align:right;">
+                        </td>
+                        
+                        <!-- Giro Cama -->
+                        <td>
+                            <input type="number" class="form-control auto-save-cama limpiar-cero" 
+                                value="' . $row['giro_'.$anio] . '"
+                                data-form="' . $row['form_id'] . '" data-act="' . $row['act_id'] . '" data-gestion="' . $anio . '" data-campo="nro_giro_cama" 
+                                style="text-align:right;">
+                        </td>
+                    </tr>';
+                  }
+
+                  $tabla .= '</tbody></table></div></div>'; // Cierra panel-body y collapse/bloque-unico
+
+                  if ($nro_est > 1) {
+                      $tabla .= '</div>'; // Cierra panel-default
+                  }
+              }
+
+              if ($nro_est > 1) {
+                  $tabla .= '</div>'; // Cierra el accordion-produccion
+              }
+                   
+         $tabla.='         
+              <!-- Pie de página -->
+              <div class="footer-nacional">
+                  DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
+
+        <script>
+          document.getElementById("fecha-actual5").innerText = new Date().toLocaleDateString();
+        </script>
+        <script>
+        $(document).ready(function() {
+            var base_url = "'.base_url().'";
+
+            // --- 1. GESTIÓN DE CEROS (FOCUS / BLUR) ---
+            $(document).on("focus", ".limpiar-cero", function() {
+                var $el = $(this);
+                if (parseFloat($el.val()) === 0) {
+                    $el.val("");
+                }
+                $el.select();
+            });
+
+            $(document).on("blur", ".limpiar-cero", function() {
+                var $el = $(this);
+                if ($el.val() === "" || $el.val() === null) {
+                    $el.val("0");
+                }
+            });
+
+            // --- 2. GUARDADO AUTOMÁTICO E INDEPENDIENTE ---
+            $(document).on("keyup change", ".auto-save-cama", function(e) {
+                var $el = $(this);
+                var campo = $el.data("campo");
+                var valor = $el.val();
+
+                // VALIDACIÓN CRÍTICA DE OCUPACIÓN
+                if (campo === "ocupacion" && valor > 100) {
+                    clearTimeout($el.data("h_timer")); // DETENEMOS el guardado automático
+                    
+                    $el.val(100); // Forzamos el tope visualmente
+                    $el.css({"border-color": "#dc3545", "background-color": "#fff5f5"}); // Rojo
+                    
+                    alert("⚠️ Error: El porcentaje de ocupación no puede sobrepasar el 100%. Se ha reajustado al valor máximo.");
+                    
+                    // Opcional: disparamos el guardado con el valor corregido (100)
+                    valor = 100; 
+                }
+
+                // Validación de Negativos
+                if (parseFloat(valor) < 0) { $el.val(0); return false; }
+
+                // Validación de Porcentaje Máximo (100%)
+                if (campo === "ocupacion" && parseFloat(valor) > 100) {
+                    $el.val(100);
+                    valor = 100;
+                }
+
+                // Timer independiente por cada input para evitar colisiones
+                clearTimeout($el.data("h_timer"));
+                
+                // Efecto visual: amarillo mientras espera guardado
+                if (e.type === "keyup") $el.css("border-color", "#ffc107");
+
+                var t_id = setTimeout(function() {
+                    $.ajax({
+                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_produccion_cama_automatica",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            form_id: $el.data("form"),
+                            act_id:  $el.data("act"),
+                            gestion: $el.data("gestion"),
+                            campo:   campo,
+                            valor:   valor
+                        },
+                        success: function(resp) {
+                            if (resp.status == "success") {
+                                $el.css({"border-color": "#28a745", "background-color": "#fafffa"});
+                                $("#toast-notificacion").stop(true, true).fadeIn(100).delay(600).fadeOut(100);
+                            }
+                            setTimeout(function(){ 
+                                $el.css({"border-color": "", "background-color": ""}); 
+                            }, 800);
+                        }
+                    });
+                }, 450); // 450ms de espera tras dejar de escribir
+
+                $el.data("h_timer", t_id);
+            });
+
+            // --- 3. SALTO INTELIGENTE CON TECLA ENTER ---
+            $(document).on("keypress", ".auto-save-cama", function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    var $el = $(this);
+                    var $inputs = $(".auto-save-cama");
+                    var index = $inputs.index(this);
+
+                    if (index > -1 && index + 1 < $inputs.length) {
+                        var $next = $inputs.eq(index + 1);
+                        
+                        // Si el siguiente está en un acordeón cerrado, lo abrimos
+                        var $collapse = $next.closest(".panel-collapse");
+                        if ($collapse.length > 0 && !$collapse.hasClass("in")) {
+                            $next.closest(".panel").find(".enlace-acordeon").trigger("click");
+                            
+                            // Esperamos a la animación para dar foco
+                            setTimeout(function() {
+                                $next.focus().select();
+                            }, 400);
+                        } else {
+                            $next.focus().select();
+                        }
+                    }
+                }
+            });
+        });
+        </script>';
+      }
+        return $tabla;
+    }
+
+
+
+
+
+
+
+
 
 
     /*------- Trabajando -------*/
@@ -2005,7 +2210,7 @@ $(document).ready(function() {
                     background-color: white; 
                     width: 8.5in; 
                     min-width: 8.5in; /* Evita que se encoja en celulares */
-                    height: 18in; 
+                    height: 30in; 
                     padding: 0.6in 0.7in; 
                     box-sizing: border-box; 
                     position: relative; 
@@ -2034,9 +2239,9 @@ $(document).ready(function() {
                 .page_horizontal_corto { 
                     background-color: white; 
                     /* Invertimos: Ancho ahora es 11 pulgadas y alto 8.5 */
-                    width: 18in; 
-                    min-width: 18in; /* Mantiene el ancho horizontal en celulares con scroll */
-                    height: 15in; 
+                    width: 20in; 
+                    min-width: 20in; /* Mantiene el ancho horizontal en celulares con scroll */
+                    height: 13in; 
                     padding: 0.4in 0.5in; /* Reducimos un poco el padding para ganar espacio */
                     box-sizing: border-box; 
                     position: relative; 
@@ -2047,6 +2252,21 @@ $(document).ready(function() {
                     overflow: hidden; /* Evita que el contenido "chorree" fuera de la hoja */
                 }
 
+                .page_horizontal_mas_corto_height { 
+                    background-color: white; 
+                    /* Invertimos: Ancho ahora es 11 pulgadas y alto 8.5 */
+                    width: 23in; 
+                    min-width: 23in; /* Mantiene el ancho horizontal en celulares con scroll */
+                    height: 9in; 
+                    padding: 0.4in 0.5in; /* Reducimos un poco el padding para ganar espacio */
+                    box-sizing: border-box; 
+                    position: relative; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #ccc;
+                    overflow: hidden; /* Evita que el contenido "chorree" fuera de la hoja */
+                }
                 .fecha-impresion {
                     position: absolute;
                     top: 0.3in;

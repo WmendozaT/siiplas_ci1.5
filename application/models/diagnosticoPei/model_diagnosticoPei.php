@@ -289,7 +289,7 @@ class model_diagnosticoPei extends CI_Model {
                     COALESCE(d.nro_empresas_reg, 0) AS empresas,
                     COALESCE(d.nro_aportes_dia, 0) AS aportes,
                     COALESCE(d.nro_empresa_mora, 0) AS mora,
-                    (COALESCE(d.nro_empresas_reg, 0) + COALESCE(d.nro_aportes_dia, 0) + COALESCE(d.nro_empresa_mora, 0)) AS total_gestion_empresas
+                    (COALESCE(d.nro_aportes_dia, 0) + COALESCE(d.nro_empresa_mora, 0)) AS total_gestion_empresas
                 FROM formulario_diagnostico_pei f
                 -- Cambiamos CROSS JOIN por INNER JOIN para poder usar ON
                 INNER JOIN gestiones g ON f.pei_id = g.pei_id 
@@ -329,7 +329,7 @@ class model_diagnosticoPei extends CI_Model {
                     COALESCE(det.nro_empresas_reg, 0) AS empresas,
                     COALESCE(det.nro_aportes_dia, 0) AS aportes,
                     COALESCE(det.nro_empresa_mora, 0) AS mora,
-                    (COALESCE(det.nro_empresas_reg, 0) + COALESCE(det.nro_aportes_dia, 0) + COALESCE(det.nro_empresa_mora, 0)) AS total_gestion_empresas
+                    (COALESCE(det.nro_aportes_dia, 0) + COALESCE(det.nro_empresa_mora, 0)) AS total_gestion_empresas
                 FROM distritales d
                 CROSS JOIN gestiones g
                 CROSS JOIN rango_pei r
@@ -572,7 +572,138 @@ class model_diagnosticoPei extends CI_Model {
         return $query->result_array();
     }
 
-    
+    /*--- Detalle formulario N5 Infraestructura Consolidado Institucional---*/
+    public function get_infraestructura_por_nivel_consolidado(){
+    $sql = "
+            WITH rango_pei AS (
+            SELECT pei_id, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
+        ),
+        distritales AS (
+            SELECT dist_id, dist_distrital, abrev FROM public._distritales WHERE dist_estado = 1 AND dist_id > 0
+        )
+        -- PARTE 1: ESTABLECIMIENTOS OFICIALES (ALINEADOS)
+        SELECT 
+            d.dist_id,
+            d.dist_distrital,
+            d.abrev AS abreviatura,
+            r.g_id_fin AS gestion_pei,
+            v.act_id,
+            v.act_descripcion AS nombre_establecimiento,
+            v.tipo AS tipo_establecimiento,
+            v.nivel AS nivel_establecimiento,
+            COALESCE(inf.ubicacion, '') AS ubicacion,
+            COALESCE(inf.nro_consultorios, 0) AS nro_consultorios,
+            COALESCE(inf.serv_internet, '') AS serv_internet,
+            COALESCE(inf.tipo_situacion, '') AS tipo_situacion,
+            1 AS tp_infra,
+            'SEGÚN POA' AS descripcion_infra
+        FROM vlista_establecimientos_salud v
+        INNER JOIN rango_pei r ON v.aper_gestion = r.g_id_fin
+        INNER JOIN distritales d ON d.dist_id = v.dist_id
+        LEFT JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id = v.dist_id)
+        LEFT JOIN formularion4_detalle_infra det4 ON (det4.form_id = f.form_id AND det4.g_id = r.g_id_fin)
+        LEFT JOIN infraestructura_form4 inf ON (inf.det4_id = det4.det4_id AND inf.act_id = v.act_id)
+
+        UNION ALL
+
+        -- PARTE 2: OTROS ESTABLECIMIENTOS (NO ALINEADOS)
+        SELECT 
+            d.dist_id,
+            d.dist_distrital,
+            d.abrev AS abreviatura,
+            r.g_id_fin AS gestion_pei,
+            0 AS act_id, -- No tienen act_id oficial
+            inf_o.otro_establecimiento AS nombre_establecimiento,
+            inf_o.tipo_establecimiento,
+            inf_o.nivel_establecimiento,
+            inf_o.ubicacion,
+            COALESCE(inf_o.nro_consultorios, 0) AS nro_consultorios,
+            inf_o.serv_internet,
+            inf_o.tipo_situacion,
+            0 AS tp_infra,
+            'OTROS ESTABLECIMIENTOS' AS descripcion_infra
+        FROM infraestructura_otros_form4 inf_o
+        INNER JOIN formularion4_detalle_infra det4 ON det4.det4_id = inf_o.det4_id
+        INNER JOIN formulario_diagnostico_pei f ON f.form_id = det4.form_id
+        INNER JOIN distritales d ON d.dist_id = f.dist_id
+        CROSS JOIN rango_pei r
+        WHERE det4.g_id = r.g_id_fin
+
+        ORDER BY dist_id ASC, tp_infra DESC, nivel_establecimiento ASC, nombre_establecimiento ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*--- Detalle formulario N6 Diagnostico Camas (Establecimientos de 2 y 3 nivel)---*/
+    public function get_diagnostico_camas($dist_id){
+    $sql = "
+            WITH rango_pei AS (
+        -- Obtenemos el PEI activo y el rango de años
+        SELECT pei_id, g_id_inicio, g_id_fin 
+        FROM Diagnostico_pei 
+        WHERE estado = 1 
+        LIMIT 1
+    ),
+    establecimientos AS (
+        -- Universo de establecimientos de 2do y 3er nivel de la distrital
+        SELECT v.act_id, v.act_descripcion, v.tipo, v.nivel, v.dist_id
+        FROM vlista_establecimientos_salud v
+        INNER JOIN rango_pei r ON v.aper_gestion = r.g_id_fin
+        WHERE v.dist_id = $dist_id
+          AND v.tn_id IN (2,3)
+    )
+    SELECT 
+        f.form_id,
+        f.dist_id,
+        est.act_id,
+        est.act_descripcion,
+        est.tipo,
+        est.nivel,
+        
+            -- Gestión 2021
+        COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.nro_camas END), 0) AS camas_2021,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.ocupacion END), 0) AS ocupacion_2021,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.nro_estancia_media END), 0) AS estancia_2021,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.nro_giro_cama END), 0) AS giro_2021,
+        
+        -- Gestión 2022
+        COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.nro_camas END), 0) AS camas_2022,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.ocupacion END), 0) AS ocupacion_2022,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.nro_estancia_media END), 0) AS estancia_2022,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.nro_giro_cama END), 0) AS giro_2022,
+
+        -- Gestión 2023
+        COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.nro_camas END), 0) AS camas_2023,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.ocupacion END), 0) AS ocupacion_2023,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.nro_estancia_media END), 0) AS estancia_2023,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.nro_giro_cama END), 0) AS giro_2023,
+
+        -- Gestión 2024
+        COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.nro_camas END), 0) AS camas_2024,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.ocupacion END), 0) AS ocupacion_2024,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.nro_estancia_media END), 0) AS estancia_2024,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.nro_giro_cama END), 0) AS giro_2024,
+
+        -- Gestión 2025
+        COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.nro_camas END), 0) AS camas_2025,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.ocupacion END), 0) AS ocupacion_2025,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.nro_estancia_media END), 0) AS estancia_2025,
+        COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.nro_giro_cama END), 0) AS giro_2025
+
+    FROM establecimientos est
+    CROSS JOIN rango_pei r
+    LEFT JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id = est.dist_id)
+    LEFT JOIN formularion5_produccion_cama det5 ON (det5.form_id = f.form_id)
+    LEFT JOIN detalle_form5_produccion_cama d5 ON (d5.det5_id = det5.det5_id AND d5.act_id = est.act_id)
+    GROUP BY est.act_id, est.act_descripcion, est.tipo, est.nivel, f.form_id, f.dist_id
+    ORDER BY est.nivel ASC, est.act_descripcion ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     /*--------- Lista de Unidades Ejecutoras ----------*/
     public function lista_UnidadEjecutora(){
         $sql = 'SELECT *

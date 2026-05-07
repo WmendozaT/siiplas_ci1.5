@@ -404,3 +404,26 @@ create table infraestructura_otros_form4(
   serv_internet character varying(100),
   primary key(infra_otro_id)
 );
+
+
+///////// Detalle formulario N5 - Produccion Cama /////////////
+ create table formularion5_produccion_cama(
+  det5_id serial NOT NULL,
+  form_id integer,
+  g_id integer,
+  form3_estado integer DEFAULT 0,
+  fecha timestamp without time zone DEFAULT ('now'::text)::timestamp(0) with time zone,
+  primary key(det5_id)
+ );
+
+ 
+  create table detalle_form5_produccion_cama(
+  det5_form5_id serial NOT NULL,
+  det5_id integer,
+  act_id integer,
+  nro_camas integer DEFAULT 0,
+  ocupacion numeric(18,2) NOT NULL DEFAULT 0,
+  nro_estancia_media integer DEFAULT 0,
+  nro_giro_cama integer DEFAULT 0,
+  primary key(det5_form5_id)
+ );
