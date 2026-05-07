@@ -436,34 +436,31 @@ class CDiagnostico_pei extends CI_Controller {
 
 
     //// Guarda informacion de las tablas automaticamente form 1
-    public function guarda_detalle_automatica_form1() {
-        $form_id = $this->input->post('form_id');
-        $gestion = $this->input->post('gestion');
-        $columna = $this->input->post('columna'); // Ej: nro_cot_tit
-        $valor   = $this->input->post('valor');
+public function guarda_detalle_automatica_form1() {
+    $form_id = $this->input->post('form_id');
+    $gestion = $this->input->post('gestion');
+    $columna = $this->input->post('columna');
+    $valor   = $this->input->post('valor');
 
-        // Validar que la columna sea permitida (Seguridad)
-        $columnas_permitidas = array('nro_cot_tit', 'nro_cot_pas', 'nro_cot_ben');
-        if (!in_array($columna, $columnas_permitidas)) return;
+    $columnas_permitidas = array('nro_cot_tit', 'nro_cot_pas', 'nro_cot_ben');
+    if (!in_array($columna, $columnas_permitidas)) return;
 
-          $this->db->where('form_id', $form_id);
-          $this->db->where('g_id', $gestion);
-          $existe = $this->db->get('formularion1_detalle')->num_rows();
+    $where = array('form_id' => $form_id, 'g_id' => $gestion);
+    $existe = $this->db->get_where('formularion1_detalle', $where)->num_rows();
 
-          if ($existe > 0) {
-              $this->db->where('form_id', $form_id);
-              $this->db->where('g_id', $gestion);
-              return $this->db->update('formularion1_detalle', array($columna => $valor));
-          } else {
-              return $this->db->insert('formularion1_detalle', array(
-                  'form_id' => $form_id,
-                  'g_id'    => $gestion,
-                  $columna  => $valor
-              ));
-          }
-
-        echo "ok";
+    if ($existe > 0) {
+        $this->db->where($where);
+        $this->db->update('formularion1_detalle', array($columna => $valor));
+    } else {
+        $this->db->insert('formularion1_detalle', array(
+            'form_id' => $form_id,
+            'g_id'    => $gestion,
+            $columna  => $valor
+        ));
     }
+
+    echo "ok"; // Esto garantiza que el AJAX reciba el 'success'
+}
 
 
     //// Guarda informacion de las tablas automaticamente form 1 Grupo Etareo
@@ -479,32 +476,30 @@ class CDiagnostico_pei extends CI_Controller {
         $campo   = $this->input->post('campo');
         $valor   = ($this->input->post('valor') == '' || $this->input->post('valor') < 0) ? 0 : $this->input->post('valor');
 
-        // 1. Buscamos si el registro ya existe
+        // Iniciar transacción para evitar duplicidad por peticiones rápidas
+        $this->db->trans_start();
+
         $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion, 'eta_id' => $eta_id));
         $fila = $this->db->get('formularion1_grupo_etareo')->row();
 
         if ($fila) {
-            // Determinamos los valores finales de ambos campos
             $nro_mas = ($campo == 'nro_masculino') ? $valor : $fila->nro_masculino;
             $nro_fem = ($campo == 'nro_femenino') ? $valor : $fila->nro_femenino;
 
-            // REGLA: Si AMBOS son 0, se elimina de la tabla
             if ($nro_mas == 0 && $nro_fem == 0) {
                 $this->db->where('det_etareo_id', $fila->det_etareo_id);
-                $res = $this->db->delete('formularion1_grupo_etareo');
-                $msg = '🗑️ Registro eliminado por ser ambos valores 0';
+                $this->db->delete('formularion1_grupo_etareo');
+                $msg = '🗑️ Registro eliminado';
             } else {
-                // Si al menos uno no es 0, actualizamos
                 $data_update = array(
                     $campo => $valor,
                     'total_poblacion' => ($nro_mas + $nro_fem)
                 );
                 $this->db->where('det_etareo_id', $fila->det_etareo_id);
-                $res = $this->db->update('formularion1_grupo_etareo', $data_update);
-                $msg = '✅ Información Actualizada correctamente !!';
+                $this->db->update('formularion1_grupo_etareo', $data_update);
+                $msg = '✅ Actualizado';
             }
         } else {
-            // Si no existe y el valor es mayor a 0, insertamos
             if ($valor > 0) {
                 $data_insert = array(
                     'form_id' => $form_id,
@@ -513,51 +508,56 @@ class CDiagnostico_pei extends CI_Controller {
                     $campo    => $valor,
                     'total_poblacion' => $valor 
                 );
-                $res = $this->db->insert('formularion1_grupo_etareo', $data_insert);
-                $msg = '✅ Información Guardada';
+                $this->db->insert('formularion1_grupo_etareo', $data_insert);
+                $msg = '✅ Guardado';
             } else {
-                // Si el valor es 0 y no existe el registro, no hacemos nada
-                echo json_encode(array('status' => 'success', 'msg' => 'Nada que guardar (valor 0)'));
+                $this->db->trans_complete();
+                echo json_encode(array('status' => 'success', 'msg' => 'Nada que guardar'));
                 return;
             }
         }
 
-        if ($res) {
-            echo json_encode(array('status' => 'success', 'msg' => $msg));
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            echo json_encode(array('status' => 'error', 'msg' => 'Error de concurrencia en la BD'));
         } else {
-            echo json_encode(array('status' => 'error', 'msg' => 'Error en la Base de Datos'));
+            echo json_encode(array('status' => 'success', 'msg' => $msg));
         }
     }
     
   //// Guarda informacion de las tablas automaticamente form2
-  public function guarda_detalle_automatica_form2() {
-      $form_id = $this->input->post('form_id');
-      $gestion = $this->input->post('gestion');
-      $columna = $this->input->post('columna'); // Ej: nro_cot_tit
-      $valor   = $this->input->post('valor');
+public function guarda_detalle_automatica_form2() {
+    $form_id = $this->input->post('form_id');
+    $gestion = $this->input->post('gestion');
+    $columna = $this->input->post('columna');
+    $valor   = $this->input->post('valor');
 
-      // Validar que la columna sea permitida (Seguridad)
-      $columnas_permitidas = array('nro_empresas_reg', 'nro_aportes_dia', 'nro_empresa_mora');
-      if (!in_array($columna, $columnas_permitidas)) return;
+    // 1. Columnas específicas para el Formulario 2
+    $columnas_permitidas = array('nro_empresas_reg', 'nro_aportes_dia', 'nro_empresa_mora');
+    if (!in_array($columna, $columnas_permitidas)) return;
 
-        $this->db->where('form_id', $form_id);
-        $this->db->where('g_id', $gestion);
-        $existe = $this->db->get('formularion2_detalle')->num_rows();
+    // 2. Definición del filtro
+    $where = array('form_id' => $form_id, 'g_id' => $gestion);
+    
+    // 3. Verificamos existencia en la tabla del Formulario 2
+    $existe = $this->db->get_where('formularion2_detalle', $where)->num_rows();
 
-        if ($existe > 0) {
-            $this->db->where('form_id', $form_id);
-            $this->db->where('g_id', $gestion);
-            return $this->db->update('formularion2_detalle', array($columna => $valor));
-        } else {
-            return $this->db->insert('formularion2_detalle', array(
-                'form_id' => $form_id,
-                'g_id'    => $gestion,
-                $columna  => $valor
-            ));
-        }
+    if ($existe > 0) {
+        // ACTUALIZACIÓN
+        $this->db->where($where);
+        $this->db->update('formularion2_detalle', array($columna => $valor));
+    } else {
+        // INSERCIÓN
+        $this->db->insert('formularion2_detalle', array(
+            'form_id' => $form_id,
+            'g_id'    => $gestion,
+            $columna  => $valor
+        ));
+    }
 
-      echo "ok";
-  }
+    echo "ok"; // Esto garantiza que el AJAX reciba el 'success' y no se quede cargando
+}
 
 
   //// Guarda informacion de las tablas automaticamente form3

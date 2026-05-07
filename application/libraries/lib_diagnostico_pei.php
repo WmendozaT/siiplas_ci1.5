@@ -143,41 +143,43 @@ class lib_diagnostico_pei extends CI_Controller{
           document.getElementById("fecha-actual").innerText = new Date().toLocaleDateString();
         </script>
         <script>
-          $(document).ready(function() {
-              var timer = null;
-              var base_url = "'.base_url().'"; 
+        $(document).ready(function() {
+            var base_url = "'.base_url().'"; 
 
-              $(".auto-save").on("keyup change", function() {
-                  var $input = $(this);
-                  var $fila = $input.closest("tr");
-                  
-                  // Recalcular total visualmente de inmediato
-                  var t = parseFloat($fila.find("input[data-col=nro_cot_tit]").val()) || 0;
-                  var p = parseFloat($fila.find("input[data-col=nro_cot_pas]").val()) || 0;
-                  var b = parseFloat($fila.find("input[data-col=nro_cot_ben]").val()) || 0;
-                  
-                  $fila.find(".total-row").text(t + p + b);
+            $(".auto-save").on("keyup change", function() {
+                var $input = $(this);
+                var $fila = $input.closest("tr");
+                
+                // Totales visuales instantáneos
+                var t = parseFloat($fila.find("input[data-col=nro_cot_tit]").val()) || 0;
+                var p = parseFloat($fila.find("input[data-col=nro_cot_pas]").val()) || 0;
+                var b = parseFloat($fila.find("input[data-col=nro_cot_ben]").val()) || 0;
+                $fila.find(".total-row").text(t + p + b);
 
-                  clearTimeout(timer);
+                // --- CADA INPUT MANEJA SU PROPIO TIEMPO ---
+                clearTimeout($input.data("h_timer"));
 
-                  timer = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form1",
-                          type: "POST",
-                          data: {
-                              form_id: $input.data("form"),
-                              gestion: $input.data("gestion"),
-                              columna: $input.data("col"),
-                              valor: $input.val()
-                          },
-                          success: function(resp) {
-                              
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
+                var t_id = setTimeout(function() {
+                    $.ajax({
+                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form1",
+                        type: "POST",
+                        data: {
+                            form_id: $input.data("form"),
+                            gestion: $input.data("gestion"),
+                            columna: $input.data("col"),
+                            valor: $input.val()
+                        },
+                        success: function(resp) {
+                            $input.css("border-color", "green");
+                            setTimeout(function(){ $input.css("border-color", ""); }, 1000);
+                            $("#toast-notificacion").fadeIn(200).delay(800).fadeOut(200);
+                        }
+                    });
+                }, 400); // 400ms es suficiente para capturar la intención de guardado
+
+                $input.data("h_timer", t_id);
+            });
+        });
         </script>
 
         <script>
@@ -416,139 +418,106 @@ class lib_diagnostico_pei extends CI_Controller{
         </script>
 
         <script>
-          $(document).ready(function() {
-              var timer = null;
-              var base_url = "'.base_url().'";
+        $(document).ready(function() {
+            var base_url = "'.base_url().'";
 
-              // --- FUNCIÓN PARA SUMAR TODAS LAS FILAS POR GESTIÓN ---
-              function calcularTotalesPorGestion() {
-                  for (var anio = 2021; anio <= 2025; anio++) {
-                      var suma_gestion = 0;
-                      // Sumamos todos los inputs de total de ese año específico
-                      $("input[class*=\'total-" + anio + "-\']").each(function() {
-                          suma_gestion += parseFloat($(this).val()) || 0;
-                      });
-                      // Actualizamos el span en la fila de abajo
-                      $("#suma_total_" + anio).text(suma_gestion.toLocaleString(\'en-US\', {minimumFractionDigits: 2}));
-                  }
-              }
+            // --- FUNCIÓN PARA SUMAR TODAS LAS FILAS POR GESTIÓN ---
+            function calcularTotalesPorGestion() {
+                for (var anio = 2021; anio <= 2025; anio++) {
+                    var suma_gestion = 0;
+                    $("input[class*=\'total-" + anio + "-\']").each(function() {
+                        suma_gestion += parseFloat($(this).val()) || 0;
+                    });
+                    $("#suma_total_" + anio).text(suma_gestion.toLocaleString(\'en-US\', {minimumFractionDigits: 2}));
+                }
+            }
 
-              // Ejecutar al cargar la página por primera vez
-              calcularTotalesPorGestion();
-
-              function verificarIncoherencias() {
+            function verificarIncoherencias() {
                 var errores = 0;
                 var gestiones_vacias = 0;
-
                 for (var anio = 2021; anio <= 2025; anio++) {
                     var total_etareo = parseFloat($("#suma_total_" + anio).text().replace(/,/g, "")) || 0;
                     var total_f1 = parseFloat($("#ref_f1_" + anio).text().replace(/,/g, "")) || 0;
-                    
                     var diferencia = (total_f1 - total_etareo).toFixed(2);
                     var $span_diff = $("#diff_" + anio);
                     var $celda_diff = $("#celda_diff_" + anio);
                     
                     $span_diff.text(diferencia);
-
-                    // CONDICIÓN 1: Verificar si hay diferencia con Form 1
                     if (Math.abs(diferencia) > 0.01) {
                         $celda_diff.css("background-color", "#f8d7da"); 
                         errores++;
-                    } 
-                    // CONDICIÓN 2: Verificar si el total es 0 (está vacío)
-                    else if (total_etareo === 0) {
-                        $celda_diff.css("background-color", "#fff3cd"); // Amarillo: Sin datos
+                    } else if (total_etareo === 0) {
+                        $celda_diff.css("background-color", "#fff3cd");
                         $span_diff.text("Sin datos").css("color", "#856404");
                         gestiones_vacias++;
-                    }
-                    else {
+                    } else {
                         $celda_diff.css("background-color", "#d4edda"); 
                         $span_diff.text("0.00 ✅").css("color", "#28a745");
                     }
                 }
 
                 var $btn = $("#btn-reporte");
-                
-                // Solo habilitar si NO hay errores Y al menos una gestión tiene DATOS (> 0)
-                // Si quieres que las 5 gestiones tengan datos obligatoriamente, usa: (gestiones_vacias === 0)
                 if (errores === 0 && gestiones_vacias < 5) {
-                    $btn.removeClass("btn-disabled")
-                        .attr("title", "Imprimir Formulario")
-                        .css("pointer-events", "auto");
+                    $btn.removeClass("btn-disabled").attr("title", "Imprimir").css("pointer-events", "auto");
                 } else {
-                    $btn.addClass("btn-disabled")
-                        .css("pointer-events", "none");
-                        
-                    if (gestiones_vacias === 5) {
-                        $btn.attr("title", "No hay datos registrados para imprimir");
-                    } else {
-                        $btn.attr("title", "Existen diferencias con el Formulario N° 1");
-                    }
+                    $btn.addClass("btn-disabled").css("pointer-events", "none");
                 }
             }
 
+            // Inicializar
+            calcularTotalesPorGestion();
             verificarIncoherencias();
 
-              $(".auto-save").on("keyup change", function() {
-                  var $input = $(this);
-                  var $fila = $input.closest("tr");
-                  var gestion = $input.data("gestion");
-                  var eta_id  = $input.data("eta");
+            $(".auto-save").on("keyup change", function() {
+                var $input = $(this);
+                var $fila = $input.closest("tr");
+                var gestion = $input.data("gestion");
+                var eta_id  = $input.data("eta");
 
-                  // 1. Recalcular total de la FILA (M + F)
-                  var m = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_masculino\']").val()) || 0;
-                  var f = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_femenino\']").val()) || 0;
-                  var suma = (m + f).toFixed(2);
-                  
-                  $fila.find(".total-" + gestion + "-" + eta_id).val(suma);
+                // 1. Recalcular total de la FILA (M + F) inmediatamente
+                var m = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_masculino\']").val()) || 0;
+                var f = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_femenino\']").val()) || 0;
+                $fila.find(".total-" + gestion + "-" + eta_id).val((m + f).toFixed(2));
 
-                  // --- LLAMADA A LA SUMATORIA GLOBAL ---
-                  calcularTotalesPorGestion();
-                  verificarIncoherencias();
+                calcularTotalesPorGestion();
+                verificarIncoherencias();
 
-                  clearTimeout(timer);
-                  timer = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form1_etareo",
-                          type: "POST",
-                          dataType: "json",
-                          data: {
-                              form_id: $input.data("form"),
-                              dist_id: $input.data("dist"),
-                              eta_id:  eta_id,
-                              gestion: gestion,
-                              campo:   $input.data("campo"),
-                              valor:   $input.val()
-                          },
-                          success: function(resp) {
-                              var $toast = $("#toast-notificacion");
-                              if(resp.status == "success") {
-                                  $input.css("background-color", "#d4edda");
-                                  $toast.text(resp.msg).css({"background-color": "#28a745", "color": "white"}).fadeIn(400).delay(1000).fadeOut(400);
-                              } else {
-                                  $input.css("background-color", "#f8d7da").val("");
-                                  
-                                  // Recalcular totales si hubo error y se borró el valor
-                                  var m2 = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_masculino\']").val()) || 0;
-                                  var f2 = parseFloat($fila.find("input[data-gestion=\'"+gestion+"\'][data-campo=\'nro_femenino\']").val()) || 0;
-                                  $fila.find(".total-" + gestion + "-" + eta_id).val((m2 + f2).toFixed(2));
-                                  
-                                  calcularTotalesPorGestion(); // Actualizar sumatoria global de nuevo
+                // --- TEMPORIZADOR INDEPENDIENTE POR CELDA ---
+                clearTimeout($input.data("h_timer"));
 
-                                  $toast.text("❌ " + resp.msg).css({"background-color": "#dc3545", "color": "white"}).fadeIn(400).delay(3000).fadeOut(400);
-                              }
-                              setTimeout(function(){ $input.css("background-color", ""); }, 1500);
-                          },
-                          error: function() {
-                              $input.css("background-color", "#f8d7da").val("");
-                              calcularTotalesPorGestion();
-                              alert("Error de conexión");
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-          </script>
+                var t_id = setTimeout(function() {
+                    $.ajax({
+                        url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form1_etareo",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            form_id: $input.data("form"),
+                            dist_id: $input.data("dist"),
+                            eta_id:  eta_id,
+                            gestion: gestion,
+                            campo:   $input.data("campo"),
+                            valor:   $input.val()
+                        },
+                        success: function(resp) {
+                            if(resp.status == "success") {
+                                $input.css("background-color", "#d4edda");
+                                $("#toast-notificacion").text(resp.msg).fadeIn(200).delay(800).fadeOut(200);
+                            } else {
+                                $input.css("background-color", "#f8d7da").val("0");
+                                // Forzar recálculo por error
+                                $fila.find(".total-" + gestion + "-" + eta_id).val("0.00");
+                                calcularTotalesPorGestion();
+                                verificarIncoherencias();
+                            }
+                            setTimeout(function(){ $input.css("background-color", ""); }, 1000);
+                        }
+                    });
+                }, 400); // Bajamos a 400ms para mayor fluidez
+
+                $input.data("h_timer", t_id);
+            });
+        });
+        </script>
 
           <script>
               $(document).ready(function() {
@@ -713,43 +682,58 @@ class lib_diagnostico_pei extends CI_Controller{
         <script>
           document.getElementById("fecha-actual2").innerText = new Date().toLocaleDateString();
         </script>
-        <script>
-          $(document).ready(function() {
-              var timer = null;
-              var base_url = "'.base_url().'"; 
+<script>
+$(document).ready(function() {
+    var base_url = "'.base_url().'";
 
-              $(".auto-save").on("keyup change", function() {
-                  var $input = $(this);
-                  var $fila = $input.closest("tr");
-                  
-                  // Recalcular total visualmente de inmediato
-                  var t = parseFloat($fila.find("input[data-col=nro_empresas_reg]").val()) || 0;
-                  var p = parseFloat($fila.find("input[data-col=nro_aportes_dia]").val()) || 0;
-                  var b = parseFloat($fila.find("input[data-col=nro_empresa_mora]").val()) || 0;
-                  
-                  $fila.find(".total-row").text(t + p + b);
+    // EVENTO UNIFICADO: Cada input maneja su propio proceso
+    $(".auto-save").on("keyup change", function() {
+        var $input = $(this);
+        var $fila = $input.closest("tr");
+        
+        // 1. Recalculo visual instantáneo (UX rápida)
+        var e = parseFloat($fila.find("input[data-col=nro_empresas_reg]").val()) || 0;
+        var a = parseFloat($fila.find("input[data-col=nro_aportes_dia]").val()) || 0;
+        var m = parseFloat($fila.find("input[data-col=nro_empresa_mora]").val()) || 0;
+        $fila.find(".total-row").text(e + a + m);
 
-                  clearTimeout(timer);
+        // 2. INDICADOR VISUAL: El borde se pone amarillo (está pendiente)
+        $input.css("border", "1px solid #ffc107");
 
-                  timer = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form2",
-                          type: "POST",
-                          data: {
-                              form_id: $input.data("form"),
-                              gestion: $input.data("gestion"),
-                              columna: $input.data("col"),
-                              valor: $input.val()
-                          },
-                          success: function(resp) {
-                              
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-        </script>
+        // 3. TIMER INDEPENDIENTE POR CELDA
+        // Usamos .data("h_timer") para que una celda no cancele a la otra
+        clearTimeout($input.data("h_timer"));
+
+        var t_id = setTimeout(function() {
+            $.ajax({
+                url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_detalle_automatica_form2",
+                type: "POST",
+                data: {
+                    form_id: $input.data("form"),
+                    gestion: $input.data("gestion"),
+                    columna: $input.data("col"),
+                    valor:   $input.val()
+                },
+                success: function(resp) {
+                    // ÉXITO: Borde verde y notificación rápida
+                    $input.css("border", "1px solid #28a745");
+                    $("#toast-notificacion").stop(true, true).fadeIn(200).delay(800).fadeOut(200);
+                    
+                    // Limpiar borde tras 1 segundo
+                    setTimeout(function(){ $input.css("border", ""); }, 1000);
+                },
+                error: function() {
+                    // ERROR: Borde rojo
+                    $input.css("border", "2px solid #dc3545");
+                }
+            });
+        }, 400); // 400ms es el tiempo ideal para no saturar y ser rápido
+
+        // Guardamos el ID del timer específicamente en ESTE input
+        $input.data("h_timer", t_id);
+    });
+});
+</script>
 
         <script>
               $(document).ready(function() {
