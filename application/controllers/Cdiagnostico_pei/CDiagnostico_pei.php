@@ -66,7 +66,7 @@ class CDiagnostico_pei extends CI_Controller {
 
     /*------- Selecciona Unidad Ejecutora -------*/
     public function Seleccion_unidadEjecutora(){
-        $get_diagnostico=$this->model_diagnosticopei->get_diagnostico_activo();
+      $get_diagnostico=$this->model_diagnosticopei->get_diagnostico_activo();
       $UnidadEjecutora=$this->model_diagnosticopei->lista_UnidadEjecutora(); 
       $tabla=''; 
       if(count($get_diagnostico)!=0){
@@ -187,7 +187,7 @@ class CDiagnostico_pei extends CI_Controller {
                       <a href="#tabs-g" data-url="equipo"><b>VI.- EQUIPO</b></a>
                     </li>
                     <li>
-                      <a href="#tabs-h" data-url="compra_servicios"><b>VII.- COMPRA DE SERVICIOS</b></a>
+                      <a href="#tabs-h" data-url="recursos_humanos"><b>VII.- RECURSOS HUMANOS</b></a>
                     </li>
                   </ul>
                   <div id="tabs-a">
@@ -320,11 +320,11 @@ class CDiagnostico_pei extends CI_Controller {
           case 'diagnostico_camas':
               echo $this->lib_diagnostico_pei->formulario_N5($get_form_distrital);
               break;
-          case 'equipamiento':
-              echo $this->lib_diagnostico_pei->trabajando($get_form_distrital);
+          case 'equipo':
+              echo $this->lib_diagnostico_pei->formulario_N6($get_form_distrital);
               break;
-          case 'compra_servicios':
-              echo $this->lib_diagnostico_pei->trabajando($get_form_distrital);
+          case 'recursos_humanos':
+              echo $this->lib_diagnostico_pei->formulario_N7($get_form_distrital);
               break;
           // ... otros casos
           default:
@@ -898,6 +898,200 @@ public function guarda_detalle_automatica_form2() {
         }
 
         // 6. Respuesta para el script
+        echo json_encode(array('status' => $res ? 'success' : 'error'));
+    }
+
+    /// valida formulario 6 equipos
+    public function crear_equipo_completo() {
+        if (ob_get_length()) ob_clean(); // Limpieza de salida
+        if (!$this->input->is_ajax_request()) { show_404(); return; }
+
+        $form_id = $this->input->post('form_id');
+        $gestion = $this->input->post('gestion');
+        $act_id  = $this->input->post('act_id');
+        $servicio = $this->input->post('servicio');
+        $detalle  = $this->input->post('detalle');
+        $precio   = $this->input->post('precio');
+
+        // Validación de seguridad
+        $precio = (is_numeric($precio) && $precio >= 0) ? $precio : 0;
+
+        // 1. Asegurar Cabecera
+        $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+        $cabecera = $this->db->get('formularion6_equipos')->row();
+        $det6_id = ($cabecera) ? $cabecera->det6_id : 0;
+
+        if (!$det6_id) {
+            $this->db->insert('formularion6_equipos', array(
+                'form_id' => $form_id,
+                'g_id' => $gestion,
+                'form6_estado' => 1
+            ));
+            $det6_id = $this->db->insert_id();
+        }
+
+        // 2. Insertar Detalle con nombre de columna corregido
+        $data_detalle = array(
+            'det6_id'           => $det6_id,
+            'act_id'            => $act_id,
+            'servicio'          => strtoupper(trim($servicio)),
+            'detalle_equipo'    => strtoupper(trim($detalle)),
+            'precio_referencial' => $precio // <--- SINCRONIZADO CON TU SQL
+        );
+
+        $res = $this->db->insert('detalle_form6_equipos', $data_detalle);
+        $nuevo_id = $this->db->insert_id();
+
+        echo json_encode(array(
+            'status' => $res ? 'success' : 'error', 
+            'id' => $nuevo_id
+        ));
+    }
+
+    //// update equipo
+    public function guarda_detalle_equipo_form6() {
+        // 1. Limpieza de salida para evitar que espacios o errores previos rompan el JSON
+        if (ob_get_length()) ob_clean();
+
+        // 2. Verificación de seguridad AJAX
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        // 3. Recepción de parámetros (det6_form6_id, columna, valor)
+        $id    = $this->input->post('id');
+        $campo = $this->input->post('campo');
+        $valor = $this->input->post('valor');
+
+        // 4. Validación rápida por tipo de columna
+        if ($campo == 'precio_referencial') {
+            // Aseguramos que sea un número positivo
+            $valor = (is_numeric($valor) && $valor >= 0) ? $valor : 0;
+        } else {
+            // Para 'servicio' y 'detalle_equipo', limpiamos y pasamos a mayúsculas
+            $valor = strtoupper(trim($valor));
+        }
+
+        // 5. UPDATE DIRECTO (Es más rápido que buscar con un IF/SELECT previo)
+        $this->db->where('det6_form6_id', $id);
+        $res = $this->db->update('detalle_form6_equipos', array($campo => $valor));
+
+        // 6. Respuesta JSON veloz
+        if ($res) {
+            echo json_encode(array('status' => 'success'));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'Error de actualización'));
+        }
+    }
+
+    public function eliminar_equipo_form6() {
+        // 1. Verificación de seguridad para peticiones AJAX
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        // 2. Limpieza de cualquier salida previa para evitar errores de JSON
+        if (ob_get_length()) ob_clean();
+
+        // 3. Recepción del ID del detalle
+        $id = $this->input->post('id'); // det6_form6_id
+
+        if ($id) {
+            // 4. Ejecución del borrado
+            $this->db->where('det6_form6_id', $id);
+            $res = $this->db->delete('detalle_form6_equipos');
+
+            if ($res) {
+                // Éxito: el JS ejecutará el .fadeOut() de la fila
+                echo json_encode(array('status' => 'success'));
+            } else {
+                echo json_encode(array('status' => 'error', 'msg' => 'No se pudo eliminar el registro de la base de datos.'));
+            }
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'ID de registro no válido.'));
+        }
+    }
+    /////////////////////////////////////////////////
+
+    public function guarda_rrhh_automatica() {
+        // 1. Limpieza de salida para evitar errores de JSON
+        if (ob_get_length()) ob_clean();
+
+        // 2. Seguridad AJAX
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        // 3. Parámetros recibidos del JS
+        $form_id = $this->input->post('form_id');
+        $gestion = $this->input->post('gestion');
+        $tp_rrhh = $this->input->post('tp_rrhh'); // 1:item, 2:contrato, 3:acefalia
+        $campo   = $this->input->post('campo');
+        $valor   = intval($this->input->post('valor'));
+
+        // 4. ASEGURAR CABECERA (formularion7_rrhh)
+        $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+        $cabecera = $this->db->get('formularion7_rrhh')->row();
+
+        if ($cabecera) {
+            $det7_id = $cabecera->det7_id;
+        } else {
+            // Crear cabecera si no existe para ese año
+            $this->db->insert('formularion7_rrhh', array(
+                'form_id' => $form_id,
+                'g_id'    => $gestion,
+                'form7_estado' => 1
+            ));
+            $det7_id = $this->db->insert_id();
+        }
+
+        // 5. GUARDADO DEL DETALLE (Upsert)
+        // Intentamos actualizar la fila que coincida con la cabecera y el tipo (Item/Contr/Acef)
+        $this->db->where(array('det7_id' => $det7_id, 'tp_rrhh_form' => $tp_rrhh));
+        $this->db->update('detalle_form7_rrhh', array($campo => $valor));
+
+        // Si no se afectó ninguna fila, el registro para ese tipo no existe, lo creamos
+        if ($this->db->affected_rows() == 0) {
+            // Doble verificación de existencia real
+            $this->db->where(array('det7_id' => $det7_id, 'tp_rrhh_form' => $tp_rrhh));
+            $check = $this->db->get('detalle_form7_rrhh')->num_rows();
+
+            if ($check == 0) {
+                $data_insert = array(
+                    'det7_id'      => $det7_id,
+                    'tp_rrhh_form' => $tp_rrhh,
+                    $campo         => $valor
+                );
+                $res = $this->db->insert('detalle_form7_rrhh', $data_insert);
+                $id_detalle = $this->db->insert_id();
+            } else {
+                $res = true; // El valor era el mismo, no hubo cambio
+                $id_detalle = 0; // Obtener de la DB si fuera necesario
+            }
+        } else {
+            $res = true;
+        }
+
+        // 6. RECALCULAR TOTAL DE LA FILA (Integridad de datos en DB)
+        // Esto asegura que la columna 'total' de la tabla detalle esté siempre sincronizada
+        if ($res) {
+            $this->db->query("
+                UPDATE detalle_form7_rrhh 
+                SET total = (
+                    nro_medicos + nro_odontologos + nro_farmaceuticos + nro_laboratoristas + 
+                    nro_otros_prof + nro_nutricionistas + nro_trabajo_social + nro_jefe_superv_enf + 
+                    nro_lic_grad_enf + nro_aux_enf + nro_pers_adm + nro_pers_adm_salud + 
+                    nro_pers_adm_tec + nro_pers_adm_aux + nro_pers_adm_chof + 
+                    nro_pers_adm_artesanos + nro_pers_adm_trab_manual
+                ) 
+                WHERE det7_id = $det7_id AND tp_rrhh_form = $tp_rrhh
+            ");
+        }
+
+        // 7. Respuesta final
         echo json_encode(array('status' => $res ? 'success' : 'error'));
     }
 }

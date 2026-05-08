@@ -704,6 +704,94 @@ class model_diagnosticoPei extends CI_Model {
         return $query->result_array();
     }
 
+
+    /*--- Detalle formulario N7 Diagnostico Equipamiento (Establecimientos)---*/
+    public function get_diagnostico_equipamiento($dist_id){
+    $sql = "
+            WITH rango_pei AS (
+            -- Obtenemos el PEI activo y su gestión final (ej. 2025)
+            SELECT pei_id, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        )
+        SELECT 
+            r.g_id_fin AS gestion_pei,
+            f.form_id,
+            f.dist_id,
+            inf.det6_form6_id,
+            inf.act_id, -- ID del establecimiento alineado
+            est.tipo,
+            est.act_descripcion,
+            inf.servicio,
+            inf.detalle_equipo,
+            inf.precio_referencial
+        FROM rango_pei r
+        INNER JOIN formulario_diagnostico_pei f ON (f.pei_id = r.pei_id AND f.dist_id = $dist_id)
+        -- Unimos con la cabecera del formulario 6 filtrando por la gestión final
+        INNER JOIN formularion6_equipos det6 ON (det6.form_id = f.form_id AND det6.g_id = r.g_id_fin)
+        -- Unimos con el detalle técnico de los equipos
+        INNER JOIN detalle_form6_equipos inf ON (inf.det6_id = det6.det6_id)
+        INNER JOIN vlista_establecimientos_salud est ON (est.act_id = inf.act_id) and (est.aper_gestion=r.g_id_fin)
+        ORDER BY inf.det6_form6_id ASC";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
+
+    /*--- Detalle formulario N8 Diagnostico Recursos Humanos---*/
+    public function get_diagnostico_rrhh($dist_id){
+    $sql = "
+            WITH rango AS (
+                SELECT pei_id, g_id_inicio, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
+            ),
+            categorias AS (
+                SELECT 1 as id, 'PERSONAL DE ÍTEM' as nombre
+                UNION ALL SELECT 2, 'PERSONAL DE CONTRATO'
+                UNION ALL SELECT 3, 'ACEFALÍAS'
+            )
+            SELECT 
+                c.id as tp_rrhh_form,
+                c.nombre as categoria,
+                f.dist_id,
+                f.form_id,
+                g.gestion,
+                COALESCE(d.nro_medicos, 0) as nro_medicos,
+                COALESCE(d.nro_odontologos, 0) as nro_odontologos,
+                COALESCE(d.nro_farmaceuticos, 0) as nro_farmaceuticos,
+                COALESCE(d.nro_laboratoristas, 0) as nro_laboratoristas,
+                COALESCE(d.nro_otros_prof, 0) as nro_otros_prof,
+                COALESCE(d.nro_nutricionistas, 0) as nro_nutricionistas,
+                COALESCE(d.nro_trabajo_social, 0) as nro_trabajo_social,
+                COALESCE(d.nro_jefe_superv_enf, 0) as nro_jefe_superv_enf,
+                COALESCE(d.nro_lic_grad_enf, 0) as nro_lic_grad_enf,
+                COALESCE(d.nro_aux_enf, 0) as nro_aux_enf,
+                COALESCE(d.nro_pers_adm, 0) as nro_pers_adm,
+                COALESCE(d.nro_pers_adm_salud, 0) as nro_pers_adm_salud,
+                COALESCE(d.nro_pers_adm_tec, 0) as nro_pers_adm_tec,
+                COALESCE(d.nro_pers_adm_aux, 0) as nro_pers_adm_aux,
+                COALESCE(d.nro_pers_adm_chof, 0) as nro_pers_adm_chof,
+                COALESCE(d.nro_pers_adm_artesanos, 0) as nro_pers_adm_artesanos,
+                COALESCE(d.nro_pers_adm_trab_manual, 0) as nro_pers_adm_trab_manual,
+                COALESCE(d.total, 0) as total
+            FROM categorias c
+            CROSS JOIN rango r
+            -- Movimos el generate_series afuera para que reconozca los campos de 'r'
+            CROSS JOIN LATERAL generate_series(r.g_id_inicio, r.g_id_fin) as g(gestion)
+            LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = r.pei_id AND f.dist_id = $dist_id
+            LEFT JOIN formularion7_rrhh h ON h.form_id = f.form_id AND h.g_id = g.gestion
+            LEFT JOIN detalle_form7_rrhh d ON d.det7_id = h.det7_id AND d.tp_rrhh_form = c.id
+            ORDER BY g.gestion ASC, c.id ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
     /*--------- Lista de Unidades Ejecutoras ----------*/
     public function lista_UnidadEjecutora(){
         $sql = 'SELECT *
@@ -727,4 +815,14 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--------- Get Establecimientos x distrital ----------*/
+    public function get_establecimientos_distrital($dist_id,$gestion){
+        $sql = 'SELECT *
+                from vlista_establecimientos_salud
+                where dist_id='.$dist_id.' and aper_gestion='.$gestion.'
+                order by tn_id asc';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 }
