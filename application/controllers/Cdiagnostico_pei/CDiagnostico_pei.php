@@ -189,6 +189,15 @@ class CDiagnostico_pei extends CI_Controller {
                     <li>
                       <a href="#tabs-h" data-url="recursos_humanos"><b>VII.- RECURSOS HUMANOS</b></a>
                     </li>
+                    <li>
+                      <a href="#tabs-i" data-url="compra_servicios"><b>VIII.- COMPRA DE SERVICIOS</b></a>
+                    </li>
+                    <li>
+                      <a href="#tabs-j" data-url="presupuestos"><b>IX.- PRESUPUESTOS</b></a>
+                    </li>
+                    <li>
+                      <a href="#tabs-k" data-url="reembolsos"><b>X.- REEMBOLSOS</b></a>
+                    </li>
                   </ul>
                   <div id="tabs-a">
                     <div class="row">
@@ -233,6 +242,24 @@ class CDiagnostico_pei extends CI_Controller {
                   </div>
 
                   <div id="tabs-h">
+                    <div class="row">
+                      <div class="contenido-ajax"></div>
+                    </div>
+                  </div>
+
+                  <div id="tabs-i">
+                    <div class="row">
+                      <div class="contenido-ajax"></div>
+                    </div>
+                  </div>
+
+                  <div id="tabs-j">
+                    <div class="row">
+                      <div class="contenido-ajax"></div>
+                    </div>
+                  </div>
+
+                  <div id="tabs-k">
                     <div class="row">
                       <div class="contenido-ajax"></div>
                     </div>
@@ -325,6 +352,15 @@ class CDiagnostico_pei extends CI_Controller {
               break;
           case 'recursos_humanos':
               echo $this->lib_diagnostico_pei->formulario_N7($get_form_distrital);
+              break;
+          case 'compra_servicios':
+              echo $this->lib_diagnostico_pei->formulario_N8($get_form_distrital);
+              break;
+          case 'presupuestos':
+              echo $this->lib_diagnostico_pei->formulario_N9($get_form_distrital);
+              break;
+          case 'reembolsos':
+              echo $this->lib_diagnostico_pei->formulario_N10($get_form_distrital);
               break;
           // ... otros casos
           default:
@@ -1015,6 +1051,7 @@ public function guarda_detalle_automatica_form2() {
     }
     /////////////////////////////////////////////////
 
+    //// Guarda formulario Recursos Humanos
     public function guarda_rrhh_automatica() {
         // 1. Limpieza de salida para evitar errores de JSON
         if (ob_get_length()) ob_clean();
@@ -1094,4 +1131,185 @@ public function guarda_detalle_automatica_form2() {
         // 7. Respuesta final
         echo json_encode(array('status' => $res ? 'success' : 'error'));
     }
+    /////////////////////////////
+
+    ///// Guarda formulario Compra de Servicios 
+    public function guarda_servicios_automatica() {
+      if (ob_get_length()) ob_clean(); // Limpieza para evitar errores de JSON
+      if (!$this->input->is_ajax_request()) return;
+
+      $form_id  = $this->input->post('form_id');
+      $gestion  = $this->input->post('gestion');
+      $nro_fila = $this->input->post('fila'); // El nro_fila (1, 2 o 3) es nuestra clave
+      $campo    = $this->input->post('campo');
+      $valor    = $this->input->post('valor');
+      $id_sent  = $this->input->post('id'); // ID que viene del JS
+
+      // 1. Asegurar cabecera (det8_id)
+      $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+      $cab = $this->db->get('formularion8_compra_servicios')->row();
+      
+      if ($cab) {
+          $det8_id = $cab->det8_id;
+      } else {
+          $this->db->insert('formularion8_compra_servicios', array(
+              'form_id' => $form_id, 
+              'g_id' => $gestion,
+              'form8_estado' => 1
+          ));
+          $det8_id = $this->db->insert_id();
+      }
+
+      // 2. LÓGICA ANTIDUPLICADOS: Buscar por "Casillero Fijo"
+      // Buscamos si ya existe un registro vinculado a esta cabecera Y a esta posición (1, 2 o 3)
+      $this->db->where(array(
+          'det8_id' => $det8_id, 
+          'nro_posicion' => $nro_fila // Usamos la fila como identificador único
+      ));
+      $registro_existente = $this->db->get('detalle_form8_compra_servicios')->row();
+
+      if ($registro_existente) {
+          // ACCIÓN: ACTUALIZAR (Si ya existe la fila 1, 2 o 3 para ese año)
+          $this->db->where('det8_form8_id', $registro_existente->det8_form8_id);
+          $res = $this->db->update('detalle_form8_compra_servicios', array($campo => $valor));
+          $id_final = $registro_existente->det8_form8_id;
+      } else {
+          // ACCIÓN: INSERTAR (Es la primera vez que se toca este casillero)
+          $data_ins = array(
+              'det8_id' => $det8_id,
+              'nro_posicion' => $nro_fila, // Guardamos la posición para futuras validaciones
+              $campo => $valor
+          );
+          $res = $this->db->insert('detalle_form8_compra_servicios', $data_ins);
+          $id_final = $this->db->insert_id();
+      }
+
+      // 3. Respuesta JSON con el ID real de la base de datos
+      echo json_encode(array(
+          'status' => $res ? 'success' : 'error', 
+          'nuevo_id' => $id_final
+      ));
+  }
+
+  //// guarda formulario Presupuesto
+  public function guarda_presupuesto_automatica() {
+      // 1. Limpieza de salida para evitar errores de JSON
+      if (ob_get_length()) ob_clean();
+
+      $id_det  = $this->input->post('id');
+      $campo   = $this->input->post('campo');
+      $valor   = $this->input->post('valor');
+      $form_id = $this->input->post('form_id');
+      $gestion = $this->input->post('gestion');
+
+      // --- 1. ASEGURAR CABECERA (formularion9_presupuestos) ---
+      $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+      $cabecera = $this->db->get('formularion9_presupuestos')->row();
+
+      if ($cabecera) {
+          $det9_id = $cabecera->det9_id;
+      } else {
+          $this->db->insert('formularion9_presupuestos', array(
+              'form_id' => $form_id, 
+              'g_id' => $gestion,
+              'form9_estado' => 1
+          ));
+          $det9_id = $this->db->insert_id();
+      }
+
+      // --- 2. LÓGICA UPSERT PARA EL DETALLE ---
+      // Si el ID es 0, buscamos si ya existe una fila para este det9_id para no duplicar
+      if (empty($id_det) || $id_det == 0) {
+          $this->db->where('det9_id', $det9_id);
+          $existe_det = $this->db->get('detalle_form9_presupuestos')->row();
+          
+          if ($existe_det) {
+              $id_det = $existe_det->det9_form9_id;
+          } else {
+              // Si realmente es nuevo, insertamos
+              $this->db->insert('detalle_form9_presupuestos', array(
+                  'det9_id' => $det9_id,
+                  $campo => $valor
+              ));
+              $id_det = $this->db->insert_id();
+          }
+      }
+
+      // --- 3. ACTUALIZAR EL VALOR DEL CAMPO ACTUAL ---
+      $this->db->where('det9_form9_id', $id_det);
+      $res = $this->db->update('detalle_form9_presupuestos', array($campo => $valor));
+
+      // --- 4. RECALCULO AUTOMÁTICO (Usando COALESCE para evitar errores con NULL) ---
+      if ($res) {
+          $sql = "UPDATE detalle_form9_presupuestos 
+                  SET total_ingresos_ejecutados = (COALESCE(ingresos_propios_ejecutados,0) + COALESCE(recursos_financieros_ejecutados,0)),
+                      gastos_programados        = (COALESCE(ingresos_propios_programados,0) + COALESCE(recursos_financieros_programados,0)),
+                      deficit_superavit         = (COALESCE(ingresos_propios_ejecutados,0) + COALESCE(recursos_financieros_ejecutados,0)) - COALESCE(gastos_ejecutados,0)
+                  WHERE det9_form9_id = " . intval($id_det);
+          $this->db->query($sql);
+      }
+
+      // --- 5. RESPUESTA AL SCRIPT ---
+      echo json_encode(array(
+          'status' => $res ? 'success' : 'error', 
+          'nuevo_id' => $id_det
+      ));
+  }
+
+  /////
+    public function guarda_reembolso_automatica() {
+      // 1. Limpieza radical de salida
+      if (ob_get_length()) ob_clean();
+
+      $id_det  = $this->input->post('id');
+      $campo   = $this->input->post('campo');
+      $valor   = $this->input->post('valor');
+      $form_id = $this->input->post('form_id');
+      $gestion = $this->input->post('gestion');
+
+      // Asegurar valor numérico
+      $valor = (is_numeric($valor)) ? $valor : 0;
+
+      // 2. Asegurar cabecera (formularion10_reembolsos)
+      $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
+      $cab = $this->db->get('formularion10_reembolsos')->row();
+      $det10_id = ($cab) ? $cab->det10_id : 0;
+
+      if (!$det10_id) {
+          $this->db->insert('formularion10_reembolsos', array('form_id' => $form_id, 'g_id' => $gestion, 'form10_estado' => 1));
+          $det10_id = $this->db->insert_id();
+      }
+
+      // 3. Lógica Upsert para el Detalle (Tabla: detalle_form10_presupuestos)
+      if (empty($id_det) || $id_det == 0) {
+          $this->db->where('det10_id', $det10_id);
+          $existe_det = $this->db->get('detalle_form10_presupuestos')->row();
+          
+          if ($existe_det) {
+              $id_det = $existe_det->det10_form10_id;
+          } else {
+              $this->db->insert('detalle_form10_presupuestos', array('det10_id' => $det10_id, $campo => $valor));
+              $id_det = $this->db->insert_id();
+          }
+      }
+
+      // 4. Actualizar campo
+      $this->db->where('det10_form10_id', $id_det);
+      $res = $this->db->update('detalle_form10_presupuestos', array($campo => $valor));
+
+      // 5. Recalculo del Total en Servidor (Evita descuadres)
+      if ($res) {
+          $sql = "UPDATE detalle_form10_presupuestos 
+                  SET total_reembolsos = (
+                      COALESCE(reemb_concep_medicamentos,0) + 
+                      COALESCE(reemb_concep_laboratorio,0) + 
+                      COALESCE(reemb_concep_imagenologia,0) + 
+                      COALESCE(reemb_otros_conceptos,0)
+                  )
+                  WHERE det10_form10_id = " . intval($id_det);
+          $this->db->query($sql);
+      }
+
+      echo json_encode(array('status' => $res ? 'success' : 'error', 'nuevo_id' => $id_det));
+  }
 }

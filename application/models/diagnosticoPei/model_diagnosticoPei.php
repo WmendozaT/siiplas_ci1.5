@@ -61,7 +61,10 @@ class model_diagnosticoPei extends CI_Model {
                 COALESCE(obs4.obs_id, 0) AS verif_obs4, obs4.obs_id, obs4.obs_nro as obs_nro4, obs4.obs_contenido as observacion4,
                 COALESCE(obs5.obs_id, 0) AS verif_obs5, obs5.obs_id, obs5.obs_nro as obs_nro5, obs5.obs_contenido as observacion5,
                 COALESCE(obs6.obs_id, 0) AS verif_obs6, obs6.obs_id, obs6.obs_nro as obs_nro6, obs6.obs_contenido as observacion6,
-                COALESCE(obs7.obs_id, 0) AS verif_obs7, obs7.obs_id, obs7.obs_nro as obs_nro7, obs7.obs_contenido as observacion7
+                COALESCE(obs7.obs_id, 0) AS verif_obs7, obs7.obs_id, obs7.obs_nro as obs_nro7, obs7.obs_contenido as observacion7,
+                COALESCE(obs8.obs_id, 0) AS verif_obs8, obs8.obs_id, obs8.obs_nro as obs_nro8, obs8.obs_contenido as observacion8,
+                COALESCE(obs9.obs_id, 0) AS verif_obs9, obs9.obs_id, obs9.obs_nro as obs_nro9, obs9.obs_contenido as observacion9,
+                COALESCE(obs10.obs_id, 0) AS verif_obs10, obs10.obs_id, obs10.obs_nro as obs_nro10, obs10.obs_contenido as observacion10
             FROM diagnostico_pei pei
             INNER JOIN formulario_diagnostico_pei form ON form.pei_id = pei.pei_id
             INNER JOIN _distritales ds ON ds.dist_id = form.dist_id 
@@ -72,6 +75,9 @@ class model_diagnosticoPei extends CI_Model {
             LEFT JOIN form_observacion obs5 ON obs5.form_id = form.form_id AND obs5.obs_nro = 5
             LEFT JOIN form_observacion obs6 ON obs6.form_id = form.form_id AND obs6.obs_nro = 6
             LEFT JOIN form_observacion obs7 ON obs7.form_id = form.form_id AND obs7.obs_nro = 7
+            LEFT JOIN form_observacion obs8 ON obs8.form_id = form.form_id AND obs8.obs_nro = 8
+            LEFT JOIN form_observacion obs9 ON obs9.form_id = form.form_id AND obs9.obs_nro = 9
+            LEFT JOIN form_observacion obs10 ON obs10.form_id = form.form_id AND obs10.obs_nro = 10
             WHERE pei.estado = 1 
               AND pei.pei_id = ". (int)$pei_id ." 
               AND form.dist_id = ". (int)$dist_id;
@@ -791,6 +797,314 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--- Detalle formulario N9 Diagnostico Compra de Servicios ---*/
+    public function get_diagnostico_compra_servicios($dist_id){
+    $sql = "
+            WITH rango AS (
+                SELECT pei_id, g_id_inicio, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
+            ),
+            matriz AS (
+                -- Generamos la base fija de 3 filas por año
+                SELECT g.gestion, s.nro_fila, r.pei_id
+                FROM rango r
+                CROSS JOIN LATERAL generate_series(r.g_id_inicio, r.g_id_fin) AS g(gestion)
+                CROSS JOIN LATERAL generate_series(1, 3) AS s(nro_fila)
+            ),
+            datos_registrados AS (
+                -- Obtenemos los datos reales tal cual están en la tabla
+                SELECT 
+                    h.g_id,
+                    d.*
+                FROM formularion8_compra_servicios h
+                INNER JOIN detalle_form8_compra_servicios d ON d.det8_id = h.det8_id
+                INNER JOIN formulario_diagnostico_pei f ON f.form_id = h.form_id
+                WHERE f.dist_id = $dist_id
+            )
+            SELECT 
+                f.dist_id,
+                m.gestion,
+                m.nro_fila, -- Muestra siempre 1, 2, 3
+                f.form_id,
+                dr.det8_form8_id,
+                COALESCE(dr.serv_contratado, '') as serv_contratado,
+                COALESCE(dr.nro_atenciones, 0) as nro_atenciones,
+                COALESCE(dr.costo_total, 0) as costo_total,
+                COALESCE(dr.cservicios_observaciones, '') as cservicios_observaciones
+            FROM matriz m
+            LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = m.pei_id AND f.dist_id = $dist_id
+            -- UNIÓN CLAVE: Unimos la matriz con la tabla real usando gestión Y nro_posicion
+            LEFT JOIN datos_registrados dr ON dr.g_id = m.gestion 
+                                           AND dr.nro_posicion = m.nro_fila
+            ORDER BY m.gestion ASC, m.nro_fila ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*--- Detalle formulario N9 Diagnostico Compra de Servicios ---*/
+    public function get_diagnostico_compra_servicios_consolidado(){
+    $sql = "
+            WITH rango AS (
+                -- Obtenemos el PEI activo
+                SELECT pei_id, g_id_inicio, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
+            ),
+            distritales_activas AS (
+                -- Universo de distritales (excluyendo dist_id 0 y el ID 22)
+                SELECT dist_id, dist_distrital, abrev 
+                FROM public._distritales 
+                WHERE dist_estado = 1 
+                  AND dist_id > 0 
+                  AND dist_id <> 22
+            ),
+            matriz_base AS (
+                -- Generamos la estructura completa: Distritales x Años x 3 Filas fijas
+                SELECT 
+                    d.dist_id, 
+                    d.dist_distrital, 
+                    d.abrev, 
+                    g.gestion, 
+                    s.nro_fila, 
+                    r.pei_id
+                FROM distritales_activas d
+                CROSS JOIN rango r
+                CROSS JOIN LATERAL generate_series(r.g_id_inicio, r.g_id_fin) AS g(gestion)
+                CROSS JOIN LATERAL generate_series(1, 3) AS s(nro_fila)
+            ),
+            datos_registrados AS (
+                -- Obtenemos los datos reales existentes sin usar ROW_NUMBER
+                SELECT 
+                    f.dist_id,
+                    h.g_id,
+                    d.*
+                FROM formularion8_compra_servicios h
+                INNER JOIN detalle_form8_compra_servicios d ON d.det8_id = h.det8_id
+                INNER JOIN formulario_diagnostico_pei f ON f.form_id = h.form_id
+                WHERE f.dist_id <> 22
+            )
+            SELECT 
+                m.dist_id,
+                m.dist_distrital as regional,
+                m.abrev as abreviatura,
+                m.gestion,
+                m.nro_fila, -- Este es el casillero 1, 2 o 3 de la matriz
+                f.form_id,
+                dr.det8_form8_id,
+                COALESCE(dr.serv_contratado, '') as serv_contratado,
+                COALESCE(dr.nro_atenciones, 0) as nro_atenciones,
+                COALESCE(dr.costo_total, 0) as costo_total,
+                COALESCE(dr.cservicios_observaciones, '') as cservicios_observaciones
+            FROM matriz_base m
+            -- Unimos con el formulario para verificar vinculación
+            LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = m.pei_id AND f.dist_id = m.dist_id
+            -- UNIÓN CLAVE: Cruce por regional, gestión y posición exacta (nro_posicion)
+            LEFT JOIN datos_registrados dr ON dr.dist_id = m.dist_id 
+                                           AND dr.g_id = m.gestion 
+                                           AND dr.nro_posicion = m.nro_fila
+            ORDER BY m.dist_id ASC, m.gestion ASC, m.nro_fila ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*--- Detalle formulario N10 Diagnostico de Presupuestos ---*/
+    public function get_diagnostico_presupuestos($dist_id){
+    $sql = "
+           WITH pei_activo AS (
+            -- 1. Obtenemos el rango de años del PEI vigente
+            SELECT pei_id, g_id_inicio, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        matriz_gestiones AS (
+            -- 2. Generamos las filas para cada año del periodo
+            SELECT p.pei_id, g.anio
+            FROM pei_activo p
+            CROSS JOIN LATERAL generate_series(p.g_id_inicio, p.g_id_fin) AS g(anio)
+        )
+        SELECT 
+            m.anio AS gestion,
+            f.form_id,
+            f.dist_id,
+            det.det9_form9_id,
+            -- Campos de Ingresos
+            COALESCE(det.ingresos_propios_programados, 0) AS ingresos_propios_programados,
+            COALESCE(det.ingresos_propios_ejecutados, 0) AS ingresos_propios_ejecutados,
+            COALESCE(det.recursos_financieros_programados, 0) AS recursos_financieros_programados,
+            COALESCE(det.recursos_financieros_ejecutados, 0) AS recursos_financieros_ejecutados,
+            COALESCE(det.total_ingresos_ejecutados, 0) AS total_ingresos_ejecutados,
+            -- Campos de Gastos
+            COALESCE(det.gastos_programados, 0) AS gastos_programados,
+            COALESCE(det.gastos_ejecutados, 0) AS gastos_ejecutados,
+            -- Resultado (Déficit/Superávit)
+            COALESCE(det.deficit_superavit, 0) AS deficit_superavit
+        FROM matriz_gestiones m
+        -- Unimos con el formulario de la distrital específica
+        LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = m.pei_id AND f.dist_id = $dist_id
+        -- Unimos con la cabecera del presupuesto anual
+        LEFT JOIN formularion9_presupuestos h ON h.form_id = f.form_id AND h.g_id = m.anio
+        -- Unimos con el detalle técnico de valores
+        LEFT JOIN detalle_form9_presupuestos det ON det.det9_id = h.det9_id
+        ORDER BY m.anio ASC";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*--- Detalle formulario N10 Diagnostico de Presupuestos Consolidado---*/
+    public function get_diagnostico_presupuestos_consolidado(){
+    $sql = "
+           WITH pei_activo AS (
+                -- 1. Obtenemos el PEI vigente
+                SELECT pei_id, g_id_inicio, g_id_fin 
+                FROM Diagnostico_pei 
+                WHERE estado = 1 
+                LIMIT 1
+            ),
+            distritales_universo AS (
+                -- 2. Universo de regionales activas (Excluyendo dist_id 22 y 0)
+                SELECT dist_id, dist_distrital, abrev 
+                FROM public._distritales 
+                WHERE dist_estado = 1 
+                  AND dist_id > 0 
+                  AND dist_id <> 22
+            ),
+            matriz_base AS (
+                -- 3. Generamos la matriz completa: Distritales x Años del PEI
+                SELECT d.dist_id, d.dist_distrital, d.abrev, g.anio, p.pei_id
+                FROM distritales_universo d
+                CROSS JOIN pei_activo p
+                CROSS JOIN LATERAL generate_series(p.g_id_inicio, p.g_id_fin) AS g(anio)
+            )
+            SELECT 
+                m.dist_id,
+                m.dist_distrital AS regional,
+                m.abrev AS abreviatura,
+                m.anio AS gestion,
+                f.form_id,
+                det.det9_form9_id,
+                -- Campos de Ingresos
+                COALESCE(det.ingresos_propios_programados, 0) AS ingresos_propios_programados,
+                COALESCE(det.ingresos_propios_ejecutados, 0) AS ingresos_propios_ejecutados,
+                COALESCE(det.recursos_financieros_programados, 0) AS recursos_financieros_programados,
+                COALESCE(det.recursos_financieros_ejecutados, 0) AS recursos_financieros_ejecutados,
+                COALESCE(det.total_ingresos_ejecutados, 0) AS total_ingresos_ejecutados,
+                -- Campos de Gastos
+                COALESCE(det.gastos_programados, 0) AS gastos_programados,
+                COALESCE(det.gastos_ejecutados, 0) AS gastos_ejecutados,
+                -- Resultado (Déficit/Superávit)
+                COALESCE(det.deficit_superavit, 0) AS deficit_superavit
+            FROM matriz_base m
+            -- Unimos con el formulario de cada distrital
+            LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = m.pei_id AND f.dist_id = m.dist_id
+            -- Unimos con cabecera de presupuesto
+            LEFT JOIN formularion9_presupuestos h ON h.form_id = f.form_id AND h.g_id = m.anio
+            -- Unimos con detalle de valores
+            LEFT JOIN detalle_form9_presupuestos det ON det.det9_id = h.det9_id
+            ORDER BY m.dist_id ASC, m.anio ASC";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
+    /*--- Detalle formulario N11 Diagnostico de Reembolsos ---*/
+    public function get_diagnostico_reembolsos($dist_id){
+    $sql = "
+           WITH pei_activo AS (
+            -- 1. Obtenemos el periodo del PEI vigente
+            SELECT pei_id, g_id_inicio, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        matriz_gestiones AS (
+            -- 2. Generamos las filas para cada año (2021 a 2025)
+            SELECT p.pei_id, g.anio
+            FROM pei_activo p
+            CROSS JOIN LATERAL generate_series(p.g_id_inicio, p.g_id_fin) AS g(anio)
+        )
+        SELECT 
+            m.anio AS gestion,
+            f.form_id,
+            f.dist_id,
+            det.det10_form10_id,
+            -- Conceptos de Reembolso
+            COALESCE(det.reemb_concep_medicamentos, 0) AS reemb_concep_medicamentos,
+            COALESCE(det.reemb_concep_laboratorio, 0) AS reemb_concep_laboratorio,
+            COALESCE(det.reemb_concep_imagenologia, 0) AS reemb_concep_imagenologia,
+            COALESCE(det.reemb_otros_conceptos, 0) AS reemb_otros_conceptos,
+            -- Total Calculado
+            COALESCE(det.total_reembolsos, 0) AS total_reembolsos
+        FROM matriz_gestiones m
+        -- Unimos con el formulario de la regional específica ($dist_id)
+        LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = m.pei_id AND f.dist_id = $dist_id
+        -- Unimos con la cabecera de Reembolsos anual
+        LEFT JOIN formularion10_reembolsos h ON h.form_id = f.form_id AND h.g_id = m.anio
+        -- Unimos con el detalle de montos
+        LEFT JOIN detalle_form10_presupuestos det ON det.det10_id = h.det10_id
+        ORDER BY m.anio ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+/*--- Detalle formulario N11 Diagnostico de Reembolsos Consolidado---*/
+    public function get_diagnostico_reembolsos_consolidado(){
+    $sql = "
+        WITH pei_activo AS (
+            -- 1. Obtenemos el periodo del PEI vigente
+            SELECT pei_id, g_id_inicio, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        distritales_universo AS (
+            -- 2. Universo de regionales activas (Excluyendo dist_id 0 y dist_id 22)
+            SELECT dist_id, dist_distrital, abrev 
+            FROM public._distritales 
+            WHERE dist_estado = 1 
+              AND dist_id > 0 
+              AND dist_id <> 22
+        ),
+        matriz_base AS (
+            -- 3. Generamos la matriz completa: Distritales x Años del PEI
+            SELECT d.dist_id, d.dist_distrital, d.abrev, g.anio, p.pei_id
+            FROM distritales_universo d
+            CROSS JOIN pei_activo p
+            CROSS JOIN LATERAL generate_series(p.g_id_inicio, p.g_id_fin) AS g(anio)
+        )
+        SELECT 
+            m.dist_id,
+            m.dist_distrital AS regional,
+            m.abrev AS abreviatura,
+            m.anio AS gestion,
+            f.form_id,
+            det.det10_form10_id,
+            -- Conceptos de Reembolso
+            COALESCE(det.reemb_concep_medicamentos, 0) AS reemb_concep_medicamentos,
+            COALESCE(det.reemb_concep_laboratorio, 0) AS reemb_concep_laboratorio,
+            COALESCE(det.reemb_concep_imagenologia, 0) AS reemb_concep_imagenologia,
+            COALESCE(det.reemb_otros_conceptos, 0) AS reemb_otros_conceptos,
+            -- Total Calculado
+            COALESCE(det.total_reembolsos, 0) AS total_reembolsos
+        FROM matriz_base m
+        -- Unimos con el formulario de cada regional
+        LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = m.pei_id AND f.dist_id = m.dist_id
+        -- Unimos con la cabecera de Reembolsos anual
+        LEFT JOIN formularion10_reembolsos h ON h.form_id = f.form_id AND h.g_id = m.anio
+        -- Unimos con el detalle de montos
+        LEFT JOIN detalle_form10_presupuestos det ON det.det10_id = h.det10_id
+        ORDER BY m.dist_id ASC, m.anio ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     /*--------- Lista de Unidades Ejecutoras ----------*/
     public function lista_UnidadEjecutora(){

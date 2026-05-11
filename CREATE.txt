@@ -485,3 +485,76 @@ create table detalle_form7_rrhh(
 
   primary key(det7_form7_id)
  );
+
+
+///// Formulario compra de servicios
+ create table formularion8_compra_servicios(
+  det8_id serial NOT NULL,
+  form_id integer,
+  g_id integer,
+  nro_reg integer DEFAULT 3,
+  form8_estado integer DEFAULT 0,
+  fecha timestamp without time zone DEFAULT ('now'::text)::timestamp(0) with time zone,
+  primary key(det8_id)
+ );
+
+
+ create table detalle_form8_compra_servicios(
+  det8_form8_id serial NOT NULL,
+  det8_id integer,
+  nro_posicion  integer,
+  serv_contratado character varying(5000),
+  nro_atenciones integer DEFAULT 0,
+  costo_total numeric(18,2) NOT NULL DEFAULT 0,
+  cservicios_observaciones character varying(5000),
+
+  primary key(det8_form8_id)
+ );
+
+
+ ////// Formulario Presupuestos
+  create table formularion9_presupuestos(
+  det9_id serial NOT NULL,
+  form_id integer,
+  g_id integer,
+  form9_estado integer DEFAULT 0,
+  fecha timestamp without time zone DEFAULT ('now'::text)::timestamp(0) with time zone,
+  primary key(det9_id)
+ );
+
+
+ create table detalle_form9_presupuestos(
+  det9_form9_id serial NOT NULL,
+  det9_id integer,
+  ingresos_propios_programados numeric(18,2) NOT NULL DEFAULT 0,
+  ingresos_propios_ejecutados numeric(18,2) NOT NULL DEFAULT 0,
+  recursos_financieros_programados numeric(18,2) NOT NULL DEFAULT 0,
+  recursos_financieros_ejecutados numeric(18,2) NOT NULL DEFAULT 0,
+  total_ingresos_ejecutados numeric(18,2) NOT NULL DEFAULT 0,
+  gastos_programados numeric(18,2) NOT NULL DEFAULT 0,
+  gastos_ejecutados numeric(18,2) NOT NULL DEFAULT 0,
+  deficit_superavit numeric(18,2) NOT NULL DEFAULT 0,
+  primary key(det9_form9_id)
+ );
+
+///// formulario Reembolsos
+  create table formularion10_reembolsos(
+  det10_id serial NOT NULL,
+  form_id integer,
+  g_id integer,
+  form10_estado integer DEFAULT 0,
+  fecha timestamp without time zone DEFAULT ('now'::text)::timestamp(0) with time zone,
+  primary key(det10_id)
+ );
+
+
+ create table detalle_form10_presupuestos(
+  det10_form10_id serial NOT NULL,
+  det10_id integer,
+  reemb_concep_medicamentos numeric(18,2) NOT NULL DEFAULT 0,
+  reemb_concep_laboratorio numeric(18,2) NOT NULL DEFAULT 0,
+  reemb_concep_imagenologia numeric(18,2) NOT NULL DEFAULT 0,
+  reemb_otros_conceptos numeric(18,2) NOT NULL DEFAULT 0,
+  total_reembolsos numeric(18,2) NOT NULL DEFAULT 0,
+  primary key(det10_form10_id)
+ );

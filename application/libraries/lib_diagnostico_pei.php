@@ -2602,16 +2602,16 @@ class lib_diagnostico_pei extends CI_Controller{
                           <th rowspan="2" style="width: 10%;vertical-align: middle; text-align:center; min-width: 180px; border-top:none;">CATEGORÍA / PROFESIÓN</th>';
                           
                           // Cabecera de Años con alternancia de colores
-                          for ($anio = 2021; $anio <= 2025; $anio++) {
+                          for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
                               $bgColor = ($anio % 2 == 0) ? '#fce4ec' : '#ffffff';
-                              $tabla .= '<th colspan="3" style="text-align:center; background: '.$bgColor.'; border-bottom: 2px solid #E91E63;">GESTIÓN '.$anio.'</th>';
+                              $tabla .= '<th colspan="3" style="text-align:center; background: '.$bgColor.'; border-bottom: 2px solid #E91E63; font-size: 15px;">GESTIÓN '.$anio.'</th>';
                           }
                       
                       $tabla .= '
                       </tr>
                       <tr style="background: #fafafa; font-size: 9px; color: #666;">';
                           // Sub-cabecera de Tipos
-                          for ($anio = 2021; $anio <= 2025; $anio++) {
+                          for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
                               $tabla .= '<th style="text-align:center; width:50px; font-size:12px;">ITEMS</th>';
                               $tabla .= '<th style="text-align:center; width:50px; font-size:12px;">CONTR.</th>';
                               $tabla .= '<th style="text-align:center; width:50px; background: #fff3f3; font-size:12px;">ACEF.</th>';
@@ -2628,7 +2628,7 @@ class lib_diagnostico_pei extends CI_Controller{
                               '.$label.'
                           </td>';
                           
-                          for ($anio = 2021; $anio <= 2025; $anio++) {
+                          for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
                               for ($tp = 1; $tp <= 3; $tp++) {
                                   // Búsqueda del valor en el array
                                   $valor = 0;
@@ -2668,7 +2668,7 @@ class lib_diagnostico_pei extends CI_Controller{
                         <tr style="background: #f5f5f5; font-weight: bold; border-top: 2px solid #E91E63;">
                             <td style="text-align:right; padding: 10px; font-size: 11px;">TOTAL PERSONAL:</td>';
                             
-                            for ($anio = 2021; $anio <= 2025; $anio++) {
+                            for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
                                 for ($tp = 1; $tp <= 3; $tp++) {
                                     // ID único para cada celda de total por gestión y tipo
                                     $id_total = "total_".$anio."_".$tp;
@@ -2676,7 +2676,7 @@ class lib_diagnostico_pei extends CI_Controller{
 
                                     $tabla .= '
                                     <td style="text-align:right; padding: 5px; background-color: '.$bg_total.'; border: 1px solid #ddd;">
-                                        <span id="'.$id_total.'" class="total-columna" style="font-size:12px; color:#0d47a1;">0</span>
+                                        <span id="'.$id_total.'" class="total-columna" style="font-size:13px; color:#0d47a1;">0</span>
                                     </td>';
                                 }
                             }
@@ -2685,6 +2685,22 @@ class lib_diagnostico_pei extends CI_Controller{
                     </tfoot>
               </table>
             
+              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
+              <input type="hidden" class="nro_obs" value="7">
+
+              <div style="margin-top: 30px;">
+                  <strong>Observaciones adicionales</strong>
+                  <textarea 
+                      class="observaciones-input" 
+                      name="obs" 
+                      id="obs" 
+                      data-nro="7"
+                      onpaste="return false;" 
+                      placeholder="Escriba aquí sus observaciones..."
+                      style="width: 100%; height: 100px; resize: none;"
+                  >'.strtoupper($get_form_distrital[0]['observacion7']).'</textarea>
+              </div>
+
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -2793,15 +2809,780 @@ class lib_diagnostico_pei extends CI_Controller{
             });
         });
         </script>
-        ';
+
+        <script>
+          $(document).ready(function() {
+              var timeout = null;
+              var base_url = "'.base_url().'"; 
+
+              $(".observaciones-input").on("keyup", function() {
+                  var $this = $(this); 
+                  
+                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                  var contenedor = $this.closest("div").parent(); 
+                  var form_id = contenedor.find(".form_id").val();
+                  var nro_obs = contenedor.find(".nro_obs").val();
+                  
+                  var texto = $this.val();
+                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                  if (!form_id || form_id == "0") {
+                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                      return;
+                  }
+
+                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                  
+                  clearTimeout(timeout);
+
+                  timeout = setTimeout(function() {
+                      $.ajax({
+                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                          type: "POST",
+                          data: {
+                              form_id: form_id,
+                              nro: nro_obs, 
+                              observacion: texto
+                          },
+                          success: function(response) {
+
+                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                          },
+                          error: function() {
+                              status.text("Error al guardar").css("color", "red");
+                              $("#toast-notificacion")
+                                  .text("❌ Error al guardar")
+                                  .css("background-color", "#dc3545")
+                                  .fadeIn(400).delay(3000).fadeOut(400);
+                          }
+                      });
+                  }, 800); 
+              });
+          });
+      </script>';
+      
+        return $tabla;
+    }
+
+    /*------- Detalle formulario N 8 Compra de Servicios -------*/
+    public function formulario_N8($get_form_distrital){
+      $detalle_cservicios=$this->model_diagnosticopei->get_diagnostico_compra_servicios($get_form_distrital[0]['dist_id']);
+
+      $tabla='';
+      $tabla.='
+      <div class="viewport-container">
+          <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/9/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
+          <div class="page_horizontal_corto">
+              <!-- Fecha de Impresión Automática -->
+              <div class="fecha-impresion">
+                  Fecha: <span id="fecha-actual9"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
+              </div>
+              <div class="header">
+                  <p>CAJA NACIONAL DE SALUD</p>
+                  <h1><b>DIAGNÓSTICO DE COMPRA DE SERVICIOS</b></h1>
+              </div>
+
+              <div style="margin: 20px 0; font-weight: bold;">
+                  Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+              </div>
+
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Identificación de las tres principales compra de servicios</div>
+                <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border-collapse: collapse;">
+                  <thead>
+                      <tr style="background: #FFF3E0; color: #000000; font-weight: bold;">
+                          <th style="width:8%; text-align:center; vertical-align: middle;">AÑO</th>
+                          <th style="width:30%; text-align:center; vertical-align: middle;">SERVICIO CONTRATADO</th>
+                          <th style="width:12%; text-align:center; vertical-align: middle;">N° ATENCIONES</th>
+                          <th style="width:15%; text-align:center; vertical-align: middle;">COSTO TOTAL (BS.)</th>
+                          <th style="width:35%; text-align:center; vertical-align: middle;">OBSERVACIONES</th>
+                      </tr>
+                  </thead>
+                  <tbody>';
+
+                  // Mapeo de colores de fondo suaves para cada gestión
+                  $colores = [
+                      '2021' => '#F5F5F5', // Gris claro
+                      '2022' => '#FFFFFF', // Blanco
+                      '2023' => '#F5F5F5', 
+                      '2024' => '#FFFFFF', 
+                      '2025' => '#F5F5F5'
+                  ];
+
+                  foreach ($detalle_cservicios as $row) {
+                      $bg = isset($colores[$row['gestion']]) ? $colores[$row['gestion']] : '#fff';
+                      $id_detalle = (isset($row['det8_form8_id']) ? $row['det8_form8_id'] : 0);
+                      
+                      $tabla .= '
+                      <tr style="background-color: '.$bg.';" class="fila-servicio" data-fila="'.$row['nro_fila'].'">
+                        <td style="text-align:center; vertical-align:middle; font-weight:bold; border-right: 2px solid #ddd; font-size: 15px;">
+                            '.$row['gestion'].'
+                        </td>
+                        
+                        <!-- Servicio -->
+                        <td>
+                            <textarea class="form-control auto-save-serv" rows="2" onpaste="return false;"
+                                data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion'].'" data-fila="'.$row['nro_fila'].'" 
+                                data-id="'.$id_detalle.'" data-campo="serv_contratado"
+                                style="text-transform:uppercase; border:1px solid #ccc; resize:none; font-size:10px;">'.strtoupper($row['serv_contratado']).'</textarea>
+                        </td>
+                        
+                        <!-- Atenciones -->
+                        <td style="vertical-align: middle;">
+                            <input type="number" class="form-control auto-save-serv limpiar-cero" value="'.$row['nro_atenciones'].'"
+                                min="0" max="999999"
+                                oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);"
+                                onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 6"
+                                data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion'].'" data-fila="'.$row['nro_fila'].'" 
+                                data-id="'.$id_detalle.'" data-campo="nro_atenciones"
+                                style="text-align:right; border:1px solid #ccc; font-weight:500;">
+                        </td>
+                        
+                        <!-- Costo Total (ESTE ES EL QUE FALTABA COMPLETAR) -->
+                        <td style="vertical-align: middle;">
+                            <input type="number" step="0.01" class="form-control auto-save-serv limpiar-cero" 
+                                value="'.number_format($row['costo_total'], 2, '.', '').'"
+                                data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion'].'" data-fila="'.$row['nro_fila'].'" 
+                                data-id="'.$id_detalle.'" data-campo="costo_total" 
+                                onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46 || event.charCode == 44"
+                                style="text-align:right; font-weight:bold; border:1px solid #ccc; color: #2E7D32;">
+                        </td>
+                        
+                        <!-- Observaciones -->
+                        <td>
+                            <textarea class="form-control auto-save-serv" rows="2" onpaste="return false;"
+                                data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion'].'" data-fila="'.$row['nro_fila'].'" 
+                                data-id="'.$id_detalle.'" data-campo="cservicios_observaciones"
+                                style="text-transform:uppercase; border:1px solid #ccc; resize:none; font-size:10px;">'.strtoupper($row['cservicios_observaciones']).'</textarea>
+                        </td>
+                    </tr>';
+                  }
+
+                  $tabla .= '
+                  </tbody>
+              </table>
+            
+              <!-- Pie de página -->
+              <div class="footer-nacional">
+                  DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
+
+        <script>
+          document.getElementById("fecha-actual9").innerText = new Date().toLocaleDateString();
+        </script>
+        <script>
+         $(document).ready(function() {
+          var BASE_URL = "'.base_url().'";
+
+            // --- 1. GUARDADO AUTOMÁTICO CON BLOQUEO DE DUPLICADOS ---
+            $(document).on("keyup change", ".auto-save-serv", function() {
+                var $el = $(this);
+                var $fila = $el.closest("tr");
+                var campo = $el.data("campo");
+                var valor = $el.val();
+                var id_actual = $el.data("id");
+
+                // SI LA FILA ESTÁ BLOQUEADA POR UNA PETICIÓN EN CURSO, IGNORAR
+                if ($fila.data("guardando") === true) return;
+
+                // Si el usuario está escribiendo un punto o coma decimal, esperar
+                if (valor.endsWith(".") || valor.endsWith(",")) return;
+
+                $el.css("border-color", "#ffc107"); 
+                clearTimeout($el.data("h_timer"));
+
+                var t_id = setTimeout(function() {
+                    // Si el ID es 0, bloqueamos la fila para evitar que otras celdas disparen otro INSERT
+                    if (id_actual == 0) {
+                        $fila.data("guardando", true);
+                    }
+
+                    var valorEnvio = (campo === "costo_total") ? valor.replace(",", ".") : valor.toUpperCase();
+
+                    $.ajax({
+                        url: BASE_URL + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_servicios_automatica",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            form_id: $el.data("form"),
+                            gestion: $el.data("gestion"),
+                            fila:    $el.data("fila"), // Posición 1, 2 o 3
+                            id:      id_actual,
+                            campo:   campo,
+                            valor:   valorEnvio
+                        },
+                        success: function(resp) {
+                            if(resp.status == "success") {
+                                // Sincronizar el nuevo ID en TODOS los inputs de la fila inmediatamente
+                                if(resp.nuevo_id) {
+                                    $fila.find(".auto-save-serv").data("id", resp.nuevo_id).attr("data-id", resp.nuevo_id);
+                                }
+                                $el.css("border-color", "#28a745");
+                                $("#toast-notificacion").stop(true, true).fadeIn(100).delay(600).fadeOut(100);
+                            }
+                        },
+                        complete: function() {
+                            // LIBERAR EL BLOQUEO DE LA FILA SIEMPRE
+                            $fila.data("guardando", false);
+                            setTimeout(function(){ $el.css("border-color", ""); }, 1000);
+                        }
+                    });
+                }, 600); 
+
+                $el.data("h_timer", t_id);
+            });
+
+            // --- 2. FORMATEO SOLO AL SALIR (BLUR) ---
+            $(document).on("blur", ".auto-save-serv", function() {
+                var $el = $(this);
+                if ($el.data("campo") === "costo_total") {
+                    var val = $el.val().replace(",", ".");
+                    if (val !== "" && !isNaN(val)) {
+                        $el.val(parseFloat(val).toFixed(2));
+                    } else {
+                        $el.val("0.00");
+                    }
+                } else if ($el.hasClass("limpiar-cero") && $el.val() === "") {
+                    $el.val("0");
+                }
+            });
+
+            // --- 3. LIMPIEZA AL ENTRAR (FOCUS) ---
+            $(document).on("focus", ".limpiar-cero", function() {
+                var val = $(this).val();
+                if (parseFloat(val) === 0) {
+                    $(this).val(""); 
+                }
+            });
+        });
+        </script>';
       
         return $tabla;
     }
 
 
+    /*------- Detalle formulario N 9 Presupuestos -------*/
+    public function formulario_N9($get_form_distrital){
+      $listado_presupuesto=$this->model_diagnosticopei->get_diagnostico_presupuestos($get_form_distrital[0]['dist_id']);
+
+      $tabla='';
+      $tabla.='
+      <div class="viewport-container">
+          <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/10/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
+          <div class="page_horizontal_corto">
+              <!-- Fecha de Impresión Automática -->
+              <div class="fecha-impresion">
+                  Fecha: <span id="fecha-actual9"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
+              </div>
+              <div class="header">
+                  <p>CAJA NACIONAL DE SALUD</p>
+                  <h1><b>DIAGNÓSTICO DE INGRESOS Y GASTOS ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</b></h1>
+              </div>
+
+              <div style="margin: 20px 0; font-weight: bold;">
+                  Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+              </div>
+
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Diagnostico de Ingresos y Gastos</div>
+                <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border-collapse: collapse;">
+                  <thead>
+                      <tr style="background: #FFF3E0; color: #000000; font-weight: bold;">
+                          <th style="width:8%; text-align:center; vertical-align: middle;">GESTIÓN</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">INGRESOS PROPIOS programados</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">INGRESOS PROPIOS ejecutados</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">RECURSOS FINANCIEROS programados</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">RECURSOS FINANCIEROS ejecutados</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">TOTAL INGRESOS EJECUTADOS</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">GASTOS programados</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">GASTOS ejecutados</th>
+                          <th style="width:11%; text-align:center; vertical-align: middle;">DEFICIT/SUPERAVIT</th>
+                      </tr>
+                  </thead>
+                  <tbody>';
+                    foreach ($listado_presupuesto as $row) {
+                    $id_det = (isset($row['det9_form9_id']) ? $row['det9_form9_id'] : 0);
+                    $tabla .= '
+                    <tr class="fila-presupuesto">
+                        <td style="text-align:center; vertical-align:middle; font-weight:bold; font-size:13px;">'.$row['gestion'].'</td>
+                        
+                        <!-- INGRESOS PROPIOS -->
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre limpiar-cero" value="'.$row['ingresos_propios_programados'].'" data-campo="ingresos_propios_programados" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"></td>
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre limpiar-cero" value="'.$row['ingresos_propios_ejecutados'].'" data-campo="ingresos_propios_ejecutados" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"></td>
+                        
+                        <!-- RECURSOS FINANCIEROS -->
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre limpiar-cero" value="'.$row['recursos_financieros_programados'].'" data-campo="recursos_financieros_programados" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"></td>
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre limpiar-cero" value="'.$row['recursos_financieros_ejecutados'].'" data-campo="recursos_financieros_ejecutados" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"></td>
+                        
+                        <!-- TOTAL INGRESOS EJECUTADOS (AUTOMÁTICO) -->
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre" value="'.$row['total_ingresos_ejecutados'].'" data-campo="total_ingresos_ejecutados" data-id="'.$id_det.'" style="background:#eee; font-weight:bold;" readonly></td>
+                        
+                        <!-- GASTOS PROGRAMADOS (AUTOMÁTICO segun tu regla) -->
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre" value="'.$row['gastos_programados'].'" data-campo="gastos_programados" data-id="'.$id_det.'" style="background:#eee; font-weight:bold;" readonly></td>
+                        
+                        <!-- GASTOS EJECUTADOS -->
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre limpiar-cero" value="'.$row['gastos_ejecutados'].'" data-campo="gastos_ejecutados" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"></td>
+                        
+                        <!-- DEFICIT / SUPERAVIT (AUTOMÁTICO) -->
+                        <td><input type="number" step="0.01" class="form-control auto-save-pre" value="'.$row['deficit_superavit'].'" data-campo="deficit_superavit" data-id="'.$id_det.'" style="background:#eee; font-weight:bold; color:'.($row['deficit_superavit'] < 0 ? 'red' : 'green').';" readonly></td>
+                    </tr>';
+                }
+                  $tabla.='
+                  </tbody>
+              </table>
+              
+              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
+              <input type="hidden" class="nro_obs" value="9">
+
+              <div style="margin-top: 30px;">
+                  <strong>Observaciones adicionales</strong>
+                  <textarea 
+                      class="observaciones-input" 
+                      name="obs" 
+                      id="obs" 
+                      data-nro="9"
+                      onpaste="return false;" 
+                      placeholder="Escriba aquí sus observaciones..."
+                      style="width: 100%; height: 100px; resize: none;"
+                  >'.strtoupper($get_form_distrital[0]['observacion9']).'</textarea>
+              </div>
+
+              <!-- Pie de página -->
+              <div class="footer-nacional">
+                  DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
+
+        <script>
+          document.getElementById("fecha-actual9").innerText = new Date().toLocaleDateString();
+        </script>
+      
+       <script>
+        $(document).ready(function() {
+            var BASE_URL = "'.base_url().'";
+
+            // --- 1. LÓGICA DE GUARDADO Y CÁLCULOS ---
+            $(document).on("keyup change", ".auto-save-pre", function() {
+                var $el = $(this);
+                var $fila = $el.closest("tr");
+                var valor = $el.val();
+                var campo = $el.data("campo");
+
+                // EVITAR SALTOS DE CURSOR AL ESCRIBIR DECIMALES
+                if (valor.endsWith(".") || valor.endsWith(",")) return;
+
+                // A. RECALCULO AUTOMÁTICO VISUAL (UX Instantánea)
+                var i_p_p = parseFloat($fila.find(\'[data-campo="ingresos_propios_programados"]\').val()) || 0;
+                var i_p_e = parseFloat($fila.find(\'[data-campo="ingresos_propios_ejecutados"]\').val()) || 0;
+                var r_f_p = parseFloat($fila.find(\'[data-campo="recursos_financieros_programados"]\').val()) || 0;
+                var r_f_e = parseFloat($fila.find(\'[data-campo="recursos_financieros_ejecutados"]\').val()) || 0;
+                var g_e   = parseFloat($fila.find(\'[data-campo="gastos_ejecutados"]\').val()) || 0;
+
+                var total_ing_ejec = i_p_e + r_f_e;
+                var gastos_prog    = i_p_p + r_f_p;
+                var deficit        = total_ing_ejec - g_e;
+
+                // Actualizar campos automáticos visualmente
+                $fila.find(\'[data-campo="total_ingresos_ejecutados"]\').val(total_ing_ejec.toFixed(2));
+                $fila.find(\'[data-campo="gastos_programados"]\').val(gastos_prog.toFixed(2));
+                
+                var $defInput = $fila.find(\'[data-campo="deficit_superavit"]\');
+                $defInput.val(deficit.toFixed(2));
+                $defInput.css("color", (deficit < 0) ? "#C62828" : "#2E7D32");
+
+                // B. GESTIÓN DE TIEMPO Y AJAX
+                clearTimeout($el.data("h_timer"));
+                $el.css("border-color", "#ffc107"); // Naranja: Pendiente
+
+                var t_id = setTimeout(function() {
+                    var valorEnvio = valor.replace(",", ".");
+                    
+                    $.ajax({
+                        url: BASE_URL + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_presupuesto_automatica",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            id:      $el.data("id"),
+                            form_id: $el.data("form"),
+                            gestion: $el.data("gestion"),
+                            campo:   campo,
+                            valor:   valorEnvio
+                        },
+                        success: function(resp) {
+                            if(resp.status == "success") {
+                                // Sincronizar ID si la fila era nueva
+                                if($el.data("id") == 0 && resp.nuevo_id) {
+                                    $fila.find(".auto-save-pre").data("id", resp.nuevo_id).attr("data-id", resp.nuevo_id);
+                                }
+                                
+                                // INDICADOR VISUAL VERDE
+                                $el.css("border-color", "#28a745");
+                                
+                                // MENSAJE DE CONFIRMACIÓN (TOAST)
+                                $("#toast-notificacion").stop(true, true).fadeIn(200).delay(800).fadeOut(200);
+                                
+                                // Limpiar borde tras 1.5 segundos
+                                setTimeout(function(){ $el.css("border-color", ""); }, 1500);
+                            } else {
+                                $el.css("border-color", "#dc3545");
+                            }
+                        },
+                        error: function() { $el.css("border-color", "#dc3545"); }
+                    });
+                }, 600);
+
+                $el.data("h_timer", t_id);
+            });
+
+            // --- 2. FORMATEO AL SALIR (BLUR) ---
+            $(document).on("blur", ".auto-save-pre", function() {
+                var $el = $(this);
+                var val = $el.val().replace(",", ".");
+                if (val !== "" && !isNaN(val)) {
+                    $el.val(parseFloat(val).toFixed(2));
+                } else {
+                    $el.val("0.00");
+                }
+            });
+
+            // --- 3. LIMPIEZA AL ENTRAR (FOCUS) ---
+            $(document).on("focus", ".limpiar-cero", function() {
+                var val = $(this).val();
+                if (parseFloat(val) === 0) $(this).val("");
+                $(this).select();
+            });
+        });
+        </script>
+        <script>
+          $(document).ready(function() {
+              var timeout = null;
+              var base_url = "'.base_url().'"; 
+
+              $(".observaciones-input").on("keyup", function() {
+                  var $this = $(this); 
+                  
+                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                  var contenedor = $this.closest("div").parent(); 
+                  var form_id = contenedor.find(".form_id").val();
+                  var nro_obs = contenedor.find(".nro_obs").val();
+                  
+                  var texto = $this.val();
+                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                  if (!form_id || form_id == "0") {
+                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                      return;
+                  }
+
+                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                  
+                  clearTimeout(timeout);
+
+                  timeout = setTimeout(function() {
+                      $.ajax({
+                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                          type: "POST",
+                          data: {
+                              form_id: form_id,
+                              nro: nro_obs, 
+                              observacion: texto
+                          },
+                          success: function(response) {
+
+                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                          },
+                          error: function() {
+                              status.text("Error al guardar").css("color", "red");
+                              $("#toast-notificacion")
+                                  .text("❌ Error al guardar")
+                                  .css("background-color", "#dc3545")
+                                  .fadeIn(400).delay(3000).fadeOut(400);
+                          }
+                      });
+                  }, 800); 
+              });
+          });
+      </script>';
+      
+        return $tabla;
+    }
 
 
+  /*------- Detalle formulario N 10 Reembolsos -------*/
+    public function formulario_N10($get_form_distrital){
+      $listado_reembolsos=$this->model_diagnosticopei->get_diagnostico_reembolsos($get_form_distrital[0]['dist_id']);
 
+      $tabla='';
+      $tabla.='
+      <div class="viewport-container">
+          <div style="padding: 15px 0;">
+                <a href="javascript:void(0);" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/11/".$get_form_distrital[0]['dist_id']).'\');" 
+                   class="btn-imprimir" 
+                   title="Imprimir Formulario">
+                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+                </a>
+            </div>
+          <div class="page">
+              <!-- Fecha de Impresión Automática -->
+              <div class="fecha-impresion">
+                  Fecha: <span id="fecha-actual11"></span><br>
+                  Pei : '.$get_form_distrital[0]['pei_id'].'<br>
+                  Formulario : '.$get_form_distrital[0]['form_id'].'<br>
+                  Dist : '.$get_form_distrital[0]['dist_id'].'
+              </div>
+              <div class="header">
+                  <p>CAJA NACIONAL DE SALUD</p>
+                  <h1><b>DIAGNÓSTICO DE REEMBOLSOS ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</b></h1>
+              </div>
+
+              <div style="margin: 20px 0; font-weight: bold;">
+                  Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
+              </div>
+
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Diagnostico de Reembolsos</div>
+                <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border-collapse: collapse;">
+                  <thead>
+                    <tr style="background: #e8eaf6; color: #1a237e;">
+                        <th style="width:10%; text-align:center;">GESTIÓN</th>
+                        <th style="width:18%; text-align:center;">MEDICAMENTOS</th>
+                        <th style="width:18%; text-align:center;">LABORATORIO</th>
+                        <th style="width:18%; text-align:center;">IMAGENOLOGÍA</th>
+                        <th style="width:18%; text-align:center;">OTROS</th>
+                        <th style="width:18%; text-align:center; background:#c5cae9;">TOTAL REEMBOLSOS</th>
+                    </tr>
+                  </thead>
+                  <tbody>';
+                     foreach ($listado_reembolsos as $row) {
+                      $id_det = (isset($row['det10_form10_id']) ? $row['det10_form10_id'] : 0);
+                      
+                      $tabla .= '
+                      <tr class="fila-reembolso">
+                          <td style="text-align:center; vertical-align:middle; font-weight:bold; background:#f9f9f9; font-size:14px;">
+                              '.$row['gestion'].'
+                          </td>
+                          <td>
+                              <input type="number" step="0.01" class="form-control auto-save-reemb limpiar-cero" 
+                                  value="'.number_format($row['reemb_concep_medicamentos'], 2, '.', '').'"
+                                  data-campo="reemb_concep_medicamentos" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"
+                                  onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
+                                  style="text-align:right;">
+                          </td>
+                          <td>
+                              <input type="number" step="0.01" class="form-control auto-save-reemb limpiar-cero" 
+                                  value="'.number_format($row['reemb_concep_laboratorio'], 2, '.', '').'"
+                                  data-campo="reemb_concep_laboratorio" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"
+                                  onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
+                                  style="text-align:right;">
+                          </td>
+                          <td>
+                              <input type="number" step="0.01" class="form-control auto-save-reemb limpiar-cero" 
+                                  value="'.number_format($row['reemb_concep_imagenologia'], 2, '.', '').'"
+                                  data-campo="reemb_concep_imagenologia" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"
+                                  onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
+                                  style="text-align:right;">
+                          </td>
+                          <td>
+                              <input type="number" step="0.01" class="form-control auto-save-reemb limpiar-cero" 
+                                  value="'.number_format($row['reemb_otros_conceptos'], 2, '.', '').'"
+                                  data-campo="reemb_otros_conceptos" data-id="'.$id_det.'" data-gestion="'.$row['gestion'].'" data-form="'.$row['form_id'].'"
+                                  onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
+                                  style="text-align:right;">
+                          </td>
+                          <td style="background:#f5f5f5;">
+                              <input type="number" step="0.01" class="form-control" 
+                                  value="'.number_format($row['total_reembolsos'], 2, '.', '').'"
+                                  data-campo="total_reembolsos" 
+                                  style="text-align:right; font-weight:bold; background:#eee; color:#1a237e;" readonly>
+                          </td>
+                      </tr>';
+                  }
+                  $tabla.='
+                  </tbody>
+              </table>
+              
+              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
+              <input type="hidden" class="nro_obs" value="10">
+
+              <div style="margin-top: 30px;">
+                  <strong>Observaciones adicionales</strong>
+                  <textarea 
+                      class="observaciones-input" 
+                      name="obs" 
+                      id="obs" 
+                      data-nro="10"
+                      onpaste="return false;" 
+                      placeholder="Escriba aquí sus observaciones..."
+                      style="width: 100%; height: 100px; resize: none;"
+                  >'.strtoupper($get_form_distrital[0]['observacion10']).'</textarea>
+              </div>
+
+              <!-- Pie de página -->
+              <div class="footer-nacional">
+                  DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
+
+        <script>
+          document.getElementById("fecha-actual11").innerText = new Date().toLocaleDateString();
+        </script>
+      
+       <script>
+        $(document).ready(function() {
+            var BASE_URL = "'.base_url().'";
+
+            $(document).on("keyup change", ".auto-save-reemb", function() {
+                var $el = $(this);
+                var $fila = $el.closest(".fila-reembolso");
+                var valor = $el.val();
+                var campo = $el.data("campo");
+
+                // 1. CÁLCULO VISUAL INMEDIATO
+                // Usamos comillas simples internas para no chocar con las de PHP
+                var med = parseFloat($fila.find("input[data-campo=\'reemb_concep_medicamentos\']").val()) || 0;
+                var lab = parseFloat($fila.find("input[data-campo=\'reemb_concep_laboratorio\']").val()) || 0;
+                var img = parseFloat($fila.find("input[data-campo=\'reemb_concep_imagenologia\']").val()) || 0;
+                var otr = parseFloat($fila.find("input[data-campo=\'reemb_otros_conceptos\']").val()) || 0;
+
+                var total = med + lab + img + otr;
+                
+                // Actualizamos el campo visual del total
+                $fila.find("input[data-campo=\'total_reembolsos\']").val(total.toFixed(2));
+
+                // 2. EVITAR SALTOS DE CURSOR
+                if (valor.endsWith(".") || valor.endsWith(",")) return;
+
+                // 3. GUARDADO AJAX
+                clearTimeout($el.data("h_timer"));
+                $el.css("border-color", "#ffc107");
+
+                var t_id = setTimeout(function() {
+                    $.ajax({
+                        url: BASE_URL + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_reembolso_automatica",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            id:      $el.data("id"),
+                            form_id: $el.data("form"),
+                            gestion: $el.data("gestion"),
+                            campo:   campo,
+                            valor:   valor.replace(",", ".")
+                        },
+                        success: function(resp) {
+                            if(resp.status == "success") {
+                                // Sincronizar ID en toda la fila para evitar duplicados
+                                if(resp.nuevo_id) {
+                                    $fila.find("input").data("id", resp.nuevo_id).attr("data-id", resp.nuevo_id);
+                                }
+                                $el.css("border-color", "#28a745");
+                                $("#toast-notificacion").stop(true, true).fadeIn(100).delay(800).fadeOut(100);
+                            } else {
+                                $el.css("border-color", "#dc3545");
+                            }
+                        }
+                    });
+                }, 600);
+                $el.data("h_timer", t_id);
+            });
+
+            $(document).on("blur", ".auto-save-reemb", function() {
+                var val = $(this).val().replace(",", ".");
+                if (val !== "" && !isNaN(val)) $(this).val(parseFloat(val).toFixed(2));
+                else $(this).val("0.00");
+            });
+
+            $(document).on("focus", ".limpiar-cero", function() {
+                if (parseFloat($(this).val()) === 0) $(this).val("");
+            });
+        });
+        </script>
+        <script>
+          $(document).ready(function() {
+              var timeout = null;
+              var base_url = "'.base_url().'"; 
+
+              $(".observaciones-input").on("keyup", function() {
+                  var $this = $(this); 
+                  
+                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                  var contenedor = $this.closest("div").parent(); 
+                  var form_id = contenedor.find(".form_id").val();
+                  var nro_obs = contenedor.find(".nro_obs").val();
+                  
+                  var texto = $this.val();
+                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+
+                  if (!form_id || form_id == "0") {
+                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                      return;
+                  }
+
+                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                  
+                  clearTimeout(timeout);
+
+                  timeout = setTimeout(function() {
+                      $.ajax({
+                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                          type: "POST",
+                          data: {
+                              form_id: form_id,
+                              nro: nro_obs, 
+                              observacion: texto
+                          },
+                          success: function(response) {
+
+                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                          },
+                          error: function() {
+                              status.text("Error al guardar").css("color", "red");
+                              $("#toast-notificacion")
+                                  .text("❌ Error al guardar")
+                                  .css("background-color", "#dc3545")
+                                  .fadeIn(400).delay(3000).fadeOut(400);
+                          }
+                      });
+                  }, 800); 
+              });
+          });
+      </script>';
+      
+        return $tabla;
+    }
 
 
 
