@@ -53,6 +53,7 @@ class CDiagnostico_pei extends CI_Controller {
 
 
         $this->load->view('admin/diagnostico_pei/View_diagnostico_pei', $data);
+      
     }
 
     // Función auxiliar para no repetir código HTML de alertas

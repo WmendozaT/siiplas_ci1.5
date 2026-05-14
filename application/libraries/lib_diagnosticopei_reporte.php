@@ -49,30 +49,71 @@ class Lib_diagnosticopei_reporte {
     }
 
     /// cabecera reporte
-    public function cabecera_report($nro_rep,$titulo,$distrital) {
+    public function cabecera_report($nro_rep,$titulo,$get_form_distrital) {
         $tabla='';
         $tabla.='
-                <table class="tabla-header">
+        <page_header>
+            <!-- Quitamos paddings en px que rompen el DOM del PDF. Usamos margin-lateral para alinear con la página -->
+            <div style="padding-top: 25px; margin-left: 15mm; margin-right: 15mm; display: block;">
+                
+                <!-- Forzamos table-layout fixed para que respete estrictamente los porcentajes en Portrait y Landscape -->
+                <table style="width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif; table-layout: fixed;">
                     <tr>
-                        <td style="width: 50%; text-align: left; font-weight: bold;">
-                            FORMULARIO PEI N° '.$nro_rep.'
+                        <td style="width: 20%; text-align: left; vertical-align: middle; font-size:9px;">
+                            <b>FORMULARIO PEI N° '.$nro_rep.'</b>
                         </td>
-                        <td style="width: 50%; font-size:9px; text-align: right; font-weight: bold;">
-                            Fecha de Impresión: '.date('d/m/Y').' <br>
-                            Hora: '.date('H:i:s').'
+                        
+                        <td style="width: 60%; text-align: center; vertical-align: middle;">
+                            <span style="font-size: 13px; font-weight: bold; color: #004640; letter-spacing: 0.5px;">
+                                CAJA NACIONAL DE SALUD
+                            </span>
+                            <br>
+                            <span style="font-size: 17px; font-weight: bold; color: #212121; line-height: 1.2;">
+                                '.$titulo.'
+                            </span>
+                            <br>
+                            <span style="font-size: 11px; font-weight: bold; color: #212121; line-height: 1.2;">
+                                '.strtoupper($get_form_distrital[0]['dist_distrital']).'
+                            </span>
+                        </td>
+                        
+                        <td style="width: 20%; text-align: right; vertical-align: middle; font-size: 8px; color: #424242; line-height: 1.3;">
+                            PERIODO PEI: <b style="color: #212121;">'.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].'</b>
+                            <br>
+                            Fecha de Impresión: '.date('d/m/Y').'
                         </td>
                     </tr>
                 </table>
-
-                <!-- Título centrado y ajustado -->
-                <div class="text-center">
-                    <span style="font-size: 12pt; font-weight: bold;">CAJA NACIONAL DE SALUD</span><br>
-                    <span class="titulo-principal">'.$titulo.'</span>
-                </div>
-                <div class="linea"></div>
-
-                <!-- Resto del contenido -->
-                <p><strong>'.strtoupper($distrital).'</strong></p>';
+                
+                <!-- Barras Estéticas alineadas perfectamente con los datos -->
+                <div style="width: 100%; height: 3px; background-color: #004640; margin-top: 12px; margin-bottom: 2px;"></div>
+                <div style="width: 100%; height: 1px; background-color: #e0e0e0;"></div>
+            </div>
+        </page_header>
+            <!-- ==================== PIE DE PÁGINA ESTÁTICO ==================== -->
+        <page_footer>
+            <!-- Usamos los mismos márgenes en milímetros que la cabecera y el contenido base -->
+            <div style="margin-left: 15mm; margin-right: 15mm; padding-bottom: 15px; display: block;">
+                
+                <!-- Línea divisoria superior limpia -->
+                <div style="width: 100%; height: 1px; background-color: #cccccc; margin-bottom: 6px;"></div>
+                
+                <!-- Tabla elástica con ancho total controlado al 100% -->
+                <table style="width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif; table-layout: fixed;">
+                    <tr>
+                        <!-- Zona Izquierda (50% proporcional) -->
+                        <td style="width: 50%; text-align: left; vertical-align: middle; font-size: 8.5px; color: #666666; font-weight: 500;">
+                            Sistema de Planificación SIIPLAS
+                        </td>
+                        
+                        <!-- Zona Derecha (50% proporcional) -->
+                        <td style="width: 50%; text-align: right; vertical-align: middle; font-size: 8.5px; color: #424242; font-weight: bold;">
+                            Página [[page_cu]] de [[page_nb]]
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </page_footer>';
         
         return $tabla;
     }
@@ -86,7 +127,7 @@ class Lib_diagnosticopei_reporte {
         <!-- Definición de página para HTML2PDF -->
         <page orientation="'.$orientacion.'" backtop="15mm" backbottom="15mm" backleft="15mm" backright="15mm">
                 <div class="contenedor-reporte">
-                '.$this->cabecera_report(1,'DIAGNÓSTICO DE LA POBLACIÓN ASEGURADA',$get_form_distrital[0]['dist_distrital']).'
+                '.$this->cabecera_report(1,'DIAGNÓSTICO DE LA POBLACIÓN ASEGURADA',$get_form_distrital).'
                 <p class="bold">1. Objetivo del instrumento</p>
                 <div class="box-container" style="border: 1px solid #000;font-size:10.5px;">
                     Recopilar, validar y sistematizar información cuantitativa de la población afiliada (titulares y Beneficiarios) para analizar tendencias y cobertura y demanda potencial de la Caja Nacional de Salud.
@@ -474,9 +515,161 @@ class Lib_diagnosticopei_reporte {
 
 
 
+public function form_pdf4($orientacion, $get_form_distrital) {
+    // 1. Carga de datos
+    $dist_id = $get_form_distrital[0]['dist_id'];
+    $gestion_fin = $get_form_distrital[0]['g_id_fin'];
+    
+    $detalle_1er = $this->CI->model_diagnosticopei->get_infraestructura_por_nivel($dist_id, '1');
+    $detalle_2do = $this->CI->model_diagnosticopei->get_infraestructura_por_nivel($dist_id, '2,3');
+    $detalle_otros = $this->CI->model_diagnosticopei->get_otros_infraestructura_por_nivel($dist_id);
 
+    $tabla = $this->style_report();
+    
+    // Reducimos backbottom a 15mm para ganar espacio útil y evitar hojas vacías
+    $tabla .= ' 
+    <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+    
+    <!-- ==================== CABECERA ESTÁTICA CORPORATIVA ==================== -->
+    '.$this->cabecera_report(1,'DIAGNÓSTICO INFRAESTRUCTURA DE SALUD',$get_form_distrital).'
+
+    <!-- ==================== CONTENIDO DINÁMICO ==================== -->
+    <p class="bold">1. Objetivo del instrumento</p>
+    <div class="box-container" style="border: 1px solid #000; font-size:10.5px; padding: 8px; margin-bottom: 15px;">
+        Identificar, registrar y evaluar las condiciones de la infraestructura de los establecimientos de salud, para determinar su capacidad operativa y soporte a la demanda poblacional.
+    </div>
+
+    <!-- SECCIÓN 2: PRIMER NIVEL -->
+    <p class="bold" style="margin-top: 15px;">2. Matriz de inventario de establecimientos de PRIMER NIVEL (segun poa '.$gestion_fin.')</p>
+    <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
+        <thead>
+             <tr style="text-align:center; background-color: #004640; color: #fff;">
+                 <th style="width:5%; font-size:8px; padding:3px;">#</th>
+                 <th style="width:25%; font-size:8px; padding:3px;">Establecimiento</th>
+                 <th style="width:35%; font-size:8px;">Ubicación</th>
+                 <th style="width:10%; font-size:7px;">Nro. Consultorios</th>
+                 <th style="width:10%; font-size:7px;">¿Cuenta con Internet?</th>
+                 <th style="width:15%; font-size:7px;">Situación Técnico Legal</th>
+             </tr>
+         </thead>
+         <tbody>';
+         $nro = 0;
+         foreach ($detalle_1er as $row) {
+                $internet = ($row['serv_internet'] == '1' || strtoupper($row['serv_internet']) == 'SI') ? 'SI' : 'NO';
+                $situacion = strtoupper($row['tipo_situacion']);
+                if($situacion == '1') $situacion = 'PROPIA';
+                if($situacion == '2') $situacion = 'ALQUILADA';
+                $nro++;
+                $tabla .= '
+                    <tr>
+                        <td style="width:5%; text-align:center; font-size:7px; padding:3px;"><b>'.$nro.'</b></td>
+                        <td style="width:25%; text-align:left; font-size:7px; padding:3px;">'.$row['tipo'].' '.$row['act_descripcion'].'</td>
+                        <td style="width:35%; text-align:left; font-size:6.5px; padding-left:3px;">'.strtoupper($row['ubicacion']).'</td>
+                        <td style="width:10%; text-align:center; font-size:7.5px;">'.$row['nro_consultorios'].'</td>
+                        <td style="width:10%; text-align:center; font-size:7px;">'.$internet.'</td>
+                        <td style="width:15%; text-align:left; font-size:6.5px; padding-left:3px;">'.$situacion.'</td>
+                    </tr>';
+            }
+         $tabla .= '
+         </tbody>
+    </table>';
+
+    // SECCIÓN 3: SEGUNDO Y TERCER NIVEL
+    // Envolvemos esta sección en un contenedor que evita cortes huérfanos innecesarios
+    $tabla .= '
+    <div style="page-break-inside: auto; margin-top: 15px;">
+        <p class="bold">3. Matriz de inventario de establecimientos de SEGUNDO Y TERCER NIVEL (segun poa '.$gestion_fin.')</p>
+        <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
+            <thead>
+                 <tr style="text-align:center; background-color: #004640; color: #fff;">
+                     <th style="width:5%; font-size:8px; padding:3px;">#</th>
+                     <th style="width:25%; font-size:8px; padding:3px;">Establecimiento</th>
+                     <th style="width:35%; font-size:8px;">Ubicación</th>
+                     <th style="width:10%; font-size:7px;">Nro. Consultorios</th>
+                     <th style="width:10%; font-size:7px;">¿Cuenta con Internet?</th>
+                     <th style="width:15%; font-size:7px;">Situación Técnico Legal</th>
+                 </tr>
+             </thead>
+             <tbody>';
+             $nro = 0;
+             foreach ($detalle_2do as $row) {
+                    $internet = ($row['serv_internet'] == '1' || strtoupper($row['serv_internet']) == 'SI') ? 'SI' : 'NO';
+                    $situacion = strtoupper($row['tipo_situacion']);
+                    if($situacion == '1') $situacion = 'PROPIA';
+                    if($situacion == '2') $situacion = 'ALQUILADA';
+                    $nro++;
+                    $tabla .= '
+                        <tr>
+                            <td style="width:5%; text-align:center; font-size:7px; padding:3px;"><b>'.$nro.'</b></td>
+                            <td style="width:25%; text-align:left; font-size:7px; padding:3px;">'.$row['tipo'].' '.$row['act_descripcion'].'</td>
+                            <td style="width:35%; text-align:left; font-size:6.5px; padding-left:3px;">'.strtoupper($row['ubicacion']).'</td>
+                            <td style="width:10%; text-align:center; font-size:7.5px;">'.$row['nro_consultorios'].'</td>
+                            <td style="width:10%; text-align:center; font-size:7px;">'.$internet.'</td>
+                            <td style="width:15%; text-align:left; font-size:6.5px; padding-left:3px;">'.$situacion.'</td>
+                        </tr>';
+                }
+             $tabla .= '
+             </tbody>
+        </table>
+    </div>';
+
+    // SECCIÓN 4: OTROS ESTABLECIMIENTOS (SI EXISTEN)
+    if (count($detalle_otros) > 0) {
+        $tabla .= '
+        <div style="page-break-inside: auto; margin-top: 15px;">
+            <p class="bold">4. Otros Establecimientos</p>
+            <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
+                <thead>
+                     <tr style="text-align:center; background-color: #004640; color: #fff;">
+                         <th style="width:5%; font-size:8px; padding:3px;">#</th>
+                         <th style="width:25%; font-size:8px; padding:3px;">Establecimiento</th>
+                         <th style="width:35%; font-size:8px;">Ubicación</th>
+                         <th style="width:10%; font-size:7px;">Nro. Consultorios</th>
+                         <th style="width:10%; font-size:7px;">¿Cuenta con Internet?</th>
+                         <th style="width:15%; font-size:7px;">Situación Técnico Legal</th>
+                     </tr>
+                 </thead>
+                 <tbody>';
+                 $nro = 0;
+                 foreach ($detalle_otros as $row) {
+                        $internet = ($row['serv_internet'] == '1' || strtoupper($row['serv_internet']) == 'SI') ? 'SI' : 'NO';
+                        $situacion = strtoupper($row['tipo_situacion']);
+                        if($situacion == '1') $situacion = 'PROPIA';
+                        if($situacion == '2') $situacion = 'ALQUILADA';
+                        $nro++;
+                        $tabla .= '
+                            <tr>
+                                <td style="width:5%; text-align:center; font-size:7px; padding:3px;"><b>'.$nro.'</b></td>
+                                <td style="width:25%; text-align:left; font-size:7px; padding:3px;">'.$row['tipo_establecimiento'].' '.$row['otro_establecimiento'].'</td>
+                                <td style="width:35%; text-align:left; font-size:6.5px; padding-left:3px;">'.strtoupper($row['ubicacion']).'</td>
+                                <td style="width:10%; text-align:center; font-size:7.5px;">'.$row['nro_consultorios'].'</td>
+                                <td style="width:10%; text-align:center; font-size:7px;">'.$internet.'</td>
+                                <td style="width:15%; text-align:left; font-size:6.5px; padding-left:3px;">'.$situacion.'</td>
+                            </tr>';
+                    }
+                 $tabla .= '</tbody></table></div>';
+    }
+
+    // SECCIÓN 5: OBSERVACIONES ADICIONALES
+    $tabla .= '
+    <p class="bold" style="margin-top: 15px;">- Observaciones adicionales</p>
+    <div class="box-container" style="width: 96%; border: 0.5px solid #000; font-size:8px; padding:5px; margin-bottom: 25px;">
+        '.(!empty($get_form_distrital[0]['observacion4']) ? strtoupper($get_form_distrital[0]['observacion4']) : 'SIN OBSERVACIONES').'
+    </div>';
+
+    // SECCIÓN 6: CONTENEDOR DE FIRMAS CON PROTECCIÓN DE SALTO DE HOJA
+    $tabla .= '
+    <div style="width: 100%; margin-top: 20mm; text-align: center; page-break-inside: avoid; display: block;">
+        <p style="font-size: 11px; margin: 0; padding: 0;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
+    </div>';
+
+    // CRÍTICO: CERRAMOS CORRECTAMENTE LA PÁGINA PARA ELIMINAR HOJAS BLANCAS FANTASMA
+    $tabla .= '</page>';
+
+    return $tabla;
+}
     /// formulario reporte 4 - Diagnostico Infraestructura
-    public function form_pdf4($orientacion, $get_form_distrital) {
+    public function form_pdf4_($orientacion, $get_form_distrital) {
         // 1. Carga de datos
         $dist_id = $get_form_distrital[0]['dist_id'];
         $gestion_fin = $get_form_distrital[0]['g_id_fin'];
@@ -486,91 +679,141 @@ class Lib_diagnosticopei_reporte {
         $detalle_otros = $this->CI->model_diagnosticopei->get_otros_infraestructura_por_nivel($dist_id);
 
         $observacion = '
-            <p class="bold" style="font-size:9px; margin-top:10px;">* Observaciones adicionales</p>
-            <div class="box-container" style="height: 45px; border: 0.5px solid #000; font-size:8px; padding:5px;">
+            <p class="bold" style="margin-top: 15px;">- Observaciones adicionales</p>
+            <div class="box-container" style="width: 100%; height: 45px; border: 0.5px solid #000; font-size:8px; padding:5px;">
                 '.strtoupper($get_form_distrital[0]['observacion4']).'
             </div>';
 
-        $tabla = $this->style_report();
-        
-        // Función interna optimizada
-        $generar_tabla = function($titulo, $datos, $es_otros = false, $mostrar_poa = true) use ($gestion_fin) {
-            if (empty($datos)) return '';
-            
-            // Ajuste de título: Solo agrega POA si mostrar_poa es true
-            $texto_poa = ($mostrar_poa) ? ' (según POA '.$gestion_fin.')' : '';
-            $html = '<p class="bold" style="font-size:9px; margin-top:10px;">* '.$titulo.$texto_poa.'</p>';
-            
-            $html .= '<table class="tabla-datos" style="width:100%; border-collapse: collapse;" border="0.5">
-                        <thead>
-                            <tr style="text-align:center; background-color: #f2f2f2;">
-                                <th style="width:25%; font-size:8px; padding:3px;">Establecimiento</th>
-                                <th style="width:10%; font-size:8px;">Tipo</th>
-                                <th style="width:25%; font-size:8px;">Ubicación</th>
-                                <th style="width:8%; font-size:7px;">Nro. Cons.</th>
-                                <th style="width:8%; font-size:7px;">Internet</th>
-                                <th style="width:24%; font-size:7px;">Situación Técnico Legal</th>
-                            </tr>
-                        </thead>
-                        <tbody>';
-            
-            foreach ($datos as $row) {
-                $nombre = $es_otros ? $row['otro_establecimiento'] : $row['act_descripcion'];
-                $tipo   = $es_otros ? $row['tipo_establecimiento'] : $row['tipo'];
-                
-                $internet = ($row['serv_internet'] == '1' || strtoupper($row['serv_internet']) == 'SI') ? 'SI' : 'NO';
-                $situacion = strtoupper($row['tipo_situacion']);
-                if($situacion == '1') $situacion = 'PROPIA';
-                if($situacion == '2') $situacion = 'ALQUILADA';
+    $tabla = $this->style_report();
+    $tabla.=' 
+    <page orientation="'.$orientacion.'" backtop="30mm" backbottom="20mm" backleft="15mm" backright="15mm">
+    
+    <!-- ==================== CABECERA DINÁMICA UNIVERSAL CORREGIDA ==================== -->
+    '.$this->cabecera_report(1,'DIAGNÓSTICO INFRAESTRUCTURA DE SALUD',$get_form_distrital).'
 
-                $html .= '
-                    <tr>
-                        <td style="width:25%;text-align:left; font-size:7px; padding:3px;">'.strtoupper($nombre).'</td>
-                        <td style="width:10%;text-align:center; font-size:7px;">'.strtoupper($tipo).'</td>
-                        <td style="width:25%;text-align:left; font-size:6.5px;">'.strtoupper($row['ubicacion']).'</td>
-                        <td style="width:8%;text-align:center; font-size:7.5px;">'.$row['nro_consultorios'].'</td>
-                        <td style="width:8%; text-align:center; font-size:7px;">'.$internet.'</td>
-                        <td style="width:24%;text-align:left; font-size:6.5px;">'.$situacion.'</td>
-                    </tr>';
-            }
-            $html .= '</tbody></table>';
-            return $html;
-        };
+    <!-- ==================== CONTENIDO DINÁMICO ==================== -->
+    <div class="contenedor-reporte">
+        <p class="bold">1. Objetivo del instrumento</p>
+        <div class="box-container" style="width: 100%; border: 1px solid #000; font-size:10.5px; padding: 8px; margin-bottom: 15px;">
+            Identificar, registrar y evaluar las condiciones de la infraestructura de los establecimientos de salud, para determinar su capacidad operativa y soporte a la demanda poblacional.
+        </div>
 
-        $total_filas = count($detalle_1er) + count($detalle_2do) + count($detalle_otros);
+        <p class="bold" style="margin-top: 15px;">2. Matriz de inventario de establecimientos de PRIMER NIVEL (segun poa '.$get_form_distrital[0]['g_id_fin'].')</p>
 
-        // Primera Página
-        $tabla .= '<page orientation="'.$orientacion.'" backtop="15mm" backbottom="5mm" backleft="15mm" backright="15mm">
-                    <div class="contenedor-reporte">
-                        '.$this->cabecera_report(4, 'DIAGNÓSTICO DE INFRAESTRUCTURA DE SALUD', $get_form_distrital[0]['dist_distrital']).'
-                <p class="bold" style="font-size:9px;">1. Objetivo del instrumento</p>
-                <div class="box-container" style="border: 1px solid #000; font-size:8.5px;">
-                    Identificar, registrar y evaluar las condiciones de la infraestructura de los establecimientos de salud, para determinar su capacidad operativa y soporte a la demanda poblacional.
-                </div>
-                        '.$generar_tabla('Perfil inventario de establecimientos de PRIMER NIVEL', $detalle_1er).'
-                        '.$generar_tabla('Perfil inventario de establecimientos de SEGUNDO y TERCER NIVEL', $detalle_2do);
+        <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse;" border="1">
+            <thead>
+                 <tr style="text-align:center; background-color: #004640;">
+                     <th style="width:5%; font-size:8px; padding:3px;">#</th>
+                     <th style="width:25%; font-size:8px; padding:3px;">Establecimiento</th>
+                     <th style="width:35%; font-size:8px;">Ubicación</th>
+                     <th style="width:10%; font-size:7px;">Nro. Consultorios</th>
+                     <th style="width:10%; font-size:7px;">cuenta con Internet?</th>
+                     <th style="width:15%; font-size:7px;">Situación Técnico Legal</th>
+                 </tr>
+             </thead>
+             <tbody>';
+             $nro=0;
+             foreach ($detalle_1er as $row) {
+                    $internet = ($row['serv_internet'] == '1' || strtoupper($row['serv_internet']) == 'SI') ? 'SI' : 'NO';
+                    $situacion = strtoupper($row['tipo_situacion']);
+                    if($situacion == '1') $situacion = 'PROPIA';
+                    if($situacion == '2') $situacion = 'ALQUILADA';
+                    $nro++;
+                    $tabla .= '
+                        <tr>
+                            <td style="width:5%;text-align:center; font-size:7px; padding:3px;"><b>'.$nro.'</b></td>
+                            <td style="width:25%;text-align:left; font-size:7px; padding:3px;"><b>'.$row['tipo'].' '.$row['act_descripcion'].'</b></td>
+                            <td style="width:35%;text-align:left; font-size:6.5px;">'.strtoupper($row['ubicacion']).'</td>
+                            <td style="width:10%;text-align:center; font-size:7.5px;">'.$row['nro_consultorios'].'</td>
+                            <td style="width:10%; text-align:center; font-size:7px;">'.$internet.'</td>
+                            <td style="width:15%;text-align:left; font-size:6.5px;">'.$situacion.'</td>
+                        </tr>';
+                }
+             $tabla.='
+             </tbody>
+        </table>
 
-        if ($total_filas <= 20) {
-            // En "Otros" mandamos el cuarto parámetro como FALSE para que no salga "según POA"
-            $tabla .= $generar_tabla('Otros Establecimientos', $detalle_otros, true, false);
-            $tabla .= $observacion;
-            $tabla .= '<br><br><p style="text-align:center; margin-top:30px;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>';
-            $tabla .= '</div></page>';
-        } else {
-            $tabla .= '<br><p style="text-align:right; font-size:8px;">Continúa en la siguiente página...</p>';
-            $tabla .= '</div></page>';
-            
-            $tabla .= '<page orientation="'.$orientacion.'" backtop="15mm" backbottom="10mm" backleft="15mm" backright="15mm">
-                        <div class="contenedor-reporte">
-                        '.$this->cabecera_report(4, 'DIAGNÓSTICO DE INFRAESTRUCTURA DE SALUD (CONT.)', $get_form_distrital[0]['dist_distrital']).'
-                        
-                        '.$generar_tabla('Otros Establecimientos', $detalle_otros, true, false).'
-                        '.$observacion.'
-                        <br><br>
-                        <p style="text-align:center; margin-top:50px;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
-                        </div></page>';
+        <p class="bold" style="margin-top: 15px;">3. Matriz de inventario de establecimientos de SEGUNDO Y TERCER NIVEL (segun poa '.$get_form_distrital[0]['g_id_fin'].')</p>
+        <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse;" border="1">
+            <thead>
+                 <tr style="text-align:center; background-color: #004640;">
+                     <th style="width:5%; font-size:8px; padding:3px;">#</th>
+                     <th style="width:25%; font-size:8px; padding:3px;">Establecimiento</th>
+                     <th style="width:35%; font-size:8px;">Ubicación</th>
+                     <th style="width:10%; font-size:7px;">Nro. Consultorios</th>
+                     <th style="width:10%; font-size:7px;">cuenta con Internet?</th>
+                     <th style="width:15%; font-size:7px;">Situación Técnico Legal</th>
+                 </tr>
+             </thead>
+             <tbody>';
+             $nro=0;
+             foreach ($detalle_2do as $row) {
+                    $internet = ($row['serv_internet'] == '1' || strtoupper($row['serv_internet']) == 'SI') ? 'SI' : 'NO';
+                    $situacion = strtoupper($row['tipo_situacion']);
+                    if($situacion == '1') $situacion = 'PROPIA';
+                    if($situacion == '2') $situacion = 'ALQUILADA';
+                    $nro++;
+                    $tabla .= '
+                        <tr>
+                            <td style="width:5%;text-align:center; font-size:7px; padding:3px;"><b>'.$nro.'</b></td>
+                            <td style="width:25%;text-align:left; font-size:7px; padding:3px;"><b>'.$row['tipo'].' '.$row['act_descripcion'].'</b></td>
+                            <td style="width:35%;text-align:left; font-size:6.5px;">'.strtoupper($row['ubicacion']).'</td>
+                            <td style="width:10%;text-align:center; font-size:7.5px;">'.$row['nro_consultorios'].'</td>
+                            <td style="width:10%; text-align:center; font-size:7px;">'.$internet.'</td>
+                            <td style="width:15%;text-align:left; font-size:6.5px;">'.$situacion.'</td>
+                        </tr>';
+                }
+             $tabla.='
+             </tbody>
+        </table>';
+
+        if(count($detalle_otros)!=0){
+            $tabla.='
+            <p class="bold" style="margin-top: 15px;">4. Otros Establecimientos</p>
+                <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse;" border="1">
+                    <thead>
+                         <tr style="text-align:center; background-color: #004640;">
+                             <th style="width:5%; font-size:8px; padding:3px;">#</th>
+                             <th style="width:25%; font-size:8px; padding:3px;">Establecimiento</th>
+                             <th style="width:35%; font-size:8px;">Ubicación</th>
+                             <th style="width:10%; font-size:7px;">Nro. Consultorios</th>
+                             <th style="width:10%; font-size:7px;">cuenta con Internet?</th>
+                             <th style="width:15%; font-size:7px;">Situación Técnico Legal</th>
+                         </tr>
+                     </thead>
+                     <tbody>';
+                     $nro=0;
+                     foreach ($detalle_otros as $row) {
+                            $internet = ($row['serv_internet'] == '1' || strtoupper($row['serv_internet']) == 'SI') ? 'SI' : 'NO';
+                            $situacion = strtoupper($row['tipo_situacion']);
+                            if($situacion == '1') $situacion = 'PROPIA';
+                            if($situacion == '2') $situacion = 'ALQUILADA';
+                            $nro++;
+                            $tabla .= '
+                                <tr>
+                                    <td style="width:5%;text-align:center; font-size:7px; padding:3px;"><b>'.$nro.'</b></td>
+                                    <td style="width:25%;text-align:left; font-size:7px; padding:3px;"><b>'.$row['tipo_establecimiento'].' '.$row['otro_establecimiento'].'</b></td>
+                                    <td style="width:35%;text-align:left; font-size:6.5px;">'.strtoupper($row['ubicacion']).'</td>
+                                    <td style="width:10%;text-align:center; font-size:7.5px;">'.$row['nro_consultorios'].'</td>
+                                    <td style="width:10%; text-align:center; font-size:7px;">'.$internet.'</td>
+                                    <td style="width:15%;text-align:left; font-size:6.5px;">'.$situacion.'</td>
+                                </tr>';
+                        }
+                     $tabla.='
+                     </tbody>
+                </table>';
         }
+        $tabla.='
+        '.$observacion.'
 
+        <!-- Bloque de Firmas protegido contra huérfanos -->
+        <div style="margin-top: 40px; page-break-inside: avoid; text-align:center;">
+            <p><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
+        </div>
+
+    </div>
+</page>';
+        
         return $tabla;
     }
 
@@ -592,11 +835,78 @@ class Lib_diagnosticopei_reporte {
 
 
 
+public function style_report() {
+    $tabla = '        
+    <style>
+        /* ==========================================================================
+           1. AJUSTES GENERALES Y CONTENEDORES DE SEGURIDAD
+           ========================================================================== */
+        .page-body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; width: 100%; }
+        .contenedor-reporte { font-family: Helvetica, Arial, sans-serif; width: 100%; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .bold { font-weight: bold; }
+        
+        /* Fuerza a todas las tablas del documento a respetar los porcentajes asignados */
+        table { table-layout: fixed; width: 100%; border-collapse: collapse; }
+        
+        /* ==========================================================================
+           2. NUEVA CABECERA INSTITUCIONAL ESTÁTICA (<page_header>)
+           ========================================================================== */
+        .header-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .main-title { font-size: 13pt; font-weight: bold; color: #212121; line-height: 1.3; }
+        
+        /* Barra de acento estético corporativo */
+        .linea-institucional { width: 100%; height: 3px; background-color: #3276b1; margin-top: 12px; margin-bottom: 2px; }
+        .linea-subti-gris { width: 100%; height: 1px; background-color: #e0e0e0; }
 
+        /* ==========================================================================
+           3. TABLA DE DATOS COMPACTA (Optimizado para múltiples columnas)
+           ========================================================================== */
+        .tabla-datos { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        .tabla-datos th { 
+            background-color: #004640; /* Sincronizado con el azul corporativo de la cabecera */
+            color: #ffffff; /* Contraste óptimo para lectura */
+            border: 1px solid #ccc; 
+            padding: 6px 4px; 
+            font-size: 8.5pt;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .tabla-datos td { 
+            border: 1px solid #ddd; 
+            padding: 5px 3px; 
+            text-align: center; 
+            font-size: 8pt;
+            vertical-align: middle;
+        }
+        
+        /* ==========================================================================
+           4. CUADROS DE TEXTO (Objetivos e Instrumentos)
+           ========================================================================== */
+        .box-container { 
+            border: 1px solid #b3d4fc; /* Borde azul tenue muy sutil */
+            padding: 10px; 
+            width: 96%; /* Reducción estratégica del ancho para que el padding no desborde la hoja */
+            margin-top: 5px;
+            background-color: #f8f9fa; /* Fondo gris tiza sofisticado */
+            border-radius: 4px;
+            line-height: 1.4;
+        }
+        
+        /* ==========================================================================
+           5. NUEVO PIE DE PÁGINA CORPORATIVO (<page_footer>)
+           ========================================================================== */
+        .footer-linea { width: 100%; height: 1px; background-color: #e0e0e0; margin-bottom: 6px; }
+        .footer-text { font-size: 8.5px; color: #888888; font-weight: 500; }
+    </style>';
+    
+    return $tabla;
+}
 
 
     /// estilo reporte
-    public function style_report() {
+    public function style_report_anterior() {
         $tabla='        
         <style>
             /* Forzamos el ancho máximo para que no se pase de la hoja */
