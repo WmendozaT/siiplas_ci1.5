@@ -12,6 +12,11 @@ class lib_diagnostico_pei extends CI_Controller{
       $this->fun_id = $this->session->userData('fun_id'); ///
       $this->conf_pei = $this->session->userData('conf_pei'); /// Conf Pei
       $this->tp_adm = $this->session->userdata("tp_adm");
+      $this->entidad   = $this->session->userdata("entidad");
+      $this->sistema   = $this->session->userdata("sistema");
+      $this->sistema_pie   = $this->session->userdata("sistema_pie");
+      $this->usuario   = $this->session->userdata("usuario");
+      $this->direccion   = $this->session->userdata("direccion");
 
     }
 
@@ -22,15 +27,19 @@ class lib_diagnostico_pei extends CI_Controller{
       $detalle_form1=$this->model_diagnosticopei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $tabla='';
       $tabla.='
-        <div class="viewport-container">
-            <div style="padding: 15px 0;">
+        <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
+          <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/1/".$get_form_distrital[0]['dist_id']).'\');" 
                    class="btn-imprimir" 
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -40,7 +49,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
-                  <p>CAJA NACIONAL DE SALUD</p>
+                  <p>'.$this->entidad.'</p>
                   <h1><b>DIAGNÓSTICO DE LA POBLACIÓN ASEGURADA</b></h1>
               </div>
 
@@ -57,11 +66,11 @@ class lib_diagnostico_pei extends CI_Controller{
               <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border: none;">
                   <thead>
                       <tr style="background: #fdfdfd; color: #666; font-size: 11px;">
-                          <th style="width: 15%; text-align:center; padding: 10px;">GESTIÓN</th>
-                          <th style="width: 20%; text-align:center;">COT. TITULARES</th>
-                          <th style="width: 20%; text-align:center;">COT. PASIVOS</th>
+                          <th style="width: 20%; text-align:center; padding: 10px;">GESTIÓN</th>
+                          <th style="width: 20%; text-align:center;">COTIZANTES TITULARES</th>
+                          <th style="width: 20%; text-align:center;">COTIZANTES PASIVOS</th>
                           <th style="width: 20%; text-align:center;">BENEFICIARIOS</th>
-                          <th style="width: 25%; text-align:center; background: #f5f5f5;">TOTAL GESTIÓN</th>
+                          <th style="width: 220%; text-align:center; background: #f5f5f5;">TOTAL GESTIÓN</th>
                       </tr>
                   </thead>
                   <tbody>';
@@ -288,16 +297,18 @@ class lib_diagnostico_pei extends CI_Controller{
       $detalle_form1_etareo=$this->model_diagnosticopei->get_formulario_N1_etareo($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $tabla='';
       $tabla.='
-      <style>
-          .btn-disabled {
-              background-color: #ccc !important;
-              color: #666 !important;
-              cursor: not-allowed !important;
-              pointer-events: none; /* Bloquea el clic */
-              border-color: #bbb !important;
-          }
-      </style>
-        <div class="viewport-container">
+        <style>
+              .btn-disabled {
+                  background-color: #ccc !important;
+                  color: #666 !important;
+                  cursor: not-allowed !important;
+                  pointer-events: none; /* Bloquea el clic */
+                  border-color: #bbb !important;
+              }
+          </style>
+        <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
             <div style="padding: 15px 0;" class="no-print">
                 <a href="javascript:void(0);" 
                    id="btn-reporte"
@@ -306,7 +317,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -316,7 +329,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
-                  <p>CAJA NACIONAL DE SALUD</p>
+                  <p>'.$this->entidad.'</p>
                   <h1><b>DIAGNÓSTICO DE LA POBLACIÓN PROTEGIDA POR GRUPOS ETAREOS</b></h1>
               </div>
 
@@ -599,7 +612,9 @@ class lib_diagnostico_pei extends CI_Controller{
       $detalle_form2=$this->model_diagnosticopei->get_formulario_N2($get_form_distrital[0]['dist_id']); /// listado de gestiones
       $tabla='';
       $tabla.='
-      <div class="viewport-container">
+        <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/3/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -607,7 +622,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -617,7 +634,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
-                  <p>CAJA NACIONAL DE SALUD</p>
+                  <p>'.$this->entidad.'</p>
                   <h1><b>DIAGNÓSTICO DE EMPRESAS</b></h1>
               </div>
 
@@ -886,7 +903,9 @@ class lib_diagnostico_pei extends CI_Controller{
     public function formulario_N3($get_form_distrital){
       $tabla='';
       $tabla.='
-      <div class="viewport-container">
+      <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/4/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -894,7 +913,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page_horizontal">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -904,7 +925,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
-                  <p>CAJA NACIONAL DE SALUD</p>
+                  <p>'.$this->entidad.'</p>
                   <h1><b>DIAGNÓSTICO DEL PERFIL EPIDEMIOLOGICO</b></h1>
               </div>
 
@@ -919,10 +940,10 @@ class lib_diagnostico_pei extends CI_Controller{
               
 
               <div style="font-weight: bold; margin-bottom: 10px;">2. Perfil de morbilidad (Enfermedades prevalentes / 10 primeras causas de consulta Externa)</div>
-                '.$this->tabla_form3tp_perfil($get_form_distrital,1).'
+                '.$this->tabla_form3tp_perfil($get_form_distrital,1).'<br>
 
               <div style="font-weight: bold; margin-bottom: 10px;">3. Perfil de morbilidad (Enfermedades prevalentes / 10 primeras causas de consulta Hospitalaria)</div>
-                '.$this->tabla_form3tp_perfil($get_form_distrital,2).'
+                '.$this->tabla_form3tp_perfil($get_form_distrital,2).'<br>
 
               <div style="font-weight: bold; margin-bottom: 10px;">4. Perfil de mortalidad (principales causas)</div>
                   '.$this->tabla_form3tp_perfil($get_form_distrital,3).'
@@ -954,6 +975,20 @@ class lib_diagnostico_pei extends CI_Controller{
 
         <script>
           document.getElementById("fecha-actual3").innerText = new Date().toLocaleDateString();
+        </script>
+        <script>
+        $(document).ready(function() {
+            // Inicializa todos los elementos con data-toggle="tooltip" de la matriz
+            $("[data-toggle=\'tooltip\']").tooltip({
+                container: "body",
+                trigger: "hover" // El mensaje solo aparece al posicionar el mouse encima
+            });
+
+            // Opcional: Cerrar el tooltip si el usuario hace clic en el botón de búsqueda
+            $(document).on("click", ".btn-primary", function() {
+                $(this).tooltip("hide");
+            });
+        });
         </script>
         <script>
             var timer_perfil = null;
@@ -1097,53 +1132,53 @@ class lib_diagnostico_pei extends CI_Controller{
             }
         </script>
         <script>
-              $(document).ready(function() {
-                  var timeout = null;
-                  var base_url = "'.base_url().'"; 
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "'.base_url().'"; 
 
-                  $(".observaciones-input").on("keyup", function() {
-                      var $this = $(this); 
-                      
-                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                      var contenedor = $this.closest("div").parent(); 
-                      var form_id = contenedor.find(".form_id").val();
-                      var nro_obs = contenedor.find(".nro_obs").val();
-                      
-                      var texto = $this.val();
-                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                $(".observaciones-input").on("keyup", function() {
+                    var $this = $(this); 
+                    
+                    // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
+                    // Buscamos el contenedor padre y luego el input dentro de ese bloque
+                    var contenedor = $this.closest("div").parent(); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    var texto = $this.val();
+                    var status = contenedor.find(".status"); // Cada uno tiene su propio status
 
-                      if (!form_id || form_id == "0") {
-                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                          return;
-                      }
+                    if (!form_id || form_id == "0") {
+                        status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                      clearTimeout(timeout);
-                      timeout = setTimeout(function() {
-                          $.ajax({
-                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                              type: "POST",
-                              data: {
-                                  form_id: form_id,
-                                  nro: nro_obs, 
-                                  observacion: texto
-                              },
-                              success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    clearTimeout(timeout);
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                observacion: texto
+                            },
+                            success: function(response) {
 
-                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                              },
-                              error: function() {
-                                  status.text("Error al guardar").css("color", "red");
-                                  $("#toast-notificacion")
-                                      .text("❌ Error al guardar")
-                                      .css("background-color", "#dc3545")
-                                      .fadeIn(400).delay(3000).fadeOut(400);
-                              }
-                          });
-                      }, 800); 
-                  });
+                                status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
               });
           </script>';
         return $tabla;
@@ -1155,6 +1190,24 @@ class lib_diagnostico_pei extends CI_Controller{
       $cie10_list=$this->model_diagnosticopei->get_listado_cie10();
       $tabla='';
       $tabla.='
+      <style>
+          /* Estilo Premium para el fondo del Tooltip */
+          .tooltip-inner {
+              background-color: #1a237e !important; /* Azul Marino Institucional */
+              color: #ffffff !important;
+              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+              font-size: 11px !important;
+              font-weight: bold;
+              padding: 6px 10px;
+              border-radius: 4px;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+              max-width: 300px;
+          }
+          /* Estilo para la pequeña flecha del Tooltip */
+          .tooltip.top .tooltip-arrow {
+              border-top-color: #1a237e !important;
+          }
+      </style>
                 <div class="modal fade" id="modalBuscador" tabindex="-1" role="dialog" style="z-index: 9999;">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -1170,80 +1223,89 @@ class lib_diagnostico_pei extends CI_Controller{
                         </div>
                     </div>
                 </div>
-                <table style="width:100%;">
-                  <thead>
-                    <tr style="text-align:center;">
-                        <th rowspan="2" class="nro-col">N.- '.$tp.'</th>
-                        <th colspan="2" style="text-align:center;">2021</th>
-                        <th colspan="2" style="text-align:center;">2022</th>
-                        <th colspan="2" style="text-align:center;">2023</th>
-                        <th colspan="2" style="text-align:center;">2024</th>
-                        <th colspan="2" style="text-align:center;">2025</th>
-                    </tr>
-                    <tr>
-                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
-                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
-                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
-                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
-                        <th style="width:4.5%;">Nº casos</th><th style="width:16%;">Cod. CIE-10</th>
-                    </tr>
-                  </thead>
-                <tbody>';
-                   foreach($detalle_form3 as $row){
-                    $tabla.='
-                    <tr>
-                      <td class="nro-label">'.$row['nro'].'</td>';
-                      // Bucle para generar los 5 años (2021 al 2025)
-                       for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
-                      $val_casos = $row['nro_casos_'.$anio];
-                      $val_ce_id = $row['ce_id_'.$anio]; 
-                      $val_causa = $row['causa_'.$anio];
-                      $cod_cie   = $row['codigo_cie_'.$anio];
+      <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border: none;">
+        <thead>
+          <tr style="text-align:center;">
+              <th rowspan="2" class="nro-col">N.- '.$tp.'</th>
+              <th colspan="2" style="text-align:center; font-size:12.5px;">2021</th>
+              <th colspan="2" style="text-align:center; font-size:12.5px;">2022</th>
+              <th colspan="2" style="text-align:center; font-size:12.5px;">2023</th>
+              <th colspan="2" style="text-align:center; font-size:12.5px;">2024</th>
+              <th colspan="2" style="text-align:center; font-size:12.5px;">2025</th>
+          </tr>
+          <tr>
+              <th style="width:6%;text-align:center;">Nº casos</th><th style="width:14%;text-align:center;">Código CIE-10</th>
+              <th style="width:6%;text-align:center;">Nº casos</th><th style="width:14%;text-align:center;">Código CIE-10</th>
+              <th style="width:6%;text-align:center;">Nº casos</th><th style="width:14%;text-align:center;">Código CIE-10</th>
+              <th style="width:6%;text-align:center;">Nº casos</th><th style="width:14%;text-align:center;">Código CIE-10</th>
+              <th style="width:6%;text-align:center;">Nº casos</th><th style="width:14%;text-align:center;">Código CIE-10</th>
+          </tr>
+        </thead>
+      <tbody>';
+         foreach($detalle_form3 as $row){
+          $tabla.='
+          <tr>
+            <td class="nro-label">'.$row['nro'].'</td>';
+            
+             for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
+            $val_casos = $row['nro_casos_'.$anio];
+            $val_ce_id = $row['ce_id_'.$anio]; 
+            $val_causa = !empty($row['causa_'.$anio]) ? strtoupper(trim($row['causa_'.$anio])) : 'SIN CAUSA SELECCIONADA';
+            $cod_cie   = !empty($row['codigo_cie_'.$anio]) ? strtoupper(trim($row['codigo_cie_'.$anio])) : '';
 
-                      $tabla .= '
-                      <!-- COLUMNA CASOS -->
-                      <td>
-                          <input type="number" class="auto-save"
-                                  style="text-align: right;"
-                                   min="0"
-                                   max="999999"
-                                   oninput="if(this.value.length > 7) this.value = this.value.slice(0, 7);"
-                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 7"
-                                 data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'" 
-                                 data-nro="'.$row['nro'].'" data-gestion="'.$anio.'" 
-                                 data-col="nro_casos" value="'.$val_casos.'" 
-                                 style="width:100%; text-align:center; border:none;">
-                      </td>
-                      
-                      <!-- COLUMNA BUSCADOR (ID y CODIGO) -->
-                      <td>
-                          <div class="input-group" style="display: flex; width: 100%;">
-                              <input type="text" 
-                                      class="form-control input-sm" 
-                                      id="desc_' . $tp . '_' . $anio . '_' . $row['nro'] . '"  
-                                      value="' . $cod_cie . '" 
-                                      readonly 
-                                      title="' . $cod_cie . '" 
-                                      style="width: 80%; font-size: 7.5pt; height: 24px; border-radius: 4px 0 0 4px; text-align:left;">
-                              
-                              <button type="button" class="btn btn-primary btn-xs" style="height: 24px; width: 20%;"
-                                      onclick="abrirBuscador(\''.$anio.'\', \''.$row['nro'].'\', \''.$tp.'\')">
-                                  <i class="fa fa-search"></i>
-                              </button>
+            // Texto limpio para el Tooltip estilizado
+            $texto_tooltip = ($cod_cie != '') ? "CÓDIGO: ".$cod_cie." | ENFERMEDAD: ".$val_causa : "NINGÚN CÓDIGO SELECCIONADO";
 
-                              <input type="hidden" class="ce_id_input auto-save" id="id_' . $tp . '_' . $anio . '_' . $row['nro'] . '" 
-                                     data-gestion="'.$anio.'" data-nro="'.$row['nro'].'"
-                                     data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'"
-                                     data-col="ce_id" value="'.$val_ce_id.'">
-                          </div>
-                      </td>';
-                  }
-                            
-                    $tabla.='</tr>';
-                  }
-                  $tabla.='
-                  </tbody>
-              </table>';
+            $tabla .= '
+            <!-- COLUMNA CASOS -->
+            <td>
+                <input type="number" class="form-control auto-save"
+                       min="0" max="999999"
+                       oninput="if(this.value.length > 7) this.value = this.value.slice(0, 7);"
+                       onkeypress="return event.charCode >= 48 && event.charCode <= 57 && this.value.length < 7"
+                       data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'" 
+                       data-nro="'.$row['nro'].'" data-gestion="'.$anio.'" 
+                       data-col="nro_casos" value="'.$val_casos.'" 
+                       style="width:100%; text-align:right;">
+            </td>
+            
+            <!-- COLUMNA BUSCADOR CON TOOLTIPS ESTILIZADOS -->
+            <td>
+                <div class="input-group" style="display: flex; width: 100%;">
+                    <!-- Input CIE-10 con Tooltip -->
+                    <input type="text" 
+                            class="form-control input-sm input-cie10-tooltip" 
+                            id="desc_' . $tp . '_' . $anio . '_' . $row['nro'] . '"  
+                            value="' . $cod_cie . '" 
+                            readonly 
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="' . $texto_tooltip . '" 
+                            style="width: 80%; font-size: 7.5pt; height: 25px; border-radius: 4px 0 0 4px; text-align:left; cursor: help; font-weight: bold; color: #1a237e;">
+                    
+                    <!-- Botón de Búsqueda con Tooltip -->
+                    <button type="button" class="btn btn-primary btn-xs" 
+                            style="height: 25px; width: 20%;"
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="SELECCIONE CÓDIGO CIE - 10"
+                            onclick="abrirBuscador(\''.$anio.'\', \''.$row['nro'].'\', \''.$tp.'\')">
+                        <i class="fa fa-search"></i>
+                    </button>
+
+                    <input type="hidden" class="ce_id_input auto-save" id="id_' . $tp . '_' . $anio . '_' . $row['nro'] . '" 
+                           data-gestion="'.$anio.'" data-nro="'.$row['nro'].'"
+                           data-form="'.$row['form_id'].'" data-tp_perfil="'.$tp.'"
+                           data-col="ce_id" value="'.$val_ce_id.'">
+                </div>
+            </td>';
+        }
+                  
+          $tabla.='</tr>';
+      }
+        $tabla.='
+      </tbody>
+      </table>';
 
       return $tabla;
     }
@@ -1256,14 +1318,16 @@ class lib_diagnostico_pei extends CI_Controller{
       $detalle_form4_2do=$this->model_diagnosticopei->get_infraestructura_por_nivel($get_form_distrital[0]['dist_id'],'2,3'); /// 2 y 3 nivel
       $detalle_form4_otros=$this->model_diagnosticopei->get_otros_infraestructura_por_nivel($get_form_distrital[0]['dist_id']); /// Otros Establecimientos
       
-      $nro=count($detalle_form4_1er)+count($detalle_form4_2do);
-      $page='page_horizontal_corto';
-      if($nro>=13){
-        $page='page_horizontal';
-      }
+       $nro=count($detalle_form4_1er)+count($detalle_form4_2do);
+       $page='page';
+       if($nro>=5){
+         $page='page_long';
+       }
       $tabla='';
       $tabla.='
-      <div class="viewport-container">
+      <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/5/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -1271,7 +1335,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -1281,7 +1347,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
-                  <p>CAJA NACIONAL DE SALUD</p>
+                  <p>'.$this->entidad.'</p>
                   <h1><b>DIAGNÓSTICO DE INFRAESTRUCTURA DE SALUD</b></h1>
               </div>
 
@@ -1299,11 +1365,13 @@ class lib_diagnostico_pei extends CI_Controller{
 
               if(count($detalle_form4_2do)!=0){
                 $tabla.='
+                <br>
                 <div style="font-weight: bold; margin-bottom: 10px;">3. Matriz de inventario de establecimientos de SEGUNDO Y TERCER NIVEL (segun poa '.$get_form_distrital[0]['g_id_fin'].')</div>
                 '.$this->tabla_form4Tp_infraestructura($detalle_form4_2do,1).'';
               }
               
               $tabla.='
+                <br>
               <div style="font-weight: bold; margin-bottom: 10px;">Otros Establecimientos</div>
               <div style="padding-bottom: 10px;">
                   <button type="button" class="btn btn-success btn-sm" onclick="agregarNuevoEstablecimientoOtros('.$get_form_distrital[0]['form_id'].', '.$get_form_distrital[0]['g_id_fin'].');">
@@ -1692,138 +1760,136 @@ class lib_diagnostico_pei extends CI_Controller{
         return $tabla;
     }
 
-    //// lsiat de establecimientos alineados al poa
+    //// Lista de establecimientos alineados al poa
     public function tabla_form4Tp_infraestructura($detalle,$tp_infra){
       //// 1 : se encuentra en el poa
       //// 0 : nose encuentra en el poa
       $tabla='';
-      $color_borde = ($tp_infra == 1) ? '#3276b1' : '#FF9800';
-      $titulo_texto = ($tp_infra == 1) ? 'INFRAESTRUCTURA DE SALUD (SEGÚN POA)' : 'OTROS ESTABLECIMIENTOS (NO ALINEADOS)';
-      $icono = ($tp_infra == 1) ? 'fa-hospital-o' : 'fa-plus-square';
-
-      $tabla .= '
-
-              <table class="table table-hover" style="width: 100%; margin-bottom: 0; border-collapse: collapse; font-size: 11px;">
-                  <thead>
-                      <tr style="background: #fdfdfd; color: #666;">
-                          <th style="width:20%; text-align:center; padding: 10px;">ESTABLECIMIENTO</th>';
-                          if($tp_infra==1){
-                              $tabla.='<th style="width:10%; text-align:center;">TIPO</th>
-                                       <th style="width:10%; text-align:center;">NIVEL</th>';
-                          } else {
-                              $tabla.='<th style="width:12%; text-align:center;">TIPO <br><small>(1 a 5)</small></th>
-                                       <th style="width:12%; text-align:center;">NIVEL <br><small>(Auto)</small></th>';
-                          }
-                          $tabla.='
-                          <th style="width:25%; text-align:center;">UBICACIÓN</th>
-                          <th style="width:8%; text-align:center;">CONSULT.</th>
-                          <th style="width:10%; text-align:center;">INTERNET <br><small>(1-0)</small></th>
-                          <th style="width:15%; text-align:center;">SITUACIÓN LEGAL</th>';
-                          if($tp_infra==0){
-                              $tabla.='<th style="width:5%; text-align:center;"></th>';
-                          }
-                      $tabla.='</tr>
-                  </thead>';
-
-                  if($tp_infra==1){
-                      $tabla.='<tbody>';
-                      foreach($detalle as $row) {
-                      $tabla .= '
-                      <tr class="fila-dato">
-                          <td style="text-align:left; vertical-align: middle; background: #f9f9f9;"><b>'.$row['act_descripcion'].'</b></td>
-                          <td style="text-align:center; vertical-align: middle;">'.$row['tipo'].'</td>
-                          <td style="text-align:center; vertical-align: middle;"><span class="label label-primary">'.$row['nivel'].'</span></td>
-                          <td>
-                              <input type="text" class="form-control auto-save-infra limpiar-cero" 
-                                  value="'.strtoupper($row['ubicacion']).'" 
-                                  maxlength="500" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="ubicacion"
-                                  style="text-transform: uppercase; font-size: 10px;" placeholder="MÁX. 500 CARACT.">
-                          </td>
-                          <td>
-                              <input type="number" class="form-control auto-save4 limpiar-cero"
-                                  style="text-align: right; font-weight: bold;" min="0" max="999999"
-                                  value="'.$row['nro_consultorios'].'" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="nro_consultorios">
-                          </td>
-                          <td>
-                              <input type="text" class="form-control auto-save-infra limpiar-cero" 
-                                  value="'.$row['serv_internet'].'" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="serv_internet"
-                                  style="text-align:center;" placeholder="1/0">
-                          </td>
-                          <td>
-                              <input type="text" class="form-control auto-save-infra" 
-                                  value="'.$row['tipo_situacion'].'" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="tipo_situacion"
-                                  style="font-size: 10px;" placeholder="Detalle">
-                          </td>
-                      </tr>';
-                      }
-                      $tabla.='</tbody>';
+      if($tp_infra==1){
+        $tabla .= '
+          <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border: none;">
+              <thead>
+                  <tr style="background: #fdfdfd; color: #000000;">
+                      <th style="width:15%; text-align:center; padding: 10px;">Establecimiento</th>
+                      <th style="width:30%; text-align:center;">Ubicacion</th>
+                      <th style="width:10%; text-align:center;">Nro. Consultorios</th>
+                      <th style="width:10%; text-align:center;">Cuenta con Internet? <br>(1: si - 0: no)</th>
+                      <th style="width:15%; text-align:center;">Situación <br>(1: PROPIA - 2: ALQUILADA - 3: OTROS)</th>
+                  </tr>
+              </thead>
+              <tbody>';
+              foreach($detalle as $row) {
+                  $tabla .= '
+                  <tr class="fila-dato">
+                      <td style="text-align:left; vertical-align: middle; background: #f9f9f9;"><b>'.$row['tipo'].' '.$row['act_descripcion'].'</b></td>
+                      <td>
+                          <input type="text" class="form-control auto-save-infra limpiar-cero" 
+                              value="'.strtoupper($row['ubicacion']).'" 
+                              maxlength="500" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="ubicacion"
+                              style="text-transform: uppercase; font-size: 10px;" placeholder="MÁX. 500 CARACT.">
+                      </td>
+                      <td>
+                          <input type="number" class="form-control auto-save4 limpiar-cero"
+                              style="text-align: right; font-weight: bold;" min="0" max="999999"
+                              value="'.$row['nro_consultorios'].'" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="nro_consultorios">
+                      </td>
+                      <td>
+                          <input type="text" class="form-control auto-save-infra limpiar-cero" 
+                              value="'.$row['serv_internet'].'" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="serv_internet"
+                              style="text-align:center;" placeholder="1/0">
+                      </td>
+                      <td>
+                          <input type="text" class="form-control auto-save-infra" 
+                              value="'.$row['tipo_situacion'].'" data-form="'.$row['form_id'].'" data-act="'.$row['act_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="tipo_situacion"
+                              style="font-size: 10px;" placeholder="Detalle">
+                      </td>
+                  </tr>';
                   }
-                  else { //// ESTABLECIMIENTOS NO ALINEADOS
-                      $tabla.='<tbody id="tabla_otros_body">';
-                      foreach($detalle as $row) {
-                          $readonly = (!empty($row['nivel_establecimiento'])) ? 'readonly style="background-color: #eeeeee; cursor: not-allowed;"' : '';
-                          $tabla .= '
-                          <tr id="fila_otro_'.$row['infra_otro_id'].'" class="fila-dato">
-                              <td>
-                                  <input type="text" class="form-control auto-save-otros" 
-                                      value="'.strtoupper($row['otro_establecimiento']).'" 
-                                      data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="otro_establecimiento"
-                                      style="text-transform: uppercase; font-weight: bold;">
-                              </td>
-                              <td>
-                                  <input type="text" class="form-control auto-save-otros" 
-                                      value="'.strtoupper($row['tipo_establecimiento']).'" 
-                                      data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="tipo_establecimiento"
-                                      style="text-transform: uppercase; text-align:center;" placeholder="1-5">
-                              </td>
-                              <td>
-                                  <input type="text" class="form-control auto-save-otros" 
-                                      value="'.strtoupper($row['nivel_establecimiento']).'" 
-                                      data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="nivel_establecimiento"
-                                      '.$readonly.'>
-                              </td>
-                              <td>
-                                  <input type="text" class="form-control auto-save-otros" 
-                                      value="'.strtoupper($row['ubicacion']).'" 
-                                      data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="ubicacion"
-                                      style="text-transform: uppercase; font-size: 10px;">
-                              </td>
-                              <td>
-                                  <input type="number" class="form-control auto-save5 limpiar-cero" 
-                                      value="'.$row['nro_consultorios'].'" 
-                                      data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="nro_consultorios"
-                                      style="text-align:right; font-weight:bold;">
-                              </td>
-                              <td>
-                                  <input type="text" class="form-control auto-save-otros" 
-                                      value="'.$row['serv_internet'].'" 
-                                      data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="serv_internet"
-                                      style="text-align:center;">
-                              </td>
-                              <td>
-                                  <input type="text" class="form-control auto-save-otros" 
-                                      value="'.$row['tipo_situacion'].'" 
-                                      data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="tipo_situacion">
-                              </td>
-                              <td style="text-align:center; vertical-align: middle;">
-                                  <a href="javascript:void(0);" 
-                                     onclick="eliminarRegistroOtro('.$row['infra_otro_id'].');" 
-                                     class="btn btn-danger btn-xs" 
-                                     title="Eliminar Registro">
-                                     <i class="glyphicon glyphicon-trash"></i>
-                                  </a>
-                              </td>
-                          </tr>';
-                      }
-                      $tabla.='</tbody>';
-                  }
-              $tabla.='</table>';
+                  $tabla.='
+                </tbody>';
+      }
+      else{
+        $tabla .= '
+          <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border: none;">
+              <thead>
+                  <tr style="background: #fdfdfd; color: #000000;">
+                      <th style="width:15%; text-align:center; padding: 10px;">Establecimiento</th>
+                      <th style="width:12%; text-align:center;">Tipo <br><small>(1 a 5)</small></th>
+                      <th style="width:12%; text-align:center;">Nivel <br><small>(Auto)</small></th>
+                      <th style="width:30%; text-align:center;">Ubicacion</th>
+                      <th style="width:10%; text-align:center;">Nro. Consultorios</th>
+                      <th style="width:10%; text-align:center;">Cuenta con Internet? <br>(1: si - 0: no)</th>
+                      <th style="width:15%; text-align:center;">Situación <br>(1: PROPIA - 2: ALQUILADA - 3: OTROS)</th>
+                      <th style="width:5%; text-align:center;"></th>
+                  </tr>
+              </thead>
+              <tbody id="tabla_otros_body">';
+              foreach($detalle as $row) {
+                $readonly = (!empty($row['nivel_establecimiento'])) ? 'readonly style="background-color: #eeeeee; cursor: not-allowed;"' : '';
+                $tabla .= '
+                <tr id="fila_otro_'.$row['infra_otro_id'].'" class="fila-dato">
+                    <td>
+                        <input type="text" class="form-control auto-save-otros" 
+                            value="'.strtoupper($row['otro_establecimiento']).'" 
+                            data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="otro_establecimiento"
+                            style="text-transform: uppercase; font-weight: bold;">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control auto-save-otros" 
+                            value="'.strtoupper($row['tipo_establecimiento']).'" 
+                            data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="tipo_establecimiento"
+                            style="text-transform: uppercase; text-align:center;" placeholder="1-5">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control auto-save-otros" 
+                            value="'.strtoupper($row['nivel_establecimiento']).'" 
+                            data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="nivel_establecimiento"
+                            '.$readonly.'>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control auto-save-otros" 
+                            value="'.strtoupper($row['ubicacion']).'" 
+                            data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="ubicacion"
+                            style="text-transform: uppercase; font-size: 10px;">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control auto-save5 limpiar-cero" 
+                            value="'.$row['nro_consultorios'].'" 
+                            data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="nro_consultorios"
+                            style="text-align:right; font-weight:bold;">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control auto-save-otros" 
+                            value="'.$row['serv_internet'].'" 
+                            data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="serv_internet"
+                            style="text-align:center;">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control auto-save-otros" 
+                            value="'.$row['tipo_situacion'].'" 
+                            data-id="'.$row['infra_otro_id'].'" data-form="'.$row['form_id'].'" data-gestion="'.$row['gestion_pei'].'" data-campo="tipo_situacion">
+                    </td>
+                    <td style="text-align:center; vertical-align: middle;">
+                        <a href="javascript:void(0);" 
+                           onclick="eliminarRegistroOtro('.$row['infra_otro_id'].');" 
+                           class="btn btn-danger btn-xs" 
+                           title="Eliminar Registro">
+                           <i class="glyphicon glyphicon-trash"></i>
+                        </a>
+                    </td>
+                </tr>';
+            }
+            $tabla.='
+            </tbody>';
+      }
+      $tabla.='
+      </table>';
 
       return $tabla;
     }
 
 
-    /*------- Detalle formulario N 5 -------*/
+    /*------- Detalle formulario N 5 - Diagnostico camas -------*/
     public function formulario_N5($get_form_distrital){
       $establecimientos=$this->model_diagnosticopei->get_diagnostico_camas($get_form_distrital[0]['dist_id']);
       $nro_est=count($establecimientos);
@@ -1833,7 +1899,9 @@ class lib_diagnostico_pei extends CI_Controller{
       }
       else{
       $tabla.='
-      <div class="viewport-container">
+        <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/6/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -1841,7 +1909,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -1851,7 +1921,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Dist : '.$get_form_distrital[0]['dist_id'].'
               </div>
               <div class="header">
-                  <p>CAJA NACIONAL DE SALUD</p>
+                  <p>'.$this->entidad.'</p>
                   <h1><b>DIAGNÓSTICO CAMAS</b></h1>
               </div>
 
@@ -1859,7 +1929,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
               </div>
 
-              <div style="font-weight: bold; margin-bottom: 10px;">* Matriz de gestion de camas Hospitalarias</div>';
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Matriz de gestion de camas Hospitalarias (II Y III nivel)</div>';
              
              if ($nro_est > 1) {
                   // CASO: Múltiples establecimientos (USAR ACORDEÓN)
@@ -2210,7 +2280,9 @@ class lib_diagnostico_pei extends CI_Controller{
     </div>
 
 
-      <div class="viewport-container">
+      <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/7/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -2218,7 +2290,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -2569,7 +2643,9 @@ class lib_diagnostico_pei extends CI_Controller{
 
       $tabla='';
       $tabla.='
-      <div class="viewport-container">
+      <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/8/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -2577,7 +2653,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -2872,7 +2950,9 @@ class lib_diagnostico_pei extends CI_Controller{
 
       $tabla='';
       $tabla.='
-      <div class="viewport-container">
+      <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/9/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -2880,7 +2960,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -3082,7 +3164,9 @@ class lib_diagnostico_pei extends CI_Controller{
 
       $tabla='';
       $tabla.='
-      <div class="viewport-container">
+      <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/10/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -3090,7 +3174,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -3343,7 +3429,9 @@ class lib_diagnostico_pei extends CI_Controller{
 
       $tabla='';
       $tabla.='
-      <div class="viewport-container">
+      <div class="viewport-container">';
+        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
+          $tabla.='
           <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/11/".$get_form_distrital[0]['dist_id']).'\');" 
@@ -3351,7 +3439,9 @@ class lib_diagnostico_pei extends CI_Controller{
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
                 </a>
-            </div>
+            </div>';
+        }
+        $tabla.='
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -3651,7 +3741,7 @@ class lib_diagnostico_pei extends CI_Controller{
                     background-color: white; 
                     width: 10in; 
                     min-width: 10in; /* Evita que se encoja en celulares */
-                    height: 11in; 
+                    height: 12in; 
                     padding: 0.6in 0.7in; 
                     box-sizing: border-box; 
                     position: relative; 
@@ -3664,9 +3754,9 @@ class lib_diagnostico_pei extends CI_Controller{
                 /* 2. LA HOJA (Tamaño Carta Largo) */
                 .page_long { 
                     background-color: white; 
-                    width: 8.5in; 
-                    min-width: 8.5in; /* Evita que se encoja en celulares */
-                    height: 30in; 
+                    width: 11in; 
+                    min-width: 11in; /* Evita que se encoja en celulares */
+                    height: 25in; 
                     padding: 0.6in 0.7in; 
                     box-sizing: border-box; 
                     position: relative; 
