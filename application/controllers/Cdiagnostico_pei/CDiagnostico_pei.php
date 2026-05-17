@@ -45,8 +45,8 @@ class CDiagnostico_pei extends CI_Controller {
             $data['cuerpo'] = '<div id="contenedor_formulario"></div>';
         }elseif ($this->conf_pei == 1) {
             // Usuario con permiso de llenado
-            $data['cuerpo'] = $this->unidad_ejecutora_eleccionado($pei_id, $dist_id);
-        } else {
+            $data['cuerpo'] = $this->unidad_ejecutora_eleccionado($pei_id, $dist_id,0); /// regional
+        } else { 
             // Acceso restringido por configuración
             $data['cuerpo'] = $this->_mensaje_error("Usted no cuenta con los privilegios necesarios para el llenado.");
         }
@@ -132,7 +132,7 @@ class CDiagnostico_pei extends CI_Controller {
                 $this->db->insert('formulario_diagnostico_pei', $data_to_store);
             }
            
-           $tabla = $this->unidad_ejecutora_eleccionado($get_diagnostico[0]['pei_id'],$dist_id);
+           $tabla = $this->unidad_ejecutora_eleccionado($get_diagnostico[0]['pei_id'],$dist_id,1);
 
             $result = array(
                 'respuesta' => 'correcto',
@@ -152,7 +152,7 @@ class CDiagnostico_pei extends CI_Controller {
 
 
     /*------- Listado de formularios -------*/
-    public function unidad_ejecutora_eleccionado($pei_id,$dist_id){
+    public function unidad_ejecutora_eleccionado($pei_id,$dist_id,$tp_adm){
       $get_form_distrital=$this->model_diagnosticopei->get_distrital_formulario_diagnostico_activo($pei_id,$dist_id);
 
       $tabla='';
@@ -268,9 +268,10 @@ class CDiagnostico_pei extends CI_Controller {
 
                 </div>
               </div>
-            </article>
-
-            <script type="text/javascript">
+            </article>';
+            if($tp_adm==1){
+              $tabla.='
+              <script type="text/javascript">
               $(document).ready(function() {
                   $("#tabs").tabs({
                       beforeActivate: function(event, ui) {
@@ -314,6 +315,64 @@ class CDiagnostico_pei extends CI_Controller {
                 $("#tabs").tabs();
               })
             </script>';
+            }
+            else{
+              $tabla.='
+              <script type="text/javascript">
+                // Evento nativo del navegador para esperar el cascarón HTML
+                document.addEventListener("DOMContentLoaded", function() {
+                    
+                    // Bucle de espera seguro para verificar la carga de librerías del footer
+                    (function verificarLibrerias() {
+                        if (window.jQuery && window.jQuery.ui) {
+                            inicializarTabs(window.jQuery);
+                        } else {
+                            setTimeout(verificarLibrerias, 20);
+                        }
+                    })();
+
+                    function inicializarTabs($) {
+                        // 1. CONFIGURACIÓN ÚNICA DE LAS PESTAÑAS (TABS)
+                        $("#tabs").tabs({
+                            beforeActivate: function(event, ui) {
+                                var panel = $(ui.newPanel);
+                                var seccion = $(ui.newTab).find("a").attr("data-url");
+
+                                var pei_id = $("#tabs").attr("data-pei");
+                                var dist_id = $("#tabs").attr("data-dist");
+
+                                panel.html("<div style=\'text-align:center; padding:50px;\'><i class=\'fa fa-spinner fa-spin\'></i> Cargando formulario ...</div>");
+                                
+                                $.ajax({
+                                    url: "' . base_url() . 'index.php/Cdiagnostico_pei/CDiagnostico_pei/cargar_formulario",
+                                    type: "POST",
+                                    data: { seccion: seccion, pei: pei_id, dist: dist_id },
+                                    success: function(data) {
+                                        panel.html(data);
+                                    },
+                                    error: function() {
+                                        panel.html("<div class=\'alert alert-danger\'>Error al conectar con el servidor. Reintente.</div>");
+                                    }
+                                });
+                            }
+                        });
+
+                        // 2. CARGA INICIAL DE LA PRIMERA PESTAÑA AUTOMÁTICAMENTE
+                        var firstTab = $("#tabs ul li:first-child");
+                        var firstPanel = $("#tabs-a");
+                        $("#tabs").tabs("option", "beforeActivate")({}, {
+                            newPanel: firstPanel,
+                            newTab: firstTab
+                        });
+
+                        // 3. LÓGICAS GLOBALES DE LA PLANTILLA INSTITUNCIAL
+                        if (typeof pageSetUp === "function") { pageSetUp(); }
+                        if (typeof $("#menu").menu === "function") { $("#menu").menu(); }
+                        $(".ui-dialog :button").blur();
+                    }
+                });
+              </script>';
+            }
 
 
       return $tabla;
