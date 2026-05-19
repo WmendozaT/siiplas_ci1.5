@@ -57,6 +57,15 @@ class Lib_diagnosticopei_reporte {
         elseif($tp_rep == 8){
             return $this->form_pdf7('landscape',$get_form_distrital); //// horizontal - Recursos Humanos
         }
+        elseif($tp_rep == 9){
+            return $this->form_pdf8('landscape',$get_form_distrital); //// horizontal - Compra de Servicios
+        }
+        elseif($tp_rep == 10){
+            return $this->form_pdf9('landscape',$get_form_distrital); //// horizontal - Presupuestos
+        }
+        elseif($tp_rep == 11){
+            return $this->form_pdf10('landscape',$get_form_distrital); //// horizontal - Reembolsos
+        }
         else{
             return "Trabajando ... ";
         }
@@ -715,7 +724,7 @@ class Lib_diagnosticopei_reporte {
         $tabla = $this->style_report();
         $tabla .= ' 
         <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
-        '.$this->cabecera_report(5,'DIAGNÓSTICO DE EQUIPAMIENTO MAYOR',$get_form_distrital).'
+        '.$this->cabecera_report(6,'DIAGNÓSTICO DE EQUIPAMIENTO MAYOR',$get_form_distrital).'
 
         <p class="bold">1. Identificación del establecimiento</p>
         <div class="box-container" style="width: 100%; border: 1px solid #000; font-size:10.5px; padding: 8px; margin-bottom: 15px;">
@@ -769,20 +778,124 @@ class Lib_diagnosticopei_reporte {
     /// formulario reporte 7 - Recursos Humanos
     public function form_pdf7($orientacion,$get_form_distrital) {
         $detalle_rrhh=$this->CI->model_diagnosticopei->get_diagnostico_rrhh($get_form_distrital[0]['dist_id']);
+        $profesiones = array(
+          'nro_medicos' => 'MEDICOS',
+          'nro_odontologos' => 'ODONTOLOGOS',
+          'nro_farmaceuticos' => 'FARMACEUTICOS',
+          'nro_laboratoristas' => 'LABORATORISTAS',
+          'nro_otros_prof' => 'OTROS PROFESIONALES',
+          'nro_nutricionistas' => 'NUTRICIONISTAS',
+          'nro_trabajo_social' => 'TRABAJO SOCIAL',
+          'nro_jefe_superv_enf' => 'JEF. SUPERV. ENFERMERÍA',
+          'nro_lic_grad_enf' => 'LIC. EN ENFERMERÍA',
+          'nro_aux_enf' => 'AUXILIARES DE ENFERMERÍA',
+          'nro_pers_adm' => 'PERSONAL ADM. (ÍTEM)',
+          'nro_pers_adm_salud' => 'PERSONAL ADM. SALUD',
+          'nro_pers_adm_tec' => 'PERS. ADM. TÉCNICO',
+          'nro_pers_adm_aux' => 'PERS. ADM. AUXILIAR',
+          'nro_pers_adm_chof' => 'CHÓFERES',
+          'nro_pers_adm_artesanos' => 'ARTESANOS',
+          'nro_pers_adm_trab_manual' => 'TRAB. MANUALES'
+        );
+
+        $totales_columnas = array();
+        for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
+            for ($tp = 1; $tp <= 3; $tp++) {
+                $totales_columnas[$anio][$tp] = 0; // Inicializamos cada columna en cero
+            }
+        }
+
         $tabla='';
         $tabla = $this->style_report();
         $tabla .= ' 
         <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
-        '.$this->cabecera_report(6,'DIAGNÓSTICO DE RECURSOS HUMANOS',$get_form_distrital).'
+        '.$this->cabecera_report(7,'DIAGNÓSTICO DE RECURSOS HUMANOS',$get_form_distrital).'
 
         <p class="bold">1. Cuadro del Personal por Items, Contrato, Acefalias</p>';
             $tabla.='
-                <table class="tabla-datos" style="font-size:8px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
-                
+                <table class="tabla-datos" style="font-size:7px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
+                    <thead>
+                      <tr style="background: #f5f5f5; color: #666;">
+                          <th rowspan="2" style="width: 10%; vertical-align: middle; text-align:center; min-width: 180px; border-top:none; font-size:8px;">CATEGORÍA / PROFESIÓN</th>';
+                          
+                          // Cabecera de Años
+                          for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
+                              $tabla .= '<th colspan="3" style="text-align:center; font-size: 10px;">GESTIÓN '.$anio.'</th>';
+                          }
+                      
+                      $tabla .= '
+                      </tr>
+                      <tr>';
+                          // Sub-cabecera de Tipos
+                          for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
+                              $tabla .= '<th style="text-align:center; width:36.2px; font-size:7px;">ITEMS</th>';
+                              $tabla .= '<th style="text-align:center; width:36.2px; font-size:7px;">CONTR.</th>';
+                              $tabla .= '<th style="text-align:center; width:36.2px; font-size:7px;">ACEF.</th>';
+                          }
+                      $tabla .= '</tr>
+                    </thead>
+                    <tbody>';
+                    
+                    // Generación de filas de profesiones
+                    foreach ($profesiones as $campo => $label) {
+                      $tabla .= '
+                      <tr>
+                          <td style="background: #f9f9f9; font-weight: bold; padding: 5px 10px; text-align:left; border-right: 2px solid #eee; font-size:6.5px;">
+                              '.$label.'
+                          </td>';
+                          
+                          for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
+                              for ($tp = 1; $tp <= 3; $tp++) {
+                                  // Búsqueda del valor en el array de la base de datos
+                                  $valor = 0;
+                                  foreach ($detalle_rrhh as $res) {
+                                      if ($res['gestion'] == $anio && $res['tp_rrhh_form'] == $tp) {
+                                          $valor = (int)$res[$campo]; // Forzamos a entero para la suma
+                                          break;
+                                      }
+                                  }
+
+                                  // 2. ACUMULAMOS EL VALOR EN LA GESTIÓN Y TIPO CORRESPONDIENTE
+                                  $totales_columnas[$anio][$tp] += $valor;
+
+                                  // Estilo condicional para Acefalías (columna 3 de cada año)
+                                  $tdStyle = ($tp == 3) ? 'background-color: #fff8f8;' : '';
+
+                                  $tabla .= '
+                                  <td style="padding: 2px; font-size:8px; text-align:right; padding-right:3px; '.$tdStyle.'">'.number_format($valor, 0, '.', ',').'</td>';
+                              }
+                          }
+                      $tabla .= '</tr>';
+                    }
+
+                    $tabla .= '
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #e0e0e0; font-weight: bold; border-top: 2px solid #E91E63;">
+                            <td style="text-align:right; padding: 5px 10px; font-size: 8px; vertical-align: middle;">TOTAL PERSONAL:</td>';
+                            
+                            // 3. RENDERIZAMOS LOS TOTALES PRECALCULADOS EN EL TFOOT
+                            for ($anio = $get_form_distrital[0]['g_id_inicio']; $anio <= $get_form_distrital[0]['g_id_fin']; $anio++) {
+                                for ($tp = 1; $tp <= 3; $tp++) {
+                                    
+                                    // Obtenemos el gran total acumulado para esta columna
+                                    $total_final_columna = $totales_columnas[$anio][$tp];
+                                    
+                                    $bg_total = ($tp == 3) ? '#ffebee' : '#e3f2fd'; // Color diferente para total acefalías
+
+                                    $tabla .= '
+                                    <td style="text-align:right; padding: 5px; padding-right:3px; background-color: '.$bg_total.'; border: 1px solid #ddd; font-size:8px; color:#0d47a1; font-weight: bold;">
+                                        '.number_format($total_final_columna, 0, '.', ',').'
+                                    </td>';
+                                }
+                            }
+                    $tabla .= '
+                        </tr>
+                    </tfoot>
                 </table>';
         $tabla .= '
         <p class="bold" style="margin-top: 15px;">- Observaciones adicionales</p>
-        <div class="box-container" style="width: 100%; height: 45px; border: 0.5px solid #000; font-size:8px; padding:5px;">
+        <div class="box-container" style="width: 100%; height: 35px; border: 0.5px solid #000; font-size:8px; padding:5px;">
             '.(!empty($get_form_distrital[0]['observacion7']) ? strtoupper($get_form_distrital[0]['observacion7']) : 'SIN OBSERVACIONES').'
         </div>';
 
@@ -798,14 +911,304 @@ class Lib_diagnosticopei_reporte {
     }
 
 
+    /// formulario reporte 8 - Compra de Servicios
+    public function form_pdf8($orientacion,$get_form_distrital) {
+        $detalle_cservicios=$this->CI->model_diagnosticopei->get_diagnostico_compra_servicios($get_form_distrital[0]['dist_id']);
+
+        $tabla='';
+        $tabla = $this->style_report();
+        $tabla .= ' 
+        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+        '.$this->cabecera_report(8,'DIAGNÓSTICO DE COMPRA DE SERVICIOS',$get_form_distrital).'
+
+        <p class="bold">1. Identificación de las tres principales compra de servicios</p>';
+            $tabla.='
+                <table class="tabla-datos" style="font-size:8px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
+                    <thead>
+                      <tr style="background: #FFF3E0; color: #E65100; font-weight: bold;">
+                          <th style="width:8%; text-align:center; vertical-align: middle; padding: 5px 0;font-size: 8px;">AÑO</th>
+                          <th style="width:32%; text-align:center; vertical-align: middle;font-size: 8px;">SERVICIO CONTRATADO</th>
+                          <th style="width:12%; text-align:center; vertical-align: middle;font-size: 8px;">N° ATENCIONES</th>
+                          <th style="width:15%; text-align:center; vertical-align: middle;font-size: 8px;">COSTO TOTAL (BS.)</th>
+                          <th style="width:33%; text-align:center; vertical-align: middle;font-size: 8px;">OBSERVACIONES</th>
+                      </tr>
+                    </thead>
+                    <tbody>';
+                    
+                    $colores = [
+                      '2021' => '#F5F5F5', // Gris claro
+                      '2022' => '#FFFFFF', // Blanco
+                      '2023' => '#F5F5F5', 
+                      '2024' => '#FFFFFF', 
+                      '2025' => '#F5F5F5'
+                    ];
+
+                    foreach ($detalle_cservicios as $row) {
+                      $bg = isset($colores[$row['gestion']]) ? $colores[$row['gestion']] : '#fff';
+                      
+                      // Convertimos a tipos numéricos para el acumulador seguro
+                      $atenciones = intval($row['nro_atenciones']);
+                      $costo = floatval($row['costo_total']);
+
+                      
+                      // Control de textos vacíos para evitar celdas en blanco huérfanas
+                      $servicio = !empty($row['serv_contratado']) ? strtoupper(trim($row['serv_contratado'])) : '-';
+                      $observaciones = !empty($row['cservicios_observaciones']) ? strtoupper(trim($row['cservicios_observaciones'])) : '-';
+
+                      $tabla .= '
+                      <tr style="background-color: '.$bg.';">
+                        <td style="width:8%;text-align:center; vertical-align:middle; font-weight:bold; border-right: 2px solid #ddd; font-size: 11px; padding: 4px 0;">
+                            '.$row['gestion'].'
+                        </td>
+                        
+                        <!-- Servicio contratado (Alineado a la izquierda con margen interno de lectura) -->
+                        <td style="width: 32%; vertical-align: middle; text-align: left; padding: 4px; font-size: 9px; word-wrap: break-word;">
+                            '.$servicio.'
+                        </td>
+                        
+                        <!-- Nro Atenciones (Alineado a la derecha) -->
+                        <td style="width:12%;vertical-align: middle; text-align:right; padding: 4px; padding-right: 6px; font-size: 9px;">
+                            '.($atenciones > 0 ? number_format($atenciones, 0, '.', ',') : '0').'
+                        </td>
+                        
+                        <!-- Costo Total Anual (Formato monetario alineado a la derecha) -->
+                        <td style="width:15%;vertical-align: middle; text-align:right; padding: 4px; padding-right: 6px; font-weight:bold; color: #1b5e20; font-size: 9px;">
+                            '.number_format($costo, 2, '.', ',').'
+                        </td>
+                        
+                        <!-- Observaciones -->
+                        <td style="width:33%;vertical-align: middle; text-align:left; padding: 4px; color: #555; font-size: 9px;">'.$observaciones.'</td>
+                    </tr>';
+                  }
+
+                $tabla .= '
+                    </tbody>
+                </table>';
+
+        $tabla .= '
+        <div style="width: 100%; margin-top: 20mm; text-align: center; page-break-inside: avoid; display: block;">
+            <p style="font-size: 11px; margin: 0; padding: 0;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
+        </div>';
+
+        $tabla .= '
+        </page>';
+
+        return $tabla;
+    }
 
 
 
+    /// formulario reporte 9 - Presupuestos
+    public function form_pdf9($orientacion,$get_form_distrital) {
+        $listado_presupuesto=$this->CI->model_diagnosticopei->get_diagnostico_presupuestos($get_form_distrital[0]['dist_id']);
+        $totales = array(
+            'ipp' => 0, 'ipe' => 0, 'rfp' => 0, 'rfe' => 0, 
+            'tie' => 0, 'gp'  => 0, 'ge'  => 0, 'ds'  => 0
+        );
+        $tabla='';
+        $tabla = $this->style_report();
+        $tabla .= ' 
+        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+        '.$this->cabecera_report(9,'DIAGNÓSTICO DE INGRESOS Y GASTOS ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')',$get_form_distrital).'
+
+        <p class="bold">1. Diagnostico de Ingresos y Gastos ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</p>';
+            $tabla.='
+                <table class="tabla-datos" style="font-size:7.5px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
+                    <thead>
+                      <tr style="background: #FFF3E0; color: #000000; font-weight: bold;">
+                          <th style="width:8%; text-align:center; vertical-align: middle; padding: 5px 0;font-size:7.5px;">GESTIÓN</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">INGRESOS PROPIOS Prog.</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">INGRESOS PROPIOS Ejec.</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">RECURSOS FINAN. Prog.</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">RECURSOS FINAN. Ejec.</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">TOTAL INGRESOS EJECUTADOS</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">GASTOS Programados</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">GASTOS Ejecutados</th>
+                          <th style="width:11.4%; text-align:center; vertical-align: middle;font-size:8px;">DEFICIT / SUPERAVIT</th>
+                      </tr>
+                    </thead>
+                    <tbody>';
+                    
+                    foreach ($listado_presupuesto as $row) {
+                        // Conversión segura de tipos float para cálculos internos precisos
+                        $ipp = floatval($row['ingresos_propios_programados']);
+                        $ipe = floatval($row['ingresos_propios_ejecutados']);
+                        $rfp = floatval($row['recursos_financieros_programados']);
+                        $rfe = floatval($row['recursos_financieros_ejecutados']);
+                        $tie = floatval($row['total_ingresos_ejecutados']);
+                        $gp  = floatval($row['gastos_programados']);
+                        $ge  = floatval($row['gastos_ejecutados']);
+                        $ds  = floatval($row['deficit_superavit']);
+
+                        // 2. ACUMULAMOS LOS VALORES DE CADA COLUMNA
+                        $totales['ipp'] += $ipp; $totales['ipe'] += $ipe;
+                        $totales['rfp'] += $rfp; $totales['rfe'] += $rfe;
+                        $totales['tie'] += $tie; $totales['gp']  += $gp;
+                        $totales['ge']  += $ge;  $totales['ds']  += $ds;
+
+                        // Color condicional nativo para la celda de Déficit/Superávit
+                        $color_ds = ($ds < 0) ? '#C62828' : '#2E7D32';
+
+                        $tabla .= '
+                        <tr class="fila-presupuesto">
+                            <td style="text-align:center; vertical-align:middle; font-weight:bold; font-size:11px; padding: 4px 0;">
+                                '.$row['gestion'].'
+                            </td>
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px;font-size:8px;">'.number_format($ipp, 2, '.', ',').'</td>
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px;font-size:8px;">'.number_format($ipe, 2, '.', ',').'</td>
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px;font-size:8px;">'.number_format($rfp, 2, '.', ',').'</td>
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px;font-size:8px;">'.number_format($rfe, 2, '.', ',').'</td>
+                            
+                            <!-- Campos Calculados (Estilo diferenciado con fondo gris suave) -->
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px; background:#f5f5f5; font-weight:bold;font-size:8px;">'.number_format($tie, 2, '.', ',').'</td>
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px; background:#f5f5f5; font-weight:bold;font-size:8px;">'.number_format($gp, 2, '.', ',').'</td>
+                            
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px;font-size:8px;">'.number_format($ge, 2, '.', ',').'</td>
+                            
+                            <!-- Déficit / Superávit con color adaptado -->
+                            <td style="text-align:right; vertical-align:middle; padding: 4px; padding-right:3px; background:#f5f5f5; font-weight:bold; color:'.$color_ds.';font-size:8px;">
+                                '.number_format($ds, 2, '.', ',').'
+                            </td>
+                        </tr>';
+                    }
+
+                $color_total_ds = ($totales['ds'] < 0) ? '#C62828' : '#2E7D32';
+
+                $tabla .= '
+                    </tbody>
+                    <!-- 3. PIE DE TABLA CON TOTALES CONSOLIDADOS DE TODO EL PERIODO -->
+                    <tfoot>
+                        <tr style="background: #FFF3E0; font-weight: bold; border-top: 2px solid #000;">
+                            <td style="text-align:right; padding: 5px; font-size: 8px; vertical-align: middle;font-size:10px;">TOTAL:</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px;font-size:8px;">'.number_format($totales['ipp'], 2, '.', ',').'</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px;font-size:8px;">'.number_format($totales['ipe'], 2, '.', ',').'</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px;font-size:8px;">'.number_format($totales['rfp'], 2, '.', ',').'</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px;font-size:8px;">'.number_format($totales['rfe'], 2, '.', ',').'</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px; background:#e0e0e0;font-size:8px;">'.number_format($totales['tie'], 2, '.', ',').'</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px; background:#e0e0e0;font-size:8px;">'.number_format($totales['gp'], 2, '.', ',').'</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px;font-size:8px;">'.number_format($totales['ge'], 2, '.', ',').'</td>
+                            <td style="text-align:right; padding: 5px; padding-right:3px; background:#e0e0e0; color:'.$color_total_ds.';font-size:8px;">
+                                '.number_format($totales['ds'], 2, '.', ',').'
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>';
+                $tabla .= '
+                <p class="bold" style="margin-top: 15px;">- Observaciones adicionales</p>
+                <div class="box-container" style="width: 100%; height: 45px; border: 0.5px solid #000; font-size:8px; padding:5px;">
+                    '.(!empty($get_form_distrital[0]['observacion9']) ? strtoupper($get_form_distrital[0]['observacion9']) : 'SIN OBSERVACIONES').'
+                </div>';
+
+        $tabla .= '
+        <div style="width: 100%; margin-top: 20mm; text-align: center; page-break-inside: avoid; display: block;">
+            <p style="font-size: 11px; margin: 0; padding: 0;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
+        </div>';
+
+        $tabla .= '
+        </page>';
+
+        return $tabla;
+    }
 
 
+    /// formulario reporte 10 - Reembolsos
+    public function form_pdf10($orientacion,$get_form_distrital) {
+        $listado_reembolsos=$this->CI->model_diagnosticopei->get_diagnostico_reembolsos($get_form_distrital[0]['dist_id']);
+        $totales_reemb = array(
+            'med'   => 0,
+            'lab'   => 0,
+            'img'   => 0,
+            'otr'   => 0,
+            'total' => 0
+        );
+        $tabla='';
+        $tabla = $this->style_report();
+        $tabla .= ' 
+        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+        '.$this->cabecera_report(10,'DIAGNÓSTICO DE REEMBOLSOS ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')',$get_form_distrital).'
 
+        <p class="bold">1. Diagnostico de Reembolsos ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</p>';
+            $tabla.='
+                <table class="tabla-datos" style="font-size:8px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
+                <thead>
+                    <tr style="background: #e8eaf6; color: #1a237e; font-weight: bold;">
+                        <th style="width:10%; text-align:center; vertical-align: middle;font-size: 8.5px; padding: 5px 0;">GESTIÓN</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle;font-size: 8.5px;">MEDICAMENTOS</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle;font-size: 8.5px;">LABORATORIO</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle;font-size: 8.5px;">IMAGENOLOGÍA</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle;font-size: 8.5px;">OTROS CONCEPTOS</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;background:#c5cae9;">TOTAL REEMBOLSOS</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                
+                foreach ($listado_reembolsos as $row) {
+                    // Conversión segura a punto flotante para cálculos matemáticos exactos en el backend
+                    $med = floatval($row['reemb_concep_medicamentos']);
+                    $lab = floatval($row['reemb_concep_laboratorio']);
+                    $img = floatval($row['reemb_concep_imagenologia']);
+                    $otr = floatval($row['reemb_otros_conceptos']);
+                    $tot = floatval($row['total_reembolsos']);
 
+                    // 2. ACUMULAMOS LOS MONTOS CELDA POR CELDA
+                    $totales_reemb['med']   += $med;
+                    $totales_reemb['lab']   += $lab;
+                    $totales_reemb['img']   += $img;
+                    $totales_reemb['otr']   += $otr;
+                    $totales_reemb['total'] += $tot;
 
+                    $tabla .= '
+                    <tr class="fila-reembolso">
+                        <td style="text-align:center; vertical-align:middle; font-weight:bold; background:#f9f9f9; font-size:11px; padding: 5px 0;">
+                            '.$row['gestion'].'
+                        </td>
+                        <!-- Importes formateados y alineados a la derecha con margen interno de seguridad -->
+                        <td style="text-align:right; vertical-align:middle; padding: 5px; padding-right:4px;font-size: 8.5px;">'.number_format($med, 2, '.', ',').'</td>
+                        <td style="text-align:right; vertical-align:middle; padding: 5px; padding-right:4px;font-size: 8.5px;">'.number_format($lab, 2, '.', ',').'</td>
+                        <td style="text-align:right; vertical-align:middle; padding: 5px; padding-right:4px;font-size: 8.5px;">'.number_format($img, 2, '.', ',').'</td>
+                        <td style="text-align:right; vertical-align:middle; padding: 5px; padding-right:4px;font-size: 8.5px;">'.number_format($otr, 2, '.', ',').'</td>
+                        
+                        <!-- Columna del Total por Gestión (Resaltado con fondo gris suave) -->
+                        <td style="text-align:right; vertical-align:middle; padding: 5px; padding-right:4px; background:#f5f5f5; font-weight:bold; color:#1a237e;">
+                            '.number_format($tot, 2, '.', ',').'
+                        </td>
+                    </tr>';
+                }
+
+            $tabla .= '
+                </tbody>
+                <!-- 3. PIE DE TABLA CON CONSOLIDADO DE SUMATORIAS FINALES -->
+                <tfoot>
+                    <tr style="background: #e8eaf6; font-weight: bold; border-top: 2px solid #1a237e;">
+                        <td style="text-align:right; padding: 6px; font-size: 8.5px; vertical-align: middle; color:#1a237e;">TOTAL:</td>
+                        <td style="text-align:right; padding: 6px; padding-right:4px; font-size: 8.5px;">'.number_format($totales_reemb['med'], 2, '.', ',').'</td>
+                        <td style="text-align:right; padding: 6px; padding-right:4px; font-size: 8.5px;">'.number_format($totales_reemb['lab'], 2, '.', ',').'</td>
+                        <td style="text-align:right; padding: 6px; padding-right:4px; font-size: 8.5px;">'.number_format($totales_reemb['img'], 2, '.', ',').'</td>
+                        <td style="text-align:right; padding: 6px; padding-right:4px; font-size: 8.5px;">'.number_format($totales_reemb['otr'], 2, '.', ',').'</td>
+                        
+                        <!-- Gran Total Nacional/Regional (Fondo Azul Claro de Enfoque) -->
+                        <td style="text-align:right; padding: 6px; padding-right:4px; font-size: 9px; background:#c5cae9; color:#1a237e;">
+                            '.number_format($totales_reemb['total'], 2, '.', ',').'
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>';
+                $tabla .= '
+                <p class="bold" style="margin-top: 15px;">- Observaciones adicionales</p>
+                <div class="box-container" style="width: 100%; height: 45px; border: 0.5px solid #000; font-size:8px; padding:5px;">
+                    '.(!empty($get_form_distrital[0]['observacion10']) ? strtoupper($get_form_distrital[0]['observacion10']) : 'SIN OBSERVACIONES').'
+                </div>';
+
+        $tabla .= '
+        <div style="width: 100%; margin-top: 20mm; text-align: center; page-break-inside: avoid; display: block;">
+            <p style="font-size: 11px; margin: 0; padding: 0;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
+        </div>';
+
+        $tabla .= '
+        </page>';
+
+        return $tabla;
+    }
 
 public function style_report() {
     $tabla = '        

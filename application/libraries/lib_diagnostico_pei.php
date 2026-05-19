@@ -312,7 +312,7 @@ class lib_diagnostico_pei extends CI_Controller{
             <div style="padding: 15px 0;" class="no-print">
                 <a href="javascript:void(0);" 
                    id="btn-reporte"
-                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/2/".$get_form_distrital[0]['form_id']).'\');" 
+                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/2/".$get_form_distrital[0]['dist_id']).'\');" 
                    class="btn-imprimir btn-disabled" 
                    title="Imprimir Formulario">
                    <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
