@@ -158,117 +158,223 @@ class CDiagnostico_pei extends CI_Controller {
       $tabla='';
       $tabla.='
           <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-              '.$this->lib_diagnostico_pei->style_form().'
-              <div id="toast-notificacion" class="toast-msg">
-                ¡Información guardada correctamente! ✓
-              </div>
-              <div class="well well-sm well-light">
-              <h2>'.strtoupper($get_form_distrital[0]['dist_distrital']).'</h2>
-                <div id="tabs" data-pei="'.$pei_id.'" data-dist="'.$dist_id.'">
-                  <ul>
-                    <li>
-                      <a href="#tabs-a" data-url="poblacion_afiliada"><b>I.- POBLACIÓN AFILIADA</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-b" data-url="grupo_etareo"><b>I.I.- POBLACIÓN POR GRUPO ETAREO</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-c" data-url="empresas_aportantes"><b>II.- EMPRESAS APORTANTES</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-d" data-url="perfil_epidemiologico"><b>III.- PERFIL EPIDEMIOLOGICO</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-e" data-url="infraestructura"><b>IV.- INFRAESTRUCTURA</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-f" data-url="diagnostico_camas"><b>V.- DIAGNOSTICO CAMAS</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-g" data-url="equipo"><b>VI.- EQUIPO</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-h" data-url="recursos_humanos"><b>VII.- RECURSOS HUMANOS</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-i" data-url="compra_servicios"><b>VIII.- COMPRA DE SERVICIOS</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-j" data-url="presupuestos"><b>IX.- PRESUPUESTOS</b></a>
-                    </li>
-                    <li>
-                      <a href="#tabs-k" data-url="reembolsos"><b>X.- REEMBOLSOS</b></a>
-                    </li>
-                  </ul>
-                  <div id="tabs-a">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
+            ' . $this->lib_diagnostico_pei->style_form() . '
+            
+            <div id="toast-notificacion" class="toast-msg">
+              ¡Información guardada correctamente! ✓
+            </div>
+            
+            <div class="well well-sm well-light">
+                <!-- ==================== BARRA DE CABECERA CON ACCIONES ==================== -->
+                <div class="row" style="margin-bottom: 15px; display: flex; align-items: center; border-bottom: 2px solid #3276b1; padding-bottom: 10px;">
+                    <div class="col-xs-12 col-sm-6 col-md-7 col-lg-7">
+                        <hr>
+                        <h2 style="margin: 0; padding: 0; color: #212121; font-weight: bold;">
+                            <i class="fa fa-hospital-o text-primary"></i> ' . strtoupper($get_form_distrital[0]['dist_distrital']) . '
+                        </h2>
+                        <small class="text-muted" style="font-size: 11px;">Módulo de Registro Diagnóstico Quinquenal (2021 - 2025)</small>
+                    </div>';
+                    $archivo_existente = (isset($get_form_distrital[0]['form_archivo_scanneado']) && !empty($get_form_distrital[0]['form_archivo_scanneado'])) ? trim($get_form_distrital[0]['form_archivo_scanneado']) : '';
 
-                  <div id="tabs-b">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-                  
-                  <div id="tabs-c">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
-                  <div id="tabs-d">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-                  
-                  <div id="tabs-e">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
-                  <div id="tabs-f">
-                    <div class="row">
-                        <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
-                  <div id="tabs-g">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
-                  <div id="tabs-h">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
-                  <div id="tabs-i">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
-                  <div id="tabs-j">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
-                  <div id="tabs-k">
-                    <div class="row">
-                      <div class="contenido-ajax"></div>
-                    </div>
-                  </div>
-
+                    $tabla .= '
+                    <div class="col-xs-12 col-sm-6 col-md-5 col-lg-5 text-right" style="margin-top: 5px;">';
+                        if($get_form_distrital[0]['form_opciones']==1 & $this->tp_adm==0){
+                          $tabla.='
+                          <button type="button" 
+                                class="btn btn-primary btn-sm" 
+                                onclick="abrirModalSubidaEscaneados()" 
+                                style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px;"
+                                data-toggle="tooltip" 
+                                title="Cargar al sistema el documento PDF final firmado y escaneado">
+                            <i class="fa fa-upload"></i> Subir Escaneado (PDF)
+                          </button>';
+                        }
+                      $tabla.='
+                          <!-- NUEVO Botón 3: Ver Archivo Cargado (Oculto por defecto si el campo está vacío en DB) -->
+                          <button type="button" 
+                                  id="btn_ver_pdf_modal"
+                                  class="btn btn-warning btn-sm" 
+                                  onclick="verPdfEscaneadoModal()" 
+                                  style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px; ' . ($archivo_existente == '' ? 'display: none;' : '') . '"
+                                  data-url="' . base_url() . 'escaneados_form_pei/' . $archivo_existente . '"
+                                  data-toggle="tooltip" 
+                                  title="Previsualizar el expediente digitalizado en la plataforma">
+                              <i class="fa fa-eye"></i> Ver Archivo Digitalizado
+                          </button>
+                          <a href="' . base_url() . 'index.php/admin/dashboard" 
+                           class="btn btn-danger btn-sm" 
+                           style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px;"
+                           data-toggle="tooltip" 
+                           title="Volver atrás al Dashboard de administración general">
+                            <i class="fa fa-arrow-left"></i> Volver a menu
+                        </a>
+                    </div>';
+                    
+                    $tabla.='
                 </div>
+
+                <!-- ==================== CONTENEDOR DE PESTAÑAS (TABS) ==================== -->
+                <div id="tabs" data-pei="' . $pei_id . '" data-dist="' . $dist_id . '">
+                  <ul>
+                    <li><a href="#tabs-a" data-url="poblacion_afiliada"><b>I.- POBLACIÓN AFILIADA</b></a></li>
+                    <li><a href="#tabs-b" data-url="grupo_etareo"><b>I.I.- POBLACIÓN POR GRUPO ETAREO</b></a></li>
+                    <li><a href="#tabs-c" data-url="empresas_aportantes"><b>II.- EMPRESAS APORTANTES</b></a></li>
+                    <li><a href="#tabs-d" data-url="perfil_epidemiologico"><b>III.- PERFIL EPIDEMIOLOGICO</b></a></li>
+                    <li><a href="#tabs-e" data-url="infraestructura"><b>IV.- INFRAESTRUCTURA</b></a></li>
+                    <li><a href="#tabs-f" data-url="diagnostico_camas"><b>V.- DIAGNOSTICO CAMAS</b></a></li>
+                    <li><a href="#tabs-g" data-url="equipo"><b>VI.- EQUIPO</b></a></li>
+                    <li><a href="#tabs-h" data-url="recursos_humanos"><b>VII.- RECURSOS HUMANOS</b></a></li>
+                    <li><a href="#tabs-i" data-url="compra_servicios"><b>VIII.- COMPRA DE SERVICIOS</b></a></li>
+                    <li><a href="#tabs-j" data-url="presupuestos"><b>IX.- PRESUPUESTOS</b></a></li>
+                    <li><a href="#tabs-k" data-url="reembolsos"><b>X.- REEMBOLSOS</b></a></li>
+                  </ul>
+                  
+                  <!-- Paneles de Contenido de las pestañas -->
+                  <div id="tabs-a"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-b"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-c"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-d"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-e"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-f"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-g"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-h"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-i"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-j"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-k"><div class="row"><div class="contenido-ajax"></div></div></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ==================== MODAL DE SUBIDA DE ARCHIVOS ESCANEADOS ==================== -->
+        <div class="modal fade" id="modal_subida_pdf" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content" style="border-radius: 6px;">
+                    <div class="modal-header" style="background-color: #3276b1; color: #fff; border-top-left-radius: 5px; border-top-right-radius: 5px;">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color: #fff; opacity: 0.8;">&times;</button>
+                        <h4 class="modal-title" style="font-weight: bold;"><i class="fa fa-cloud-upload"></i> Subir Formularios Escaneados</h4>
+                    </div>
+                    <form id="form_subir_escaneado" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <input type="hidden" name="pei_id" value="' . $pei_id . '">
+                            <input type="hidden" name="dist_id" value="' . $dist_id . '">
+                            <input type="hidden" name="abrev" value="' . $get_form_distrital[0]['abrev'] . '">
+                            
+                            <div class="alert alert-warning" style="font-size: 11.5px; line-height: 1.5; color: #8a6d3b; background-color: #fcf8e3; border-color: #faebcc; padding: 12px;">
+                                <i class="fa fa-exclamation-triangle" style="font-size: 14px; margin-right: 5px;"></i> 
+                                <b style="font-size: 12px; text-transform: uppercase;">¡REQUISITO OBLIGATORIO DE ENVÍO!</b>
+                                <hr style="border-top: 1px solid #f7e1b5; margin-top: 5px; margin-bottom: 5px;">
+                                <ul style="margin-left: 15px; padding-left: 0;">
+                                    <li>Los <b>11 formularios</b> impresos del diagnóstico deben ser firmados por su Administrador Regional o Agente Distrital.</li>
+                                    <li>Toda la documentación debe ser digitalizada **en un solo archivo unificado de formato PDF**.</li>
+                                    <li>El sistema **NO** aceptará archivos separados por pestañas o imágenes sueltas.</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label style="font-weight: bold; color: #333;">Seleccionar archivo escaneado (PDF):</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-file-pdf-o text-danger"></i></span>
+                                    <input type="file" name="archivo_pdf" id="archivo_pdf" class="form-control" accept="application/pdf" required>
+                                </div>
+                                <small class="text-muted">El tamaño máximo permitido es de 20MB.</small>
+                            </div>
+                            
+                            <!-- Contenedor para mostrar barra de progreso de carga -->
+                            <div class="progress progress-sm progress-striped active" id="progreso_carga_container" style="display: none; margin-top: 15px;">
+                                <div class="progress-bar bg-color-darken" id="barra_progreso_pdf" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="background-color: #fafafa;">
+                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" style="font-weight: bold;">Cancelar</button>
+                            <button type="submit" class="btn btn-primary btn-sm" id="btn_confirmar_subida" style="font-weight: bold;"><i class="fa fa-check"></i> Cargar Archivo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>';
+
+        $tabla.='
+        <!-- ==================== MODAL DE SUBIDA DE ARCHIVOS ESCANEADOS ==================== -->
+          <div class="modal fade" id="modal_subida_pdf" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog">
+                  <div class="modal-content" style="border-radius: 6px;">
+                      <div class="modal-header" style="background-color: #3276b1; color: #fff; border-top-left-radius: 5px; border-top-right-radius: 5px;">
+                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color: #fff; opacity: 0.8;">&times;</button>
+                          <h4 class="modal-title" style="font-weight: bold;"><i class="fa fa-cloud-upload"></i> Subir Formularios Escaneados</h4>
+                      </div>
+                      <form id="form_subir_escaneado" enctype="multipart/form-data">
+                          <div class="modal-body">
+                              <input type="hidden" name="pei_id" value="' . $pei_id . '">
+                              <input type="hidden" name="dist_id" value="' . $dist_id . '">
+
+                              
+                              <div class="alert alert-info" style="font-size: 11.5px; line-height: 1.4;">
+                                  <i class="fa fa-info-circle"></i> <b>Instrucción:</b> Seleccione el archivo digitalizado único en formato <b>PDF</b> que contiene todos los reportes del diagnóstico firmados por el Administrador Regional o Agente Distrital.
+                              </div>
+                              
+                              <div class="form-group" style="margin-top: 15px;">
+                                  <label style="font-weight: bold; color: #333;">Seleccionar archivo escaneado (PDF):</label>
+                                  <div class="input-group">
+                                      <span class="input-group-addon"><i class="fa fa-file-pdf-o text-danger"></i></span>
+                                      <input type="file" name="archivo_pdf" id="archivo_pdf" class="form-control" accept="application/pdf" required>
+                                  </div>
+                                  <small class="text-muted">El tamaño máximo permitido es de 20MB.</small>
+                              </div>
+                              
+                              <!-- Contenedor para mostrar barra de progreso de carga -->
+                              <div class="progress progress-sm progress-striped active" id="progreso_carga_container" style="display: none; margin-top: 15px;">
+                                  <div class="progress-bar bg-color-darken" id="barra_progreso_pdf" role="progressbar" style="width: 0%"></div>
+                              </div>
+                          </div>
+                          <div class="modal-footer" style="background-color: #fafafa;">
+                              <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" style="font-weight: bold;">Cancelar</button>
+                              <button type="submit" class="btn btn-primary btn-sm" id="btn_confirmar_subida" style="font-weight: bold;"><i class="fa fa-check"></i> Cargar Archivo</button>
+                          </div>
+                      </form>
+                  </div>
               </div>
-            </article>';
+          </div>';
+
+          $tabla .= '
+          <!-- ==================== MODAL VISOR INTERACTIVO DE PDF CON ELIMINACIÓN ==================== -->
+          <div class="modal fade" id="modal_visor_pdf" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog modal-lg" style="width: 90%; max-width: 1200px;">
+                  <div class="modal-content" style="border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                      
+                      <div class="modal-header" style="background-color: #f57c00; color: #fff; border-top-left-radius: 5px; border-top-right-radius: 5px; padding: 10px 15px;">
+                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color: #fff; opacity: 0.9;">&times;</button>
+                          <h4 class="modal-title" style="font-weight: bold; font-size: 14px;">
+                              <i class="fa fa-file-pdf-o"></i> VISOR DE FORMULARIOS ESCANEADOS PEI
+                          </h4>
+                      </div>
+                      
+                      <div class="modal-body" style="padding: 0; height: 600px; background-color: #525659; overflow: hidden;">
+                          <iframe id="iframe_visor_pdf" src="" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+                      </div>
+                      
+                      <div class="modal-footer" style="background-color: #fafafa; padding: 8px 15px; margin-top: 0; border-top: 1px solid #e5e5e5;">
+                          <small class="text-muted pull-left" style="margin-top: 5px; text-align: left; width: 50%;">
+                              <i class="fa fa-info-circle text-primary"></i> Use los controles internos del visor para aplicar Zoom o imprimir.
+                          </small>
+                          
+                          <!-- NUEVO BOTÓN: Eliminar Reporte (Visible solo para administradores habilitados) -->
+                          <button type="button" 
+                                  id="btn_eliminar_pdf_server" 
+                                  class="btn btn-danger btn-sm" 
+                                  onclick="eliminarReporteEscaneado()"
+                                  data-pei="' . $pei_id . '" 
+                                  data-dist="' . $dist_id . '"
+                                  style="font-weight: bold; border-radius: 4px; margin-right: 5px;">
+                              <i class="fa fa-trash-o"></i> Eliminar Archivo 
+                          </button>
+
+                          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" style="font-weight: bold; border-radius: 4px;">Cerrar Visor</button>
+                      </div>
+                  </div>
+              </div>
+          </div>';
+
+
             if($tp_adm==1){
               $tabla.='
               <script type="text/javascript">
@@ -374,12 +480,352 @@ class CDiagnostico_pei extends CI_Controller {
               </script>';
             }
 
+            //// Modal para subir Archivo digitalizado
+            $tabla.='
+           <script type="text/javascript">
+            // --- 1. APERTURA DEL MODAL CON LIMPIEZA TOTAL ---
+            function abrirModalSubidaEscaneados() {
+                if($("#form_subir_escaneado").length > 0) {
+                    $("#form_subir_escaneado")[0].reset();
+                }
+                $("#progreso_carga_container").hide();
+                $("#barra_progreso_pdf").css("width", "0%");
+                $("#modal_subida_pdf").modal("show");
+            }
 
+            // --- 2. NUEVO: FUNCIÓN PARA DESPLEGAR EL VISOR DE PDF EN CALIENTE ---
+            function verPdfEscaneadoModal() {
+                // Extraemos la URL en tiempo real que tiene inyectada el botón
+                var url_archivo = $("#btn_ver_pdf_modal").attr("data-url");
+                
+                if(url_archivo && url_archivo !== "") {
+                    // Se la pasamos al iframe visor y levantamos el modal interactivo
+                    $("#iframe_visor_pdf").attr("src", url_archivo);
+                    $("#modal_visor_pdf").modal("show");
+                } else {
+                    alert("⚠️ No se pudo recuperar la ruta del archivo digitalizado.");
+                }
+            }
+
+            // --- 3. MANEJO INTERACTIVO DE EVENTOS DEL DOM ---
+            document.addEventListener("DOMContentLoaded", function() {
+                
+                // Inicialización de tooltips de la cabecera
+                if(typeof $ !== "undefined" && typeof $().tooltip === "function") {
+                    $("[data-toggle=\'tooltip\']").tooltip();
+                }
+
+                // VALIDACIÓN PREVENTIVA DE TAMAÑO EN EL CLIENTE (Máximo 25MB)
+                $(document).on("change", "#archivo_pdf", function() {
+                    var archivo = this.files[0];
+                    if (archivo) {
+                        var tamanoMB = archivo.size / 1024 / 1024;
+                        var limiteMaximo = 25; 
+
+                        if (tamanoMB > limiteMaximo) {
+                            alert("⚠️ El archivo seleccionado es demasiado pesado (" + tamanoMB.toFixed(2) + " MB).\nEl límite institucional máximo permitido para los 11 formularios unificados es de " + limiteMaximo + " MB.\n\nPor favor, optimice o reduzca la resolución del escaneo.");
+                            $(this).val(""); 
+                        }
+                    }
+                });
+
+                // --- 4. PROCESAMIENTO Y ENVÍO AJAX ---
+                $(document).on("submit", "#form_subir_escaneado", function(e) {
+                    e.preventDefault();
+                    
+                    if ($("#archivo_pdf").val() == "") {
+                        alert("⚠️ Por favor, seleccione un archivo PDF antes de confirmar la carga.");
+                        return false;
+                    }
+
+                    var formData = new FormData(this);
+                    
+                    $("#btn_confirmar_subida").prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i> Subiendo...");
+                    $("#progreso_carga_container").fadeIn(200);
+
+                    $.ajax({
+                        url: "' . base_url() . 'index.php/Cdiagnostico_pei/CDiagnostico_pei/guardar_pdf_escaneado",
+                        type: "POST",
+                        data: formData,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        dataType: "json", 
+                        xhr: function() {
+                            var myXhr = $.ajaxSettings.xhr();
+                            if(myXhr.upload){
+                                myXhr.upload.addEventListener("progress", function(e){
+                                    if(e.lengthComputable){
+                                        var porcentaje = Math.round((e.loaded * 100) / e.total);
+                                        $("#barra_progreso_pdf").css("width", porcentaje + "%");
+                                    }
+                                }, false);
+                            }
+                            return myXhr;
+                        },
+                        success: function(resp) {
+                            var data = resp; 
+                            
+                            if (typeof resp === "string") {
+                                try {
+                                    data = JSON.parse(resp);
+                                } catch (e) {
+                                    console.error("Error crítico de análisis sintáctico:", resp);
+                                    alert("❌ La respuesta del servidor está corrupta. Revise el log de CodeIgniter.");
+                                    return;
+                                }
+                            }
+
+                            if(data.status === "success") {
+                                $("#modal_subida_pdf").modal("hide");
+                                
+                                // === ACTIVACIÓN EN CALIENTE DEL BOTÓN VER ESCANEADO ===
+                                var nueva_ruta = "' . base_url() . 'escaneados_form_pei/" + data.nombre_archivo;
+                                
+                                // Inyectamos la URL real devuelta por el PHP y provocamos su aparición visual
+                                $("#btn_ver_pdf_modal").attr("data-url", nueva_ruta).fadeIn(400);
+
+                                // Feedback visual exitoso de la suite institucional
+                                $("#toast-notificacion").text("✅ Documento consolidado cargado exitosamente.").fadeIn().delay(3000).fadeOut();
+                            } else {
+                                alert("⚠️ Restricción del Servidor: " + data.msg);
+                                $("#progreso_carga_container").hide();
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error("Respuesta cruda del servidor en error 500:", xhr.responseText);
+                            alert("❌ Error crítico de comunicación de red. Verifique que el archivo no exceda la configuración post_max_size de PHP.");
+                        },
+                        complete: function() {
+                            $("#btn_confirmar_subida").prop("disabled", false).html("<i class=\'fa fa-check\'></i> Cargar Archivo");
+                        }
+                    });
+                });
+            });
+        </script>';
+
+        $tabla.='
+        <script type="text/javascript">
+          // --- NUEVO: FUNCIÓN GLOBAL PARA ELIMINAR EL EXPEDIENTE DESDE EL CONTROLADOR ---
+          function eliminarReporteEscaneado() {
+              var $btn = $("#btn_eliminar_pdf_server");
+              var pei_id = $btn.data("pei");
+              var dist_id = $btn.data("dist");
+
+              // Mensaje formal de confirmación institucional de la Caja Nacional de Salud
+              var confirmacion = confirm("⚠️ ¿Está absolutamente seguro de eliminar el reporte escaneado de esta regional?\n\nEsta acción borrará el archivo físico del servidor de forma permanente y permitirá a la distrital realizar una nueva carga.");
+              
+              if (confirmacion) {
+                  // Bloqueamos el botón para evitar doble clic accidental
+                  $btn.prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i> Eliminando...");
+
+                  $.ajax({
+                      url: "' . base_url() . 'index.php/Cdiagnostico_pei/CDiagnostico_pei/eliminar_pdf_escaneado",
+                      type: "POST",
+                      data: { pei_id: pei_id, dist_id: dist_id },
+                      dataType: "json",
+                      success: function(resp) {
+                          if (resp.status === "success") {
+                              // 1. Cerramos el visor interactivo de PDF
+                              $("#modal_visor_pdf").modal("hide");
+                              
+                              // 2. OCULTACIÓN EN CALIENTE: Desvanecemos el botón "Ver Escaneado" de la cabecera
+                              $("#btn_ver_pdf_modal").fadeOut(300, function() {
+                                  $(this).attr("data-url", ""); // Limpiamos la ruta para seguridad
+                              });
+                              
+                              // 3. Disparamos tu toast de notificación verde de éxito
+                              $("#toast-notificacion").text("🗑️ El archivo fue eliminado correctamente del servidor.").fadeIn().delay(3000).fadeOut();
+                          } else {
+                              alert("⚠️ Restricción del Servidor: " + resp.msg);
+                          }
+                      },
+                      error: function() {
+                          alert("❌ Error crítico de comunicación de red al intentar remover el archivo.");
+                      },
+                      complete: function() {
+                          // Restablecemos el estado operativo del botón en el modal footer
+                          $btn.prop("disabled", false).html("<i class=\'fa fa-trash-o\'></i> Eliminar Reporte");
+                      }
+                  });
+              }
+          }
+      </script>';
       return $tabla;
     }
     
+    //// subir archivo digitalizado ..
+    public function guardar_pdf_escaneado() {
+      // 1. Limpieza radical de salida para evitar que basuras rompan el JSON
+      if (ob_get_length()) ob_clean();
 
-    //// Cargar formulario view
+      // 2. Seguridad: En CI 1.5 is_ajax_request() no existía nativamente, emulamos la validación
+      if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'Acceso directo no permitido al servidor.'));
+          exit;
+      }
+
+      $pei_id  = $this->input->post('pei_id');
+      $dist_id = $this->input->post('dist_id');
+      $abrev = $this->input->post('abrev');
+
+      if (empty($pei_id) || empty($dist_id) || empty($abrev)) {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'Faltan parámetros críticos de identificación (PEI/Distrital).'));
+          exit;
+      }
+
+      // 3. Buscar el registro maestro del formulario
+      $this->db->where(array('pei_id' => $pei_id, 'dist_id' => $dist_id));
+      $form_row = $this->db->get('formulario_diagnostico_pei')->row();
+
+      if (!$form_row) {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'No se encontró la configuración del formulario PEI para la distrital seleccionada.'));
+          exit;
+      }
+
+      // 4. CONFIGURACIÓN DE LA LIBRERÍA DE SUBIDA (CodeIgniter 1.5)
+      $path_upload = './escaneados_form_pei/';
+      
+      if (!is_dir($path_upload)) {
+          mkdir($path_upload, 0777, true);
+      }
+
+      // Limpiamos la abreviatura recibida para evitar espacios o caracteres que rompan la ruta
+      $abrev_limpia = trim(strtoupper($abrev));
+
+      // CORRECCIÓN: Reemplazamos el segundo dist_id por la variable abrev_limpia
+      $nombre_archivo_limpio = 'PEI_CONSOLIDADO_' . $dist_id . '_' . time();
+
+      $config['upload_path']   = $path_upload;
+      $config['allowed_types'] = 'pdf';
+      $config['max_size']      = '25600'; // 25 MB
+      $config['file_name']     = $nombre_archivo_limpio;
+      $config['overwrite']     = TRUE;
+
+      // --- ENFOQUE ESTRICTO PARA CODEIGNITER 1.5 ---
+      // Cargamos la librería pasándole los datos directamente
+      $this->load->library('upload', $config);
+      
+      // En CI 1.5, forzamos la referencia manual extrayendo el objeto desde la superinstancia
+      $CI =& get_instance();
+      $this->upload = $CI->upload;
+
+      // Ejecutamos la subida apuntando al input del archivo HTML
+      if (!$this->upload->do_upload('archivo_pdf')) {
+          $error = $this->upload->display_errors('', '');
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => $error));
+          exit;
+      }
+
+      // Extraer metadatos en CI 1.5 (devuelve un array asociativo del archivo subido)
+      $upload_data = $this->upload->data();
+      $nombre_final_pdf = $upload_data['file_name'];
+
+      // 5. OPTIMIZACIÓN DE DISCO: Borrar el PDF anterior si existía uno
+      if (!empty($form_row->form_archivo_scanneado)) {
+          $archivo_antiguo = $path_upload . $form_row->form_archivo_scanneado;
+          if (file_exists($archivo_antiguo) && is_file($archivo_antiguo)) {
+              unlink($archivo_antiguo); 
+          }
+      }
+
+      // 6. ACTUALIZAR ESTADOS EN LA TABLA MAESTRA
+      $data_update = array(
+          'form_archivo_scanneado' => $nombre_final_pdf,
+          'form_subir_scanneado'   => 1 
+      );
+
+      $this->db->where('form_id', $form_row->form_id);
+      $res = $this->db->update('formulario_diagnostico_pei', $data_update);
+
+      // 7. RESPUESTA COMPATIBLE CON TU SCRIPT JAVASCRIPT
+      if ($res) {
+          $respuesta = array(
+              'status' => 'success',
+              'nombre_archivo' => $nombre_final_pdf
+          );
+      } else {
+          if (file_exists($path_upload . $nombre_final_pdf)) {
+              unlink($path_upload . $nombre_final_pdf);
+          }
+          $respuesta = array('status' => 'error', 'msg' => 'El archivo se cargó físicamente pero falló el registro en el sistema SIIPLAS.');
+      }
+
+      // CABECERAS ESTRICTAS DE RETORNO JSON
+      header('Content-Type: application/json');
+      echo json_encode($respuesta);
+      exit; 
+  }
+
+    //// Eliminar ARchivo
+    public function eliminar_pdf_escaneado() {
+      // 1. Limpieza radical de búfer para evitar que trazas o warnings rompan el formato JSON
+      if (ob_get_length()) ob_clean();
+
+      // 2. Seguridad: En CodeIgniter 1.5 emulamos la validación de peticiones estrictamente AJAX
+      if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'Acceso directo denegado al servidor.'));
+          exit;
+      }
+
+      // Recepción de parámetros inyectados desde los atributos data- del botón
+      $pei_id  = $this->input->post('pei_id');
+      $dist_id = $this->input->post('dist_id');
+
+      if (empty($pei_id) || empty($dist_id)) {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'Parámetros insuficientes para procesar la baja del documento.'));
+          exit;
+      }
+
+      // 3. Buscar el registro maestro del formulario en la base de datos
+      $this->db->where(array('pei_id' => $pei_id, 'dist_id' => $dist_id));
+      $form_row = $this->db->get('formulario_diagnostico_pei')->row();
+
+      if (!$form_row) {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'No se encontró el registro del formulario en el sistema SIIPLAS.'));
+          exit;
+      }
+
+      // 4. ELIMINACIÓN FÍSICA EN DISCO (Optimización de Almacenamiento)
+      $path_upload = './escaneados_form_pei/';
+      
+      if (!empty($form_row->form_archivo_scanneado)) {
+          $archivo_fisico = $path_upload . $form_row->form_archivo_scanneado;
+          
+          // Verificación estricta de seguridad: que exista y sea un archivo válido antes de borrar
+          if (file_exists($archivo_fisico) && is_file($archivo_fisico)) {
+              unlink($archivo_fisico); // Remueve físicamente el PDF del disco del servidor
+          }
+      }
+
+      // 5. REAPERTURAR ESTADOS EN LA TABLA MAESTRA
+      $data_clear = array(
+          'form_archivo_scanneado' => NULL, // Limpiamos la ruta para habilitar nuevas cargas
+          'form_subir_scanneado'   => 0    // Restablecemos el estado a "Pendiente"
+      );
+
+      $this->db->where('form_id', $form_row->form_id);
+      $res = $this->db->update('formulario_diagnostico_pei', $data_clear);
+
+      // 6. ENVIAR RESPUESTA FORMAL PROCESABLE POR TU AJAX
+      header('Content-Type: application/json');
+      if ($res) {
+          echo json_encode(array('status' => 'success'));
+      } else {
+          echo json_encode(array('status' => 'error', 'msg' => 'El archivo físico se removió con éxito, pero falló la actualización de estado en la base de datos del SIIPLAS.'));
+      }
+      exit; // Cortamos el hilo de ejecución para proteger la pureza del JSON
+  }
+
+
+  //// Cargar formulario view
   function cargar_formulario() {
       $seccion = $this->input->post('seccion');
       $pei_id  = $this->input->post('pei');
@@ -439,7 +885,209 @@ class CDiagnostico_pei extends CI_Controller {
   }
 
   /// Exportar Diagnostico en Excel
-  public function exportar_consolidado_excel($tp_rep,$dist_id){
+  public function exportar_consolidado_excel($tp_rep, $dist_id) {
+    if (ob_get_length()) ob_clean(); // Limpieza de búfer
+
+    $pei_id  = intval($tp_rep);
+    $dist_id = intval($dist_id);
+
+    // 1. Invocación de la librería PHPExcel
+    $this->load->library('excel'); 
+    $objPHPExcel = new PHPExcel();
+    $objPHPExcel->getProperties()->setTitle("Consolidado Institucional PEI");
+
+    // 2. Estilos para la cabecera ejecutiva (Azul Institucional)
+    $styleHeader = array(
+        'font' => array('bold' => true, 'color' => array('rgb' => 'FFFFFF'), 'size' => 10, 'name' => 'Arial'),
+        'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => array('rgb' => '1A237E')), // Azul Marino
+        'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER, 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+        'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'CCCCCC')))
+    );
+
+    // Estilos para los registros de datos
+    $styleData = array(
+        'font' => array('size' => 9, 'name' => 'Arial'),
+        'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'E0E0E0')))
+    );
+
+    // ==========================================================================
+    // --- PESTAÑA 1: FORMULARIO 1 (POBLACIÓN AFILIADA CONSOLIDADA) ---
+    // ==========================================================================
+    $objPHPExcel->setActiveSheetIndex(0);
+    $sheet1 = $objPHPExcel->getActiveSheet();
+    $sheet1->setTitle('Población Afiliada');
+
+    // Definición de Títulos de la Fila 1
+    $headers = array('A1' => 'ID DIST', 'B1' => 'REGIONAL / DISTRITAL', 'C1' => 'ABREV', 'D1' => 'GESTIÓN', 'E1' => 'TITULARES', 'F1' => 'PASIVOS', 'G1' => 'BENEFICIARIOS', 'H1' => 'TOTAL PROTEGIDO');
+    foreach ($headers as $pos => $text) {
+        $sheet1->setCellValue($pos, $text);
+        $sheet1->getStyle($pos)->applyFromArray($styleHeader);
+    }
+    $sheet1->getRowDimension(1)->setRowHeight(25); // Alto de fila para la cabecera
+
+    // Llamamos al modelo pasándole el parámetro dinámico recibido del combo asíncrono
+    $this->load->model('Cdiagnostico_pei/model_diagnosticopei'); 
+    $poblacion_data = $this->model_diagnosticopei->get_formulario_N1_consolidado();
+
+    // Llenado dinámico de datos a partir de la fila 2
+    $fila = 2;
+    foreach ($poblacion_data as $row) {
+        $sheet1->setCellValue('A' . $fila, $row['dist_id']);
+        $sheet1->setCellValue('B' . $fila, strtoupper($row['regional']));
+        $sheet1->setCellValue('C' . $fila, strtoupper($row['abreviatura']));
+        $sheet1->setCellValue('D' . $fila, $row['gestion']);
+        
+        // Formateamos como números puros para que Excel permita sumas posteriores
+        $sheet1->setCellValue('E' . $fila, intval($row['titulares']));
+        $sheet1->setCellValue('F' . $fila, intval($row['pasivos']));
+        $sheet1->setCellValue('G' . $fila, intval($row['beneficiarios']));
+        $sheet1->setCellValue('H' . $fila, intval($row['total_gestion']));
+
+        // Aplicamos alineación específica por columna
+        $sheet1->getStyle('A'.$fila.':D'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet1->getStyle('E'.$fila.':H'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        
+        // Aplicamos formato de millares a los campos numéricos (Ej: 1,500)
+        $sheet1->getStyle('E'.$fila.':H'.$fila)->getNumberFormat()->setFormatCode('#,##0');
+        
+        // Aplicamos la cuadrícula base de datos
+        $sheet1->getStyle('A'.$fila.':H'.$fila)->applyFromArray($styleData);
+        $sheet1->getRowDimension($fila)->setRowHeight(18);
+        $fila++;
+    }
+
+    // Autoajuste dinámico del ancho de las columnas según el tamaño de los textos
+    foreach (range('A', 'H') as $col) {
+        $sheet1->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // ==========================================================================
+    // --- PESTAÑA 2: SIGUIENTES FORMULARIOS (Configuraciones base) ---
+    // ==========================================================================
+        // Estilo secundario para las subcabeceras (Masculino, Femenino, Total)
+    $styleSubHeader = array(
+        'font' => array('bold' => true, 'color' => array('rgb' => '1A237E'), 'size' => 9, 'name' => 'Arial'),
+        'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => array('rgb' => 'E8EAF6')), // Azul Claro
+        'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER, 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+        'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'CCCCCC')))
+    );
+
+    // ==========================================================================
+    // --- PESTAÑA 2: FORMULARIO 1.I (POBLACIÓN POR GRUPOS ETÁREOS) ---
+    // ==========================================================================
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(1);
+    $sheet2 = $objPHPExcel->getActiveSheet();
+    $sheet2->setTitle('Grupos Etáreos');
+
+    // CONFIGURACIÓN DE FILA 1 (Años Consolidados y Datos Base)
+    $sheet2->mergeCells('A1:A2')->setCellValue('A1', 'ID DIST');
+    $sheet2->mergeCells('B1:B2')->setCellValue('B1', 'REGIONAL / DISTRITAL');
+    $sheet2->mergeCells('C1:C2')->setCellValue('C1', 'ABREV');
+    $sheet2->mergeCells('D1:D2')->setCellValue('D1', 'GRUPO ETÁREO');
+
+    // Combinación de bloques anuales
+    $sheet2->mergeCells('E1:G1')->setCellValue('E1', 'GESTIÓN 2021');
+    $sheet2->mergeCells('H1:J1')->setCellValue('H1', 'GESTIÓN 2022');
+    $sheet2->mergeCells('K1:M1')->setCellValue('K1', 'GESTIÓN 2023');
+    $sheet2->mergeCells('N1:P1')->setCellValue('N1', 'GESTIÓN 2024');
+    $sheet2->mergeCells('Q1:S1')->setCellValue('Q1', 'GESTIÓN 2025');
+
+    // Aplicar estilos a la primera fila de cabecera
+    foreach (range('A', 'S') as $col) {
+        $sheet2->getStyle($col . '1')->applyFromArray($styleHeader);
+    }
+    $sheet2->getRowDimension(1)->setRowHeight(22);
+
+    // CONFIGURACIÓN DE FILA 2 (Subcabeceras Técnicas M / F / T)
+    $subHeaders = array(
+        'E2'=>'MASC', 'F2'=>'FEM', 'G2'=>'TOTAL',
+        'H2'=>'MASC', 'I2'=>'FEM', 'J2'=>'TOTAL',
+        'K2'=>'MASC', 'L2'=>'FEM', 'M2'=>'TOTAL',
+        'N2'=>'MASC', 'O2'=>'FEM', 'P2'=>'TOTAL',
+        'Q2'=>'MASC', 'R2'=>'FEM', 'S2'=>'TOTAL'
+    );
+    foreach ($subHeaders as $pos => $text) {
+        $sheet2->setCellValue($pos, $text);
+        $sheet2->getStyle($pos)->applyFromArray($styleSubHeader);
+    }
+    $sheet2->getRowDimension(2)->setRowHeight(18);
+
+    // Llamamos al modelo pasándole el parámetro dinámico del select
+    $etareo_data = $this->model_diagnosticopei->get_formulario_N1_etareo_consolidado();
+
+    // Llenado de los registros a partir de la fila 3
+    $f = 3;
+    foreach ($etareo_data as $row) {
+        $sheet2->setCellValue('A' . $f, $row['dist_id']);
+        $sheet2->setCellValue('B' . $f, strtoupper($row['regional']));
+        $sheet2->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+        $sheet2->setCellValue('D' . $f, trim($row['grupo_etareo']));
+
+        // Gestión 2021
+        $sheet2->setCellValue('E' . $f, intval($row['m_2021']));
+        $sheet2->setCellValue('F' . $f, intval($row['f_2021']));
+        $sheet2->setCellValue('G' . $f, intval($row['t_2021']));
+
+        // Gestión 2022
+        $sheet2->setCellValue('H' . $f, intval($row['m_2022']));
+        $sheet2->setCellValue('I' . $f, intval($row['f_2022']));
+        $sheet2->setCellValue('J' . $f, intval($row['t_2022']));
+
+        // Gestión 2023
+        $sheet2->setCellValue('K' . $f, intval($row['m_2023']));
+        $sheet2->setCellValue('L' . $f, intval($row['f_2023']));
+        $sheet2->setCellValue('M' . $f, intval($row['t_2023']));
+
+        // Gestión 2024
+        $sheet2->setCellValue('N' . $f, intval($row['m_2024']));
+        $sheet2->setCellValue('O' . $f, intval($row['f_2024']));
+        $sheet2->setCellValue('P' . $f, intval($row['t_2024']));
+
+        // Gestión 2025
+        $sheet2->setCellValue('Q' . $f, intval($row['m_2025']));
+        $sheet2->setCellValue('R' . $f, intval($row['f_2025']));
+        $sheet2->setCellValue('S' . $f, intval($row['t_2025']));
+
+        // Alineación de datos
+        $sheet2->getStyle('A'.$f.':D'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet2->getStyle('E'.$f.':S'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        
+        // Formato numérico de millares contables
+        $sheet2->getStyle('E'.$f.':S'.$f)->getNumberFormat()->setFormatCode('#,##0');
+        
+        // Cuadrícula base
+        $sheet2->getStyle('A'.$f.':S'.$f)->applyFromArray($styleData);
+        $sheet2->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // Autoajuste dinámico del ancho de columnas para evitar recortes de texto
+    foreach (range('A', 'S') as $col) {
+        $sheet2->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // Descarga formal del libro de Excel unificado
+    $filename = ($dist_id > 0) ? "Consolidado_PEI_Regional_" . $dist_id : "Consolidado_Nacional_PEI";
+    
+    header('Content-Type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment;filename="' . $filename . '.xls"');
+    header('Cache-Control: max-age=0');
+    
+    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+    $objWriter->save('php://output');
+    exit;
+}
+
+
+
+
+
+
+
+
+
+  public function exportar_consolidado_excel2($tp_rep,$dist_id){
     // 1. Cargar librería (Depende de la que tengas instalada)
       $this->load->library('excel'); 
       $objPHPExcel = new PHPExcel();

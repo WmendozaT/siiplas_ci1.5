@@ -249,7 +249,10 @@ create table Diagnostico_pei(
   pei_id integer,
   dist_id integer,
   form_estado integer DEFAULT 0,
+  form_opciones integer DEFAULT 0,
   form_impresion integer DEFAULT 0,
+  form_subir_scanneado integer DEFAULT 0,
+  form_archivo_scanneado character varying(5000),
   primary key(form_id)
  );
 
