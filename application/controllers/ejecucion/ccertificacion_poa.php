@@ -710,6 +710,7 @@ class Ccertificacion_poa extends CI_Controller {
     $get_cpoa=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id);
     if(count($get_cpoa)!=0){
         if($get_cpoa[0]['cpoa_estado']==0){
+         
           $verificando=$this->model_modrequerimiento->verif_modificaciones_distrital($get_cpoa[0]['dist_id']);
           $nro_cpoa=$verificando[0]['cert_poa']+2;
           $nro_cdep='';
@@ -725,11 +726,12 @@ class Ccertificacion_poa extends CI_Controller {
 
           //$codigo='CPOA.'.$get_cpoa[0]['adm'].'-'.$get_cpoa[0]['abrev'].'-'.$nro_cdep.''.$nro_cpoa;
           
-          if($this->gestion>2024){
-            $codigo='DNP.'.$nro_cdep.''.$nro_cpoa.'-'.$get_cpoa[0]['adm'].'.'.$get_cpoa[0]['abrev']; /// 2025
+          if($this->gestion>2025){
+          $codigo='DNP.'.$get_cpoa[0]['adm'].'.'.$get_cpoa[0]['abrev'].''.$nro_cdep.''.$nro_cpoa; /// 2026
           }
           else{
-            $codigo='CPOA.'.$nro_cdep.''.$nro_cpoa.'-'.$get_cpoa[0]['adm'].'-'.$get_cpoa[0]['abrev']; /// 2024
+            $codigo='DNP.'.$nro_cdep.''.$nro_cpoa.'-'.$get_cpoa[0]['adm'].'.'.$get_cpoa[0]['abrev']; /// 2025
+            //$codigo='CPOA.'.$nro_cdep.''.$nro_cpoa.'-'.$get_cpoa[0]['adm'].'-'.$get_cpoa[0]['abrev']; /// 2024
           }
           
           if(count($this->model_certificacion->get_codigo_certpoa($codigo))==0){
