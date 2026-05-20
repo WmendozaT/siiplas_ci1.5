@@ -885,7 +885,202 @@ class CDiagnostico_pei extends CI_Controller {
   }
 
   /// Exportar Diagnostico en Excel
-  public function exportar_consolidado_excel($tp_rep, $dist_id) {
+  // Método Principal que se invoca desde el botón de la interfaz nacional
+public function exportar_consolidado_excel($tp_rep, $dist_id) {
+    if (ob_get_length()) ob_clean(); // Limpieza radical de búfer para evitar corrupción
+
+    $pei_id  = intval($tp_rep);
+    $dist_id = intval($dist_id);
+
+    // 1. Inicialización e inyección de la librería PHPExcel
+    $this->load->library('excel'); 
+    $objPHPExcel = new PHPExcel();
+    $objPHPExcel->getProperties()->setTitle("Consolidado Institucional PEI")
+                                 ->setCreator("SIIPLAS - CNS");
+
+    // 2. DEFINICIÓN DE ESTILOS EJECUTIVOS GLOBALES
+    $styles = array(
+        'header' => array(
+            'font' => array('bold' => true, 'color' => array('rgb' => 'FFFFFF'), 'size' => 10, 'name' => 'Arial'),
+            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => array('rgb' => '1A237E')), // Azul Marino
+            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER, 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'CCCCCC')))
+        ),
+        'subheader' => array(
+            'font' => array('bold' => true, 'color' => array('rgb' => '1A237E'), 'size' => 9, 'name' => 'Arial'),
+            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => array('rgb' => 'E8EAF6')), // Azul Claro
+            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER, 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'CCCCCC')))
+        ),
+        'data' => array(
+            'font' => array('size' => 9, 'name' => 'Arial'),
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'E0E0E0')))
+        )
+    );
+
+    // Carga obligatoria del modelo de forma compartida
+    $this->load->model('Cdiagnostico_pei/model_diagnosticopei');
+
+    // ==========================================================================
+    // DELEGACIÓN DE PESTAÑAS (Pasamos el objeto y estilos por referencia con &$ )
+    // ==========================================================================
+    
+    // PESTAÑA 1: Población Afiliada
+    $this->_generar_pestaña_poblacion($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 2: Grupos Etáreos
+    $this->_generar_pestaña_etareos($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 3: Siguientes pestañas (Estructura lista para clonar)
+    // $this->_generar_pestaña_empresas($objPHPExcel, $dist_id, $styles);
+
+    // ==========================================================================
+    // 3. PROCESAMIENTO DE DESCARGA FINAL DEL EXPEDIENTE
+    // ==========================================================================
+    $filename = ($dist_id > 0) ? "Consolidado_PEI_Regional_" . $dist_id : "Consolidado_Nacional_PEI";
+    
+    header('Content-Type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment;filename="' . $filename . '.xls"');
+    header('Cache-Control: max-age=0');
+    
+    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+    $objWriter->save('php://output');
+    exit;
+}
+
+
+
+private function _generar_pestaña_poblacion(&$objPHPExcel, $dist_id, $styles) {
+    $objPHPExcel->setActiveSheetIndex(0);
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Población Afiliada');
+
+    // 1. Títulos de la Fila 1
+    $headers = array(
+        'A1' => 'ID DIST', 'B1' => 'REGIONAL / DISTRITAL', 'C1' => 'ABREV', 
+        'D1' => 'GESTIÓN', 'E1' => 'TITULARES', 'F1' => 'PASIVOS', 
+        'G1' => 'BENEFICIARIOS', 'H1' => 'TOTAL PROTEGIDO'
+    );
+    foreach ($headers as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['header']);
+    }
+    $sheet->getRowDimension(1)->setRowHeight(25);
+
+    // 2. Extracción y volcado de registros
+    $poblacion_data = $this->model_diagnosticopei->get_formulario_N1_consolidado($dist_id);
+
+    $f = 2;
+    foreach ($poblacion_data as $row) {
+        $sheet->setCellValue('A' . $f, $row['dist_id']);
+        $sheet->setCellValue('B' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('D' . $f, $row['gestion']);
+        $sheet->setCellValue('E' . $f, intval($row['titulares']));
+        $sheet->setCellValue('F' . $f, intval($row['pasivos']));
+        $sheet->setCellValue('G' . $f, intval($row['beneficiarios']));
+        $sheet->setCellValue('H' . $f, intval($row['total_gestion']));
+
+        // Alineación y formatos numéricos contables
+        $sheet->getStyle('A'.$f.':D'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E'.$f.':H'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('E'.$f.':H'.$f)->getNumberFormat()->setFormatCode('#,##0');
+        
+        $sheet->getStyle('A'.$f.':H'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // Autoajuste automático de anchos
+    foreach (range('A', 'H') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+}
+
+private function _generar_pestaña_etareos(&$objPHPExcel, $dist_id, $styles) {
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(1);
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Grupos Etáreos');
+
+    // 1. Cabecera Combinada Fila 1 y Fila 2
+    $sheet->mergeCells('A1:A2')->setCellValue('A1', 'ID DIST');
+    $sheet->mergeCells('B1:B2')->setCellValue('B1', 'REGIONAL / DISTRITAL');
+    $sheet->mergeCells('C1:C2')->setCellValue('C1', 'ABREV');
+    $sheet->mergeCells('D1:D2')->setCellValue('D1', 'GRUPO ETÁREO');
+
+    // Combinación horizontal de bloques anuales estratégicos
+    $sheet->mergeCells('E1:G1')->setCellValue('E1', 'GESTIÓN 2021');
+    $sheet->mergeCells('H1:J1')->setCellValue('H1', 'GESTIÓN 2022');
+    $sheet->mergeCells('K1:M1')->setCellValue('K1', 'GESTIÓN 2023');
+    $sheet->mergeCells('N1:P1')->setCellValue('N1', 'GESTIÓN 2024');
+    $sheet->mergeCells('Q1:S1')->setCellValue('Q1', 'GESTIÓN 2025');
+
+    // Aplicar estilos a la Fila 1 de encabezados macro
+    foreach (range('A', 'S') as $col) {
+        $sheet->getStyle($col . '1')->applyFromArray($styles['header']);
+    }
+    $sheet->getRowDimension(1)->setRowHeight(22);
+
+    // 2. Subcabeceras de desglose interno (Fila 2)
+    $subHeaders = array(
+        'E2'=>'MASC', 'F2'=>'FEM', 'G2'=>'TOTAL', 'H2'=>'MASC', 'I2'=>'FEM', 'J2'=>'TOTAL',
+        'K2'=>'MASC', 'L2'=>'FEM', 'M2'=>'TOTAL', 'N2'=>'MASC', 'O2'=>'FEM', 'P2'=>'TOTAL',
+        'Q2'=>'MASC', 'R2'=>'FEM', 'S2'=>'TOTAL'
+    );
+    foreach ($subHeaders as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['subheader']);
+    }
+    $sheet->getRowDimension(2)->setRowHeight(18);
+
+    // 3. Extracción de datos etáreos desde el modelo
+    $etareo_data = $this->model_diagnosticopei->get_formulario_N1_etareo_consolidado($dist_id);
+
+    $f = 3;
+    foreach ($etareo_data as $row) {
+        $sheet->setCellValue('A' . $f, $row['dist_id']);
+        $sheet->setCellValue('B' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('D' . $f, trim($row['grupo_etareo']));
+
+        $sheet->setCellValue('E' . $f, intval($row['m_2021']));
+        $sheet->setCellValue('F' . $f, intval($row['f_2021']));
+        $sheet->setCellValue('G' . $f, intval($row['t_2021']));
+
+        $sheet->setCellValue('H' . $f, intval($row['m_2022']));
+        $sheet->setCellValue('I' . $f, intval($row['f_2022']));
+        $sheet->setCellValue('J' . $f, intval($row['t_2022']));
+
+        $sheet->setCellValue('K' . $f, intval($row['m_2023']));
+        $sheet->setCellValue('L' . $f, intval($row['f_2023']));
+        $sheet->setCellValue('M' . $f, intval($row['t_2023']));
+
+        $sheet->setCellValue('N' . $f, intval($row['m_2024']));
+        $sheet->setCellValue('O' . $f, intval($row['f_2024']));
+        $sheet->setCellValue('P' . $f, intval($row['t_2024']));
+
+        $sheet->setCellValue('Q' . $f, intval($row['m_2025']));
+        $sheet->setCellValue('R' . $f, intval($row['f_2025']));
+        $sheet->setCellValue('S' . $f, intval($row['t_2025']));
+
+        // Formateo y rejilla
+        $sheet->getStyle('A'.$f.':D'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E'.$f.':S'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('E'.$f.':S'.$f)->getNumberFormat()->setFormatCode('#,##0');
+        
+        $sheet->getStyle('A'.$f.':S'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // Autoajuste dinámico de anchos de la pestaña 2
+    foreach (range('A', 'S') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+}
+
+  public function exportar_consolidado_excel2($tp_rep, $dist_id) {
     if (ob_get_length()) ob_clean(); // Limpieza de búfer
 
     $pei_id  = intval($tp_rep);
