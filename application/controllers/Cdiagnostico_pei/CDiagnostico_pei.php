@@ -227,6 +227,7 @@ class CDiagnostico_pei extends CI_Controller {
                     <li><a href="#tabs-i" data-url="compra_servicios"><b>VIII.- COMPRA DE SERVICIOS</b></a></li>
                     <li><a href="#tabs-j" data-url="presupuestos"><b>IX.- PRESUPUESTOS</b></a></li>
                     <li><a href="#tabs-k" data-url="reembolsos"><b>X.- REEMBOLSOS</b></a></li>
+                    <li><a href="#tabs-j" data-url="ambulancias"><b>XI.- AMBULANCIAS</b></a></li>
                   </ul>
                   
                   <!-- Paneles de Contenido de las pestañas -->
@@ -241,6 +242,7 @@ class CDiagnostico_pei extends CI_Controller {
                   <div id="tabs-i"><div class="row"><div class="contenido-ajax"></div></div></div>
                   <div id="tabs-j"><div class="row"><div class="contenido-ajax"></div></div></div>
                   <div id="tabs-k"><div class="row"><div class="contenido-ajax"></div></div></div>
+                  <div id="tabs-j"><div class="row"><div class="contenido-ajax"></div></div></div>
                 </div>
             </div>
         </article>
@@ -868,6 +870,9 @@ class CDiagnostico_pei extends CI_Controller {
           case 'reembolsos':
               echo $this->lib_diagnostico_pei->formulario_N10($get_form_distrital);
               break;
+          case 'ambulancias':
+              echo $this->lib_diagnostico_pei->formulario_N11($get_form_distrital);
+              break;
           // ... otros casos
           default:
               echo "Sección no válida";
@@ -886,7 +891,7 @@ class CDiagnostico_pei extends CI_Controller {
 
   /// Exportar Diagnostico en Excel
   // Método Principal que se invoca desde el botón de la interfaz nacional
-public function exportar_consolidado_excel($tp_rep, $dist_id) {
+  public function exportar_consolidado_excel($tp_rep, $dist_id) {
     if (ob_get_length()) ob_clean(); // Limpieza radical de búfer para evitar corrupción
 
     $pei_id  = intval($tp_rep);
@@ -1277,49 +1282,6 @@ private function _generar_pestaña_etareos(&$objPHPExcel, $dist_id, $styles) {
 
 
 
-
-
-
-
-
-  public function exportar_consolidado_excel2($tp_rep,$dist_id){
-    // 1. Cargar librería (Depende de la que tengas instalada)
-      $this->load->library('excel'); 
-      $objPHPExcel = new PHPExcel();
-      $objPHPExcel->getProperties()->setTitle("Consolidado Institucional PEI");
-
-      // --- PESTAÑA 1: FORMULARIO 1 (POBLACIÓN) ---
-      $objPHPExcel->setActiveSheetIndex(0);
-      $sheet1 = $objPHPExcel->getActiveSheet();
-      $sheet1->setTitle('Población Afiliada');
-      $sheet1->setCellValue('A1', 'UNIDAD EJECUTORA');
-      $sheet1->setCellValue('B1', 'GESTIÓN');
-      $sheet1->setCellValue('C1', 'TITULARES');
-      // ... Cargar datos del modelo y hacer bucle para llenar filas ...
-
-      // --- PESTAÑA 2: FORMULARIO 2 (GRUPOS ETÁREOS) ---
-      $objPHPExcel->createSheet();
-      $objPHPExcel->setActiveSheetIndex(1);
-      $sheet2 = $objPHPExcel->getActiveSheet();
-      $sheet2->setTitle('Grupos Etáreos');
-      $sheet2->setCellValue('A1', 'UNIDAD EJECUTORA');
-      $sheet2->setCellValue('B1', 'GRUPO ETÁREO');
-      // ... Bucle de datos ...
-
-      // --- PESTAÑA 3: FORMULARIO 4 (INFRAESTRUCTURA) ---
-      $objPHPExcel->createSheet();
-      $objPHPExcel->setActiveSheetIndex(2);
-      $sheet3 = $objPHPExcel->getActiveSheet();
-      $sheet3->setTitle('Infraestructura');
-      // ... Bucle de datos ...
-
-      // Descarga del archivo
-      header('Content-Type: application/vnd.ms-excel');
-      header('Content-Disposition: attachment;filename="Consolidado_Institucional_PEI.xls"');
-      header('Cache-Control: max-age=0');
-      $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-      $objWriter->save('php://output');
-  }
 
   /// Buscador select CIe10
   public function buscar_cie10_ajax() {
@@ -2215,4 +2177,73 @@ public function guarda_detalle_automatica_form2() {
 
       echo json_encode(array('status' => $res ? 'success' : 'error', 'nuevo_id' => $id_det));
   }
+
+    //// guarda Detalle Ambulancia
+    public function insertar_ambulancia_detalle() {
+      if (ob_get_length()) ob_clean(); // Limpieza de búfer contra fugas de HTML
+
+      // Validación asíncrona manual compatible con CodeIgniter 1.5
+      if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'Acceso denegado.'));
+          exit;
+      }
+
+      // Recepción y limpieza de variables POST del modal
+      $form_id              = intval($this->input->post('form_id'));
+      $act_id               = intval($this->input->post('act_id'));
+      $placa                = trim(strtoupper($this->input->post('placa')));
+      $gestion              = intval($this->input->post('gestion'));
+      $estado_ambulancia    = intval($this->input->post('estado_ambulancia'));
+      $situacion_ambulancia = intval($this->input->post('situacion_ambulancia'));
+
+      // --- VALIDACIÓN COMPLEMENTARIA EN EL SERVIDOR (SEGURIDAD EXTRA) ---
+      if (empty($form_id) || empty($act_id) || empty($placa)) {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'Existen campos mandatorios vacíos en el formulario.'));
+          exit;
+      }
+      
+      // Validamos la máscara con expresiones regulares nativas de PHP
+      if (!preg_match('/^[0-9]{4}-[A-Z]{3}$/', $placa)) {
+          header('Content-Type: application/json');
+          echo json_encode(array('status' => 'error', 'msg' => 'La placa enviado no cumple con la nomenclatura obligatoria XXXX-YYY.'));
+          exit;
+      }
+
+      // --- LOGICA DE UPSERT PARA LA CABECERA (formularion11_ambulancias) ---
+      // Buscamos si la distrital ya inició el Formulario 11
+      $this->db->where('form_id', $form_id);
+      $cabecera = $this->db->get('formularion11_ambulancias')->row();
+      $det11_id = ($cabecera) ? $cabecera->det11_id : 0;
+
+      if (!$det11_id) {
+          // Si es la primera ambulancia, creamos el registro maestro para la regional
+          $this->db->insert('formularion11_ambulancias', array('form_id' => $form_id, 'form11_estado' => 1));
+          $det11_id = $this->db->insert_id();
+      }
+
+      // --- INSERCIÓN DIRECTA DEL DETALLE TÉCNICO VINCULADO AL ACT_ID ---
+      $data_detalle = array(
+          'det11_id'             => $det11_id,
+          'placa'                => $placa,
+          'gestion'              => $gestion,
+          'estado_ambulancia'    => $estado_ambulancia,   // Guarda el entero (1,2,3,4)
+          'situacion_ambulancia' => $situacion_ambulancia, // Guarda el entero (1,2,3,4)
+          'act_id'               => $act_id
+      );
+
+      $res = $this->db->insert('detalle_form11_ambulancias', $data_detalle);
+
+      // Envío de respuesta limpia decodificable por tu AJAX
+      header('Content-Type: application/json');
+      if ($res) {
+          echo json_encode(array('status' => 'success'));
+      } else {
+          echo json_encode(array('status' => 'error', 'msg' => 'Error de escritura. El motor de base de datos rechazó la fila.'));
+      }
+      exit;
+  }
+
+
 }

@@ -985,6 +985,12 @@ class Lib_diagnosticopei_reporte {
                     </tbody>
                 </table>';
 
+                $tabla .= '
+                <p class="bold" style="margin-top: 15px;">- Observaciones adicionales</p>
+                <div class="box-container" style="width: 100%; height: 35px; border: 0.5px solid #000; font-size:8px; padding:5px;">
+                    '.(!empty($get_form_distrital[0]['observacion8']) ? strtoupper($get_form_distrital[0]['observacion8']) : 'SIN OBSERVACIONES').'
+                </div>';
+
         $tabla .= '
         <div style="width: 100%; margin-top: 20mm; text-align: center; page-break-inside: avoid; display: block;">
             <p style="font-size: 11px; margin: 0; padding: 0;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>

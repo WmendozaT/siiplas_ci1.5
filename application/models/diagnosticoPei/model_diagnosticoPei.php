@@ -146,7 +146,7 @@ class model_diagnosticoPei extends CI_Model {
         LEFT JOIN formulario_diagnostico_pei f ON f.dist_id = dist.dist_id AND f.pei_id = g.pei_id
         LEFT JOIN formularion1_detalle d ON d.form_id = f.form_id AND d.g_id = g.anio
         WHERE dist.dist_estado = 1 
-          AND dist.dist_id > 0  -- <--- EXCLUIMOS EL ID 0 AQUÍ
+          AND dist.dist_id > 0 AND dist.dist_id <> 22  -- <--- EXCLUIMOS EL ID 0 AQUÍ
         ORDER BY dist.dist_id, g.anio ASC;';
 
         $query = $this->db->query($sql);
@@ -231,7 +231,7 @@ class model_diagnosticoPei extends CI_Model {
                     -- Filtramos el universo de distritales reales
                     SELECT dist_id, dist_distrital, abrev 
                     FROM public._distritales 
-                    WHERE dist_estado = 1 AND dist_id > 0
+                    WHERE dist_estado = 1 AND dist_id > 0 AND dist_id <> 22
                 )
                 SELECT 
                     d.dist_id,
@@ -324,7 +324,7 @@ class model_diagnosticoPei extends CI_Model {
                     -- Filtramos el universo de distritales reales excluyendo ID 0
                     SELECT dist_id, dist_distrital, abrev 
                     FROM public._distritales 
-                    WHERE dist_estado = 1 AND dist_id > 0
+                    WHERE dist_estado = 1 AND dist_id > 0 AND dist_id <> 22
                 )
                 SELECT 
                     d.dist_id,
@@ -432,7 +432,7 @@ class model_diagnosticoPei extends CI_Model {
             -- Universo de distritales reales excluyendo ID 0
             SELECT dist_id, dist_distrital, abrev 
             FROM public._distritales 
-            WHERE dist_estado = 1 AND dist_id > 0
+            WHERE dist_estado = 1 AND dist_id > 0 AND dist_id <> 22
         )
         SELECT 
             d.dist_id,
@@ -585,7 +585,7 @@ class model_diagnosticoPei extends CI_Model {
             SELECT pei_id, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
         ),
         distritales AS (
-            SELECT dist_id, dist_distrital, abrev FROM public._distritales WHERE dist_estado = 1 AND dist_id > 0
+            SELECT dist_id, dist_distrital, abrev FROM public._distritales WHERE dist_estado = 1 AND dist_id > 0 AND dist_id <> 22
         )
         -- PARTE 1: ESTABLECIMIENTOS OFICIALES (ALINEADOS)
         SELECT 
@@ -1054,7 +1054,7 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
-/*--- Detalle formulario N11 Diagnostico de Reembolsos Consolidado---*/
+    /*--- Detalle formulario N11 Diagnostico de Reembolsos Consolidado---*/
     public function get_diagnostico_reembolsos_consolidado(){
     $sql = "
         WITH pei_activo AS (
@@ -1101,6 +1101,156 @@ class model_diagnosticoPei extends CI_Model {
         -- Unimos con el detalle de montos
         LEFT JOIN detalle_form10_presupuestos det ON det.det10_id = h.det10_id
         ORDER BY m.dist_id ASC, m.anio ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*--- Detalle formulario N12 Detalle de Ambulancias ---*/
+    public function get_detalle_ambulancias($dist_id){
+    $sql = "
+        WITH rango_pei AS (
+            -- 1. Obtenemos el PEI activo para amarrar la vigencia del formulario
+            SELECT pei_id, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        formulario_actual AS (
+            -- 2. Identificamos el formulario maestro de la distrital y recuperamos su dist_id y form_id
+            SELECT form_id, dist_id 
+            FROM formulario_diagnostico_pei 
+            WHERE dist_id = $dist_id
+              AND pei_id = (SELECT pei_id FROM rango_pei)
+        ),
+        establecimientos_maestros AS (
+            -- 3. Traemos el catálogo de nombres oficiales de tus centros médicos
+            SELECT v.act_id, CONCAT(v.tipo, ' ', v.act_descripcion) AS nombre_establecimiento
+            FROM public.vlista_establecimientos_salud v
+            WHERE v.dist_id = $dist_id
+              AND v.aper_gestion = (SELECT g_id_fin FROM rango_pei)
+        )
+        SELECT 
+            -- Genera el número correlativo (1, 2, 3, 4...) de tu primera columna de la imagen
+            ROW_NUMBER() OVER(ORDER BY det.det11_form11_id ASC) AS nro,
+            
+            det.det11_form11_id,
+            det.det11_id,
+            
+            -- AJUSTE CRÍTICO: Extraemos el dist_id directamente del Formulario de Diagnóstico Maestro
+            f_act.dist_id,
+            cab.form_id,
+            
+            COALESCE(det.placa, '---') AS placa,
+            COALESCE(det.gestion, 0) AS anio_adjudicacion, 
+            
+            -- === DECODIFICACIÓN NATURAL DEL ESTADO (Campos Integer) ===
+            CASE det.estado_ambulancia
+                WHEN 1 THEN 'EXCELENTE'
+                WHEN 2 THEN 'BUENO'
+                WHEN 3 THEN 'REGULAR'
+                WHEN 4 THEN 'MALO'
+                ELSE 'SIN REGISTRO'
+            END AS estado_ambulancia,
+            
+            -- === DECODIFICACIÓN NATURAL DE LA SITUACIÓN (Campos Integer) ===
+            CASE det.situacion_ambulancia
+                WHEN 1 THEN 'ACTIVO'
+                WHEN 2 THEN 'BAJA TEMPORAL'
+                WHEN 3 THEN 'BAJA DEFINITIVA'
+                WHEN 4 THEN 'RETENIDO'
+                ELSE 'SIN REGISTRO'
+            END AS situacion_ambulancia,
+            
+            -- === ALINEACIÓN DEL ESTABLECIMIENTO A LA DERECHA ===
+            COALESCE(est.nombre_establecimiento, 'SIN ASIGNACIÓN') AS establecimiento
+            
+        FROM formularion11_ambulancias cab
+        -- CROSS JOIN: Vinculamos los datos recuperados del formulario de la distrital seleccionada
+        CROSS JOIN formulario_actual f_act
+        -- INNER JOIN: Filtra solo las ambulancias vinculadas a esta cabecera distrital
+        INNER JOIN detalle_form11_ambulancias det ON det.det11_id = cab.det11_id
+        -- LEFT JOIN: Cruce elástico 1 a muchos alineado por el act_id
+        LEFT JOIN establecimientos_maestros est ON est.act_id = det.act_id
+        WHERE cab.form_id = f_act.form_id
+        ORDER BY det.det11_form11_id ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    /*--- Detalle formulario N12 Detalle de Ambulancias Consolidado---*/
+    public function get_detalle_ambulancias_consolidado(){
+    $sql = "
+            WITH pei_activo AS (
+            -- 1. Obtenemos el periodo del PEI vigente (2026 - 2030)
+            SELECT pei_id, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        distritales_universo AS (
+            -- 2. Universo de regionales activas (Excluyendo dist_id 0 y dist_id 22)
+            SELECT dist_id, dist_distrital, abrev 
+            FROM public._distritales 
+            WHERE dist_estado = 1 
+              AND dist_id > 0 
+              AND dist_id <> 22
+        ),
+        establecimientos_maestros AS (
+            -- 3. Catálogo nacional de nombres oficiales de centros médicos
+            SELECT v.dist_id, v.act_id, CONCAT(v.tipo, ' ', v.act_descripcion) AS nombre_establecimiento
+            FROM public.vlista_establecimientos_salud v
+            WHERE v.aper_gestion = (SELECT g_id_fin FROM pei_activo)
+        )
+        SELECT 
+            -- Genera el número correlativo nacional único (1, 2, 3, 4...) para la grilla plana consolidada
+            ROW_NUMBER() OVER(ORDER BY f.dist_id ASC, det.det11_form11_id ASC) AS nro,
+            
+            -- EXTRACCIÓN MAESTRA DEL DIST_ID DEL FORMULARIO DIAGNÓSTICO
+            f.dist_id,
+            d.dist_distrital AS regional,
+            d.abrev AS abreviatura,
+            f.form_id,
+            
+            cab.det11_id,
+            det.det11_form11_id,
+            COALESCE(det.placa, '---') AS placa,
+            COALESCE(det.gestion, 0) AS anio_adjudicacion, 
+            
+            -- === DECODIFICACIÓN NATURAL DEL ESTADO (Campos Integer) ===
+            CASE det.estado_ambulancia
+                WHEN 1 THEN 'EXCELENTE'
+                WHEN 2 THEN 'BUENO'
+                WHEN 3 THEN 'REGULAR'
+                WHEN 4 THEN 'MALO'
+                ELSE 'SIN REGISTRO'
+            END AS estado_ambulancia,
+            
+            -- === DECODIFICACIÓN NATURAL DE LA SITUACIÓN (Campos Integer) ===
+            CASE det.situacion_ambulancia
+                WHEN 1 THEN 'ACTIVO'
+                WHEN 2 THEN 'BAJA TEMPORAL'
+                WHEN 3 THEN 'BAJA DEFINITIVA'
+                WHEN 4 THEN 'RETENIDO'
+                ELSE 'SIN REGISTRO'
+            END AS situacion_ambulancia,
+            
+            -- === ALINEACIÓN DEL ESTABLECIMIENTO A LA DERECHA ===
+            COALESCE(est.nombre_establecimiento, 'SIN ASIGNACIÓN') AS establecimiento,
+            COALESCE(cab.form11_estado, 0) AS form11_estado
+            
+        FROM distritales_universo d
+        -- INNER JOIN: Garantiza que la distrital cuente con su formulario de diagnóstico PEI habilitado
+        INNER JOIN formulario_diagnostico_pei f ON f.dist_id = d.dist_id AND f.pei_id = (SELECT pei_id FROM pei_activo)
+        -- LEFT JOIN: Mapea la cabecera unificada del Formulario 11
+        LEFT JOIN formularion11_ambulancias cab ON cab.form_id = f.form_id
+        -- LEFT JOIN (1 a Muchos): Desglosa de forma elástica todas las unidades vehiculares registradas
+        LEFT JOIN detalle_form11_ambulancias det ON det.det11_id = cab.det11_id
+        -- LEFT JOIN: Cruce contra el catálogo de nombres médicos vinculando estrictamente f.dist_id
+        LEFT JOIN establecimientos_maestros est ON est.act_id = det.act_id AND est.dist_id = f.dist_id
+        ORDER BY f.dist_id ASC, det.det11_form11_id ASC;";
 
         $query = $this->db->query($sql);
         return $query->result_array();

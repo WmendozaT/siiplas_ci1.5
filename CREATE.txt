@@ -561,3 +561,25 @@ create table detalle_form7_rrhh(
   total_reembolsos numeric(18,2) NOT NULL DEFAULT 0,
   primary key(det10_form10_id)
  );
+
+
+ ///// Detalle de Ambulancias
+ create table formularion11_ambulancias(
+  det11_id serial NOT NULL,
+  form_id integer,
+  form11_estado integer DEFAULT 0,
+  fecha timestamp without time zone DEFAULT ('now'::text)::timestamp(0) with time zone,
+  primary key(det11_id)
+ );
+
+
+  create table detalle_form11_ambulancias(
+  det11_form11_id serial NOT NULL,
+  det11_id integer,
+  placa character varying(200),
+  gestion integer,
+  estado_ambulancia integer DEFAULT 0,
+  situacion_ambulancia integer DEFAULT 0,
+  act_id integer,
+  primary key(det11_form11_id)
+ );
