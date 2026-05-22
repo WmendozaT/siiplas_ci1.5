@@ -2178,7 +2178,7 @@ public function guarda_detalle_automatica_form2() {
       echo json_encode(array('status' => $res ? 'success' : 'error', 'nuevo_id' => $id_det));
   }
 
-    //// guarda Detalle Ambulancia
+    //// Guarda Detalle Ambulancia
     public function insertar_ambulancia_detalle() {
         // 1. Limpieza de búfer de salida para evitar que residuos o warnings rompan el formato JSON
         if (ob_get_length()) ob_clean();
@@ -2259,6 +2259,51 @@ public function guarda_detalle_automatica_form2() {
         }
         exit; // Detiene el hilo de CodeIgniter blindando la pureza del JSON
     }
+
+    //// Eliminar registro ambulancia
+    public function eliminar_ambulancia_detalle() {
+        // 1. Limpieza estricta de salida para evitar que warnings de PHP arruinen el JSON
+        if (ob_get_length()) ob_clean();
+
+        // 2. Seguridad: Validación asíncrona manual compatible con tu versión CodeIgniter 1.5
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'msg' => 'Acceso directo denegado.'));
+            exit;
+        }
+
+        // Capturamos el identificador correlativo único de la fila enviado por POST
+        $id_detalle = intval($this->input->post('id_detalle'));
+
+        if (empty($id_detalle) || $id_detalle <= 0) {
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'msg' => 'ID de registro inválido o ausente en el paquete de red.'));
+            exit;
+        }
+
+        // 3. PROCESAMIENTO DE BAJA EN LA BASE DE DATOS
+        $this->db->where('det11_form11_id', $id_detalle);
+        $res_delete = $this->db->delete('detalle_form11_ambulancias');
+
+        // 4. ENVÍO DE RESPUESTA ESTRUCTURADA AL JAVASCRIPT
+        header('Content-Type: application/json');
+        if ($res_delete) {
+            echo json_encode(array('status' => 'success'));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'El motor de base de datos rechazó la eliminación por integridad referencial.'));
+        }
+        exit; // Detiene la ejecución protegiendo el parseo del Front-End
+    }
+
+
+
+
+
+
+
+
+
+
 
 
 }

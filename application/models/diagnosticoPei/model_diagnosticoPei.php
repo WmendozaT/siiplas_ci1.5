@@ -64,7 +64,8 @@ class model_diagnosticoPei extends CI_Model {
                 COALESCE(obs7.obs_id, 0) AS verif_obs7, obs7.obs_id, obs7.obs_nro as obs_nro7, obs7.obs_contenido as observacion7,
                 COALESCE(obs8.obs_id, 0) AS verif_obs8, obs8.obs_id, obs8.obs_nro as obs_nro8, obs8.obs_contenido as observacion8,
                 COALESCE(obs9.obs_id, 0) AS verif_obs9, obs9.obs_id, obs9.obs_nro as obs_nro9, obs9.obs_contenido as observacion9,
-                COALESCE(obs10.obs_id, 0) AS verif_obs10, obs10.obs_id, obs10.obs_nro as obs_nro10, obs10.obs_contenido as observacion10
+                COALESCE(obs10.obs_id, 0) AS verif_obs10, obs10.obs_id, obs10.obs_nro as obs_nro10, obs10.obs_contenido as observacion10,
+                COALESCE(obs11.obs_id, 0) AS verif_obs11, obs11.obs_id, obs11.obs_nro as obs_nro11, obs11.obs_contenido as observacion11
             FROM diagnostico_pei pei
             INNER JOIN formulario_diagnostico_pei form ON form.pei_id = pei.pei_id
             INNER JOIN _distritales ds ON ds.dist_id = form.dist_id 
@@ -78,6 +79,7 @@ class model_diagnosticoPei extends CI_Model {
             LEFT JOIN form_observacion obs8 ON obs8.form_id = form.form_id AND obs8.obs_nro = 8
             LEFT JOIN form_observacion obs9 ON obs9.form_id = form.form_id AND obs9.obs_nro = 9
             LEFT JOIN form_observacion obs10 ON obs10.form_id = form.form_id AND obs10.obs_nro = 10
+            LEFT JOIN form_observacion obs11 ON obs11.form_id = form.form_id AND obs11.obs_nro = 11
             WHERE pei.estado = 1 
               AND pei.pei_id = ". (int)$pei_id ." 
               AND form.dist_id = ". (int)$dist_id;

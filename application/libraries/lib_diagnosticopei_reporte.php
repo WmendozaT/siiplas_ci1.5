@@ -66,6 +66,9 @@ class Lib_diagnosticopei_reporte {
         elseif($tp_rep == 11){
             return $this->form_pdf10('landscape',$get_form_distrital); //// horizontal - Reembolsos
         }
+        elseif($tp_rep == 12){
+            return $this->form_pdf11('portrait',$get_form_distrital); //// horizontal - Ambulancia
+        }
         else{
             return "Trabajando ... ";
         }
@@ -1215,6 +1218,114 @@ class Lib_diagnosticopei_reporte {
 
         return $tabla;
     }
+
+
+
+    /// formulario reporte 11 - Ambulancias
+    public function form_pdf11($orientacion,$get_form_distrital) {
+        $listado_ambulancias=$this->CI->model_diagnosticopei->get_detalle_ambulancias($get_form_distrital[0]['dist_id']);
+
+        $tabla='';
+        $tabla = $this->style_report();
+        $tabla .= ' 
+        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+        '.$this->cabecera_report(11,'DETALLE DE AMBULANCIAS',$get_form_distrital).'
+
+        <p class="bold">1. Objetivo</p>
+        <div class="box-container" style="width: 100%; border: 1px solid #000; font-size:10.5px; padding: 8px; margin-bottom: 15px;">
+            Inventario General del Parque Automotor de Ambulancias por Establecimiento de Salud de la Regional/Distrital
+        </div>';
+            
+            $tabla.='
+            <table class="tabla-datos" style="font-size: 8px; width: 100%; border-collapse: collapse; table-layout: fixed;" border="1">
+                <thead>
+                    <tr style="background: #e8eaf6; color: #1a237e; font-weight: bold; height: 25px;">
+                        <th style="width:3%; text-align:center; vertical-align: middle; font-size: 8.5px; padding: 5px 0;">#</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">PLACA</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">AÑO ADJUDICACIÓN</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">ESTADO</th>
+                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">SITUACIÓN</th>
+                        <th style="width:25%; text-align:center; vertical-align: middle; font-size: 8.5px;">ESTABLECIMIENTO</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                
+                // Contador correlativo plano independiente
+                $nro = 0; 
+                
+                foreach ($listado_ambulancias as $row) {
+                    $nro++;
+                    
+                    // Formateamos las cadenas para asegurar consistencia contable en mayúsculas
+                    $placa_rep       = !empty($row['placa']) ? strtoupper(trim($row['placa'])) : '---';
+                    $gestion_rep     = ($row['anio_adjudicacion'] > 0) ? intval($row['anio_adjudicacion']) : '---';
+                    $estado_rep      = !empty($row['estado_ambulancia']) ? strtoupper(trim($row['estado_ambulancia'])) : 'SIN REGISTRO';
+                    $situacion_rep   = !empty($row['situacion_ambulancia']) ? strtoupper(trim($row['situacion_ambulancia'])) : 'SIN REGISTRO';
+                    $establecimiento = !empty($row['establecimiento']) ? strtoupper(trim($row['establecimiento'])) : 'SIN ASIGNACIÓN';
+
+                    $tabla .= '
+                    <tr style="height: 22px;">
+                        <!-- Número correlativo automático de la grilla -->
+                        <td style="text-align:center; vertical-align: middle; font-weight: bold; background:#f9f9f9;">' . $nro . '</td>
+                        
+                        <!-- Datos técnicos del parque automotor sanitario -->
+                        <td style="text-align:center; vertical-align: middle; font-weight: bold; color: #0d47a1;">' . $placa_rep . '</td>
+                        <td style="text-align:center; vertical-align: middle; font-size:8px;">' . $gestion_rep . '</td>
+                        <td style="text-align:center; vertical-align: middle; font-weight: 500;font-size:8px;">' . $estado_rep . '</td>
+                        <td style="text-align:center; vertical-align: middle; font-weight: 500;font-size:8px;">' . $situacion_rep . '</td>
+                        
+                        <!-- Alineación del Centro de Salud a la derecha con padding de resguardo -->
+                        <td style="text-align:left; vertical-align: middle; font-weight: bold; color: #1a237e; padding-left: 5px;font-size:8px;">' . $establecimiento . '</td>
+                    </tr>';
+                }
+
+                // CONTROL DE REJILLA VACÍA: Si no hay registros inyectados, dibuja una fila informativa para mantener la estética
+                if ($nro === 0) {
+                    $tabla .= '
+                    <tr style="height: 30px;">
+                        <td style="text-align:center; vertical-align: middle; color:#777; font-weight:bold;">-</td>
+                        <td colspan="5" style="text-align:center; vertical-align: middle; color:#999; font-style:italic; font-size:9px;">
+                            <i class="fa fa-info-circle"></i> No se encontraron unidades de transporte sanitario registradas en el inventario oficial de esta regional.
+                        </td>
+                    </tr>';
+                }
+
+            $tabla .= '
+                </tbody>
+            </table>';
+                $tabla .= '
+                <p class="bold" style="margin-top: 15px;">2. Observaciones adicionales</p>
+                <div class="box-container" style="width: 100%; height: 55px; border: 0.5px solid #000; font-size:8px; padding:5px;">
+                    '.(!empty($get_form_distrital[0]['observacion11']) ? strtoupper($get_form_distrital[0]['observacion11']) : 'SIN OBSERVACIONES').'
+                </div>';
+
+        $tabla .= '
+        <div style="width: 100%; margin-top: 20mm; text-align: center; page-break-inside: avoid; display: block;">
+            <p style="font-size: 11px; margin: 0; padding: 0;"><strong>'.strtoupper($get_form_distrital[0]['tipo_firma']).'</strong></p>
+        </div>';
+
+        $tabla .= '
+        </page>';
+
+        return $tabla;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 public function style_report() {
     $tabla = '        
