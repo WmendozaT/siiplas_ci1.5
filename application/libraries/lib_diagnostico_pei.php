@@ -3741,7 +3741,7 @@ class lib_diagnostico_pei extends CI_Controller{
     /*------- Detalle formulario N 11 Detalle Ambulancias -------*/
     public function formulario_N11($get_form_distrital){
       $listado_ambulancias=$this->model_diagnosticopei->get_detalle_ambulancias($get_form_distrital[0]['dist_id']);
-      $UnidadEstablecimientos=$this->model_diagnosticopei->get_establecimientos_distrital($get_form_distrital[0]['dist_id'],$this->gestion);
+      $establecimientos=$this->model_diagnosticopei->get_establecimientos_distrital($get_form_distrital[0]['dist_id'],$this->gestion);
       $tabla='';
       $tabla.='
       <div class="viewport-container">';
@@ -3757,34 +3757,27 @@ class lib_diagnostico_pei extends CI_Controller{
             </div>';
         }
         $tabla.='
-          <div class="modal fade" id="modal_alta_ambulancia" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
-                    
-                    <div class="modal-header" style="background:#3276b1; color:white; padding: 10px 15px;">
-                        <button type="button" class="close" data-dismiss="modal" style="color:white; opacity:0.8;">&times;</button>
-                        <h4 class="modal-title"><b>REGISTRAR DETALLE DE AMBULANCIA</b></h4>
-                    </div>
-                    
-                    <form id="form_guardar_ambulancia_maestro" autocomplete="off">
-                        <div class="modal-body" style="padding: 20px;">
-                            <!-- Llave foránea oculta de la cabecera distrital -->
-                            <input type="hidden" name="form_id" id="modal_ambulancia_form_id">
+            <div class="modal fade" id="modal_nuevo_equipo" tabindex="-1" role="dialog">
+              <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                      <div class="modal-header" style="background:#3276b1; color:white;">
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          <h4 class="modal-title"><b>REGISTRAR DETALLE AMBULANCIA</b></h4>
+                      </div>
+                      <div class="modal-body">
+                          <!-- PARTE 1: SELECCIÓN -->
+                          <div class="form-group">
+                              <label><b>1. Seleccione el Establecimiento:</b></label>
+                              <select class="form-control" id="m_act_id" style="width:100%" onchange="mostrarCamposAmbulancia(this.value) ">
+                                  <option value="">Seleccione...</option>';
+                                  foreach($establecimientos as $e){
+                                      $tabla .= '<option value="'.$e['act_id'].'" data-nombre="'.$e['tipo'].' '.strtoupper($e['act_descripcion']).'">'.$e['tipo'].' '.strtoupper($e['act_descripcion']).'</option>';
+                                  }
+                              $tabla .= '</select>
+                          </div>
 
-                            <!-- PARTE 1: SELECCIÓN DEL ESTABLECIMIENTO -->
-                            <div class="form-group">
-                                <label><b>1. Seleccione el Establecimiento:</b></label>
-                                <select class="form-control" name="act_id" id="m_act_id" style="width:100%" onchange="mostrarCamposAmbulancia(this.value)">
-                                    <option value="">Seleccione...</option>';
-                                    foreach($UnidadEstablecimientos as $e){
-                                        $tabla .= '<option value="'.$e['act_id'].'">'.$e['tipo'].' '.strtoupper($e['act_descripcion']).'</option>';
-                                    }
-                                $tabla .= '
-                                </select>
-                            </div>
-
-                            <!-- PARTE 2: DETALLES DE VEHÍCULO (Ocultos por defecto) -->
-                            <div id="campos_detalle_ambulancia" style="display:none; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+                          <!-- PARTE 2: DETALLES (Ocultos por defecto) -->
+                          <div id="campos_detalle_ambulancia" style="display:none; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
                                 
                                 <div class="form-group">
                                     <label><b>2. Número de Placa:</b></label>
@@ -3833,20 +3826,18 @@ class lib_diagnostico_pei extends CI_Controller{
                                 </div>
 
                             </div>
-                        </div>
-                        
-                        <div class="modal-footer" style="background:#fafafa; padding: 10px 15px; border-top: 1px solid #eee;">
-                            <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight:bold;">CANCELAR</button>
-                            
-                            <!-- CORRECCIÓN: Botón modificado a type="submit" y removido el atributo onclick defectuoso -->
-                            <button type="submit" class="btn btn-primary" id="btnGuardarAmbulancia" style="display:none; background:#3276b1; border-color:#2c6aa0; font-weight:bold;">
-                                <i class="fa fa-save"></i> GUARDAR Y AGREGAR
-                            </button>
-                        </div>
-                    </form>
+                      </div>
+                      <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">CANCELAR</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarAmbulancia" style="display:none;" onclick="guardar_ambulancia()">
+                        <i class="fa fa-save"></i> GUARDAR Y AGREGAR
+                    </button>
                 </div>
-            </div>
-        </div>
+                  </div>
+              </div>
+          </div>
+
+
 
           <div class="page">
               <!-- Fecha de Impresión Automática -->
@@ -3863,19 +3854,18 @@ class lib_diagnostico_pei extends CI_Controller{
 
               <div style="margin: 20px 0; font-weight: bold;">
                   Regional / Distrital: <span style="border-bottom: 1px solid black; display: inline-block; width: 400px;">'.strtoupper($get_form_distrital[0]['dist_distrital']).'</span>
-              </div>
-
-              <div style="font-weight: bold; margin-bottom: 10px;">1. Detalle de Ambulancias por Regional/Distrital</div>
-                <div style="margin-bottom: 15px; text-align: right;">
-                  <button type="button" class="btn btn-success btn-sm" 
-                          style="font-weight: bold; background-color: #00a65a; border-color: #008d4c; box-shadow: 0 2px 4px rgba(0,0,0,0.15);" 
-                          onclick="abrirModalNuevaAmbulancia(' . intval($get_form_distrital[0]['form_id']) . ')">
-                      <i class="fa fa-plus"></i> Registrar Nueva Ambulancia
-                  </button>
               </div>';
 
               // --- TU TABLA DE LISTADO MODIFICADA ---
               $tabla .= '
+              <div style="font-weight: bold; margin-bottom: 10px;">1. Detalle de Ambulancias por Regional/Distrital</div>
+                <div style="margin-bottom: 15px; text-align: right;">
+                  <button type="button" class="btn btn-success btn-sm" 
+                          style="font-weight: bold; background-color: #00a65a; border-color: #008d4c; box-shadow: 0 2px 4px rgba(0,0,0,0.15);" 
+                          onclick="abrirModalNuevaAmbulancia()">
+                      <i class="fa fa-plus"></i> Registrar Nueva Ambulancia
+                  </button>
+              </div>
               <table class="table table-bordered" style="width: 100%; margin-bottom: 0; font-size: 11px; border-collapse: collapse;" border="1">
                 <thead>
                   <tr style="background: #e8eaf6; color: #1a237e; height: 32px;">
@@ -3935,136 +3925,142 @@ class lib_diagnostico_pei extends CI_Controller{
         <script>
           document.getElementById("fecha-actual11").innerText = new Date().toLocaleDateString();
         </script>
-       <script type="text/javascript">
-    // ==========================================================================
-    // --- 1. FUNCIONES GLOBALES (Disponibles para eventos onclick/onchange HTML) ---
-    // ==========================================================================
-    function abrirModalNuevaAmbulancia(form_id) {
-        if($("#form_guardar_ambulancia_maestro").length > 0) {
-            $("#form_guardar_ambulancia_maestro")[0].reset();
-        }
-        $("#campos_detalle_ambulancia").hide();
-        $("#btnGuardarAmbulancia").hide();
-        $("#m_placa").css("border-color", ""); // Limpiamos alertas visuales previas
+<script type="text/javascript">
+    // Variable global inyectada de forma segura desde CodeIgniter
+    var BASE_URL = "' . base_url() . '";
+
+    // 1. ABRIR MODAL Y RESETEAR CAMPOS (Misma lógica de equipos)
+    function abrirModalNuevaAmbulancia() {
+        $("#m_act_id").val("").trigger("change");
         
-        $("#modal_ambulancia_form_id").val(form_id);
-        $("#modal_alta_ambulancia").modal("show");
+        // Limpieza absoluta de todos los campos secundarios
+        $("#m_placa, #m_gestion, #m_estado, #m_situacion").val("");
+        $("#m_placa").css("border-color", ""); 
+        
+        $("#campos_detalle_ambulancia, #btnGuardarAmbulancia").hide();
+        $("#modal_nuevo_equipo").modal("show"); 
     }
 
-    function mostrarCamposAmbulancia(valorSelect) {
-        if(valorSelect !== "" && valorSelect !== undefined) {
-            $("#campos_detalle_ambulancia").slideDown(250);
-            $("#btnGuardarAmbulancia").fadeIn(250);
+    // 2. MOSTRAR CAMPOS AL SELECCIONAR ESTABLECIMIENTO
+    function mostrarCamposAmbulancia(val) {
+        if(val !== "" && val !== undefined) {
+            $("#campos_detalle_ambulancia, #btnGuardarAmbulancia").fadeIn(250);
         } else {
-            $("#campos_detalle_ambulancia").slideUp(200);
-            $("#btnGuardarAmbulancia").fadeOut(200);
+            $("#campos_detalle_ambulancia, #btnGuardarAmbulancia").fadeOut(200);
         }
     }
 
-    // ==========================================================================
-    // --- 2. MANEJO DE EVENTOS DINÁMICOS DEL DOM Y PROCESAMIENTO AJAX ---
-    // ==========================================================================
-    document.addEventListener("DOMContentLoaded", function() {
+    // 3. GUARDAR E INYECTAR EN CALIENTE (Efecto Espejo exacto del Formulario 6)
+    function guardar_ambulancia() {
+        var act_id = $("#m_act_id").val();
         
-        // --- A. MÁSCARA EN TIEMPO REAL PARA EL INPUT DE LA PLACA (XXXX-YYY) ---
+        // Capturamos el atributo data-nombre configurado en las opciones del select
+        var est_nombre = $("#m_act_id option:selected").data("nombre");
+        
+        var placa = $("#m_placa").val().trim().toUpperCase();
+        var gestion = $("#m_gestion").val();
+        
+        // Capturamos los códigos y descripciones textuales para la grilla visual
+        var estado_cod = $("#m_estado").val();
+        var estado_txt = $("#m_estado option:selected").text().trim().toUpperCase();
+        var situacion_cod = $("#m_situacion").val();
+        var situacion_txt = $("#m_situacion option:selected").text().trim().toUpperCase();
+
+        // Validación de campos obligatorios en el cliente
+        if(act_id == "" || placa == "" || gestion == "" || estado_cod == "" || situacion_cod == "") { 
+            alert("Por favor complete todos los campos obligatorios."); 
+            return; 
+        }
+
+        // Validación de la máscara obligatoria boliviana (4 Números - 3 Letras)
+        var patronPlaca = /^[0-9]{4}-[A-Z]{3}$/;
+        if (!patronPlaca.test(placa)) {
+            alert("⚠️ Formato de Placa Inválido.\\n\\nEl sistema requiere exactamente 4 números, un guion intermedio y 3 letras mayúsculas (Ej: 4852-XYZ).");
+            $("#m_placa").focus().css("border-color", "#c62828");
+            return;
+        }
+
+        // Bloqueamos el botón con indicador visual de carga
+        $("#btnGuardarAmbulancia").prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i> GUARDANDO...");
+
+        $.ajax({
+            url: BASE_URL + "index.php/Cdiagnostico_pei/CDiagnostico_pei/insertar_ambulancia_detalle",
+            type: "POST",
+            dataType: "json",
+            data: {
+                act_id: act_id,
+                placa: placa,
+                gestion: gestion,
+                estado_ambulancia: estado_cod,
+                situacion_ambulancia: situacion_cod,
+                // Parámetro maestro jalado automáticamente desde tus variables de control PHP
+                form_id: "'.$get_form_distrital[0]['form_id'].'"
+            },
+            success: function(resp) {
+                if(resp.status == "success") {
+                    
+                    // A. Calculamos el siguiente número correlativo basado en las filas del DOM
+                    var siguienteNro = $("#tabla_ambulancias_body tr").length + 1;
+
+                    // B. Construimos la nueva fila plana idéntica a tu diseño gráfico
+                    var nuevaFila = `
+                    <tr id="fila_amb_${resp.id}" style="display:none; height: 30px; background-color: #fafffa;">
+                        <td style="text-align:center; background:#f9f9f9; font-weight:bold;">${siguienteNro}</td>
+                        <td style="text-align:center; font-weight:bold; color:#0d47a1;">${placa}</td>
+                        <td style="text-align:center;">${gestion}</td>
+                        <td style="text-align:center; font-weight:500;">${estado_txt}</td>
+                        <td style="text-align:center; font-weight:500;">${situacion_txt}</td>
+                        <td style="text-align:left; padding-left:8px; font-weight:bold; color:#1a237e;">${est_nombre}</td>
+                    </tr>`;
+
+                    // C. Inyectamos la fila armada al final del cuerpo de la tabla sin recargar el navegador
+                    $("#tabla_ambulancias_body").append(nuevaFila);
+                    
+                    // D. Desplegamos la animación de aparición y ejecutamos el scroll automático al fondo
+                    $("#fila_amb_" + resp.id).fadeIn(800);
+                    $("html, body").animate({ scrollTop: $(document).height() }, 1000);
+                    
+                    // E. Ocultación del modal y Toast de confirmación de tu suite
+                    $("#modal_nuevo_equipo").modal("hide");
+                    $("#toast-notificacion").text("✅ Registro añadido").fadeIn().delay(2000).fadeOut();
+                } else {
+                    alert("⚠️ Error: " + resp.msg);
+                }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                alert("Error al crear el registro de ambulancia. Verifique la consola.");
+            },
+            complete: function() {
+                // Restablecemos el estado operativo del botón original
+                $("#btnGuardarAmbulancia").prop("disabled", false).html("<i class=\'fa fa-save\'></i> GUARDAR Y AGREGAR");
+            }
+        });
+    }
+
+    // --- 4. MÁSCARA AUTOMÁTICA EN TIEMPO REAL PARA EL INPUT DE LA PLACA (XXXX-YYY) ---
+    document.addEventListener("DOMContentLoaded", function() {
         $(document).on("keyup keypress input", "#m_placa", function() {
             var val = $(this).val().toUpperCase();
+            val = val.replace(/[^0-9A-Z-]/g, ""); // Remueve caracteres no permitidos
             
-            // Filtro 1: Eliminar cualquier caracter que no sea número, letra o guion
-            val = val.replace(/[^0-9A-Z-]/g, "");
-            
-            // Filtro 2: Insertar el guion de forma automática tras el cuarto dígito
+            // Inserta el guion automáticamente tras el cuarto dígito
             if (val.length > 4 && val.charAt(4) !== "-") {
                 val = val.substr(0, 4) + "-" + val.substr(4);
             }
             
-            // Filtro 3: Forzar segmentación quirúrgica por posición
             var parteNumerica = val.substr(0, 4).replace(/[^0-9]/g, "");
             var guion = val.length > 4 ? "-" : "";
             var parteLetras = val.substr(5, 3).replace(/[^A-Z]/g, "");
             
             var resultado = parteNumerica + guion + parteLetras;
-            
-            // Ajustamos largo máximo estricto (4 Núm + 1 Guion + 3 Letras = 8)
             if (resultado.length > 8) { resultado = resultado.substr(0, 8); }
             
             $(this).val(resultado);
         });
-
-        // --- B. INTERCEPCIÓN DEL SUBMIT CON INYECCIÓN DIRECTA EN EL DOM EN CALIENTE ---
-        $(document).on("submit", "#form_guardar_ambulancia_maestro", function(e) {
-            e.preventDefault();
-            
-            // Captura de datos y textos descriptivos de los elementos seleccionados
-            var form_id = $("#modal_ambulancia_form_id").val();
-            var act_id = $("#m_act_id").val();
-            var est_nombre = $("#m_act_id option:selected").text().trim().toUpperCase();
-            var placa = $("#m_placa").val().trim().toUpperCase();
-            var gestion = $("#m_gestion").val();
-            
-            var estado_txt = $("#m_estado option:selected").text().trim().toUpperCase();
-            var situacion_txt = $("#m_situacion option:selected").text().trim().toUpperCase();
-
-            // Expresión regular estructural estricta (4 números - 3 letras)
-            var patronPlaca = /^[0-9]{4}-[A-Z]{3}$/;
-
-            if (!patronPlaca.test(placa)) {
-                alert("⚠️ Formato de Placa Inválido.\n\nEl sistema requiere exactamente 4 números, un guion intermedio y 3 letras mayúsculas.\nEjemplo institucional correcto: 4852-XYZ");
-                $("#m_placa").focus().css("border-color", "#c62828"); 
-                return false;
-            }
-
-            $("#btnGuardarAmbulancia").prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i> Guardando...");
-
-            $.ajax({
-                url: "' . base_url() . 'index.php/Cdiagnostico_pei/CDiagnostico_pei/insertar_ambulancia_detalle",
-                type: "POST",
-                data: $(this).serialize(), // Empaqueta y serializa todos los campos de forma automática
-                dataType: "json",
-                success: function(resp) {
-                    if (resp.status === "success") {
-                        
-                        // 1. Calculamos el siguiente número correlativo basado en las filas actuales de la grilla
-                        var siguienteNro = $("#tabla_ambulancias_body tr").length + 1;
-
-                        // 2. Construimos el casillero HTML plano con animación inicial display:none
-                        var nuevaFila = `
-                        <tr id="fila_amb_${resp.id}" style="display:none; height: 30px; background-color: #fafffa;">
-                            <td style="text-align:center; background:#f9f9f9; font-weight:bold;">${siguienteNro}</td>
-                            <td style="text-align:center; font-weight:bold; color:#0d47a1;">${placa}</td>
-                            <td style="text-align:center;">${gestion > 0 ? gestion : "---"}</td>
-                            <td style="text-align:center; font-weight:500;">${estado_txt}</td>
-                            <td style="text-align:center; font-weight:500;">${situacion_txt}</td>
-                            <td style="text-align:left; padding-left:8px; font-weight:bold; color:#1a237e;">${est_nombre}</td>
-                        </tr>`;
-
-                        // 3. Eliminamos la fila comodín de advertencia si la tabla estaba vacía
-                        $("#tabla_ambulancias_body tr:has(td:contains(\'Sin unidades registradas\'))").remove();
-
-                        // 4. Inyectamos la fila armada al final del cuerpo de la tabla
-                        $("#tabla_ambulancias_body").append(nuevaFila);
-                        
-                        // 5. Desplegamos la animación de aparición y el scroll automático (Espejo de Equipos)
-                        $("#fila_amb_" + resp.id).fadeIn(800);
-                        $("html, body").animate({ scrollTop: $(document).height() }, 1000);
-
-                        // 6. Cierre del modal y lanzamiento del Toast de confirmación institucional
-                        $("#modal_alta_ambulancia").modal("hide");
-                        $("#toast-notificacion").text("✅ Registro añadido exitosamente").fadeIn().delay(2000).fadeOut();
-                    } else {
-                        alert("⚠️ Restricción del Servidor: " + resp.msg);
-                    }
-                },
-                error: function() {
-                    alert("❌ Error crítico de comunicación. Verifique que la sesión en el SIIPLAS siga activa.");
-                },
-                complete: function() {
-                    $("#btnGuardarAmbulancia").prop("disabled", false).html("<i class=\'fa fa-save\'></i> GUARDAR Y AGREGAR");
-                }
-            });
-        });
     });
-</script>';
+</script>
+';
       
         return $tabla;
     }

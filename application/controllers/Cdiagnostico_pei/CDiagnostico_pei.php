@@ -2180,70 +2180,85 @@ public function guarda_detalle_automatica_form2() {
 
     //// guarda Detalle Ambulancia
     public function insertar_ambulancia_detalle() {
-      if (ob_get_length()) ob_clean(); // Limpieza de búfer contra fugas de HTML
+        // 1. Limpieza de búfer de salida para evitar que residuos o warnings rompan el formato JSON
+        if (ob_get_length()) ob_clean();
 
-      // Validación asíncrona manual compatible con CodeIgniter 1.5
-      if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
-          header('Content-Type: application/json');
-          echo json_encode(array('status' => 'error', 'msg' => 'Acceso denegado.'));
-          exit;
-      }
+        // 2. Seguridad: Validación manual de peticiones AJAX compatible con CodeIgniter 1.5
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'msg' => 'Acceso directo no permitido al servidor.'));
+            exit;
+        }
 
-      // Recepción y limpieza de variables POST del modal
-      $form_id              = intval($this->input->post('form_id'));
-      $act_id               = intval($this->input->post('act_id'));
-      $placa                = trim(strtoupper($this->input->post('placa')));
-      $gestion              = intval($this->input->post('gestion'));
-      $estado_ambulancia    = intval($this->input->post('estado_ambulancia'));
-      $situacion_ambulancia = intval($this->input->post('situacion_ambulancia'));
+        // 3. Recepción y limpieza estricta de variables enviadas por el objeto $.ajax de JS
+        $form_id              = intval($this->input->post('form_id'));
+        $act_id               = intval($this->input->post('act_id'));
+        $placa                = trim(strtoupper($this->input->post('placa')));
+        $gestion              = intval($this->input->post('gestion'));
+        $estado_ambulancia    = intval($this->input->post('estado_ambulancia'));
+        $situacion_ambulancia = intval($this->input->post('situacion_ambulancia'));
 
-      // --- VALIDACIÓN COMPLEMENTARIA EN EL SERVIDOR (SEGURIDAD EXTRA) ---
-      if (empty($form_id) || empty($act_id) || empty($placa)) {
-          header('Content-Type: application/json');
-          echo json_encode(array('status' => 'error', 'msg' => 'Existen campos mandatorios vacíos en el formulario.'));
-          exit;
-      }
-      
-      // Validamos la máscara con expresiones regulares nativas de PHP
-      if (!preg_match('/^[0-9]{4}-[A-Z]{3}$/', $placa)) {
-          header('Content-Type: application/json');
-          echo json_encode(array('status' => 'error', 'msg' => 'La placa enviado no cumple con la nomenclatura obligatoria XXXX-YYY.'));
-          exit;
-      }
+        // 4. VALIDACIÓN DE CAMPOS MANDATORIOS EN EL SERVIDOR
+        if (empty($form_id) || empty($act_id) || empty($placa) || empty($estado_ambulancia) || empty($situacion_ambulancia)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'msg' => 'Existen campos mandatorios incompletos.'));
+            exit;
+        }
+        
+        // Validación de máscara del formato boliviana por seguridad en el backend
+        if (!preg_match('/^[0-9]{4}-[A-Z]{3}$/', $placa)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'msg' => 'El número de placa enviado no cumple con la nomenclatura obligatoria XXXX-YYY.'));
+            exit;
+        }
 
-      // --- LOGICA DE UPSERT PARA LA CABECERA (formularion11_ambulancias) ---
-      // Buscamos si la distrital ya inició el Formulario 11
-      $this->db->where('form_id', $form_id);
-      $cabecera = $this->db->get('formularion11_ambulancias')->row();
-      $det11_id = ($cabecera) ? $cabecera->det11_id : 0;
+        // 5. MECANISMO DE UPSERT PARA LA CABECERA (formularion11_ambulancias)
+        // Verificamos si la regional ya cuenta con un registro maestro del Formulario 11
+        $this->db->where('form_id', $form_id);
+        $cabecera = $this->db->get('formularion11_ambulancias')->row();
+        
+        if ($cabecera) {
+            // Si ya existe la cabecera, extraemos su llave primaria correlativa
+            $det11_id = $cabecera->det11_id;
+        } else {
+            // Si es el primer vehículo de la distrital, creamos la cabecera en caliente
+            $data_cabecera = array(
+                'form_id' => $form_id,
+                'form11_estado' => 1 // Flag activo de edición
+            );
+            $this->db->insert('formularion11_ambulancias', $data_cabecera);
+            
+            // Recuperamos el ID recién generado por la secuencia serial de PostgreSQL/MySQL
+            $det11_id = $this->db->insert_id();
+        }
 
-      if (!$det11_id) {
-          // Si es la primera ambulancia, creamos el registro maestro para la regional
-          $this->db->insert('formularion11_ambulancias', array('form_id' => $form_id, 'form11_estado' => 1));
-          $det11_id = $this->db->insert_id();
-      }
+        // 6. INSERCIÓN DEL REGISTRO DE DETALLE VINCULADO AL ESTABLECIMIENTO (act_id)
+        $data_detalle = array(
+            'det11_id'             => $det11_id,
+            'placa'                => $placa,
+            'gestion'              => $gestion, // Año de adjudicación/adquisición
+            'estado_ambulancia'    => $estado_ambulancia,   // Almacena el código entero (1,2,3,4)
+            'situacion_ambulancia' => $situacion_ambulancia, // Almacena el código entero (1,2,3,4)
+            'act_id'               => $act_id
+        );
 
-      // --- INSERCIÓN DIRECTA DEL DETALLE TÉCNICO VINCULADO AL ACT_ID ---
-      $data_detalle = array(
-          'det11_id'             => $det11_id,
-          'placa'                => $placa,
-          'gestion'              => $gestion,
-          'estado_ambulancia'    => $estado_ambulancia,   // Guarda el entero (1,2,3,4)
-          'situacion_ambulancia' => $situacion_ambulancia, // Guarda el entero (1,2,3,4)
-          'act_id'               => $act_id
-      );
+        $insert_res = $this->db->insert('detalle_form11_ambulancias', $data_detalle);
+        
+        // Recuperamos el ID correlativo único del detalle recién guardado
+        $det11_form11_id_generado = $this->db->insert_id();
 
-      $res = $this->db->insert('detalle_form11_ambulancias', $data_detalle);
-
-      // Envío de respuesta limpia decodificable por tu AJAX
-      header('Content-Type: application/json');
-      if ($res) {
-          echo json_encode(array('status' => 'success'));
-      } else {
-          echo json_encode(array('status' => 'error', 'msg' => 'Error de escritura. El motor de base de datos rechazó la fila.'));
-      }
-      exit;
-  }
+        // 7. RESPUESTA JSON COMPATIBLE CON EL SCRIPT DE INYECCIÓN EN CALIENTE
+        header('Content-Type: application/json');
+        if ($insert_res && $det11_form11_id_generado > 0) {
+            echo json_encode(array(
+                'status' => 'success',
+                'id'     => $det11_form11_id_generado // Es el id que el JS leerá como ${resp.id} para armar la fila
+            ));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'El motor de la base de datos rechazó la fila debido a inconsistencias de indexación.'));
+        }
+        exit; // Detiene el hilo de CodeIgniter blindando la pureza del JSON
+    }
 
 
 }
