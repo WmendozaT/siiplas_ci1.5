@@ -936,8 +936,35 @@ class CDiagnostico_pei extends CI_Controller {
     // PESTAÑA 2: Grupos Etáreos
     $this->_generar_pestaña_etareos($objPHPExcel, $dist_id, $styles);
 
-    // PESTAÑA 3: Siguientes pestañas (Estructura lista para clonar)
-    // $this->_generar_pestaña_empresas($objPHPExcel, $dist_id, $styles);
+    // PESTAÑA 3: empresas
+    $this->_generar_pestaña_empresas($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 4: perfil
+    $this->_generar_pestaña_perfil($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 5: infraestructura
+    $this->_generar_pestaña_infraestructura($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 6: diagnosticos camas
+    $this->_generar_pestaña_camas($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 7: diagnosticos equipamiento
+    $this->_generar_pestaña_equipos($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 8: Recursos humanos
+    $this->_generar_pestaña_rrhh($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 9: Compra de Servicios
+    $this->_generar_pestaña_compra_servicios($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 10: Diagnostico de Ingresos y Gastos
+    $this->_generar_pestaña_presupuestos($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 11: Reembolsos
+    $this->_generar_pestaña_reembolsos($objPHPExcel, $dist_id, $styles);
+
+    // PESTAÑA 12: Ambulancias
+    $this->_generar_pestaña_ambulancias($objPHPExcel, $dist_id, $styles);
 
     // ==========================================================================
     // 3. PROCESAMIENTO DE DESCARGA FINAL DEL EXPEDIENTE
@@ -955,7 +982,7 @@ class CDiagnostico_pei extends CI_Controller {
 
 
 
-private function _generar_pestaña_poblacion(&$objPHPExcel, $dist_id, $styles) {
+  private function _generar_pestaña_poblacion(&$objPHPExcel, $dist_id, $styles) {
     $objPHPExcel->setActiveSheetIndex(0);
     $sheet = $objPHPExcel->getActiveSheet();
     $sheet->setTitle('Población Afiliada');
@@ -1000,9 +1027,10 @@ private function _generar_pestaña_poblacion(&$objPHPExcel, $dist_id, $styles) {
     foreach (range('A', 'H') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
-}
+  }
 
-private function _generar_pestaña_etareos(&$objPHPExcel, $dist_id, $styles) {
+
+  private function _generar_pestaña_etareos(&$objPHPExcel, $dist_id, $styles) {
     $objPHPExcel->createSheet();
     $objPHPExcel->setActiveSheetIndex(1);
     $sheet = $objPHPExcel->getActiveSheet();
@@ -1040,7 +1068,7 @@ private function _generar_pestaña_etareos(&$objPHPExcel, $dist_id, $styles) {
     $sheet->getRowDimension(2)->setRowHeight(18);
 
     // 3. Extracción de datos etáreos desde el modelo
-    $etareo_data = $this->model_diagnosticopei->get_formulario_N1_etareo_consolidado($dist_id);
+    $etareo_data = $this->model_diagnosticopei->get_formulario_N1_etareo_consolidado();
 
     $f = 3;
     foreach ($etareo_data as $row) {
@@ -1083,202 +1111,843 @@ private function _generar_pestaña_etareos(&$objPHPExcel, $dist_id, $styles) {
     foreach (range('A', 'S') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
-}
+  }
 
-  public function exportar_consolidado_excel2($tp_rep, $dist_id) {
-    if (ob_get_length()) ob_clean(); // Limpieza de búfer
+  
+  private function _generar_pestaña_empresas(&$objPHPExcel, $dist_id, $styles) {
+      // 1. Llamada limpia al modelo consolidado
+      $empresas_data = $this->model_diagnosticopei->get_formulario_N2_consolidado();
 
-    $pei_id  = intval($tp_rep);
-    $dist_id = intval($dist_id);
+      // 3. Inicialización física de la Tercera Hoja del libro Excel
+      $objPHPExcel->createSheet();
+      $objPHPExcel->setActiveSheetIndex(2); // Índice 2 representa la tercera pestaña
+      $sheet = $objPHPExcel->getActiveSheet();
+      $sheet->setTitle('Empresas Aportantes');
 
-    // 1. Invocación de la librería PHPExcel
-    $this->load->library('excel'); 
-    $objPHPExcel = new PHPExcel();
-    $objPHPExcel->getProperties()->setTitle("Consolidado Institucional PEI");
+      // 4. Configuración y Estilizado de las Cabeceras (Fila 1) - Removida columna H
+      $headers = array(
+          'A1' => 'ID DIST', 
+          'B1' => 'REGIONAL / DISTRITAL', 
+          'C1' => 'ABREV', 
+          'D1' => 'GESTIÓN', 
+          'E1' => 'EMPRESAS REGISTRADAS', 
+          'F1' => 'APORTES AL DÍA', 
+          'G1' => 'EMPRESAS EN MORA'
+      );
+      
+      foreach ($headers as $pos => $text) {
+          $sheet->setCellValue($pos, $text);
+          $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+      }
+      $sheet->getRowDimension(1)->setRowHeight(25); 
 
-    // 2. Estilos para la cabecera ejecutiva (Azul Institucional)
-    $styleHeader = array(
-        'font' => array('bold' => true, 'color' => array('rgb' => 'FFFFFF'), 'size' => 10, 'name' => 'Arial'),
-        'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => array('rgb' => '1A237E')), // Azul Marino
-        'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER, 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-        'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'CCCCCC')))
-    );
+      // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+      $f = 2;
+      foreach ($empresas_data as $row) {
+          $sheet->setCellValue('A' . $f, $row['dist_id']);
+          $sheet->setCellValue('B' . $f, strtoupper($row['regional']));
+          $sheet->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+          $sheet->setCellValue('D' . $f, $row['gestion']);
+          
+          // Convertimos a tipos numéricos puros para habilitar fórmulas nativas
+          $sheet->setCellValue('E' . $f, intval($row['empresas']));
+          $sheet->setCellValue('F' . $f, intval($row['aportes']));
+          $sheet->setCellValue('G' . $f, intval($row['mora']));
 
-    // Estilos para los registros de datos
-    $styleData = array(
-        'font' => array('size' => 9, 'name' => 'Arial'),
-        'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'E0E0E0')))
-    );
+          // CORRECCIÓN 1: Alineación centrada para datos base (Columnas A a D)
+          $sheet->getStyle('A'.$f.':D'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+          
+          // CORRECCIÓN 2: Alineación a la derecha para todas las columnas numéricas (E a G)
+          $sheet->getStyle('E'.$f.':G'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+          
+          // CORRECCIÓN 3: Formato de millares contables aplicado a todo el bloque numérico (E a G)
+          $sheet->getStyle('E'.$f.':G'.$f)->getNumberFormat()->setFormatCode('#,##0');
+          
+          // CORRECCIÓN 4: Aplicar la cuadrícula de bordes a toda la fila de datos (A a G)
+          $sheet->getStyle('A'.$f.':G'.$f)->applyFromArray($styles['data']);
+          
+          $sheet->getRowDimension($f)->setRowHeight(18);
+          $f++;
+      }
 
-    // ==========================================================================
-    // --- PESTAÑA 1: FORMULARIO 1 (POBLACIÓN AFILIADA CONSOLIDADA) ---
-    // ==========================================================================
-    $objPHPExcel->setActiveSheetIndex(0);
-    $sheet1 = $objPHPExcel->getActiveSheet();
-    $sheet1->setTitle('Población Afiliada');
+      // 6. CORRECCIÓN 5: Autoajuste dinámico de ancho limitado estrictamente de la A a la G
+      foreach (range('A', 'G') as $col) {
+          $sheet->getColumnDimension($col)->setAutoSize(true);
+      }
+  }
 
-    // Definición de Títulos de la Fila 1
-    $headers = array('A1' => 'ID DIST', 'B1' => 'REGIONAL / DISTRITAL', 'C1' => 'ABREV', 'D1' => 'GESTIÓN', 'E1' => 'TITULARES', 'F1' => 'PASIVOS', 'G1' => 'BENEFICIARIOS', 'H1' => 'TOTAL PROTEGIDO');
-    foreach ($headers as $pos => $text) {
-        $sheet1->setCellValue($pos, $text);
-        $sheet1->getStyle($pos)->applyFromArray($styleHeader);
-    }
-    $sheet1->getRowDimension(1)->setRowHeight(25); // Alto de fila para la cabecera
 
-    // Llamamos al modelo pasándole el parámetro dinámico recibido del combo asíncrono
-    $this->load->model('Cdiagnostico_pei/model_diagnosticopei'); 
-    $poblacion_data = $this->model_diagnosticopei->get_formulario_N1_consolidado();
+  private function _generar_pestaña_perfil(&$objPHPExcel, $dist_id, $styles) {
+    $perfil_data = $this->model_diagnosticopei->get_formulario_N3_consolidado();
 
-    // Llenado dinámico de datos a partir de la fila 2
-    $fila = 2;
-    foreach ($poblacion_data as $row) {
-        $sheet1->setCellValue('A' . $fila, $row['dist_id']);
-        $sheet1->setCellValue('B' . $fila, strtoupper($row['regional']));
-        $sheet1->setCellValue('C' . $fila, strtoupper($row['abreviatura']));
-        $sheet1->setCellValue('D' . $fila, $row['gestion']);
-        
-        // Formateamos como números puros para que Excel permita sumas posteriores
-        $sheet1->setCellValue('E' . $fila, intval($row['titulares']));
-        $sheet1->setCellValue('F' . $fila, intval($row['pasivos']));
-        $sheet1->setCellValue('G' . $fila, intval($row['beneficiarios']));
-        $sheet1->setCellValue('H' . $fila, intval($row['total_gestion']));
-
-        // Aplicamos alineación específica por columna
-        $sheet1->getStyle('A'.$fila.':D'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $sheet1->getStyle('E'.$fila.':H'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
-        
-        // Aplicamos formato de millares a los campos numéricos (Ej: 1,500)
-        $sheet1->getStyle('E'.$fila.':H'.$fila)->getNumberFormat()->setFormatCode('#,##0');
-        
-        // Aplicamos la cuadrícula base de datos
-        $sheet1->getStyle('A'.$fila.':H'.$fila)->applyFromArray($styleData);
-        $sheet1->getRowDimension($fila)->setRowHeight(18);
-        $fila++;
-    }
-
-    // Autoajuste dinámico del ancho de las columnas según el tamaño de los textos
-    foreach (range('A', 'H') as $col) {
-        $sheet1->getColumnDimension($col)->setAutoSize(true);
-    }
-
-    // ==========================================================================
-    // --- PESTAÑA 2: SIGUIENTES FORMULARIOS (Configuraciones base) ---
-    // ==========================================================================
-        // Estilo secundario para las subcabeceras (Masculino, Femenino, Total)
-    $styleSubHeader = array(
-        'font' => array('bold' => true, 'color' => array('rgb' => '1A237E'), 'size' => 9, 'name' => 'Arial'),
-        'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => array('rgb' => 'E8EAF6')), // Azul Claro
-        'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER, 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
-        'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'CCCCCC')))
-    );
-
-    // ==========================================================================
-    // --- PESTAÑA 2: FORMULARIO 1.I (POBLACIÓN POR GRUPOS ETÁREOS) ---
-    // ==========================================================================
+    // 3. Inicialización física de la Cuarta Hoja del libro Excel
     $objPHPExcel->createSheet();
-    $objPHPExcel->setActiveSheetIndex(1);
-    $sheet2 = $objPHPExcel->getActiveSheet();
-    $sheet2->setTitle('Grupos Etáreos');
+    $objPHPExcel->setActiveSheetIndex(3); 
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Perfil Epidemiológico');
 
-    // CONFIGURACIÓN DE FILA 1 (Años Consolidados y Datos Base)
-    $sheet2->mergeCells('A1:A2')->setCellValue('A1', 'ID DIST');
-    $sheet2->mergeCells('B1:B2')->setCellValue('B1', 'REGIONAL / DISTRITAL');
-    $sheet2->mergeCells('C1:C2')->setCellValue('C1', 'ABREV');
-    $sheet2->mergeCells('D1:D2')->setCellValue('D1', 'GRUPO ETÁREO');
+    // 4. CONFIGURACIÓN DE FILA 1 (Cabeceras Superiores Combinadas Ajustadas de la A a la O)
+    $sheet->mergeCells('A1:A2')->setCellValue('A1', 'ID DIST');
+    $sheet->mergeCells('B1:B2')->setCellValue('B1', 'REGIONAL / DISTRITAL');
+    $sheet->mergeCells('C1:C2')->setCellValue('C1', 'ABREV');
+    $sheet->mergeCells('D1:D2')->setCellValue('D1', 'CATEGORÍA PERFIL');
+    $sheet->mergeCells('E1:E2')->setCellValue('E1', 'Nº POSICIÓN');
 
-    // Combinación de bloques anuales
-    $sheet2->mergeCells('E1:G1')->setCellValue('E1', 'GESTIÓN 2021');
-    $sheet2->mergeCells('H1:J1')->setCellValue('H1', 'GESTIÓN 2022');
-    $sheet2->mergeCells('K1:M1')->setCellValue('K1', 'GESTIÓN 2023');
-    $sheet2->mergeCells('N1:P1')->setCellValue('N1', 'GESTIÓN 2024');
-    $sheet2->mergeCells('Q1:S1')->setCellValue('Q1', 'GESTIÓN 2025');
+    // REVISIÓN: Bloques anuales ahora abarcan solo 2 columnas (Casos y Código)
+    $sheet->mergeCells('F1:G1')->setCellValue('F1', 'GESTIÓN 2021');
+    $sheet->mergeCells('H1:I1')->setCellValue('H1', 'GESTIÓN 2022');
+    $sheet->mergeCells('J1:K1')->setCellValue('J1', 'GESTIÓN 2023');
+    $sheet->mergeCells('L1:M1')->setCellValue('L1', 'GESTIÓN 2024');
+    $sheet->mergeCells('N1:O1')->setCellValue('N1', 'GESTIÓN 2025');
 
-    // Aplicar estilos a la primera fila de cabecera
-    foreach (range('A', 'S') as $col) {
-        $sheet2->getStyle($col . '1')->applyFromArray($styleHeader);
+    // Aplicar estilos a la primera fila macro (De la A a la O)
+    foreach (range('A', 'O') as $col) {
+        $sheet->getStyle($col . '1')->applyFromArray($styles['header']);
     }
-    $sheet2->getRowDimension(1)->setRowHeight(22);
+    $sheet->getRowDimension(1)->setRowHeight(24);
 
-    // CONFIGURACIÓN DE FILA 2 (Subcabeceras Técnicas M / F / T)
+    // 5. CONFIGURACIÓN DE FILA 2 (Subcabeceras de Desglose - Sin Descripción de Causa)
     $subHeaders = array(
-        'E2'=>'MASC', 'F2'=>'FEM', 'G2'=>'TOTAL',
-        'H2'=>'MASC', 'I2'=>'FEM', 'J2'=>'TOTAL',
-        'K2'=>'MASC', 'L2'=>'FEM', 'M2'=>'TOTAL',
-        'N2'=>'MASC', 'O2'=>'FEM', 'P2'=>'TOTAL',
-        'Q2'=>'MASC', 'R2'=>'FEM', 'S2'=>'TOTAL'
+        'F2'=>'CASOS', 'G2'=>'CÓDIGO CIE-10',
+        'H2'=>'CASOS', 'I2'=>'CÓDIGO CIE-10',
+        'J2'=>'CASOS', 'K2'=>'CÓDIGO CIE-10',
+        'L2'=>'CASOS', 'M2'=>'CÓDIGO CIE-10',
+        'N2'=>'CASOS', 'O2'=>'CÓDIGO CIE-10'
     );
     foreach ($subHeaders as $pos => $text) {
-        $sheet2->setCellValue($pos, $text);
-        $sheet2->getStyle($pos)->applyFromArray($styleSubHeader);
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['subheader']);
     }
-    $sheet2->getRowDimension(2)->setRowHeight(18);
+    $sheet->getRowDimension(2)->setRowHeight(18);
 
-    // Llamamos al modelo pasándole el parámetro dinámico del select
-    $etareo_data = $this->model_diagnosticopei->get_formulario_N1_etareo_consolidado();
-
-    // Llenado de los registros a partir de la fila 3
+    // 6. Volcado de Registros a las Celdas a partir de la Fila 3
     $f = 3;
-    foreach ($etareo_data as $row) {
-        $sheet2->setCellValue('A' . $f, $row['dist_id']);
-        $sheet2->setCellValue('B' . $f, strtoupper($row['regional']));
-        $sheet2->setCellValue('C' . $f, strtoupper($row['abreviatura']));
-        $sheet2->setCellValue('D' . $f, trim($row['grupo_etareo']));
+    foreach ($perfil_data as $row) {
+        $sheet->setCellValue('A' . $f, $row['dist_id']);
+        $sheet->setCellValue('B' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('D' . $f, strtoupper($row['nombre_perfil']));
+        $sheet->setCellValue('E' . $f, intval($row['tp_perfil']));
 
-        // Gestión 2021
-        $sheet2->setCellValue('E' . $f, intval($row['m_2021']));
-        $sheet2->setCellValue('F' . $f, intval($row['f_2021']));
-        $sheet2->setCellValue('G' . $f, intval($row['t_2021']));
+        // Datos Gestión 2021
+        $sheet->setCellValue('F' . $f, intval($row['nro_casos_2021']));
+        $sheet->setCellValue('G' . $f, strtoupper($row['codigo_cie_2021']));
 
-        // Gestión 2022
-        $sheet2->setCellValue('H' . $f, intval($row['m_2022']));
-        $sheet2->setCellValue('I' . $f, intval($row['f_2022']));
-        $sheet2->setCellValue('J' . $f, intval($row['t_2022']));
+        // Datos Gestión 2022
+        $sheet->setCellValue('H' . $f, intval($row['nro_casos_2022']));
+        $sheet->setCellValue('I' . $f, strtoupper($row['codigo_cie_2022']));
 
-        // Gestión 2023
-        $sheet2->setCellValue('K' . $f, intval($row['m_2023']));
-        $sheet2->setCellValue('L' . $f, intval($row['f_2023']));
-        $sheet2->setCellValue('M' . $f, intval($row['t_2023']));
+        // Datos Gestión 2023
+        $sheet->setCellValue('J' . $f, intval($row['nro_casos_2023']));
+        $sheet->setCellValue('K' . $f, strtoupper($row['codigo_cie_2023']));
 
-        // Gestión 2024
-        $sheet2->setCellValue('N' . $f, intval($row['m_2024']));
-        $sheet2->setCellValue('O' . $f, intval($row['f_2024']));
-        $sheet2->setCellValue('P' . $f, intval($row['t_2024']));
+        // Datos Gestión 2024
+        $sheet->setCellValue('L' . $f, intval($row['nro_casos_2024']));
+        $sheet->setCellValue('M' . $f, strtoupper($row['codigo_cie_2024']));
 
-        // Gestión 2025
-        $sheet2->setCellValue('Q' . $f, intval($row['m_2025']));
-        $sheet2->setCellValue('R' . $f, intval($row['f_2025']));
-        $sheet2->setCellValue('S' . $f, intval($row['t_2025']));
+        // Datos Gestión 2025
+        $sheet->setCellValue('N' . $f, intval($row['nro_casos_2025']));
+        $sheet->setCellValue('O' . $f, strtoupper($row['codigo_cie_2025']));
 
-        // Alineación de datos
-        $sheet2->getStyle('A'.$f.':D'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $sheet2->getStyle('E'.$f.':S'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        // Alineación centralizada para los metadatos de control (A-E)
+        $sheet->getStyle('A'.$f.':E'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
         
-        // Formato numérico de millares contables
-        $sheet2->getStyle('E'.$f.':S'.$f)->getNumberFormat()->setFormatCode('#,##0');
-        
-        // Cuadrícula base
-        $sheet2->getStyle('A'.$f.':S'.$f)->applyFromArray($styleData);
-        $sheet2->getRowDimension($f)->setRowHeight(18);
+        // REVISIÓN: Formateo numérico contable de millares aplicado solo a las celdas de conteo de Casos
+        $columnas_casos = array('F', 'H', 'J', 'L', 'N');
+        foreach ($columnas_casos as $c) {
+            $sheet->getStyle($c . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle($c . $f)->getNumberFormat()->setFormatCode('#,##0');
+        }
+
+        // REVISIÓN: Alineación a la izquierda para los códigos y descripciones CIE-10 (G, I, K, M, O)
+        $columnas_cie = array('G', 'I', 'K', 'M', 'O');
+        foreach ($columnas_cie as $c) {
+            $sheet->getStyle($c . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        }
+
+        // Aplicación masiva de bordes a la fila ajustada (De la A a la O)
+        $sheet->getStyle('A'.$f.':O'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
         $f++;
     }
 
-    // Autoajuste dinámico del ancho de columnas para evitar recortes de texto
-    foreach (range('A', 'S') as $col) {
-        $sheet2->getColumnDimension($col)->setAutoSize(true);
+    // 7. REVISIÓN: Autoajuste dinámico limitado estrictamente desde la A hasta la O
+    foreach (range('A', 'O') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
+
+
+  private function _generar_pestaña_infraestructura(&$objPHPExcel, $dist_id, $styles) {
+      $infra_data = $this->model_diagnosticopei->get_infraestructura_por_nivel_consolidado();
+
+      // 3. Inicialización física de la Quinta Hoja del libro Excel
+      $objPHPExcel->createSheet();
+      $objPHPExcel->setActiveSheetIndex(4); // Índice 4 representa la quinta pestaña
+      $sheet = $objPHPExcel->getActiveSheet();
+      $sheet->setTitle('Infraestructura de Salud');
+
+      // 4. Configuración y Estilizado de las Cabeceras (Fila 1 Plano de la A a la M)
+      $headers = array(
+          'A1' => 'ID DIST', 
+          'B1' => 'REGIONAL / DISTRITAL', 
+          'C1' => 'ABREV', 
+          'D1' => 'GESTIÓN', 
+          'E1' => 'CÓD. ACT', 
+          'F1' => 'ESTABLECIMIENTO DE SALUD', 
+          'G1' => 'TIPO', 
+          'H1' => 'NIVEL', 
+          'I1' => 'DIRECCIÓN / UBICACIÓN', 
+          'J1' => 'Nº CONSULTORIOS', 
+          'K1' => 'CONECTIVIDAD INTERNET', 
+          'L1' => 'SITUACIÓN TÉCNICO LEGAL',
+          'M1' => 'ORIGEN REGISTRO'
+      );
+      
+      foreach ($headers as $pos => $text) {
+          $sheet->setCellValue($pos, $text);
+          $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+      }
+      $sheet->getRowDimension(1)->setRowHeight(25); // Alto de fila corporativo
+
+      // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+      $f = 2;
+      foreach ($infra_data as $row) {
+          $sheet->setCellValue('A' . $f, $row['dist_id']);
+          $sheet->setCellValue('B' . $f, strtoupper($row['dist_distrital']));
+          $sheet->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+          $sheet->setCellValue('D' . $f, $row['gestion_pei']);
+          
+          // Si es un centro manual no alineado, mostramos "---" en lugar de código 0
+          $sheet->setCellValue('E' . $f, ($row['act_id'] > 0) ? $row['act_id'] : '---');
+          $sheet->setCellValue('F' . $f, strtoupper($row['nombre_establecimiento']));
+          $sheet->setCellValue('G' . $f, strtoupper($row['tipo_establecimiento']));
+          
+          // Formateo del nivel de atención
+          $nivel_txt = (intval($row['nivel_establecimiento']) > 0) ? intval($row['nivel_establecimiento']) . '° NIVEL' : 'NO ASIGNADO';
+          $sheet->setCellValue('H' . $f, $nivel_txt);
+          
+          $sheet->setCellValue('I' . $f, strtoupper($row['ubicacion']));
+          $sheet->setCellValue('J' . $f, intval($row['nro_consultorios']));
+
+          // === DECODIFICACIÓN INTERACTIVA DE CONECTIVIDAD INTERNET ===
+          $internet_val = trim($row['serv_internet']);
+          $internet_txt = 'SIN REGISTRO';
+          if ($internet_val === '1' || strtolower($internet_val) === 'si') { $internet_txt = 'SÍ'; }
+          elseif ($internet_val === '0' || strtolower($internet_val) === 'no') { $internet_txt = 'NO'; }
+          $sheet->setCellValue('K' . $f, $internet_txt);
+
+          // === DECODIFICACIÓN INTERACTIVA DE SITUACIÓN LEGAL ===
+          $legal_val = trim($row['tipo_situacion']);
+          $legal_txt = 'SIN REGISTRO';
+          if ($legal_val === '1' || strtolower($legal_val) === 'propia') { $legal_txt = 'PROPIA (CNS)'; }
+          elseif ($legal_val === '2' || strtolower($legal_val) === 'alquilado') { $legal_txt = 'ALQUILADO'; }
+          elseif ($legal_val === '3' || strtolower($legal_val) === 'otros') { $legal_txt = 'COMODATO / OTROS'; }
+          $sheet->setCellValue('L' . $f, $legal_txt);
+
+          // Clasificación de la procedencia del registro
+          $sheet->setCellValue('M' . $f, strtoupper($row['descripcion_infra']));
+
+          // --- APLICACIÓN DE ALINEACIONES ESPECÍFICAS Y MAQUETACIÓN ---
+          // Centrado para códigos, gestiones, niveles y conectividad (A-E, G-H, K-M)
+          $sheet->getStyle('A'.$f.':E'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+          $sheet->getStyle('G'.$f.':H'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+          $sheet->getStyle('K'.$f.':M'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+          
+          // Alineación a la derecha y formato de millares para número de consultorios (Columna J)
+          $sheet->getStyle('J' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+          $sheet->getStyle('J' . $f)->getNumberFormat()->setFormatCode('#,##0');
+
+          // Alineación a la izquierda con sangría para nombres largos y direcciones (F, I)
+          $sheet->getStyle('F' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+          $sheet->getStyle('I' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+
+          // Aplicamos la cuadrícula de datos e incrementamos la fila
+          $sheet->getStyle('A'.$f.':M'.$f)->applyFromArray($styles['data']);
+          $sheet->getRowDimension($f)->setRowHeight(18);
+          $f++;
+      }
+
+      // 6. Autoajuste dinámico de ancho elástico limitado de la A a la M (Evita el error ###)
+      foreach (range('A', 'M') as $col) {
+          $sheet->getColumnDimension($col)->setAutoSize(true);
+      }
+  }
+
+
+
+  private function _generar_pestaña_camas(&$objPHPExcel, $dist_id, $styles) {
+    $camas_data = $this->model_diagnosticopei->get_diagnostico_camas_consolidado();
+
+    // 2. Inicialización física de la Sexta Hoja del libro Excel
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(5); // Índice 5 representa la sexta pestaña
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Diagnóstico de Camas');
+
+    // 3. CONFIGURACIÓN DE FILA 1 (Encabezados Superiores Combinados Fijos)
+    $sheet->mergeCells('A1:A2')->setCellValue('A1', 'ID DIST');
+    $sheet->mergeCells('B1:B2')->setCellValue('B1', 'REGIONAL / DISTRITAL');
+    $sheet->mergeCells('C1:C2')->setCellValue('C1', 'ABREV');
+    $sheet->mergeCells('D1:D2')->setCellValue('D1', 'CÓD. ACT');
+    $sheet->mergeCells('E1:E2')->setCellValue('E1', 'ESTABLECIMIENTO HOSPITALARIO');
+    $sheet->mergeCells('F1:F2')->setCellValue('F1', 'NIVEL ATENCIÓN');
+
+    // Combinación horizontal elástica de bloques anuales (4 celdas por año)
+    $sheet->mergeCells('G1:J1')->setCellValue('G1', 'GESTIÓN 2021');
+    $sheet->mergeCells('K1:N1')->setCellValue('K1', 'GESTIÓN 2022');
+    $sheet->mergeCells('O1:R1')->setCellValue('O1', 'GESTIÓN 2023');
+    $sheet->mergeCells('S1:V1')->setCellValue('S1', 'GESTIÓN 2024');
+    $sheet->mergeCells('W1:Z1')->setCellValue('W1', 'GESTIÓN 2025');
+
+    // Aplicar estilos a la primera fila macro (De la A a la Z)
+    foreach (range('A', 'Z') as $col) {
+        $sheet->getStyle($col . '1')->applyFromArray($styles['header']);
+    }
+    $sheet->getRowDimension(1)->setRowHeight(24);
+
+    // 4. CONFIGURACIÓN DE FILA 2 (Subcabeceras Técnicas del Desglose Hospitalario)
+    $subHeaders = array(
+        'G2'=>'CAMAS', 'H2'=>'% OCUP.', 'I2'=>'EST. MEDIA', 'J2'=>'GIRO CAMA',
+        'K2'=>'CAMAS', 'L2'=>'% OCUP.', 'M2'=>'EST. MEDIA', 'N2'=>'GIRO CAMA',
+        'O2'=>'CAMAS', 'P2'=>'% OCUP.', 'Q2'=>'EST. MEDIA', 'R2'=>'GIRO CAMA',
+        'S2'=>'CAMAS', 'T2'=>'% OCUP.', 'U2'=>'EST. MEDIA', 'V2'=>'GIRO CAMA',
+        'W2'=>'CAMAS', 'X2'=>'% OCUP.', 'Y2'=>'EST. MEDIA', 'Z2'=>'GIRO CAMA'
+    );
+    foreach ($subHeaders as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['subheader']);
+    }
+    $sheet->getRowDimension(2)->setRowHeight(18);
+
+    // 5. Volcado e Inyección de datos a partir de la Fila 3
+    $f = 3;
+    foreach ($camas_data as $row) {
+        $sheet->setCellValue('A' . $f, $row['dist_id']);
+        $sheet->setCellValue('B' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('D' . $f, $row['act_id']);
+        $sheet->setCellValue('E' . $f, strtoupper($row['establecimiento'])); // Alineado a tu columna act_descripcion
+        
+        $nivel_txt = (intval($row['nivel']) > 0) ? intval($row['nivel']) . '° NIVEL' : 'NO ASIGNADO';
+        $sheet->setCellValue('F' . $f, $nivel_txt);
+
+        // --- MAPEO TRANSACCIONAL DE BLOQUES NUMÉRICOS POR GESTIÓN ---
+        
+        // Gestión 2021
+        $sheet->setCellValue('G' . $f, intval($row['camas_2021']));
+        $sheet->setCellValue('H' . $f, floatval($row['ocupacion_2021']));
+        $sheet->setCellValue('I' . $f, floatval($row['estancia_2021']));
+        $sheet->setCellValue('J' . $f, floatval($row['giro_2021']));
+
+        // Gestión 2022
+        $sheet->setCellValue('K' . $f, intval($row['camas_2022']));
+        $sheet->setCellValue('L' . $f, floatval($row['ocupacion_2022']));
+        $sheet->setCellValue('M' . $f, floatval($row['estancia_2022']));
+        $sheet->setCellValue('N' . $f, floatval($row['giro_2022']));
+
+        // Gestión 2023
+        $sheet->setCellValue('O' . $f, intval($row['camas_2023']));
+        $sheet->setCellValue('P' . $f, floatval($row['ocupacion_2023']));
+        $sheet->setCellValue('Q' . $f, floatval($row['estancia_2023']));
+        $sheet->setCellValue('R' . $f, floatval($row['giro_2023']));
+
+        // Gestión 2024
+        $sheet->setCellValue('S' . $f, intval($row['camas_2024']));
+        $sheet->setCellValue('T' . $f, floatval($row['ocupacion_2024']));
+        $sheet->setCellValue('U' . $f, floatval($row['estancia_2024']));
+        $sheet->setCellValue('V' . $f, floatval($row['giro_2024']));
+
+        // Gestión 2025
+        $sheet->setCellValue('W' . $f, intval($row['camas_2025']));
+        $sheet->setCellValue('X' . $f, floatval($row['ocupacion_2025']));
+        $sheet->setCellValue('Y' . $f, floatval($row['estancia_2025']));
+        $sheet->setCellValue('Z' . $f, floatval($row['giro_2025']));
+
+        // Maquetación y alineaciones (A-F Centrado)
+        $sheet->getStyle('A'.$f.':F'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        
+        // Formateo y alineación a la derecha de todo el bloque analítico de datos (Columna G hasta la Z)
+        $sheet->getStyle('G'.$f.':Z'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        
+        // Configuración estructural de máscaras contables por bloque anual
+        $columnas_año = array(
+            array('int'=>'G', 'dec'=>array('H','I','J')), // 2021
+            array('int'=>'K', 'dec'=>array('L','M','N')), // 2022
+            array('int'=>'O', 'dec'=>array('P','Q','R')), // 2023
+            array('int'=>'S', 'dec'=>array('T','U','V')), // 2024
+            array('int'=>'W', 'dec'=>array('X','Y','Z'))  // 2025
+        );
+        
+        foreach ($columnas_año as $bloque) {
+            // Formato entero para número físico de Camas
+            $sheet->getStyle($bloque['int'] . $f)->getNumberFormat()->setFormatCode('#,##0');
+            // Formato flotante de dos decimales para indicadores de rendimiento clínico
+            foreach ($bloque['dec'] as $col_dec) {
+                $sheet->getStyle($col_dec . $f)->getNumberFormat()->setFormatCode('#,##0.00');
+            }
+        }
+
+        // Aplicación estructural de bordes y altos
+        $sheet->getStyle('A'.$f.':Z'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
     }
 
-    // Descarga formal del libro de Excel unificado
-    $filename = ($dist_id > 0) ? "Consolidado_PEI_Regional_" . $dist_id : "Consolidado_Nacional_PEI";
-    
-    header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment;filename="' . $filename . '.xls"');
-    header('Cache-Control: max-age=0');
-    
-    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-    $objWriter->save('php://output');
-    exit;
-}
+    // 6. Autoajuste dinámico de ancho elástico limitado de la A a la Z
+    foreach (range('A', 'Z') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
 
+
+  private function _generar_pestaña_equipos(&$objPHPExcel, $dist_id, $styles) {
+    // 1. Filtro dinámico si el administrador nacional selecciona una regional específica
+    $equipos_data = $this->model_diagnosticopei->get_diagnostico_equipamiento_consolidado();
+
+    // 3. Inicialización física de la Séptima Hoja del libro Excel
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(6); // Índice 6 representa la séptima pestaña
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Equipamiento Médico');
+
+    // 4. Configuración y Estilizado de las Cabeceras (Fila 1 Plana de la A a la K)
+    $headers = array(
+        'A1' => 'Nº',
+        'B1' => 'ID DIST', 
+        'C1' => 'REGIONAL / DISTRITAL', 
+        'D1' => 'ABREV', 
+        'E1' => 'GESTIÓN PEI',
+        'F1' => 'CÓD. ACT',
+        'G1' => 'ESTABLECIMIENTO DE SALUD',
+        'H1' => 'SERVICIO / ÁREA',
+        'I1' => 'DETALLE EQUIPO MAYOR',
+        'J1' => 'PRECIO REFERENCIAL (Bs.)'
+    );
+    
+    foreach ($headers as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+    }
+    $sheet->getRowDimension(1)->setRowHeight(25); // Alto de celda corporativo para títulos
+
+    // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+    $f = 2;
+    foreach ($equipos_data as $row) {
+        $sheet->setCellValue('A' . $f, intval($row['nro']));
+        $sheet->setCellValue('B' . $f, $row['dist_id']);
+        $sheet->setCellValue('C' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('D' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('E' . $f, $row['gestion_pei']);
+        $sheet->setCellValue('F' . $f, $row['act_id']);
+        $sheet->setCellValue('G' . $f, strtoupper($row['establecimiento_completo']));
+        $sheet->setCellValue('H' . $f, strtoupper($row['servicio']));
+        $sheet->setCellValue('I' . $f, strtoupper($row['detalle_equipo']));
+        
+        // Inyectamos como valor flotante nativo para permitir sumatorias en Excel
+        $sheet->setCellValue('J' . $f, floatval($row['precio_referencial']));
+
+        // --- APLICACIÓN DE ALINEACIONES ESPECÍFICAS Y MAQUETACIÓN ---
+        // Centrado para números correlativos, códigos e identificadores fijos (A-B, D-F)
+        $sheet->getStyle('A'.$f.':B'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D'.$f.':F'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        
+        // Alineación a la derecha con formato monetario para el Precio Referencial (Columna J)
+        $sheet->getStyle('J' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('J' . $f)->getNumberFormat()->setFormatCode('#,##0.00');
+
+        // Alineación a la izquierda con sangría para nombres de establecimientos, servicios y descripciones (C, G, H, I)
+        $sheet->getStyle('C' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('G' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('H' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('I' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+
+        // Aplicamos la cuadrícula de datos e incrementamos la fila
+        $sheet->getStyle('A'.$f.':J'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // 6. Autoajuste dinámico de ancho elástico limitado de la A a la J (Evita el error ###)
+    foreach (range('A', 'J') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
+
+
+  private function _generar_pestaña_rrhh(&$objPHPExcel, $dist_id, $styles) {
+    $rrhh_data = $this->model_diagnosticopei->get_diagnostico_rrhh_consolidado();
+
+    // 3. Inicialización física de la Octava Hoja del libro Excel
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(7); // Índice 7 representa la octava pestaña
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Recursos Humanos');
+
+    // 4. Configuración y Estilizado de las Cabeceras (Fila 1 Plana de la A a la W)
+    $headers = array(
+        'A1' => 'ID DIST', 'B1' => 'REGIONAL / DISTRITAL', 'C1' => 'ABREV', 'D1' => 'GESTIÓN',
+        'E1' => 'CATEGORÍA RRHH', 'F1' => 'MÉDICOS', 'G1' => 'ODONTÓLOGOS', 'H1' => 'FARMACÉUTICOS',
+        'I1' => 'LABORATORISTAS', 'J1' => 'OTROS PROFESIONALES', 'K1' => 'NUTRICIONISTAS', 'L1' => 'TRABAJO SOCIAL',
+        'M1' => 'JEFE/SUPERV. ENFERMERÍA', 'N1' => 'LIC. GRAD. ENFERMERÍA', 'O1' => 'AUX. ENFERMERÍA', 'P1' => 'PERS. ADM. CENTRAL',
+        'Q1' => 'PERS. ADM. SALUD', 'R1' => 'PERS. ADM. TÉCNICO', 'S1' => 'PERS. ADM. AUXILIAR', 'T1' => 'CHOFERES',
+        'U1' => 'ARTESANOS', 'V1' => 'TRABAJADORES MANUALES', 'W1' => 'TOTAL PERSONAL'
+    );
+    
+    foreach ($headers as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+    }
+    $sheet->getRowDimension(1)->setRowHeight(25); // Alto ejecutivo para cabeceras
+
+    // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+    $f = 2;
+    foreach ($rrhh_data as $row) {
+        $sheet->setCellValue('A' . $f, $row['dist_id']);
+        $sheet->setCellValue('B' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('C' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('D' . $f, $row['gestion']);
+        $sheet->setCellValue('E' . $f, strtoupper($row['categoria']));
+        
+        // Mapeo dinámico forzando enteros puros para habilitar sumas contables nativas
+        $sheet->setCellValue('F' . $f, intval($row['nro_medicos']));
+        $sheet->setCellValue('G' . $f, intval($row['nro_odontologos']));
+        $sheet->setCellValue('H' . $f, intval($row['nro_farmaceuticos']));
+        $sheet->setCellValue('I' . $f, intval($row['nro_laboratoristas']));
+        $sheet->setCellValue('J' . $f, intval($row['nro_otros_prof']));
+        $sheet->setCellValue('K' . $f, intval($row['nro_nutricionistas']));
+        $sheet->setCellValue('L' . $f, intval($row['nro_trabajo_social']));
+        $sheet->setCellValue('M' . $f, intval($row['nro_jefe_superv_enf']));
+        $sheet->setCellValue('N' . $f, intval($row['nro_lic_grad_enf']));
+        $sheet->setCellValue('O' . $f, intval($row['nro_aux_enf']));
+        $sheet->setCellValue('P' . $f, intval($row['nro_pers_adm']));
+        $sheet->setCellValue('Q' . $f, intval($row['nro_pers_adm_salud']));
+        $sheet->setCellValue('R' . $f, intval($row['nro_pers_adm_tec']));
+        $sheet->setCellValue('S' . $f, intval($row['nro_pers_adm_aux']));
+        $sheet->setCellValue('T' . $f, intval($row['nro_pers_adm_chof']));
+        $sheet->setCellValue('U' . $f, intval($row['nro_pers_adm_artesanos']));
+        $sheet->setCellValue('V' . $f, intval($row['nro_pers_adm_trab_manual']));
+        $sheet->setCellValue('W' . $f, intval($row['total']));
+
+        // --- MAQUETACIÓN DE ALINEACIONES ---
+        // Centrado para identificadores fijos, gestiones y categorías base (A-D)
+        $sheet->getStyle('A'.$f.':D'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        
+        // Alineación a la derecha y formato de millares para todas las columnas de personal (F-W)
+        $sheet->getStyle('F'.$f.':W'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('F'.$f.':W'.$f)->getNumberFormat()->setFormatCode('#,##0');
+
+        // Aplicamos la cuadrícula de datos e incrementamos la fila operativa
+        $sheet->getStyle('A'.$f.':W'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // 6. Autoajuste dinámico de ancho elástico (De la columna A hasta la W)
+    foreach (range('A', 'W') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
+
+
+
+  private function _generar_pestaña_compra_servicios(&$objPHPExcel, $dist_id, $styles) {
+    $compra_data = $this->model_diagnosticopei->get_diagnostico_compra_servicios_consolidado();
+
+    // 3. Inicialización física de la Novena Hoja del libro Excel
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(8); // Índice 8 representa la novena pestaña
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Compra de Servicios');
+
+    // 4. Configuración y Estilizado de las Cabeceras (Fila 1 Plana de la A a la K)
+    $headers = array(
+        'A1' => 'Nº',
+        'B1' => 'ID DIST', 
+        'C1' => 'REGIONAL / DISTRITAL', 
+        'D1' => 'ABREV', 
+        'E1' => 'GESTIÓN',
+        'F1' => 'POSICIÓN',
+        'G1' => 'SERVICIO CONTRATADO',
+        'H1' => 'Nº ATENCIONES',
+        'I1' => 'COSTO TOTAL (Bs.)',
+        'J1' => 'OBSERVACIONES'
+    );
+    
+    foreach ($headers as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+    }
+    $sheet->getRowDimension(1)->setRowHeight(25); // Alto ejecutivo
+
+    // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+    $f = 2;
+    $nro=0;
+    foreach ($compra_data as $row) {
+        $nro++;
+        $sheet->setCellValue('A' . $f, intval($nro));
+        $sheet->setCellValue('B' . $f, $row['dist_id']);
+        $sheet->setCellValue('C' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('D' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('E' . $f, $row['gestion']);
+        $sheet->setCellValue('F' . $f, intval($row['nro_fila']));
+        $sheet->setCellValue('G' . $f, strtoupper($row['serv_contratado']));
+        
+        // Conversión a tipos de datos nativos numéricos para habilitar fórmulas
+        $sheet->setCellValue('H' . $f, intval($row['nro_atenciones']));
+        $sheet->setCellValue('I' . $f, floatval($row['costo_total']));
+        $sheet->setCellValue('J' . $f, strtoupper($row['cservicios_observaciones']));
+
+        // --- MAQUETACIÓN DE ALINEACIONES ---
+        // Centrado para números correlativos, llaves, gestiones y posiciones (A-B, D-F)
+        $sheet->getStyle('A'.$f.':B'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D'.$f.':F'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        
+        // Alineación a la derecha y máscaras contables para el bloque financiero (H, I)
+        $sheet->getStyle('H' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('H' . $f)->getNumberFormat()->setFormatCode('#,##0');
+        
+        $sheet->getStyle('I' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('I' . $f)->getNumberFormat()->setFormatCode('#,##0.00');
+
+        // Alineación a la izquierda para campos de texto descriptivos (C, G, J)
+        $sheet->getStyle('C' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('G' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('J' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+
+        // Aplicamos la cuadrícula de datos e incrementamos la fila operativa
+        $sheet->getStyle('A'.$f.':J'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // 6. Autoajuste dinámico de ancho elástico limitado de la A a la J
+    foreach (range('A', 'J') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
+
+
+
+  private function _generar_pestaña_presupuestos(&$objPHPExcel, $dist_id, $styles) {
+    $presupuesto_data = $this->model_diagnosticopei->get_diagnostico_presupuestos_consolidado();
+
+    // 3. Inicialización física de la Décima Hoja del libro Excel
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(9); // Índice 9 representa la décima pestaña
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Presupuestos');
+
+    // 4. Configuración y Estilizado de las Cabeceras (Fila 1 Plana de la A a la M)
+    $headers = array(
+        'A1' => 'Nº',
+        'B1' => 'ID DIST', 
+        'C1' => 'REGIONAL / DISTRITAL', 
+        'D1' => 'ABREV', 
+        'E1' => 'GESTIÓN',
+        'F1' => 'ING. PROPIOS PROG.',
+        'G1' => 'ING. PROPIOS EJEC.',
+        'H1' => 'REC. FINANC. PROG.',
+        'I1' => 'REC. FINANC. EJEC.',
+        'J1' => 'TOTAL ING. EJEC.',
+        'K1' => 'GASTOS PROG.',
+        'L1' => 'GASTOS EJEC.',
+        'M1' => 'RDO. DÉFICIT/SUPERÁVIT'
+    );
+    
+    foreach ($headers as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+    }
+    $sheet->getRowDimension(1)->setRowHeight(25); // Alto ejecutivo para cabeceras
+
+    // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+    $f = 2;
+    $nro=0;
+    foreach ($presupuesto_data as $row) {
+      $nro++;
+        $sheet->setCellValue('A' . $f, intval($nro));
+        $sheet->setCellValue('B' . $f, $row['dist_id']);
+        $sheet->setCellValue('C' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('D' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('E' . $f, $row['gestion']);
+        
+        // Conversión estricta a flotantes nativos para permitir balances y sumas directas
+        $sheet->setCellValue('F' . $f, floatval($row['ingresos_propios_programados']));
+        $sheet->setCellValue('G' . $f, floatval($row['ingresos_propios_ejecutados']));
+        $sheet->setCellValue('H' . $f, floatval($row['recursos_financieros_programados']));
+        $sheet->setCellValue('I' . $f, floatval($row['recursos_financieros_ejecutados']));
+        $sheet->setCellValue('J' . $f, floatval($row['total_ingresos_ejecutados']));
+        $sheet->setCellValue('K' . $f, floatval($row['gastos_programados']));
+        $sheet->setCellValue('L' . $f, floatval($row['gastos_ejecutados']));
+        $sheet->setCellValue('M' . $f, floatval($row['deficit_superavit']));
+
+        // --- MAQUETACIÓN DE ALINEACIONES ---
+        // Centrado para números correlativos, llaves y gestiones (A-B, D-E)
+        $sheet->getStyle('A'.$f.':B'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D'.$f.':E'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        
+        // Alineación a la izquierda para campos de texto (C)
+        $sheet->getStyle('C' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+
+        // Alineación a la derecha y formato monetario con dos decimales para todo el bloque presupuestario (F a M)
+        $sheet->getStyle('F'.$f.':M'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('F'.$f.':M'.$f)->getNumberFormat()->setFormatCode('#,##0.00');
+
+        // Aplicamos la cuadrícula de datos e incrementamos la fila operativa
+        $sheet->getStyle('A'.$f.':M'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // 6. Autoajuste dinámico de ancho elástico limitado de la A a la M
+    foreach (range('A', 'M') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
+
+
+  private function _generar_pestaña_reembolsos(&$objPHPExcel, $dist_id, $styles) {
+    $reembolsos_data = $this->model_diagnosticopei->get_diagnostico_reembolsos_consolidado();
+
+    // 3. Inicialización física de la Undécima Hoja del libro Excel
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(10); // Índice 10 representa la undécima pestaña
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Reembolsos');
+
+    // 4. Configuración y Estilizado de las Cabeceras (Fila 1 Plana de la A a la J)
+    $headers = array(
+        'A1' => 'Nº',
+        'B1' => 'ID DIST', 
+        'C1' => 'REGIONAL / DISTRITAL', 
+        'D1' => 'ABREV', 
+        'E1' => 'GESTIÓN',
+        'F1' => 'REEMB. MEDICAMENTOS',
+        'G1' => 'REEMB. LABORATORIO',
+        'H1' => 'REEMB. IMAGENOLOGÍA',
+        'I1' => 'REEMB. OTROS CONCEPTOS',
+        'J1' => 'TOTAL REEMBOLSOS'
+    );
+    
+    foreach ($headers as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+    }
+    $sheet->getRowDimension(1)->setRowHeight(25); // Alto de celda corporativo para títulos
+
+    // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+    $f = 2;
+    $nro=0;
+    foreach ($reembolsos_data as $row) {
+      $nro++;
+        $sheet->setCellValue('A' . $f, intval($nro));
+        $sheet->setCellValue('B' . $f, $row['dist_id']);
+        $sheet->setCellValue('C' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('D' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('E' . $f, $row['gestion']);
+        
+        // Conversión a flotantes numéricos puros para permitir sumatorias directas en Excel
+        $sheet->setCellValue('F' . $f, floatval($row['reemb_concep_medicamentos']));
+        $sheet->setCellValue('G' . $f, floatval($row['reemb_concep_laboratorio']));
+        $sheet->setCellValue('H' . $f, floatval($row['reemb_concep_imagenologia']));
+        $sheet->setCellValue('I' . $f, floatval($row['reemb_otros_conceptos']));
+        $sheet->setCellValue('J' . $f, floatval($row['total_reembolsos']));
+
+        // --- MAQUETACIÓN DE ALINEACIONES ---
+        // Centrado para números correlativos, llaves y gestiones (A-B, D-E)
+        $sheet->getStyle('A'.$f.':B'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D'.$f.':E'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        
+        // Alineación a la izquierda para campos de texto descriptivos (C)
+        $sheet->getStyle('C' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+
+        // Alineación a la derecha y formato de millares con dos decimales para el bloque financiero (F a J)
+        $sheet->getStyle('F'.$f.':J'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('F'.$f.':J'.$f)->getNumberFormat()->setFormatCode('#,##0.00');
+
+        // Aplicamos la cuadrícula de datos e incrementamos la fila operativa
+        $sheet->getStyle('A'.$f.':J'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // 6. Autoajuste dinámico de ancho elástico limitado de la A a la J (Evita el error ###)
+    foreach (range('A', 'J') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
+
+
+  private function _generar_pestaña_ambulancias(&$objPHPExcel, $dist_id, $styles) {
+    $ambulancias_data = $this->model_diagnosticopei->get_detalle_ambulancias_consolidado();
+
+    // 3. Inicialización física de la Duodécima Hoja del libro Excel (Índice 11)
+    $objPHPExcel->createSheet();
+    $objPHPExcel->setActiveSheetIndex(11); 
+    $sheet = $objPHPExcel->getActiveSheet();
+    $sheet->setTitle('Inventario Ambulancias');
+
+    // 4. Configuración y Estilizado de las Cabeceras (Fila 1 Plana de la A a la I)
+    $headers = array(
+        'A1' => 'Nº',
+        'B1' => 'ID DIST', 
+        'C1' => 'REGIONAL / DISTRITAL', 
+        'D1' => 'ABREV', 
+        'E1' => 'NRO. PLACA',
+        'F1' => 'AÑO ADJUDICACIÓN',
+        'G1' => 'ESTADO CONSERVACIÓN',
+        'H1' => 'SITUACIÓN LEGAL',
+        'I1' => 'ESTABLECIMIENTO ASIGNADO'
+    );
+    
+    foreach ($headers as $pos => $text) {
+        $sheet->setCellValue($pos, $text);
+        $sheet->getStyle($pos)->applyFromArray($styles['header']); 
+    }
+    $sheet->getRowDimension(1)->setRowHeight(25); 
+
+    // 5. Volcado e Inyección de datos a las celdas (A partir de la fila 2)
+    $f = 2;
+    $nro=0;
+    foreach ($ambulancias_data as $row) {
+      $nro++;
+        $sheet->setCellValue('A' . $f, intval($nro));
+        $sheet->setCellValue('B' . $f, $row['dist_id']);
+        $sheet->setCellValue('C' . $f, strtoupper($row['regional']));
+        $sheet->setCellValue('D' . $f, strtoupper($row['abreviatura']));
+        $sheet->setCellValue('E' . $f, strtoupper($row['placa']));
+        
+        // El año de adjudicación viaja como entero numérico puro
+        $sheet->setCellValue('F' . $f, ($row['anio_adjudicacion'] > 0) ? intval($row['anio_adjudicacion']) : '---');
+        $sheet->setCellValue('G' . $f, strtoupper($row['estado_ambulancia']));
+        $sheet->setCellValue('H' . $f, strtoupper($row['situacion_ambulancia']));
+        $sheet->setCellValue('I' . $f, strtoupper($row['establecimiento']));
+
+        // --- MAQUETACIÓN DE ALINEACIONES ---
+        // Centrado para identificadores, correlativos, abreviaturas y placas (A-B, D-F)
+        $sheet->getStyle('A'.$f.':B'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D'.$f.':F'.$f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        
+        // Alineación a la izquierda para campos de texto descriptivos (C, G, H, I)
+        $sheet->getStyle('C' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('G' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('H' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('I' . $f)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+
+        // Aplicamos la cuadrícula de datos e incrementamos la fila operativa
+        $sheet->getStyle('A'.$f.':I'.$f)->applyFromArray($styles['data']);
+        $sheet->getRowDimension($f)->setRowHeight(18);
+        $f++;
+    }
+
+    // 6. Autoajuste dinámico de ancho elástico limitado de la A a la I (Evita el error ###)
+    foreach (range('A', 'I') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+  }
 
 
 
@@ -1731,21 +2400,21 @@ public function guarda_detalle_automatica_form2() {
 
     ///// Guarda formulario 5
     public function guarda_produccion_cama_automatica() {
-        // 1. Verificación de seguridad AJAX
+        // // 1. Verificación de seguridad AJAX
         if (!$this->input->is_ajax_request()) {
             show_404();
             return;
         }
 
-        // 2. Recepción de parámetros
+        // // 2. Recepción de parámetros
         $form_id = $this->input->post('form_id');
         $act_id  = $this->input->post('act_id');
         $gestion = $this->input->post('gestion');
         $campo   = $this->input->post('campo');
         $valor   = $this->input->post('valor');
 
-        // 3. Validación de datos en el servidor
-         // VALIDACIÓN EN EL SERVIDOR
+        // // 3. Validación de datos en el servidor
+        //  // VALIDACIÓN EN EL SERVIDOR
         if ($campo == 'ocupacion') {
             if (!is_numeric($valor) || $valor < 0) {
                 $valor = 0;
@@ -1757,7 +2426,7 @@ public function guarda_detalle_automatica_form2() {
             $valor = (is_numeric($valor) && $valor >= 0) ? $valor : 0;
         }
 
-        // 4. ASEGURAR CABECERA (formularion5_produccion_cama)
+        // // 4. ASEGURAR CABECERA (formularion5_produccion_cama)
         $this->db->where(array('form_id' => $form_id, 'g_id' => $gestion));
         $cabecera = $this->db->get('formularion5_produccion_cama')->row();
 
@@ -1768,12 +2437,12 @@ public function guarda_detalle_automatica_form2() {
             $this->db->insert('formularion5_produccion_cama', array(
                 'form_id' => $form_id,
                 'g_id'    => $gestion,
-                'form3_estado' => 1
+                'form5_estado' => 1
             ));
             $det5_id = $this->db->insert_id();
         }
 
-        // 5. GUARDADO DEL DETALLE (Upsert eficiente)
+        // // 5. GUARDADO DEL DETALLE (Upsert eficiente)
         // Intentamos actualizar primero
         $this->db->where(array('det5_id' => $det5_id, 'act_id' => $act_id));
         $this->db->update('detalle_form5_produccion_cama', array($campo => $valor));

@@ -1969,7 +1969,7 @@ class lib_diagnostico_pei extends CI_Controller{
                                   <tr style="text-align:center; background-color: #fafafa; font-size: 11px; color: #666;">
                                       <th style="width:10%;">GESTIÓN</th>
                                       <th style="width:20%;">NRO. DE CAMAS</th>
-                                      <th style="width:20%;">% DE OCUPACIÓN</th>
+                                      <th style="width:20%;">(%) DE OCUPACIÓN</th>
                                       <th style="width:25%;">ESTANCIA MEDIA</th>
                                       <th style="width:25%;">GIRO CAMA</th>
                                   </tr>
@@ -2124,6 +2124,7 @@ class lib_diagnostico_pei extends CI_Controller{
                             valor:   valor
                         },
                         success: function(resp) {
+
                             if (resp.status == "success") {
                                 $el.css({"border-color": "#28a745", "background-color": "#fafffa"});
                                 $("#toast-notificacion").stop(true, true).fadeIn(100).delay(600).fadeOut(100);

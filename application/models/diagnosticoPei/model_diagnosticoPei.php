@@ -351,7 +351,7 @@ class model_diagnosticoPei extends CI_Model {
 
 
 
-    /*--- Detalle formulario N3 ---*/
+    /*--- Detalle formulario N3 Perfil ---*/
     public function get_formulario_N3($dist_id,$tipo_perfil_cat){
         $sql = "
             WITH rango_pei AS (
@@ -414,7 +414,7 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
-    /*--- Detalle formulario N3 - Consolidado---*/
+    /*--- Detalle formulario N3 Perfil - Consolidado---*/
     public function get_formulario_N3_consolidado(){
         $sql = "
             WITH rango_pei AS (
@@ -712,6 +712,88 @@ class model_diagnosticoPei extends CI_Model {
         return $query->result_array();
     }
 
+    /*--- Detalle formulario N6 Diagnostico Camas (Establecimientos de 2 y 3 nivel) Consolidado ---*/
+    public function get_diagnostico_camas_consolidado(){
+    $sql = "
+            WITH rango_pei AS (
+                -- 1. Obtenemos el PEI activo y el rango de años
+                SELECT pei_id, g_id_inicio, g_id_fin 
+                FROM Diagnostico_pei 
+                WHERE estado = 1 
+                LIMIT 1
+            ),
+            distritales AS (
+                -- 2. Universo de regionales activas (Excluyendo dist_id 0 y dist_id 22)
+                SELECT dist_id, dist_distrital, abrev 
+                FROM public._distritales 
+                WHERE dist_estado = 1 AND dist_id > 0 AND dist_id <> 22
+            ),
+            establecimientos_universo AS (
+                -- 3. Universo de hospitales de 2do y 3er nivel vinculados a sus distritales reales
+                SELECT v.act_id, v.act_descripcion, v.tipo, v.nivel, d.dist_id, d.dist_distrital, d.abrev AS abreviatura, r.pei_id
+                FROM public.vlista_establecimientos_salud v
+                CROSS JOIN rango_pei r
+                INNER JOIN distritales d ON d.dist_id = v.dist_id
+                WHERE v.aper_gestion = r.g_id_fin
+                  AND v.tn_id IN (2,3) -- Filtro estricto de Segundo y Tercer Nivel
+            )
+            SELECT 
+                -- Genera el número correlativo nacional unificado para la grilla plana de camas
+                ROW_NUMBER() OVER(ORDER BY e.dist_id ASC, e.nivel ASC, e.act_descripcion ASC) AS nro,
+                
+                e.dist_id,
+                e.dist_distrital AS regional,
+                e.abreviatura,
+                f.form_id,
+                
+                e.act_id,
+                CONCAT(e.tipo, ' ', e.act_descripcion) AS establecimiento,
+                e.nivel,
+                
+                -- Gestión 2021
+                COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.nro_camas END), 0) AS camas_2021,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.ocupacion END), 0.00) AS ocupacion_2021,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.nro_estancia_media END), 0.00) AS estancia_2021,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2021 THEN d5.nro_giro_cama END), 0.00) AS giro_2021,
+                
+                -- Gestión 2022
+                COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.nro_camas END), 0) AS camas_2022,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.ocupacion END), 0.00) AS ocupacion_2022,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.nro_estancia_media END), 0.00) AS estancia_2022,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2022 THEN d5.nro_giro_cama END), 0.00) AS giro_2022,
+
+                -- Gestión 2023
+                COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.nro_camas END), 0) AS camas_2023,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.ocupacion END), 0.00) AS ocupacion_2023,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.nro_estancia_media END), 0.00) AS estancia_2023,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2023 THEN d5.nro_giro_cama END), 0.00) AS giro_2023,
+
+                -- Gestión 2024
+                COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.nro_camas END), 0) AS camas_2024,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.ocupacion END), 0.00) AS ocupacion_2024,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.nro_estancia_media END), 0.00) AS estancia_2024,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2024 THEN d5.nro_giro_cama END), 0.00) AS giro_2024,
+
+                -- Gestión 2025
+                COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.nro_camas END), 0) AS camas_2025,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.ocupacion END), 0.00) AS ocupacion_2025,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.nro_estancia_media END), 0.00) AS estancia_2025,
+                COALESCE(MAX(CASE WHEN det5.g_id = 2025 THEN d5.nro_giro_cama END), 0.00) AS giro_2025
+
+            FROM establecimientos_universo e
+            -- LEFT JOIN: Vincula el formulario diagnóstico maestro respetando la herencia regional estricta
+            LEFT JOIN formulario_diagnostico_pei f ON f.dist_id = e.dist_id AND f.pei_id = e.pei_id
+            -- LEFT JOIN: Conecta con la tabla de producción anual de camas
+            LEFT JOIN formularion5_produccion_cama det5 ON det5.form_id = f.form_id
+            -- LEFT JOIN 1 a Muchos: Extrae las métricas del detalle indexadas por el act_id del hospital
+            LEFT JOIN detalle_form5_produccion_cama d5 ON d5.det5_id = det5.det5_id AND d5.act_id = e.act_id
+            GROUP BY e.dist_id, e.dist_distrital, e.abreviatura, e.act_id, e.act_descripcion, e.tipo, e.nivel, f.form_id
+            ORDER BY e.dist_id ASC, e.nivel ASC, e.act_descripcion ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
 
     /*--- Detalle formulario N7 Diagnostico Equipamiento (Establecimientos)---*/
     public function get_diagnostico_equipamiento($dist_id){
@@ -748,6 +830,62 @@ class model_diagnosticoPei extends CI_Model {
     }
 
 
+    /*--- Detalle formulario N7 Diagnostico Equipamiento (Establecimientos) Consolidado---*/
+    public function get_diagnostico_equipamiento_consolidado(){
+    $sql = "
+            WITH rango_pei AS (
+            -- 1. Identificamos el PEI activo y su gestión final de corte (ej. 2025)
+            SELECT pei_id, g_id_fin 
+            FROM Diagnostico_pei 
+            WHERE estado = 1 
+            LIMIT 1
+        ),
+        distritales_universo AS (
+            -- 2. Universo de regionales de salud activas (Excluyendo ID 0 e ID 22)
+            SELECT dist_id, dist_distrital, abrev 
+            FROM public._distritales 
+            WHERE dist_estado = 1 
+              AND dist_id > 0 
+              AND dist_id <> 22
+        )
+        SELECT 
+            -- Genera el número correlativo nacional único (1, 2, 3...) para la grilla plana de equipamiento
+            ROW_NUMBER() OVER(ORDER BY d.dist_id ASC, inf.det6_form6_id ASC) AS nro,
+            
+            r.g_id_fin AS gestion_pei,
+            f.form_id,
+            f.dist_id,
+            d.dist_distrital AS regional,
+            d.abrev AS abreviatura,
+            
+            inf.det6_form6_id,
+            inf.act_id, 
+            est.tipo AS tipo_establecimiento,
+            est.act_descripcion AS nombre_establecimiento,
+            CONCAT(est.tipo, ' ', est.act_descripcion) AS establecimiento_completo,
+            
+            COALESCE(inf.servicio, 'SIN ASIGNACIÓN') AS servicio,
+            COALESCE(inf.detalle_equipo, 'SIN DETALLE') AS detalle_equipo,
+            COALESCE(inf.precio_referencial, 0.00) AS precio_referencial
+            
+        FROM rango_pei r
+        -- Conectamos con el universo de distritales autorizadas
+        CROSS JOIN distritales_universo d
+        -- INNER JOIN: Filtra únicamente las regionales que han inicializado su formulario PEI base
+        INNER JOIN formulario_diagnostico_pei f ON f.pei_id = r.pei_id AND f.dist_id = d.dist_id
+        -- INNER JOIN: Sincroniza con las cabeceras anuales del Formulario 6 amarradas a la gestión final (2025)
+        INNER JOIN formularion6_equipos det6 ON det6.form_id = f.form_id AND det6.g_id = r.g_id_fin
+        -- INNER JOIN (1 a Muchos): Desglosa de forma plana cada requerimiento de equipamiento cargado en el país
+        INNER JOIN detalle_form6_equipos inf ON inf.det6_id = det6.det6_id
+        -- INNER JOIN Seguro: Vincula el catálogo médico cruzando estrictamente act_id, dist_id y la gestión de apertura
+        INNER JOIN public.vlista_establecimientos_salud est ON est.act_id = inf.act_id 
+                                                           AND est.dist_id = f.dist_id 
+                                                           AND est.aper_gestion = r.g_id_fin
+        ORDER BY d.dist_id ASC, inf.det6_form6_id ASC";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
     /*--- Detalle formulario N8 Diagnostico Recursos Humanos---*/
@@ -798,6 +936,70 @@ class model_diagnosticoPei extends CI_Model {
         return $query->result_array();
     }
 
+
+    /*--- Detalle formulario N8 Diagnostico Recursos Humanos Consolidado---*/
+    public function get_diagnostico_rrhh_consolidado(){
+    $sql = "
+            WITH rango AS (
+                SELECT pei_id, g_id_inicio, g_id_fin FROM Diagnostico_pei WHERE estado = 1 LIMIT 1
+            ),
+            categorias AS (
+                SELECT 1 as id, 'PERSONAL DE ÍTEM' as nombre
+                UNION ALL SELECT 2, 'PERSONAL DE CONTRATO'
+                UNION ALL SELECT 3, 'ACEFALÍAS'
+            ),
+            distritales_universo AS (
+                -- Filtramos el universo de distritales autorizadas de la CNS
+                SELECT dist_id, dist_distrital, abrev 
+                FROM public._distritales 
+                WHERE dist_estado = 1 AND dist_id > 0 AND dist_id <> 22 
+            )
+            SELECT 
+                ROW_NUMBER() OVER(ORDER BY d.dist_id ASC, g.gestion ASC, c.id ASC) AS nro,
+                d.dist_id,
+                d.dist_distrital AS regional,
+                d.abrev AS abreviatura,
+                f.form_id,
+                g.gestion,
+                c.id as tp_rrhh_form,
+                c.nombre as categoria,
+                COALESCE(d_rrhh.nro_medicos, 0) as nro_medicos,
+                COALESCE(d_rrhh.nro_odontologos, 0) as nro_odontologos,
+                COALESCE(d_rrhh.nro_farmaceuticos, 0) as nro_farmaceuticos,
+                COALESCE(d_rrhh.nro_laboratoristas, 0) as nro_laboratoristas,
+                COALESCE(d_rrhh.nro_otros_prof, 0) as nro_otros_prof,
+                COALESCE(d_rrhh.nro_nutricionistas, 0) as nro_nutricionistas,
+                COALESCE(d_rrhh.nro_trabajo_social, 0) as nro_trabajo_social,
+                COALESCE(d_rrhh.nro_jefe_superv_enf, 0) as nro_jefe_superv_enf,
+                COALESCE(d_rrhh.nro_lic_grad_enf, 0) as nro_lic_grad_enf,
+                COALESCE(d_rrhh.nro_aux_enf, 0) as nro_aux_enf,
+                COALESCE(d_rrhh.nro_pers_adm, 0) as nro_pers_adm,
+                COALESCE(d_rrhh.nro_pers_adm_salud, 0) as nro_pers_adm_salud,
+                COALESCE(d_rrhh.nro_pers_adm_tec, 0) as nro_pers_adm_tec,
+                COALESCE(d_rrhh.nro_pers_adm_aux, 0) as nro_pers_adm_aux,
+                COALESCE(d_rrhh.nro_pers_adm_chof, 0) as nro_pers_adm_chof,
+                COALESCE(d_rrhh.nro_pers_adm_artesanos, 0) as nro_pers_adm_artesanos,
+                COALESCE(d_rrhh.nro_pers_adm_trab_manual, 0) as nro_pers_adm_trab_manual,
+                (
+                    COALESCE(d_rrhh.nro_medicos, 0) + COALESCE(d_rrhh.nro_odontologos, 0) + COALESCE(d_rrhh.nro_farmaceuticos, 0) + 
+                    COALESCE(d_rrhh.nro_laboratoristas, 0) + COALESCE(d_rrhh.nro_otros_prof, 0) + COALESCE(d_rrhh.nro_nutricionistas, 0) + 
+                    COALESCE(d_rrhh.nro_trabajo_social, 0) + COALESCE(d_rrhh.nro_jefe_superv_enf, 0) + COALESCE(d_rrhh.nro_lic_grad_enf, 0) + 
+                    COALESCE(d_rrhh.nro_aux_enf, 0) + COALESCE(d_rrhh.nro_pers_adm, 0) + COALESCE(d_rrhh.nro_pers_adm_salud, 0) + 
+                    COALESCE(d_rrhh.nro_pers_adm_tec, 0) + COALESCE(d_rrhh.nro_pers_adm_aux, 0) + COALESCE(d_rrhh.nro_pers_adm_chof, 0) + 
+                    COALESCE(d_rrhh.nro_pers_adm_artesanos, 0) + COALESCE(d_rrhh.nro_pers_adm_trab_manual, 0)
+                ) as total
+            FROM distritales_universo d
+            CROSS JOIN categorias c
+            CROSS JOIN rango r
+            CROSS JOIN LATERAL generate_series(r.g_id_inicio, r.g_id_fin) as g(gestion)
+            LEFT JOIN formulario_diagnostico_pei f ON f.pei_id = r.pei_id AND f.dist_id = d.dist_id
+            LEFT JOIN formularion7_rrhh h ON h.form_id = f.form_id AND h.g_id = g.gestion
+            LEFT JOIN detalle_form7_rrhh d_rrhh ON d_rrhh.det7_id = h.det7_id AND d_rrhh.tp_rrhh_form = c.id
+            ORDER BY d.dist_id ASC, g.gestion ASC, c.id ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     /*--- Detalle formulario N9 Diagnostico Compra de Servicios ---*/
     public function get_diagnostico_compra_servicios($dist_id){
