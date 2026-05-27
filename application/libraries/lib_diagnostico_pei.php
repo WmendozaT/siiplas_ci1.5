@@ -2228,6 +2228,11 @@ class lib_diagnostico_pei extends CI_Controller{
     public function formulario_N6($get_form_distrital){
       $listado_equipamiento=$this->model_diagnosticopei->get_diagnostico_equipamiento($get_form_distrital[0]['dist_id']);
       $establecimientos=$this->model_diagnosticopei->get_establecimientos_distrital($get_form_distrital[0]['dist_id'],$get_form_distrital[0]['g_id_fin']);
+      $page='page';
+       if(count($listado_equipamiento)>8){
+         $page='page_long';
+       }
+
       $tabla='';
       $tabla.='
       <div class="modal fade" id="modal_nuevo_equipo" tabindex="-1" role="dialog">
@@ -2294,7 +2299,7 @@ class lib_diagnostico_pei extends CI_Controller{
             </div>';
         }
         $tabla.='
-          <div class="page">
+          <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
                   Fecha: <span id="fecha-actual4"></span><br>
@@ -3745,6 +3750,11 @@ class lib_diagnostico_pei extends CI_Controller{
     public function formulario_N11($get_form_distrital){
       $listado_ambulancias=$this->model_diagnosticopei->get_detalle_ambulancias($get_form_distrital[0]['dist_id']);
       $establecimientos=$this->model_diagnosticopei->get_establecimientos_distrital($get_form_distrital[0]['dist_id'],$this->gestion);
+      $page='page';
+       if(count($listado_ambulancias)>=15){
+         $page='page_long';
+       }
+
       $tabla='';
       $tabla.='
       <style>
@@ -3809,16 +3819,16 @@ class lib_diagnostico_pei extends CI_Controller{
                           <div id="campos_detalle_ambulancia" style="display:none; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
                                 
                                 <div class="form-group">
-                                    <label><b>2. Número de Placa:</b></label>
+                                    <label><b>2. Número de Placa (Formato Nuevo o Antiguo):</b></label>
                                     <input type="text" 
                                            name="placa" 
                                            id="m_placa" 
                                            class="form-control" 
                                            style="text-transform:uppercase; font-weight: bold; letter-spacing: 1px; text-align: center; font-size: 13px; color: #1a237e;" 
-                                           placeholder="EJ. 4852-XYZ" 
+                                           placeholder="EJ. 4852-XYZ o LLC-123" 
                                            maxlength="8" 
-                                           pattern="^[0-9]{4}-[A-Z]{3}$" 
-                                           title="El formato obligatorio es: 4 números, un guion y 3 letras (Ej: 4852-XYZ)" 
+                                           pattern="^([0-9]{4}-[A-Z]{3}|[A-Z]{3}-[0-9]{3})$" 
+                                           title="Formatos válidos:\n- Nuevo: 4 números, guion y 3 letras (Ej: 4852-XYZ)\n- Antiguo: 3 letras, guion y 3 números (Ej: LLC-123)" 
                                            required>
                                 </div>
                                 
@@ -3868,7 +3878,7 @@ class lib_diagnostico_pei extends CI_Controller{
 
 
 
-          <div class="page">
+          <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
                   Fecha: <span id="fecha-actual11"></span><br>
@@ -4059,12 +4069,7 @@ class lib_diagnostico_pei extends CI_Controller{
             }
 
             // Validación de la máscara obligatoria boliviana (4 Números - 3 Letras)
-            var patronPlaca = /^[0-9]{4}-[A-Z]{3}$/;
-            if (!patronPlaca.test(placa)) {
-                alert("⚠️ Formato de Placa Inválido.\n\nEl sistema requiere exactamente 4 números, un guion intermedio y 3 letras mayúsculas (Ej: 4852-XYZ).");
-                $("#m_placa").focus().css("border-color", "#c62828");
-                return;
-            }
+
 
             // Bloqueamos el botón con indicador visual de carga (Escapamos las comillas simples de la clase)
             $("#btnGuardarAmbulancia").prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i> GUARDANDO...");
@@ -4161,27 +4166,7 @@ class lib_diagnostico_pei extends CI_Controller{
             });
         }
 
-          // --- 4. MÁSCARA AUTOMÁTICA EN TIEMPO REAL PARA EL INPUT DE LA PLACA (XXXX-YYY) ---
-          document.addEventListener("DOMContentLoaded", function() {
-              $(document).on("keyup keypress input", "#m_placa", function() {
-                  var val = $(this).val().toUpperCase();
-                  val = val.replace(/[^0-9A-Z-]/g, ""); // Remueve caracteres no permitidos
-                  
-                  // Inserta el guion automáticamente tras el cuarto dígito
-                  if (val.length > 4 && val.charAt(4) !== "-") {
-                      val = val.substr(0, 4) + "-" + val.substr(4);
-                  }
-                  
-                  var parteNumerica = val.substr(0, 4).replace(/[^0-9]/g, "");
-                  var guion = val.length > 4 ? "-" : "";
-                  var parteLetras = val.substr(5, 3).replace(/[^A-Z]/g, "");
-                  
-                  var resultado = parteNumerica + guion + parteLetras;
-                  if (resultado.length > 8) { resultado = resultado.substr(0, 8); }
-                  
-                  $(this).val(resultado);
-              });
-          });
+
       </script>
 
 
@@ -4219,18 +4204,6 @@ class lib_diagnostico_pei extends CI_Controller{
                                     $(this).find("td:first").text(index + 1);
                                 });
 
-                                // 3. CONTINGENCIA DE REJILLA VACÍA: Si borró todo y la tabla quedó en cero, inyectamos la simulación base
-                                if ($("#tabla_ambulancias_body tr").length === 0) {
-                                    var rejillaVacia = "";
-                                    for (var i = 1; i <= 5; i++) {
-                                        rejillaVacia += `
-                                        <tr style="height: 30px; background:#fbfbfb;">
-                                           <td style="text-align:center; color:#999; font-weight:bold;">${i}</td>
-                                           <td></td><td></td><td></td><td></td><td></td><td></td>
-                                        </tr>`;
-                                    }
-                                    $("#tabla_ambulancias_body").html(rejillaVacia);
-                                }
                             });
 
                             // 4. Lanzamos tu notificación Toast flotante verde de éxito

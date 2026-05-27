@@ -2875,11 +2875,11 @@ public function guarda_detalle_automatica_form2() {
         }
         
         // Validación de máscara del formato boliviana por seguridad en el backend
-        if (!preg_match('/^[0-9]{4}-[A-Z]{3}$/', $placa)) {
+        /*if (!preg_match('/^[0-9]{4}-[A-Z]{3}$/', $placa)) {
             header('Content-Type: application/json');
             echo json_encode(array('status' => 'error', 'msg' => 'El número de placa enviado no cumple con la nomenclatura obligatoria XXXX-YYY.'));
             exit;
-        }
+        }*/
 
         // 5. MECANISMO DE UPSERT PARA LA CABECERA (formularion11_ambulancias)
         // Verificamos si la regional ya cuenta con un registro maestro del Formulario 11

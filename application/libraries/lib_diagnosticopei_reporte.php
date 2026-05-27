@@ -750,11 +750,11 @@ class Lib_diagnosticopei_reporte {
                     $nro++;
                     $tabla .= '
                         <tr style="font-size:9px;">
-                            <td style="font-size:9px;">'.$nro.'</td>
-                            <td style="font-size:9px; text-align:left;">'.$row['tipo']. ' '.$row['act_descripcion'].'</td>
-                            <td style="font-size:9px;">'.strtoupper($row['servicio']).'</td>
-                            <td style="font-size:9px;text-align:left;">'.strtoupper($row['detalle_equipo']).'</td>
-                            <td style="font-size:9px;text-align:right;">'.number_format($row['precio_referencial'], 2, '.', ',').'</td>
+                            <td style="font-size:9px;width:2%;">'.$nro.'</td>
+                            <td style="font-size:8px; text-align:left;width:20%;">'.$row['tipo']. ' '.$row['act_descripcion'].'</td>
+                            <td style="font-size:8px;width:20%;">'.strtoupper($row['servicio']).'</td>
+                            <td style="font-size:8px;text-align:left;width:30%;">'.strtoupper($row['detalle_equipo']).'</td>
+                            <td style="font-size:8px;text-align:right;width:28%;">'.number_format($row['precio_referencial'], 2, '.', ',').'</td>
                         </tr>';
                     }
                 $tabla.='
