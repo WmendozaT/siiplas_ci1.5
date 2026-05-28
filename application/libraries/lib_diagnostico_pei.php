@@ -3796,7 +3796,7 @@ class lib_diagnostico_pei extends CI_Controller{
             </div>';
         }
         $tabla.='
-            <div class="modal fade" id="modal_nuevo_equipo" tabindex="-1" role="dialog">
+            <div class="modal fade" id="modal_nuevo_amb" tabindex="-1" role="dialog">
               <div class="modal-dialog" role="document">
                   <div class="modal-content">
                       <div class="modal-header" style="background:#3276b1; color:white;">
@@ -4034,7 +4034,7 @@ class lib_diagnostico_pei extends CI_Controller{
               $("#m_placa").css("border-color", ""); 
               
               $("#campos_detalle_ambulancia, #btnGuardarAmbulancia").hide();
-              $("#modal_nuevo_equipo").modal("show"); 
+              $("#modal_nuevo_amb").modal("show"); 
           }
 
           // 2. MOSTRAR CAMPOS AL SELECCIONAR ESTABLECIMIENTO
@@ -4149,7 +4149,7 @@ class lib_diagnostico_pei extends CI_Controller{
                         $("html, body").animate({ scrollTop: $(document).height() }, 1000);
                         
                         // H. Ocultación del modal y Toast de confirmación de tu suite
-                        $("#modal_nuevo_equipo").modal("hide");
+                        $("#modal_nuevo_amb").modal("hide");
                         $("#toast-notificacion").text("✅ Registro añadido exitosamente").fadeIn().delay(2000).fadeOut();
                     } else {
                         alert("⚠️ Error: " + resp.msg);

@@ -87,16 +87,16 @@ class CDiagnostico_pei extends CI_Controller {
                               $tabla.='<option value="'.$row['dist_id'].'">'.$row['dist_id'].'.- '.strtoupper($row['dist_distrital']).'</option>';
                             }
                             $tabla.='
-                          </select>
+                            </select>
                       </section>
 
                       <!-- BOTÓN PARA DESCARGAR CONSOLIDADO -->
-                      <section class="col col-3">
-                          <label class="label">&nbsp;</label>
-                          <a href="'.site_url("Diagnostico_pei/exportar_consolidado_excel/".$get_diagnostico[0]['pei_id']."/0").'" class="btn btn-success btn-sm" style="padding: 10px; width: 100%; text-align: center; color: white;">
-                            <i class="fa fa-file-excel-o"></i> DESCARGAR CONSOLIDADO
-                          </a>
-                      </section>
+                        <section class="col col-3">
+                            <label class="label">&nbsp;</label>
+                            <button type="button" id="btn_descargar_consolidado" class="btn btn-success btn-sm" style="padding: 10px; width: 100%; text-align: center; color: white; font-weight: bold; border: none; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                              <i class="fa fa-file-excel-o"></i> DESCARGAR CONSOLIDADO
+                            </button>
+                        </section>
                     </div>
                   </fieldset>
               </form>
@@ -111,6 +111,51 @@ class CDiagnostico_pei extends CI_Controller {
             </div>';
       }
       
+      $tabla .= '
+            <script type="text/javascript">
+                document.addEventListener("DOMContentLoaded", function() {
+                    
+                    $(document).on("click", "#btn_descargar_consolidado", function(e) {
+                        e.preventDefault();
+                        
+                        var dist_id = $("#consolidado_dist_id").val();
+                        var pei_id = "' . $get_diagnostico[0]['pei_id'] . '";
+                        
+                        // 1. Generamos un Token único basado en la estampa de tiempo
+                        var downloadToken = "token_" + new Date().getTime();
+                        
+                        // 2. Bloqueamos la interfaz levantando el Loading de SmartAdmin
+                        $("#btn_descargar_consolidado").prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i> Procesando...");
+                        $("#loading_descarga_excel").fadeIn(200);
+                        
+                        // 3. Redireccionamos la ventana enviando el token como parámetro GET adicional
+                        window.location.href = "' . site_url("Diagnostico_pei/exportar_consolidado_excel") . '/" + pei_id + "/" + dist_id + "?fileToken=" + downloadToken;
+                        
+                        // 4. Temporizador cíclico de auditoría de cookies
+                        var checkDownloadTimer = setInterval(function() {
+                            // Buscamos si la cookie con el token ya fue depositada por el servidor
+                            var cookieValue = getCookie("fileDownloadToken");
+                            
+                            if (cookieValue === downloadToken) {
+                                // Descarga finalizada: Limpiamos el temporizador y destruimos la cookie por seguridad
+                                clearInterval(checkDownloadTimer);
+                                document.cookie = "fileDownloadToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                                
+                                // Restablecemos el estado operativo de la interfaz visual
+                                $("#loading_descarga_excel").fadeOut(300);
+                                $("#btn_descargar_consolidado").prop("disabled", false).html("<i class=\'fa fa-file-excel-o\'></i> DESCARGAR CONSOLIDADO");
+                            }
+                        }, 300); // Evalúa el DOM cada 300 milisegundos de forma transparente
+                    });
+
+                    // Función auxiliar clásica nativa para leer cookies del navegador
+                    function getCookie(name) {
+                        var parts = document.cookie.split("; " + name + "=");
+                        if (parts.length === 2) return parts.pop().split(";").shift();
+                        return "";
+                    }
+                });
+            </script>';
       return $tabla;
     }
 
@@ -159,59 +204,95 @@ class CDiagnostico_pei extends CI_Controller {
       $tabla.='
           <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
             ' . $this->lib_diagnostico_pei->style_form() . '
-            
             <div id="toast-notificacion" class="toast-msg">
               ¡Información guardada correctamente! ✓
             </div>
             
-            <div class="well well-sm well-light">
-                <!-- ==================== BARRA DE CABECERA CON ACCIONES ==================== -->
-                <div class="row" style="margin-bottom: 15px; display: flex; align-items: center; border-bottom: 2px solid #3276b1; padding-bottom: 10px;">
-                    <div class="col-xs-12 col-sm-6 col-md-7 col-lg-7">
-                        <hr>
-                        <h2 style="margin: 0; padding: 0; color: #212121; font-weight: bold;">
-                            <i class="fa fa-hospital-o text-primary"></i> ' . strtoupper($get_form_distrital[0]['dist_distrital']) . '
-                        </h2>
-                        <small class="text-muted" style="font-size: 11px;">Módulo de Registro Diagnóstico Quinquenal (2021 - 2025)</small>
-                    </div>';
-                    $archivo_existente = (isset($get_form_distrital[0]['form_archivo_scanneado']) && !empty($get_form_distrital[0]['form_archivo_scanneado'])) ? trim($get_form_distrital[0]['form_archivo_scanneado']) : '';
+                <div class="well well-sm well-light">
+        <!-- ==================== BARRA DE CABECERA CON ACCIONES ==================== -->
+        <div class="row" style="margin-bottom: 15px; display: flex; align-items: center; border-bottom: 2px solid #3276b1; padding-bottom: 10px;">
+            <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5">
+                <h2 style="margin: 0; padding: 0; color: #212121; font-weight: bold;">
+                    <i class="fa fa-hospital-o text-primary"></i> ' . strtoupper($get_form_distrital[0]['dist_distrital']) . '
+                </h2>
+                <small class="text-muted" style="font-size: 11px;">Módulo de Registro Diagnóstico Quinquenal (2021 - 2025)</small>
+            </div>';
 
+            $archivo_existente = (isset($get_form_distrital[0]['form_archivo_scanneado']) && !empty($get_form_distrital[0]['form_archivo_scanneado'])) ? trim($get_form_distrital[0]['form_archivo_scanneado']) : '';
+            $opciones_permiso = intval($get_form_distrital[0]['form_opciones']); // 1: Habilitado, 0: Deshabilitado
+
+            $tabla .= '
+            <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7 text-right" style="margin-top: 5px;">';
+                
+                // === NUEVO: CONTROL DE PERMISOS POR BOTONES SEGMENTADOS (Solo Administrador Nacional / Rol 1) ===
+                if ($this->tp_adm == 1) {
                     $tabla .= '
-                    <div class="col-xs-12 col-sm-6 col-md-5 col-lg-5 text-right" style="margin-top: 5px;">';
-                        if($get_form_distrital[0]['form_opciones']==1 & $this->tp_adm==0){
-                          $tabla.='
-                          <button type="button" 
+                    <div class="btn-group" role="group" style="margin-right: 15px; vertical-align: middle;">
+                        
+                        <!-- Botón ON (Habilitar) -->
+                        <button type="button" 
+                                id="btn_permiso_on" 
+                                class="btn ' . ($opciones_permiso === 1 ? 'btn-success active' : 'btn-default') . ' btn-xs" 
+                                style="font-weight: bold; padding: 4px 10px;"
+                                onclick="cambiarPermisoDistritalAdministrador(1)"
+                                data-toggle="tooltip" title="Habilitar opciones de subida e impresión para esta distrital">
+                            <i class="fa fa-unlock"></i> APERTO
+                        </button>
+                        
+                        <!-- Botón OFF (Restringir) -->
+                        <button type="button" 
+                                id="btn_permiso_off" 
+                                class="btn ' . ($opciones_permiso === 0 ? 'btn-danger active' : 'btn-default') . ' btn-xs" 
+                                style="font-weight: bold; padding: 4px 10px;"
+                                onclick="cambiarPermisoDistritalAdministrador(0)"
+                                data-toggle="tooltip" title="Restringir/Bloquear subida e impresión para esta distrital">
+                            <i class="fa fa-lock"></i> CERRADO
+                        </button>
+                    </div>';
+                }
+
+                $tabla .= '
+                <!-- CONTENEDOR DINÁMICO: Opciones operativas distritales -->
+                <div id="wrapper_acciones_distrital" style="display: inline-block; vertical-align: middle; ' . (($opciones_permiso === 0 && $this->tp_adm == 0) ? 'display: none;' : '') . '">';
+                    
+                    // Si el permiso está activo y es un usuario operativo/distrital (Rol 0)
+                    if ($opciones_permiso === 1 && $this->tp_adm == 0) {
+                        $tabla .= '
+                        <button type="button" 
+                                id="btn_subir_pdf_escaneado"
                                 class="btn btn-primary btn-sm" 
                                 onclick="abrirModalSubidaEscaneados()" 
                                 style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px;"
                                 data-toggle="tooltip" 
                                 title="Cargar al sistema el documento PDF final firmado y escaneado">
                             <i class="fa fa-upload"></i> Subir Escaneado (PDF)
-                          </button>';
-                        }
-                      $tabla.='
-                          <!-- NUEVO Botón 3: Ver Archivo Cargado (Oculto por defecto si el campo está vacío en DB) -->
-                          <button type="button" 
-                                  id="btn_ver_pdf_modal"
-                                  class="btn btn-warning btn-sm" 
-                                  onclick="verPdfEscaneadoModal()" 
-                                  style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px; ' . ($archivo_existente == '' ? 'display: none;' : '') . '"
-                                  data-url="' . base_url() . 'escaneados_form_pei/' . $archivo_existente . '"
-                                  data-toggle="tooltip" 
-                                  title="Previsualizar el expediente digitalizado en la plataforma">
-                              <i class="fa fa-eye"></i> Ver Archivo Digitalizado
-                          </button>
-                          <a href="' . base_url() . 'index.php/admin/dashboard" 
-                           class="btn btn-danger btn-sm" 
-                           style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px;"
-                           data-toggle="tooltip" 
-                           title="Volver atrás al Dashboard de administración general">
-                            <i class="fa fa-arrow-left"></i> Volver a menu
-                        </a>
-                    </div>';
+                        </button>';
+                    }
                     
-                    $tabla.='
+                $tabla .= '
                 </div>
+
+                <!-- Botón 3: Ver Archivo Cargado -->
+                <button type="button" 
+                        id="btn_ver_pdf_modal"
+                        class="btn btn-warning btn-sm" 
+                        onclick="verPdfEscaneadoModal()" 
+                        style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px; vertical-align: middle; ' . ($archivo_existente == '' ? 'display: none;' : '') . '"
+                        data-url="' . base_url() . 'escaneados_form_pei/' . $archivo_existente . '"
+                        data-toggle="tooltip" 
+                        title="Previsualizar el expediente digitalizado en la plataforma">
+                    <i class="fa fa-eye"></i> Ver Archivo Digitalizado
+                </button>
+                
+                <a href="' . base_url() . 'index.php/admin/dashboard" 
+                   class="btn btn-danger btn-sm" 
+                   style="font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-left: 5px; vertical-align: middle;"
+                   data-toggle="tooltip" 
+                   title="Volver atrás al Dashboard de administración general">
+                    <i class="fa fa-arrow-left"></i> Volver a menú
+                </a>
+            </div>
+        </div>
 
                 <!-- ==================== CONTENEDOR DE PESTAÑAS (TABS) ==================== -->
                 <div id="tabs" data-pei="' . $pei_id . '" data-dist="' . $dist_id . '">
@@ -482,6 +563,54 @@ class CDiagnostico_pei extends CI_Controller {
               </script>';
             }
 
+            $tabla .= '
+            <script type="text/javascript">
+                // --- FUNCIÓN GLOBAL DE CONTROL DE PERMISOS POR BOTÓN SEGMENTADO ---
+                function cambiarPermisoDistritalAdministrador(nuevoEstado) {
+                    var form_id = "' . intval($get_form_distrital[0]['form_id']) . '";
+                    
+                    // Bloqueamos ambos botones temporalmente para resguardar la latencia de red
+                    $("#btn_permiso_on, #btn_permiso_off").prop("disabled", true);
+
+                    $.ajax({
+                        url: "' . base_url() . 'index.php/Cdiagnostico_pei/CDiagnostico_pei/cambiar_permiso_impresion",
+                        type: "POST",
+                        data: { form_id: form_id, estado: nuevoEstado },
+                        dataType: "json",
+                        success: function(resp) {
+                            if(resp.status === "success") {
+                                
+                                // INTERCAMBIO VISUAL DE ESTADOS EN CALIENTE
+                                if (nuevoEstado === 1) {
+                                    // Activamos el botón verde (ON) y apagamos el rojo
+                                    $("#btn_permiso_on").removeClass("btn-default").addClass("btn-success active");
+                                    $("#btn_permiso_off").removeClass("btn-danger active").addClass("btn-default");
+                                    
+                                    $("#wrapper_acciones_distrital").fadeIn(250);
+                                    $("#toast-notificacion").text("🔓 Módulo HABILITADO para la carga distrital.").fadeIn().delay(2500).fadeOut();
+                                } else {
+                                    // Activamos el botón rojo (OFF) y apagamos el verde
+                                    $("#btn_permiso_on").removeClass("btn-success active").addClass("btn-default");
+                                    $("#btn_permiso_off").removeClass("btn-default").addClass("btn-danger active");
+                                    
+                                    $("#wrapper_acciones_distrital").fadeOut(200);
+                                    $("#toast-notificacion").text("🔒 Módulo CERRADO / Bloqueado para la carga distrital.").fadeIn().delay(2500).fadeOut();
+                                }
+                            } else {
+                                alert("⚠️ Error del Servidor: " + resp.msg);
+                            }
+                        },
+                        error: function() {
+                            alert("❌ Error crítico de red. No se pudo actualizar el estado de los permisos en SIIPLAS.");
+                        },
+                        complete: function() {
+                            // Liberamos los botones para próximas operaciones
+                            $("#btn_permiso_on, #btn_permiso_off").prop("disabled", false);
+                        }
+                    });
+                }
+            </script>';
+
             //// Modal para subir Archivo digitalizado
             $tabla.='
            <script type="text/javascript">
@@ -656,6 +785,36 @@ class CDiagnostico_pei extends CI_Controller {
       return $tabla;
     }
     
+    public function cambiar_permiso_impresion() {
+        if (ob_get_length()) ob_clean(); // Limpieza del búfer de salida
+
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'msg' => 'Acceso denegado.'));
+            exit;
+        }
+
+        $form_id = intval($this->input->post('form_id'));
+        $estado  = intval($this->input->post('estado')); // Procesa 1 o 0
+
+        if (empty($form_id) || ($estado !== 0 && $estado !== 1)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'msg' => 'Parámetros inconsistentes.'));
+            exit;
+        }
+
+        $this->db->where('form_id', $form_id);
+        $res_update = $this->db->update('formulario_diagnostico_pei', array('form_opciones' => $estado,'form_impresion' => $estado));
+
+        header('Content-Type: application/json');
+        if ($res_update) {
+            echo json_encode(array('status' => 'success'));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'Error al guardar en la base de datos.'));
+        }
+        exit;
+    }
+
     //// subir archivo digitalizado ..
     public function guardar_pdf_escaneado() {
       // 1. Limpieza radical de salida para evitar que basuras rompan el JSON
@@ -967,6 +1126,15 @@ class CDiagnostico_pei extends CI_Controller {
     $this->_generar_pestaña_ambulancias($objPHPExcel, $dist_id, $styles);
 
     // ==========================================================================
+    
+        // === REVISIÓN: CAPTURA E INYECCIÓN DEL TOKEN DE DESCARGA ===
+    $file_token = $this->input->get('fileToken');
+    if (!empty($file_token)) {
+        // Inyectamos la cookie en las cabeceras HTTP de respuesta de la descarga
+        // En PHP 5.6 / CodeIgniter 1.5 usamos la directiva header pura para compatibilidad total
+        header("Set-Cookie: fileDownloadToken=" . $file_token . "; path=/");
+    }
+
     // 3. PROCESAMIENTO DE DESCARGA FINAL DEL EXPEDIENTE
     // ==========================================================================
     $filename = ($dist_id > 0) ? "Consolidado_PEI_Regional_" . $dist_id : "Consolidado_Nacional_PEI";
