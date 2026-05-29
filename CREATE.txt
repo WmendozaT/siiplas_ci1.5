@@ -248,7 +248,7 @@ create table Diagnostico_pei(
   form_id serial NOT NULL,
   pei_id integer,
   dist_id integer,
-  form_estado integer DEFAULT 0,
+  form_estado integer DEFAULT 1,
   form_opciones integer DEFAULT 0,
   form_impresion integer DEFAULT 0,
   form_subir_scanneado integer DEFAULT 0,

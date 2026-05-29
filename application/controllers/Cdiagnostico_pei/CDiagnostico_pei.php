@@ -208,14 +208,14 @@ class CDiagnostico_pei extends CI_Controller {
               ¡Información guardada correctamente! ✓
             </div>
             
-                <div class="well well-sm well-light">
+            <div class="well well-sm well-light">
         <!-- ==================== BARRA DE CABECERA CON ACCIONES ==================== -->
         <div class="row" style="margin-bottom: 15px; display: flex; align-items: center; border-bottom: 2px solid #3276b1; padding-bottom: 10px;">
             <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5">
                 <h2 style="margin: 0; padding: 0; color: #212121; font-weight: bold;">
-                    <i class="fa fa-hospital-o text-primary"></i> ' . strtoupper($get_form_distrital[0]['dist_distrital']) . '
+                    <i class="fa fa-hospital-o text-primary"></i> ' . strtoupper($get_form_distrital[0]['dist_distrital']) . ' - '.$get_form_distrital[0]['form_estado'].'
                 </h2>
-                <small class="text-muted" style="font-size: 11px;">Módulo de Registro Diagnóstico Quinquenal (2021 - 2025)</small>
+                <small class="text-muted" style="font-size: 11px;">Módulo de Registro Diagnóstico Quinquenal ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</small>
             </div>';
 
             $archivo_existente = (isset($get_form_distrital[0]['form_archivo_scanneado']) && !empty($get_form_distrital[0]['form_archivo_scanneado'])) ? trim($get_form_distrital[0]['form_archivo_scanneado']) : '';

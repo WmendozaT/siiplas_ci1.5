@@ -40,6 +40,7 @@ class lib_diagnostico_pei extends CI_Controller{
             </div>';
         }
         $tabla.='
+
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -4360,6 +4361,21 @@ class lib_diagnostico_pei extends CI_Controller{
                     width: 11in; 
                     min-width: 11in; /* Evita que se encoja en celulares */
                     height: 25in; 
+                    padding: 0.6in 0.7in; 
+                    box-sizing: border-box; 
+                    position: relative; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #ccc;
+                }
+
+
+                .page_long2 { 
+                    background-color: white; 
+                    width: 11in; 
+                    min-width: 11in; /* Evita que se encoja en celulares */
+                    height: 50in; 
                     padding: 0.6in 0.7in; 
                     box-sizing: border-box; 
                     position: relative; 
