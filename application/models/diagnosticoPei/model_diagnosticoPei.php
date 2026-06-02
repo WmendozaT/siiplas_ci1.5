@@ -47,39 +47,78 @@ class model_diagnosticoPei extends CI_Model {
     public function get_distrital_formulario_diagnostico_activo($pei_id,$dist_id){
         $sql = "
             SELECT 
-                ds.*, 
-                CASE 
-                    WHEN ds.dist_tp = 1 THEN 'FIRMA ADMINISTRADOR REGIONAL'
-                    WHEN ds.dist_tp = 0 THEN 'FIRMA AGENTE DISTRITAL'
-                    ELSE 'RESPONSABLE'
-                END AS tipo_firma,
-                pei.*, 
-                form.*, 
-                COALESCE(obs1.obs_id, 0) AS verif_obs1, obs1.obs_id, obs1.obs_nro as obs_nro1, obs1.obs_contenido as observacion1,
-                COALESCE(obs2.obs_id, 0) AS verif_obs2, obs2.obs_id, obs2.obs_nro as obs_nro2, obs2.obs_contenido as observacion2,
-                COALESCE(obs3.obs_id, 0) AS verif_obs3, obs3.obs_id, obs3.obs_nro as obs_nro3, obs3.obs_contenido as observacion3,
-                COALESCE(obs4.obs_id, 0) AS verif_obs4, obs4.obs_id, obs4.obs_nro as obs_nro4, obs4.obs_contenido as observacion4,
-                COALESCE(obs5.obs_id, 0) AS verif_obs5, obs5.obs_id, obs5.obs_nro as obs_nro5, obs5.obs_contenido as observacion5,
-                COALESCE(obs6.obs_id, 0) AS verif_obs6, obs6.obs_id, obs6.obs_nro as obs_nro6, obs6.obs_contenido as observacion6,
-                COALESCE(obs7.obs_id, 0) AS verif_obs7, obs7.obs_id, obs7.obs_nro as obs_nro7, obs7.obs_contenido as observacion7,
-                COALESCE(obs8.obs_id, 0) AS verif_obs8, obs8.obs_id, obs8.obs_nro as obs_nro8, obs8.obs_contenido as observacion8,
-                COALESCE(obs9.obs_id, 0) AS verif_obs9, obs9.obs_id, obs9.obs_nro as obs_nro9, obs9.obs_contenido as observacion9,
-                COALESCE(obs10.obs_id, 0) AS verif_obs10, obs10.obs_id, obs10.obs_nro as obs_nro10, obs10.obs_contenido as observacion10,
-                COALESCE(obs11.obs_id, 0) AS verif_obs11, obs11.obs_id, obs11.obs_nro as obs_nro11, obs11.obs_contenido as observacion11
-            FROM diagnostico_pei pei
-            INNER JOIN formulario_diagnostico_pei form ON form.pei_id = pei.pei_id
-            INNER JOIN _distritales ds ON ds.dist_id = form.dist_id 
-            LEFT JOIN form_observacion obs1 ON obs1.form_id = form.form_id AND obs1.obs_nro = 1
-            LEFT JOIN form_observacion obs2 ON obs2.form_id = form.form_id AND obs2.obs_nro = 2
-            LEFT JOIN form_observacion obs3 ON obs3.form_id = form.form_id AND obs3.obs_nro = 3
-            LEFT JOIN form_observacion obs4 ON obs4.form_id = form.form_id AND obs4.obs_nro = 4
-            LEFT JOIN form_observacion obs5 ON obs5.form_id = form.form_id AND obs5.obs_nro = 5
-            LEFT JOIN form_observacion obs6 ON obs6.form_id = form.form_id AND obs6.obs_nro = 6
-            LEFT JOIN form_observacion obs7 ON obs7.form_id = form.form_id AND obs7.obs_nro = 7
-            LEFT JOIN form_observacion obs8 ON obs8.form_id = form.form_id AND obs8.obs_nro = 8
-            LEFT JOIN form_observacion obs9 ON obs9.form_id = form.form_id AND obs9.obs_nro = 9
-            LEFT JOIN form_observacion obs10 ON obs10.form_id = form.form_id AND obs10.obs_nro = 10
-            LEFT JOIN form_observacion obs11 ON obs11.form_id = form.form_id AND obs11.obs_nro = 11
+            ds.*, 
+            CASE 
+                WHEN ds.dist_tp = 1 THEN 'FIRMA ADMINISTRADOR REGIONAL'
+                WHEN ds.dist_tp = 0 THEN 'FIRMA AGENTE DISTRITAL'
+                ELSE 'RESPONSABLE'
+            END AS tipo_firma,
+            pei.*, 
+            form.*, 
+            
+            -- === PESTAÑA 1: POBLACIÓN AFILIADA ===
+            COALESCE(obs1.obs_id, 0) AS verif_obs1, obs1.obs_id, obs1.obs_nro AS obs_nro1, obs1.obs_contenido AS observacion1,
+            COALESCE(obs1.tp_obs, 0) AS tp_obs1, COALESCE(obs1.obs_administrador, '') AS obs_admin1,
+            
+            -- === PESTAÑA 2: GRUPOS ETÁREOS ===
+            COALESCE(obs2.obs_id, 0) AS verif_obs2, obs2.obs_id, obs2.obs_nro AS obs_nro2, obs2.obs_contenido AS observacion2,
+            COALESCE(obs2.tp_obs, 0) AS tp_obs2, COALESCE(obs2.obs_administrador, '') AS obs_admin2,
+            
+            -- === PESTAÑA 3: EMPRESAS APORTANTES ===
+            COALESCE(obs3.obs_id, 0) AS verif_obs3, obs3.obs_id, obs3.obs_nro AS obs_nro3, obs3.obs_contenido AS observacion3,
+            COALESCE(obs3.tp_obs, 0) AS tp_obs3, COALESCE(obs3.obs_administrador, '') AS obs_admin3,
+            
+            -- === PESTAÑA 4: PERFIL EPIDEMIOLÓGICO ===
+            COALESCE(obs4.obs_id, 0) AS verif_obs4, obs4.obs_id, obs4.obs_nro AS obs_nro4, obs4.obs_contenido AS observacion4,
+            COALESCE(obs4.tp_obs, 0) AS tp_obs4, COALESCE(obs4.obs_administrador, '') AS obs_admin4,
+            
+            -- === PESTAÑA 5: INFRAESTRUCTURA ===
+            COALESCE(obs5.obs_id, 0) AS verif_obs5, obs5.obs_id, obs5.obs_nro AS obs_nro5, obs5.obs_contenido AS observacion5,
+            COALESCE(obs5.tp_obs, 0) AS tp_obs5, COALESCE(obs5.obs_administrador, '') AS obs_admin5,
+            
+            -- === PESTAÑA 6: DIAGNÓSTICO CAMAS ===
+            COALESCE(obs6.obs_id, 0) AS verif_obs6, obs6.obs_id, obs6.obs_nro AS obs_nro6, obs6.obs_contenido AS observacion6,
+            COALESCE(obs6.tp_obs, 0) AS tp_obs6, COALESCE(obs6.obs_administrador, '') AS obs_admin6,
+            
+            -- === PESTAÑA 7: EQUIPAMIENTO ===
+            COALESCE(obs7.obs_id, 0) AS verif_obs7, obs7.obs_id, obs7.obs_nro AS obs_nro7, obs7.obs_contenido AS observacion7,
+            COALESCE(obs7.tp_obs, 0) AS tp_obs7, COALESCE(obs7.obs_administrador, '') AS obs_admin7,
+            
+            -- === PESTAÑA 8: RECURSOS HUMANOS ===
+            COALESCE(obs8.obs_id, 0) AS verif_obs8, obs8.obs_id, obs8.obs_nro AS obs_nro8, obs8.obs_contenido AS observacion8,
+            COALESCE(obs8.tp_obs, 0) AS tp_obs8, COALESCE(obs8.obs_administrador, '') AS obs_admin8,
+            
+            -- === PESTAÑA 9: COMPRA DE SERVICIOS ===
+            COALESCE(obs9.obs_id, 0) AS verif_obs9, obs9.obs_id, obs9.obs_nro AS obs_nro9, obs9.obs_contenido AS observacion9,
+            COALESCE(obs9.tp_obs, 0) AS tp_obs9, COALESCE(obs9.obs_administrador, '') AS obs_admin9,
+            
+            -- === PESTAÑA 10: PRESUPUESTOS ===
+            COALESCE(obs10.obs_id, 0) AS verif_obs10, obs10.obs_id, obs10.obs_nro AS obs_nro10, obs10.obs_contenido AS observacion10,
+            COALESCE(obs10.tp_obs, 0) AS tp_obs10, COALESCE(obs10.obs_administrador, '') AS obs_admin10,
+            
+            -- === PESTAÑA 11: REEMBOLSOS ===
+            COALESCE(obs11.obs_id, 0) AS verif_obs11, obs11.obs_id, obs11.obs_nro AS obs_nro11, obs11.obs_contenido AS observacion11,
+            COALESCE(obs11.tp_obs, 0) AS tp_obs11, COALESCE(obs11.obs_administrador, '') AS obs_admin11,
+
+            -- === NUEVA PESTAÑA 12: INVENTARIO DE AMBULANCIA ===
+            COALESCE(obs12.obs_id, 0) AS verif_obs12, obs12.obs_id, obs12.obs_nro AS obs_nro12, obs12.obs_contenido AS observacion12,
+            COALESCE(obs12.tp_obs, 0) AS tp_obs12, COALESCE(obs12.obs_administrador, '') AS obs_admin12
+
+        FROM diagnostico_pei pei
+        INNER JOIN formulario_diagnostico_pei form ON form.pei_id = pei.pei_id
+        INNER JOIN _distritales ds ON ds.dist_id = form.dist_id 
+        LEFT JOIN form_observacion obs1 ON obs1.form_id = form.form_id AND obs1.obs_nro = 1
+        LEFT JOIN form_observacion obs2 ON obs2.form_id = form.form_id AND obs2.obs_nro = 2
+        LEFT JOIN form_observacion obs3 ON obs3.form_id = form.form_id AND obs3.obs_nro = 3
+        LEFT JOIN form_observacion obs4 ON obs4.form_id = form.form_id AND obs4.obs_nro = 4
+        LEFT JOIN form_observacion obs5 ON obs5.form_id = form.form_id AND obs5.obs_nro = 5
+        LEFT JOIN form_observacion obs6 ON obs6.form_id = form.form_id AND obs6.obs_nro = 6
+        LEFT JOIN form_observacion obs7 ON obs7.form_id = form.form_id AND obs7.obs_nro = 7
+        LEFT JOIN form_observacion obs8 ON obs8.form_id = form.form_id AND obs8.obs_nro = 8
+        LEFT JOIN form_observacion obs9 ON obs9.form_id = form.form_id AND obs9.obs_nro = 9
+        LEFT JOIN form_observacion obs10 ON obs10.form_id = form.form_id AND obs10.obs_nro = 10
+        LEFT JOIN form_observacion obs11 ON obs11.form_id = form.form_id AND obs11.obs_nro = 11
+        LEFT JOIN form_observacion obs12 ON obs12.form_id = form.form_id AND obs12.obs_nro = 12 -- Acople físico de Ambulancias
             WHERE pei.estado = 1 
               AND pei.pei_id = ". (int)$pei_id ." 
               AND form.dist_id = ". (int)$dist_id;

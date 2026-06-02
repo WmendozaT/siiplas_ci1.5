@@ -20,27 +20,138 @@ class lib_diagnostico_pei extends CI_Controller{
 
     }
 
+    /// mensaje observaciones formulario
+    public function observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f){
+      $tabla='<BR>';
+      $class_bootstrap = '';
+      $icono_fa        = '';
+      $estilos_css     = 'display: none;'; // Oculto por defecto si es tp_obs = 0
+
+      if ($tipo_alerta_f === 1 && !empty($mensaje_alerta_f)) {
+          // --- 1. CONFIGURACIÓN ALERTA INFORMATIVA (AZUL CORPORATIVO) ---
+          $class_bootstrap = 'alert-info';
+          $icono_fa        = 'fa-info-circle';
+          $estilos_css     = 'display: block; border-left: 5px solid #2196F3; color: #31708f; background-color: #d9edf7; border-color: #bce8f1; margin-bottom: 20px; padding: 12px 15px; border-radius: 4px; font-size: 11.5px; line-height: 1.5;';
+      } elseif ($tipo_alerta_f === 2 && !empty($mensaje_alerta_f)) {
+          // --- 2. CONFIGURACIÓN ALERTA CRÍTICA (ROJO INSTITUCIONAL) ---
+          $class_bootstrap = 'alert-danger';
+          $icono_fa        = 'fa-exclamation-triangle';
+          $estilos_css     = 'display: block; border-left: 5px solid #f44336; color: #a94442; background-color: #f2dede; border-color: #ebccd1; margin-bottom: 20px; padding: 12px 15px; border-radius: 4px; font-size: 11.5px; line-height: 1.5;';
+      }
+
+      // Inyección del bloque visual en la parte superior del formulario
+      if ($tipo_alerta_f > 0 && !empty($mensaje_alerta_f)) {
+          $tabla .= '
+          <!-- CAJA DE ALERTA DE REVISIÓN NACIONAL DNP -->
+          <div class="alert ' . $class_bootstrap . '" style="' . $estilos_css . '">
+              <i class="fa ' . $icono_fa . '" style="font-size: 14px; margin-right: 8px; vertical-align: middle;"></i>
+              <strong style="letter-spacing: 0.3px; text-transform: uppercase;">
+                  ' . ($tipo_alerta_f === 1 ? 'OBSERVACIÓN:' : 'OBSERVACIÓN:') . '
+              </strong>
+              <span style="text-transform: uppercase; font-weight: 500;">' . strtoupper($mensaje_alerta_f) . '</span>
+          </div>';
+      }
+      return $tabla;
+    }
+
+
+
+        //// Observaciones
+    public function observacion($get_form_distrital,$nro_form){
+      $tabla='';
+      $tabla .= '
+              <!-- CONTENEDOR INTEGRAL DE OBSERVACIONES DEL FORMULARIO -->
+              <div class="bloque-observaciones" style="margin-top: 20px;">
+                  <!-- Inputs de control unificados -->
+                  <input type="hidden" class="form_id" value="' . intval($get_form_distrital[0]['form_id']) . '">
+                  <input type="hidden" class="nro_obs" value="'.$nro_form.'"> <!-- Cambiar según número de formulario (1 al 12) -->
+
+                  <!-- Letrero de confirmación local para el transcriptor -->
+                  <div class="status" style="font-size: 11px; font-weight: bold; margin-bottom: 5px; display: none;"></div>
+
+                  <!-- CAJA 1: OBSERVACIONES DEL USUARIO OPERATIVO -->
+                  <div style="margin-top: 15px;">
+                      <strong>* Observaciones adicionales (Usuario)</strong>
+                      <textarea 
+                          class="observaciones-input" 
+                          name="obs" 
+                          id="obs_user_'.$nro_form.'" 
+                          placeholder="Escriba aquí sus observaciones..."
+                          style="width: 100%; height: 100px; resize: none; text-transform: uppercase; padding: 6px;"
+                      >' . strtoupper($get_form_distrital[0]['observacion'.$nro_form]) . '</textarea>
+                  </div>';
+
+                  // === CAJA 2: OBSERVACIONES EXCLUSIVAS DEL ADMINISTRADOR (fun_id 399) ===
+                  if($this->tp_adm == 1 ){
+                    // Recuperamos el tipo de alerta actual desde la base de datos para pre-seleccionarlo
+                    $tipo_alerta_actual = isset($get_form_distrital[0]['tp_obs'.$nro_form]) ? intval($get_form_distrital[0]['tp_obs'.$nro_form]) : 0;
+
+                    $tabla .= '
+                    <div style="margin-top: 25px; padding: 15px; background: #fff5f5; border: 1px solid #ebccd1; border-radius: 4px;">
+                        <strong style="color:#c62828; font-size:12px; text-transform:uppercase; display:block; margin-bottom:10px;">
+                            <i class="fa fa-gavel"></i> Panel de Control del Administrador
+                        </strong>
+                        
+                        <!-- 1. SELECTOR INTEGRADO PARA CONFIGURAR EL TIPO DE ALERTA -->
+                        <div style="margin-bottom: 12px; max-width: 350px;">
+                            <label style="font-size: 11px; font-weight: bold; color: #555; display:block; margin-bottom:4px;">Gravedad de la Alerta:</label>
+                            <select class="form-control observaciones-input" 
+                                    name="tp1_alert" 
+                                    id="ctrl_tp1_alert_'.$nro_form.'" 
+                                    style="height: 30px; font-size: 11px; font-weight: bold; padding: 4px 6px;">
+                                <option value="0" ' . ($tipo_alerta_actual === 0 ? 'selected' : '') . '>0: SIN ALERTA (MENSAJE OCULTO)</option>
+                                <option value="1" ' . ($tipo_alerta_actual === 1 ? 'selected' : '') . '>1: ADVERTENCIA INFORMATIVA (AZUL)</option>
+                                <option value="2" ' . ($tipo_alerta_actual === 2 ? 'selected' : '') . '>2: RESTRICCIÓN / CORRECCIÓN MANDATORIA (ROJO)</option>
+                            </select>
+                        </div>
+
+                        <!-- 2. TU TEXTAREA ORIGINAL DE OBSERVACIONES ADMINISTRATIVAS -->
+                        <div>
+                            <label style="font-size: 11px; font-weight: bold; color: #555; display:block; margin-bottom:4px;">Detalle de la Observación Técnica:</label>
+                            <textarea 
+                                class="observaciones-input" 
+                                name="obs_admin" 
+                                id="obs_admin_'.$nro_form.'" 
+                                placeholder="ESCRIBA AQUÍ SUS OBSERVACIONES DE CONTROL INTERNO AL FORMULARIO..."
+                                style="width: 100%; height: 65px; resize: vertical; text-transform: uppercase; padding: 8px; border: 1px solid #f44336; border-radius: 3px; font-size: 11.5px; line-height: 1.4;"
+                            >' . strtoupper($get_form_distrital[0]['obs_admin'.$nro_form]) . '</textarea>
+                        </div>
+                    </div>';
+                }
+
+              $tabla .= '
+              </div>';
+        return $tabla;
+    }
+
 
 
     /*---- Detalle formulario N 1 - Poblacion Afiliada ----*/
     public function formulario_N1($get_form_distrital){
-      $detalle_form1=$this->model_diagnosticopei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
-      $tabla='';
-      $tabla.='
-        <div class="viewport-container">';
-        if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
-          $tabla.='
-          <div style="padding: 15px 0;">
-                <a href="javascript:void(0);" 
-                   onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/1/".$get_form_distrital[0]['dist_id']).'\');" 
-                   class="btn-imprimir" 
-                   title="Imprimir Formulario">
-                   <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
-                </a>
-            </div>';
-        }
-        $tabla.='
+    $detalle_form1=$this->model_diagnosticopei->get_formulario_N1($get_form_distrital[0]['dist_id']); /// listado de gestiones
 
+    $tabla = '';
+    $tabla .= '
+    <div class="viewport-container">';
+    
+    // --- BOTÓN DE IMPRESIÓN ---
+    if($this->tp_adm == 1 || $get_form_distrital[0]['form_impresion'] == 1){
+      $tabla .= '
+      <div style="padding: 15px 0;">
+            <a href="javascript:void(0);" 
+               onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/1/".$get_form_distrital[0]['dist_id']).'\');" 
+               class="btn-imprimir" 
+               title="Imprimir Formulario">
+               <span class="icon">🖨️</span> IMPRIMIR FORMULARIO
+            </a>
+        </div>';
+    }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs1']) ? intval($get_form_distrital[0]['tp_obs1']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin1']) ? trim($get_form_distrital[0]['obs_admin1']) : '';
+        
+        $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -136,24 +247,8 @@ class lib_diagnostico_pei extends CI_Controller{
                   • Recolección de datos.
                   • Extraer información anual por cada categoría ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].').<br>
                   • Verificar consistencia entre fuentes oficiales.
-              </div>
-
-              <input type="hidden"  class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden"  class="nro_obs" value="1">
-
-              <div style="margin-top: 30px;">
-                  <strong>3. Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="1"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 150px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion1']).'</textarea>
-              </div>
-
+              </div>           
+              '.$this->observacion($get_form_distrital,1).'
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -235,59 +330,110 @@ class lib_diagnostico_pei extends CI_Controller{
         });
         </script>
 
-        <script>
-              $(document).ready(function() {
-                  var timeout = null;
-                  var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-                  $(".observaciones-input").on("keyup", function() {
-                      var $this = $(this); 
-                      
-                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                      var contenedor = $this.closest("div").parent(); 
-                      var form_id = contenedor.find(".form_id").val();
-                      var nro_obs = contenedor.find(".nro_obs").val();
-                      
-                      var texto = $this.val();
-                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                      if (!form_id || form_id == "0") {
-                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                          return;
-                      }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                      
-                      clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                      timeout = setTimeout(function() {
-                          $.ajax({
-                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                              type: "POST",
-                              data: {
-                                  form_id: form_id,
-                                  nro: nro_obs, 
-                                  observacion: texto
-                              },
-                              success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                              },
-                              error: function() {
-                                  status.text("Error al guardar").css("color", "red");
-                                  $("#toast-notificacion")
-                                      .text("❌ Error al guardar")
-                                      .css("background-color", "#dc3545")
-                                      .fadeIn(400).delay(3000).fadeOut(400);
-                              }
-                          });
-                      }, 800); 
-                  });
-              });
-          </script>
-         ';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+        </script>';
+
         return $tabla;
     }
 
@@ -320,7 +466,11 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs1']) ? intval($get_form_distrital[0]['tp_obs1']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin1']) ? trim($get_form_distrital[0]['obs_admin1']) : '';
+        
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -616,7 +766,7 @@ class lib_diagnostico_pei extends CI_Controller{
         <div class="viewport-container">';
         if($this->tp_adm==1 || $get_form_distrital[0]['form_impresion']==1){
           $tabla.='
-          <div style="padding: 15px 0;">
+            <div style="padding: 15px 0;">
                 <a href="javascript:void(0);" 
                    onclick="abreVentana_poa(\''.site_url("Diagnostico_pei/rep_diagnostico_form/3/".$get_form_distrital[0]['dist_id']).'\');" 
                    class="btn-imprimir" 
@@ -625,7 +775,12 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs2']) ? intval($get_form_distrital[0]['tp_obs2']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin2']) ? trim($get_form_distrital[0]['obs_admin2']) : '';
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -712,22 +867,7 @@ class lib_diagnostico_pei extends CI_Controller{
                 $tabla.='
                 </tbody>
             </table>
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="2">
-
-              <div style="margin-top: 30px;">
-                  <strong>3. Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="2"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion2']).'</textarea>
-              </div>
-
+             '.$this->observacion($get_form_distrital,2).'
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -806,57 +946,108 @@ class lib_diagnostico_pei extends CI_Controller{
         });
         </script>
 
-        <script>
-              $(document).ready(function() {
-                  var timeout = null;
-                  var base_url = "'.base_url().'"; 
+          <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-                  $(".observaciones-input").on("keyup", function() {
-                      var $this = $(this); 
-                      
-                      // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                      // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                      var contenedor = $this.closest("div").parent(); 
-                      var form_id = contenedor.find(".form_id").val();
-                      var nro_obs = contenedor.find(".nro_obs").val();
-                      
-                      var texto = $this.val();
-                      var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                      if (!form_id || form_id == "0") {
-                          status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                          return;
-                      }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                      status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                      
-                      clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                      timeout = setTimeout(function() {
-                          $.ajax({
-                              url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                              type: "POST",
-                              data: {
-                                  form_id: form_id,
-                                  nro: nro_obs, 
-                                  observacion: texto
-                              },
-                              success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                                  status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                                  $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                              },
-                              error: function() {
-                                  status.text("Error al guardar").css("color", "red");
-                                  $("#toast-notificacion")
-                                      .text("❌ Error al guardar")
-                                      .css("background-color", "#dc3545")
-                                      .fadeIn(400).delay(3000).fadeOut(400);
-                              }
-                          });
-                      }, 800); 
-                  });
-              });
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
           </script>
           <script>
             $(document).ready(function() {
@@ -900,7 +1091,7 @@ class lib_diagnostico_pei extends CI_Controller{
 
 
 
-    /*------- Detalle formulario N 2 -------*/
+    /*------- Detalle formulario N 2 Perfil epidiologico-------*/
     public function formulario_N3($get_form_distrital){
       $tabla='';
       $tabla.='
@@ -916,7 +1107,13 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs3']) ? intval($get_form_distrital[0]['tp_obs3']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin3']) ? trim($get_form_distrital[0]['obs_admin3']) : '';
+        
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page_horizontal">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -949,21 +1146,8 @@ class lib_diagnostico_pei extends CI_Controller{
               <div style="font-weight: bold; margin-bottom: 10px;">4. Perfil de mortalidad (principales causas)</div>
                   '.$this->tabla_form3tp_perfil($get_form_distrital,3).'
                   
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="3">
 
-              <div style="margin-top: 30px;">
-                  <strong>3. Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="3"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion3']).'</textarea>
-              </div>
+              '.$this->observacion($get_form_distrital,3).'
 
               <!-- Pie de página -->
               <div class="footer-nacional">
@@ -1132,43 +1316,96 @@ class lib_diagnostico_pei extends CI_Controller{
                 ejecutarGuardado(inputId);
             }
         </script>
-        <script>
+        <script type="text/javascript">
             $(document).ready(function() {
                 var timeout = null;
-                var base_url = "'.base_url().'"; 
+                var base_url = "' . base_url() . '"; 
 
-                $(".observaciones-input").on("keyup", function() {
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
                     var $this = $(this); 
                     
-                    // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                    // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                    var contenedor = $this.closest("div").parent(); 
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
+
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
                     var form_id = contenedor.find(".form_id").val();
                     var nro_obs = contenedor.find(".nro_obs").val();
                     
-                    var texto = $this.val();
-                    var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
                     if (!form_id || form_id == "0") {
-                        status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
                         return;
                     }
 
                     status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
                     clearTimeout(timeout);
+
+                    // Temporizador elástico de tipeo coordinado a 800ms
                     timeout = setTimeout(function() {
                         $.ajax({
                             url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
                             type: "POST",
+                            dataType: "json", 
                             data: {
                                 form_id: form_id,
                                 nro: nro_obs, 
-                                observacion: texto
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
                             },
                             success: function(response) {
-
-                                status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                                $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
                             },
                             error: function() {
                                 status.text("Error al guardar").css("color", "red");
@@ -1180,10 +1417,14 @@ class lib_diagnostico_pei extends CI_Controller{
                         });
                     }, 800); 
                 });
-              });
+            });
           </script>';
         return $tabla;
     }
+
+
+
+
 
 
     public function tabla_form3tp_perfil($get_form_distrital,$tp){
@@ -1338,7 +1579,12 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs4']) ? intval($get_form_distrital[0]['tp_obs4']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin4']) ? trim($get_form_distrital[0]['obs_admin4']) : '';
+        
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -1381,21 +1627,7 @@ class lib_diagnostico_pei extends CI_Controller{
               </div>
                 '.$this->tabla_form4Tp_infraestructura($detalle_form4_otros,0).'
 
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="4">
-
-              <div style="margin-top: 30px;">
-                  <strong>Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="4"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion4']).'</textarea>
-              </div>
+                '.$this->observacion($get_form_distrital,4).'
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -1445,8 +1677,6 @@ class lib_diagnostico_pei extends CI_Controller{
                         return false;
                     }
                 }
-
-
 
                 var valor = $el.val().trim();
 
@@ -1705,58 +1935,109 @@ class lib_diagnostico_pei extends CI_Controller{
           }
         </script>
         
-        <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
 
         return $tabla;
     }
@@ -1912,7 +2193,13 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs5']) ? intval($get_form_distrital[0]['tp_obs5']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin5']) ? trim($get_form_distrital[0]['obs_admin5']) : '';
+
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -2031,21 +2318,7 @@ class lib_diagnostico_pei extends CI_Controller{
               }
                    
          $tabla.='   
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="5">
-
-              <div style="margin-top: 30px;">
-                  <strong>* Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="5"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion5']).'</textarea>
-              </div>      
+              '.$this->observacion($get_form_distrital,5).'    
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -2168,58 +2441,109 @@ class lib_diagnostico_pei extends CI_Controller{
             });
         });
         </script>
-        <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
       }
         return $tabla;
     }
@@ -2299,7 +2623,12 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs6']) ? intval($get_form_distrital[0]['tp_obs6']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin6']) ? trim($get_form_distrital[0]['obs_admin6']) : '';
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -2389,24 +2718,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   </tr>';
               }
               $tabla .= '</tbody></table>
-
-              
-
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="6">
-
-              <div style="margin-top: 30px;">
-                  <strong>Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="6"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion6']).'</textarea>
-              </div>
+              '.$this->observacion($get_form_distrital,6).'
               <!-- Pie de página -->
               <div class="footer-nacional">
                   DEPARTAMENTO NACIONAL DE PLANIFICACION / Sistema de Planificación SIIPLAS
@@ -2569,58 +2881,109 @@ class lib_diagnostico_pei extends CI_Controller{
             }
         </script>
     
-        <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
 
         return $tabla;
     }
@@ -2664,7 +3027,12 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs7']) ? intval($get_form_distrital[0]['tp_obs7']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin7']) ? trim($get_form_distrital[0]['obs_admin7']) : '';
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -2772,21 +3140,7 @@ class lib_diagnostico_pei extends CI_Controller{
                     </tfoot>
               </table>
             
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="7">
-
-              <div style="margin-top: 30px;">
-                  <strong>Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="7"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion7']).'</textarea>
-              </div>
+              '.$this->observacion($get_form_distrital,7).'
 
               <!-- Pie de página -->
               <div class="footer-nacional">
@@ -2897,58 +3251,109 @@ class lib_diagnostico_pei extends CI_Controller{
         });
         </script>
 
-        <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
       
         return $tabla;
     }
@@ -2971,7 +3376,12 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs8']) ? intval($get_form_distrital[0]['tp_obs8']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin8']) ? trim($get_form_distrital[0]['obs_admin8']) : '';
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -3064,21 +3474,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   </tbody>
               </table>
             
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="8">
-
-              <div style="margin-top: 30px;">
-                  <strong>Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="8"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 70px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion8']).'</textarea>
-              </div>
+              '.$this->observacion($get_form_distrital,8).'
             </div>
           </div>
           <hr>
@@ -3173,58 +3569,109 @@ class lib_diagnostico_pei extends CI_Controller{
             });
         });
         </script>
-        <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
       
         return $tabla;
     }
@@ -3248,7 +3695,12 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs9']) ? intval($get_form_distrital[0]['tp_obs9']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin9']) ? trim($get_form_distrital[0]['obs_admin9']) : '';
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page_horizontal_corto">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -3313,21 +3765,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   </tbody>
               </table>
               
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="9">
-
-              <div style="margin-top: 30px;">
-                  <strong>Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="9"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion9']).'</textarea>
-              </div>
+              '.$this->observacion($get_form_distrital,9).'
 
               <!-- Pie de página -->
               <div class="footer-nacional">
@@ -3438,58 +3876,109 @@ class lib_diagnostico_pei extends CI_Controller{
             });
         });
         </script>
-        <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
       
         return $tabla;
     }
@@ -3513,7 +4002,12 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs10']) ? intval($get_form_distrital[0]['tp_obs10']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin10']) ? trim($get_form_distrital[0]['obs_admin10']) : '';
+
         $tabla.='
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="page">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -3592,21 +4086,7 @@ class lib_diagnostico_pei extends CI_Controller{
                   </tbody>
               </table>
               
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="10">
-
-              <div style="margin-top: 30px;">
-                  <strong>Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="10"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion10']).'</textarea>
-              </div>
+              '.$this->observacion($get_form_distrital,10).'
 
               <!-- Pie de página -->
               <div class="footer-nacional">
@@ -3690,58 +4170,109 @@ class lib_diagnostico_pei extends CI_Controller{
             });
         });
         </script>
-        <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
       
         return $tabla;
     }
@@ -3796,6 +4327,11 @@ class lib_diagnostico_pei extends CI_Controller{
                 </a>
             </div>';
         }
+
+        $tipo_alerta_f   = isset($get_form_distrital[0]['tp_obs11']) ? intval($get_form_distrital[0]['tp_obs11']) : 0;
+        $mensaje_alerta_f = isset($get_form_distrital[0]['obs_admin11']) ? trim($get_form_distrital[0]['obs_admin11']) : '';
+        
+
         $tabla.='
             <div class="modal fade" id="modal_nuevo_amb" tabindex="-1" role="dialog">
               <div class="modal-dialog" role="document">
@@ -3878,7 +4414,7 @@ class lib_diagnostico_pei extends CI_Controller{
           </div>
 
 
-
+          '.$this->observaciones_formulario($tipo_alerta_f,$mensaje_alerta_f).'
           <div class="'.$page.'">
               <!-- Fecha de Impresión Automática -->
               <div class="fecha-impresion">
@@ -3981,21 +4517,7 @@ class lib_diagnostico_pei extends CI_Controller{
                 </tbody>
               </table>
               
-              <input type="hidden" class="form_id" value="'.strtoupper($get_form_distrital[0]['form_id']).'">
-              <input type="hidden" class="nro_obs" value="11">
-
-              <div style="margin-top: 30px;">
-                  <strong>Observaciones adicionales</strong>
-                  <textarea 
-                      class="observaciones-input" 
-                      name="obs" 
-                      id="obs" 
-                      data-nro="10"
-                      onpaste="return false;" 
-                      placeholder="Escriba aquí sus observaciones..."
-                      style="width: 100%; height: 100px; resize: none;"
-                  >'.strtoupper($get_form_distrital[0]['observacion11']).'</textarea>
-              </div>
+              '.$this->observacion($get_form_distrital,11).'
 
               <!-- Pie de página -->
               <div class="footer-nacional">
@@ -4223,74 +4745,112 @@ class lib_diagnostico_pei extends CI_Controller{
         }
     </script>
 
+      <script type="text/javascript">
+            $(document).ready(function() {
+                var timeout = null;
+                var base_url = "' . base_url() . '"; 
 
+                // REVISIÓN: Escucha keyup para textareas y change para el combo de gravedad de alerta
+                $(document).on("keyup change", ".observaciones-input", function(e) {
+                    var $this = $(this); 
+                    
+                    // Si el evento es un tipeo (keyup) y el elemento es el SELECT, lo ignoramos para evitar doble envío
+                    if (e.type === "keyup" && $this.is("select")) {
+                        return;
+                    }
 
-      <script>
-          $(document).ready(function() {
-              var timeout = null;
-              var base_url = "'.base_url().'"; 
+                    // 1. MANTIENE TU LÓGICA ORIGINAL: Navegación estructural relativa por el DOM
+                    // (Asegúrate de que tus inputs hidden estén envueltos en el contenedor común raíz)
+                    var contenedor = $this.closest(".bloque-observaciones"); 
+                    var form_id = contenedor.find(".form_id").val();
+                    var nro_obs = contenedor.find(".nro_obs").val();
+                    
+                    // 2. ADAPTACIÓN POLIMÓRFICA SINO CORREGIDA
+                    var campo_origen = $this.attr("name"); // Recibe: "obs", "obs_admin" o "tp1_alert"
+                    var texto = $this.val();               // Captura la cadena o el entero (0, 1, 2) según el elemento
+                    
+                    var status = contenedor.find(".status"); 
 
-              $(".observaciones-input").on("keyup", function() {
-                  var $this = $(this); 
-                  
-                  // BUSCAMOS LOS VALORES RELATIVOS AL TEXTAREA ACTUAL
-                  // Buscamos el contenedor padre y luego el input dentro de ese bloque
-                  var contenedor = $this.closest("div").parent(); 
-                  var form_id = contenedor.find(".form_id").val();
-                  var nro_obs = contenedor.find(".nro_obs").val();
-                  
-                  var texto = $this.val();
-                  var status = contenedor.find(".status"); // Cada uno tiene su propio status
+                    if (!form_id || form_id == "0") {
+                        status.stop(true, true).show().text("⚠️ Error: No se detectó ID.").css("color", "red");
+                        return;
+                    }
 
-                  if (!form_id || form_id == "0") {
-                      status.show().text("⚠️ Error: No se detectó ID.").css("color", "red");
-                      return;
-                  }
+                    status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
+                    
+                    clearTimeout(timeout);
 
-                  status.stop(true, true).show().text("Escribiendo...").css("color", "blue");
-                  
-                  clearTimeout(timeout);
-
-                  timeout = setTimeout(function() {
-                      $.ajax({
-                          url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
-                          type: "POST",
-                          data: {
-                              form_id: form_id,
-                              nro: nro_obs, 
-                              observacion: texto
-                          },
-                          success: function(response) {
-
-                              status.text("Guardado ✓").css("color", "green").fadeOut(2000);
-                              $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
-                          },
-                          error: function() {
-                              status.text("Error al guardar").css("color", "red");
-                              $("#toast-notificacion")
-                                  .text("❌ Error al guardar")
-                                  .css("background-color", "#dc3545")
-                                  .fadeIn(400).delay(3000).fadeOut(400);
-                          }
-                      });
-                  }, 800); 
-              });
-          });
-      </script>';
+                    // Temporizador elástico de tipeo coordinado a 800ms
+                    timeout = setTimeout(function() {
+                        $.ajax({
+                            url: base_url + "index.php/Cdiagnostico_pei/CDiagnostico_pei/guarda_observacion",
+                            type: "POST",
+                            dataType: "json", 
+                            data: {
+                                form_id: form_id,
+                                nro: nro_obs, 
+                                campo_origen: campo_origen, // Envía "obs", "obs_admin" o "tp1_alert"
+                                texto_mensaje: texto       // Pasa el valor capturado
+                            },
+                            success: function(response) {
+                                if(response.status === "success") {
+                                    status.text("Guardado ✓").css("color", "green").fadeOut(2000);
+                                    $("#toast-notificacion").fadeIn(400).delay(2000).fadeOut(400);
+                                    
+                                    // ==========================================================================
+                                    // --- CONTROL VISUAL EN CALIENTE DE LA BARRA DE ALERTAS SUPERIOR ---
+                                    // ==========================================================================
+                                    var $alerta_superior = $("#contenedor_alerta_f" + nro_obs);
+                                    
+                                    // Si lo que se cambió fue el combo de gravedad, actualizamos la barra visual de inmediato
+                                    if (campo_origen === "tp1_alert") {
+                                        var nuevo_estado = parseInt(texto);
+                                        if (nuevo_estado === 0) {
+                                            $alerta_superior.slideUp(200);
+                                        } else {
+                                            // Leemos el texto actual del textarea del administrador para no dejar la barra vacía
+                                            var msg_actual = contenedor.find("textarea[name=obs_admin]").val().trim().toUpperCase();
+                                            
+                                            if (nuevo_estado === 1) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #2196F3", "background-color": "#d9edf7", "color": "#31708f", "border-color": "#bce8f1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-exclamation-triangle").addClass("fa-info-circle");
+                                                $alerta_superior.find("strong").text("OBSERVACIÓN DE CONTROL INTERNO:");
+                                            } else if (nuevo_estado === 2) {
+                                                $alerta_superior.css({ "display": "block", "border-left": "5px solid #f44336", "background-color": "#f2dede", "color": "#a94442", "border-color": "#ebccd1" });
+                                                $alerta_superior.find(".fa").removeClass("fa-info-circle").addClass("fa-exclamation-triangle");
+                                                $alerta_superior.find("strong").text("NOTIFICACIÓN DE RECHAZO MANDATORIA:");
+                                            }
+                                            
+                                            if(msg_actual !== "") {
+                                                $alerta_superior.find("span").text(msg_actual);
+                                                $alerta_superior.slideDown(250);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Si lo que cambió fue el texto de la observación, actualizamos el contenido impreso en la alerta
+                                    if (campo_origen === "obs_admin") {
+                                        $alerta_superior.find("span").text(texto.trim().toUpperCase());
+                                    }
+                                } else {
+                                    status.text("⚠️ Restricción").css("color", "orange");
+                                }
+                            },
+                            error: function() {
+                                status.text("Error al guardar").css("color", "red");
+                                $("#toast-notificacion")
+                                    .text("❌ Error al guardar")
+                                    .css("background-color", "#dc3545")
+                                    .fadeIn(400).delay(3000).fadeOut(400);
+                            }
+                        });
+                    }, 800); 
+                });
+            });
+          </script>';
       
         return $tabla;
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4345,7 +4905,7 @@ class lib_diagnostico_pei extends CI_Controller{
                     background-color: white; 
                     width: 10in; 
                     min-width: 10in; /* Evita que se encoja en celulares */
-                    height: 12in; 
+                    height: 14in; 
                     padding: 0.6in 0.7in; 
                     box-sizing: border-box; 
                     position: relative; 
@@ -4390,7 +4950,7 @@ class lib_diagnostico_pei extends CI_Controller{
                     /* Invertimos: Ancho ahora es 11 pulgadas y alto 8.5 */
                     width: 20in; 
                     min-width: 20in; /* Mantiene el ancho horizontal en celulares con scroll */
-                    height: 25in; 
+                    height: 28in; 
                     padding: 0.4in 0.5in; /* Reducimos un poco el padding para ganar espacio */
                     box-sizing: border-box; 
                     position: relative; 

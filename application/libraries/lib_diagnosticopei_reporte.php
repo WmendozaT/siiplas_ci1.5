@@ -408,6 +408,10 @@ class Lib_diagnosticopei_reporte {
              $tabla .= '
              </tbody>
         </table>
+        </page>
+
+        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+        '.$this->cabecera_report(3,'DIAGNÓSTICO DEL PERFIL EPIDEMIOLOGICO',$get_form_distrital).'
 
         <p class="bold" style="margin-top: 15px;">3. Perfil de mortalidad (principales causas)</p>
         <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
@@ -448,7 +452,10 @@ class Lib_diagnosticopei_reporte {
              $tabla .= '
              </tbody>
         </table>
+        </page>
 
+        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+        '.$this->cabecera_report(3,'DIAGNÓSTICO DEL PERFIL EPIDEMIOLOGICO',$get_form_distrital).'
         <p class="bold" style="margin-top: 15px;">2. Perfil de morbilidad (Enfermedades prevalentes / 10 primeras causas de consulta Externa)</p>
         <table class="tabla-datos" style="font-size:8.7px; width:100%; border-collapse: collapse; table-layout: fixed;" border="1">
             <thead>
@@ -521,7 +528,7 @@ class Lib_diagnosticopei_reporte {
         
         // Reducimos backbottom a 15mm para ganar espacio útil y evitar hojas vacías
         $tabla .= ' 
-        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
+        <page orientation="'.$orientacion.'" backtop="30mm" backbottom="5mm" backleft="15mm" backright="15mm">
         
         <!-- ==================== CABECERA ESTÁTICA CORPORATIVA ==================== -->
         '.$this->cabecera_report(4,'DIAGNÓSTICO DE INFRAESTRUCTURA DE SALUD',$get_form_distrital).'
@@ -740,8 +747,8 @@ class Lib_diagnosticopei_reporte {
                         <th style="width:2%;">#</th>
                         <th style="width:20%;">Establecimiento</th>
                         <th style="width:20%;">Servicio / Area</th>
-                        <th style="width:30%;">Detalle de Equipamiento Mayor</th>
-                        <th style="width:28%;">Precio Referencial</th>
+                        <th style="width:40%;">Detalle de Equipamiento Mayor</th>
+                        <th style="width:18%;">Precio Referencial</th>
                      </tr>
                     </thead>
                     <tbody>';
@@ -749,12 +756,12 @@ class Lib_diagnosticopei_reporte {
                     foreach($listado_equipamiento as $row){
                     $nro++;
                     $tabla .= '
-                        <tr style="font-size:9px;">
-                            <td style="font-size:9px;width:2%;">'.$nro.'</td>
+                        <tr style="font-size:8px;">
+                            <td style="font-size:8px;width:2%;">'.$nro.'</td>
                             <td style="font-size:8px; text-align:left;width:20%;">'.$row['tipo']. ' '.$row['act_descripcion'].'</td>
-                            <td style="font-size:8px;width:20%;">'.strtoupper($row['servicio']).'</td>
-                            <td style="font-size:8px;text-align:left;width:30%;">'.strtoupper($row['detalle_equipo']).'</td>
-                            <td style="font-size:8px;text-align:right;width:28%;">'.number_format($row['precio_referencial'], 2, '.', ',').'</td>
+                            <td style="font-size:8px;width:20%;text-align:left;">'.strtoupper($row['servicio']).'</td>
+                            <td style="font-size:8px;text-align:left;width:40%;">'.strtoupper($row['detalle_equipo']).'</td>
+                            <td style="font-size:8px;text-align:right;width:18%;">'.number_format($row['precio_referencial'], 2, '.', ',').'</td>
                         </tr>';
                     }
                 $tabla.='

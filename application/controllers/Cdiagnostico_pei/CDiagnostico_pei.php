@@ -18,8 +18,7 @@ class CDiagnostico_pei extends CI_Controller {
             $CI =& get_instance();
             $this->lib_diagnosticopei_reporte = $CI->lib_diagnosticopei_reporte;
         }
-
-     
+        
       }else{
           redirect('/','refresh');
       }
@@ -213,7 +212,7 @@ class CDiagnostico_pei extends CI_Controller {
         <div class="row" style="margin-bottom: 15px; display: flex; align-items: center; border-bottom: 2px solid #3276b1; padding-bottom: 10px;">
             <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5">
                 <h2 style="margin: 0; padding: 0; color: #212121; font-weight: bold;">
-                    <i class="fa fa-hospital-o text-primary"></i> ' . strtoupper($get_form_distrital[0]['dist_distrital']) . ' - '.$get_form_distrital[0]['form_estado'].'
+                    <i class="fa fa-hospital-o text-primary"></i> ' . strtoupper($get_form_distrital[0]['dist_distrital']) . '
                 </h2>
                 <small class="text-muted" style="font-size: 11px;">Módulo de Registro Diagnóstico Quinquenal ('.$get_form_distrital[0]['g_id_inicio'].' - '.$get_form_distrital[0]['g_id_fin'].')</small>
             </div>';
@@ -2142,35 +2141,78 @@ class CDiagnostico_pei extends CI_Controller {
 
 
   //// Guarda Observacion al formulario
-  function guarda_observacion() {
-      $fid = $this->input->post('form_id');
-      $nro = $this->input->post('nro');
-      $txt = $this->input->post('observacion');
+    public function guarda_observacion() {
+        if (ob_get_length()) ob_clean(); // Protección de búfer contra fugas HTML
+        header('Content-Type: application/json');
 
-     // 1. Verificamos si ya existe un registro en la tabla de observaciones
-     // Usamos el form_id como referencia
-      $this->db->where('form_id', $fid);
-      $this->db->where('obs_nro', $nro);
-      $query = $this->db->get('form_observacion');
+        // 1. Recepción base de variables POST enviadas por JQuery
+        $form_id      = intval($this->input->post('form_id'));
+        $obs_nro      = intval($this->input->post('nro')); 
+        $campo_origen = trim($this->input->post('campo_origen')); // Recibe "obs", "obs_admin" o "tp1_alert"
+        
+        // Captura inicial limpia sin mutación de mayúsculas preventiva
+        $raw_mensaje  = $this->input->post('texto_mensaje'); 
 
-      $data = array(
-          'form_id'       => $fid,
-          'obs_nro'       => $nro, // Nota: Asegúrate de que obs_nro deba ser igual al form_id
-          'obs_contenido' => $txt
-      );
+        if (empty($form_id) || empty($obs_nro) || empty($campo_origen)) {
+            echo json_encode(array('status' => 'error', 'msg' => 'Paquete transaccional con datos incompletos.'));
+            exit;
+        }
 
-      if ($query->num_rows() > 0) {
-          // 2. Si el registro YA EXISTE en la tabla, actualizamos
-          $this->db->where('form_id', $fid);
-          $this->db->where('obs_nro', $nro);
-          $this->db->update('form_observacion', $data);
-          echo "updated";
-      } else {
-          // 3. Si NO EXISTE, insertamos
-          $this->db->insert('form_observacion', $data);
-          echo "inserted";
-      }
-  }
+        // 2. AJUSTE: Discriminación polimórfica de la columna y formateo selectivo de datos
+        $columna_update = '';
+        $valor_final    = NULL;
+
+        if ($campo_origen === 'obs') {
+            $columna_update = 'obs_contenido'; // Observaciones de los usuarios distritales
+            $valor_final    = !empty(trim($raw_mensaje)) ? trim(strtoupper($raw_mensaje)) : NULL;
+
+        } elseif ($campo_origen === 'obs_admin') {
+            $columna_update = 'obs_administrador'; // Observaciones del Administrador Nacional (Rol 399)
+            $valor_final    = !empty(trim($raw_mensaje)) ? trim(strtoupper($raw_mensaje)) : NULL;
+
+        } elseif ($campo_origen === 'tp1_alert') {
+            $columna_update = 'tp_obs'; // Gravedad de la alerta visual (0 = Oculto, 1 = Azul, 2 = Rojo)
+            $valor_final    = intval($raw_mensaje); // Forzamos casteo a entero puro (0, 1 o 2)
+        }
+
+        if (empty($columna_update)) {
+            echo json_encode(array('status' => 'error', 'msg' => 'Origen del campo de control no identificado por el servidor.'));
+            exit;
+        }
+
+        // 3. Verificación de existencia previa en la tabla relacional form_observacion
+        $this->db->where('form_id', $form_id);
+        $this->db->where('obs_nro', $obs_nro);
+        $fila_existente = $this->db->get('form_observacion')->row();
+
+        // 4. Construcción de la matriz dinámica de datos para la persistencia
+        $data_db = array(
+            'form_id'       => $form_id,
+            'obs_nro'       => $obs_nro,
+            $columna_update => $valor_final
+        );
+
+        // === ALGORITMO INTEGRAL DE UPSERT AUTOMÁTICO ===
+        if ($fila_existente) {
+            // Si el registro ya existe, actualizamos únicamente la columna que mutó en caliente
+            $this->db->where('obs_id', $fila_existente->obs_id);
+            $res = $this->db->update('form_observacion', $data_db);
+        } else {
+            // Si es la primera observación para este formulario anual, insertamos la fila inicial
+            $res = $this->db->insert('form_observacion', $data_db);
+        }
+
+        // 5. Envío de respuesta asíncrona limpia al JavaScript
+        if ($res) {
+            echo json_encode(array('status' => 'success'));
+        } else {
+            echo json_encode(array('status' => 'error', 'msg' => 'El motor de base de datos de la CNS rechazó la transacción de la observación.'));
+        }
+        exit; // Detiene de forma estricta el hilo de ejecución protegiendo el JSON
+    }
+
+
+
 
 
     //// Guarda informacion de las tablas automaticamente form 1
@@ -3135,7 +3177,89 @@ public function guarda_detalle_automatica_form2() {
 
 
 
+public function guardar_alerta_formulario_uno() {
+    // 1. Limpieza radical de búferes contra residuos HTML
+    if (ob_get_length()) ob_clean();
+    header('Content-Type: application/json');
 
+    // 2. Recepción y tipificación estricta de parámetros POST
+    $det_id          = $this->input->post('det_id') !== NULL ? intval($this->input->post('det_id')) : 0;
+    $tp_form         = $this->input->post('tp_form') !== NULL ? intval($this->input->post('tp_form')) : 0; 
+    $form_maestro_id = $this->input->post('form_maestro_id') !== NULL ? intval($this->input->post('form_maestro_id')) : 0; 
+    $tp_alert        = $this->input->post('tp1_alert') !== NULL ? intval($this->input->post('tp1_alert')) : 0;
+    $form_mensaje    = $this->input->post('form1_mensaje') !== NULL ? trim(strtoupper($this->input->post('form1_mensaje'))) : '';
+
+    if (empty($tp_form) || ($tp_alert < 0 || $tp_alert > 2)) {
+        echo json_encode(array('status' => 'error', 'msg' => 'Tipo de formulario o estado de alerta inconsistente.'));
+        exit;
+    }
+
+    // === DICCIONARIO UNIVERSAL DE TABLAS DEL SIIPLAS ===
+    $mapa_formularios = array(
+        1  => array('tabla' => 'formularion1_detalle',          'pk' => 'form_id',       'col_alert' => 'tp1_alert',  'col_msg' => 'form1_mensaje'),
+        2  => array('tabla' => 'formularion1_grupo_etareo',     'pk' => 'form_id',       'col_alert' => 'tp1_alert',  'col_msg' => 'form1_mensaje'),
+        3  => array('tabla' => 'formularion2_detalle',          'pk' => 'form_id',      'col_alert' => 'tp2_alert',  'col_msg' => 'form2_mensaje'),
+        4  => array('tabla' => 'formularion3_detalle_perfil',   'pk' => 'form_id',      'col_alert' => 'tp3_alert',  'col_msg' => 'form3_mensaje'),
+        5  => array('tabla' => 'formularion4_detalle_infra',    'pk' => 'form_id',      'col_alert' => 'tp4_alert',  'col_msg' => 'form4_mensaje'),
+        6  => array('tabla' => 'formularion5_produccion_cama',  'pk' => 'form_id',      'col_alert' => 'tp5_alert',  'col_msg' => 'form5_mensaje'),
+        7  => array('tabla' => 'formularion6_equipos',          'pk' => 'form_id',      'col_alert' => 'tp6_alert',  'col_msg' => 'form6_mensaje'),
+        8  => array('tabla' => 'formularion7_rrhh',             'pk' => 'form_id',      'col_alert' => 'tp7_alert',  'col_msg' => 'form7_mensaje'),
+        9  => array('tabla' => 'formularion8_compra_servicios', 'pk' => 'form_id',      'col_alert' => 'tp8_alert',  'col_msg' => 'form8_mensaje'),
+        10 => array('tabla' => 'formularion9_presupuestos',     'pk' => 'form_id',      'col_alert' => 'tp9_alert',  'col_msg' => 'form9_mensaje'),
+        11 => array('tabla' => 'formularion10_reembolsos',      'pk' => 'form_id',     'col_alert' => 'tp10_alert', 'col_msg' => 'form10_mensaje'),
+        12 => array('tabla' => 'formularion11_ambulancias',     'pk' => 'form_id',     'col_alert' => 'tp11_alert', 'col_msg' => 'form11_mensaje')
+    );
+
+    if (!array_key_exists($tp_form, $mapa_formularios)) {
+        echo json_encode(array('status' => 'error', 'msg' => 'El código de formulario enviado (tp_form) no coincide con el mapa.'));
+        exit;
+    }
+
+    $config = $mapa_formularios[$tp_form];
+
+    if ($tp_alert === 0) {
+        $form_mensaje = NULL;
+    }
+
+    $data_db = array(
+        $config['col_alert'] => $tp_alert,
+        $config['col_msg']   => $form_mensaje
+    );
+
+    // === SISTEMA DE ALTA SEGURIDAD TRAP DE CONSULTAS SQL ===
+    try {
+        if ($det_id > 0) {
+            // Fila existente: Actualización
+            $this->db->where($config['pk'], $det_id);
+            $res = $this->db->update($config['tabla'], $data_db);
+            $id_retorno = $det_id;
+        } else {
+            // Fila nueva (det_id = 0): Inserción dinámica
+            if (empty($form_maestro_id)) {
+                echo json_encode(array('status' => 'error', 'msg' => 'Falta el parámetro form_maestro_id en la petición.'));
+                exit;
+            }
+            
+            $data_db['form_id'] = $form_maestro_id;
+            $res = $this->db->insert($config['tabla'], $data_db);
+            $id_retorno = $this->db->insert_id(); 
+        }
+
+        // Si la consulta fue exitosa de forma nativa
+        if ($res) {
+            echo json_encode(array('status' => 'success', 'nuevo_id' => $id_retorno));
+        } else {
+            // Capturamos el error específico del motor de base de datos de CodeIgniter 1.5
+            $db_error = $this->db->_error_message();
+            echo json_encode(array('status' => 'error', 'msg' => 'Error de Base de Datos: ' . $db_error));
+        }
+
+    } catch (Exception $e) {
+        // Atrapa fallas de compilación o nombres de columnas inexistentes
+        echo json_encode(array('status' => 'error', 'msg' => 'Excepción Crítica en Servidor: ' . $e->getMessage()));
+    }
+    exit;
+}
 
 
 
