@@ -29,7 +29,7 @@ class Dashboard extends CI_Controller{
         $this->load->library('security');
         $this->gestion = $this->session->userData('gestion');
         $this->adm = $this->session->userData('adm');
-        //$this->rol = $this->session->userData('rol_id');
+        $this->rol = $this->session->userData('rol_id');
        // $this->dist = $this->session->userData('dist');
         $this->dist_id = $this->session->userData('dist');
         //$this->dist_tp = $this->session->userData('dist_tp');
@@ -462,41 +462,51 @@ class Dashboard extends CI_Controller{
         </div>';
 
         $tabla.='<div class="row">';
-        if(count($menu_disponibles)!=0){
-            if($this->dist_id==13 ){
-                $tabla.='
-                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                    <!-- Mantenemos tus clases originales y añadimos onclick -->
-                    <a href="'.base_url().'index.php/Diagnostico_pei" 
-                       class="jarvismetro-tile big-cubes bg-color-greenLight" 
-                       onclick="showFormalLoading("Diagnostico Pei")">
-                        <div class="well1" align="center">
-                            <img class="img-circle" src="'.base_url().'assets/img/gerenciaproy.png"  style="margin-left:0px; width: 95px"/>
-                            <h1 style="font-size: 11px;"><b>Diagnostico Pei</b></h1>
+        if($this->rol==10){
+            $tabla.='<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                            <!-- Mantenemos tus clases originales y añadimos onclick -->
+                            <a href="'.base_url().'index.php/gasto_corriente" 
+                               class="jarvismetro-tile big-cubes bg-color-greenLight" 
+                               onclick="showFormalLoading(\'GASTO CORRIENTE\')">
+                                <div class="well1" align="center">
+                                    <img class="img-circle" src="'.base_url().'assets/img/ejecucion.png"  style="margin-left:0px; width: 95px"/>
+                                    <h1 style="font-size: 11px;"><b>GASTO CORRIENTE</b></h1>
+                                </div>
+                            </a>
                         </div>
-                    </a>
-                </div>';
-            }
-            else{
-                foreach($menu_disponibles as $row){
-                $tabla.='
-                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
-                        <!-- Mantenemos tus clases originales y añadimos onclick -->
-                        <a href="'.base_url().'index.php/'.$row['url'].'" 
-                           class="jarvismetro-tile big-cubes bg-color-greenLight" 
-                           onclick="showFormalLoading(\''.$row['mod_descripcion'].'\')">
-                            <div class="well1" align="center">
-                                <img class="img-circle" src="'.base_url().''.$row['icono_mod'].'"  style="margin-left:0px; width: 95px"/>
-                                <h1 style="font-size: 11px;"><b>'.$row['mod_descripcion'].'</b></h1>
-                            </div>
-                        </a>
-                    </div>';
-                }
-            }
-            
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                            <!-- Mantenemos tus clases originales y añadimos onclick -->
+                            <a href="'.base_url().'index.php/ejecucion_proyectos_inversion" 
+                               class="jarvismetro-tile big-cubes bg-color-greenLight" 
+                               onclick="showFormalLoading(\'INVERSIÓN\')">
+                                <div class="well1" align="center">
+                                    <img class="img-circle" src="'.base_url().'assets/img/gerencia.png" style="margin-left:0px; width: 95px"/>
+                                    <h1 style="font-size: 11px;"><b>PROYECTOS DE INVERSIÓN</b></h1>
+                                </div>
+                            </a>
+                        </div>';
         }
         else{
-            $tabla.='SIN MODULOS DISPONIBLES';
+            if(count($menu_disponibles)!=0){
+                foreach($menu_disponibles as $row){
+                    $tabla.='
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                            <!-- Mantenemos tus clases originales y añadimos onclick -->
+                            <a href="'.base_url().'index.php/'.$row['url'].'" 
+                               class="jarvismetro-tile big-cubes bg-color-greenLight" 
+                               onclick="showFormalLoading(\''.$row['mod_descripcion'].'\')">
+                                <div class="well1" align="center">
+                                    <img class="img-circle" src="'.base_url().''.$row['icono_mod'].'"  style="margin-left:0px; width: 95px"/>
+                                    <h1 style="font-size: 11px;"><b>'.$row['mod_descripcion'].'</b></h1>
+                                </div>
+                            </a>
+                        </div>';
+                    }
+                
+            }
+            else{
+                $tabla.='SIN MODULOS DISPONIBLES';
+            }
         }
         $tabla.='</div>';
 

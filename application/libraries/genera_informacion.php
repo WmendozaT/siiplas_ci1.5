@@ -28,6 +28,7 @@ class Genera_informacion extends CI_Controller{
         $this->fun_id = $this->session->userdata("fun_id");
         $this->tmes = $this->session->userData('trimestre');
         $this->ppto= $this->session->userData('verif_ppto');
+        $this->tp_adm = $this->session->userData('tp_adm');
         $this->verif_mes=$this->session->userData('mes_actual'); /// mes por decfecto
         $this->mes_sistema=$this->session->userData('mes'); /// mes sistema
 
@@ -39,33 +40,20 @@ class Genera_informacion extends CI_Controller{
     public function lista_gastocorriente_pinversion($dep_id,$dist_id,$tp_id){
       
         if($dist_id!=0){
-          $unidades=$this->mrep_operaciones->list_unidades($dist_id,$tp_id); /// unidades de la distrital
+          $unidades=$this->model_proyecto->lista_programacion_poa_x_distrital($dist_id,$tp_id); /// unidades de la distrital
           $distrital=$this->model_proyecto->dep_dist($dist_id);
           $tit_reg=$distrital[0]['dist_distrital'];
         }
         else{
-          $unidades=$this->mrep_operaciones->list_poa_gacorriente_pinversion_regional($dep_id,$tp_id); /// unidades de la Regional
+          $unidades=$this->model_proyecto->lista_programacion_poa_x_regional($dep_id,$tp_id); /// unidades de la Regional
           $regional=$this->model_proyecto->get_departamento($dep_id);
           $tit_reg=$regional[0]['dep_departamento'];
         }
-      
-        $titulo='GASTO CORRIENTE';
-        if($tp_id==1){
-          $titulo='PROYECTO DE INVERSI&Oacute;N';
-        }
-
-        $titulo_ppto='PPTO. ASIGNADO '.$this->gestion.'';
-        if($this->ppto==1){
-          $titulo_ppto='PPTO. APROBADO '.$this->gestion.'';
-        }
 
       $tabla='';
-
-      if($this->rol!=10){ /// evitar audotira
         $tabla.='
         <br>
-        <div align=lefth>
-          <a href="'.site_url("").'/admin/dashboard" class="btn btn-success" title="VOLVER ATRAS"><img src="'.base_url().'assets/Iconos/arrow_rotate_clockwise.png" WIDTH="20" HEIGHT="20"/>&nbsp;&nbsp;SALIR</a>&nbsp;&nbsp;';
+        <div align=lefth>';
           if($dep_id!=0 & $dist_id==0){
             $tabla.='<a href="'.site_url("").'/rep_oregional/'.$dep_id.'" target=_blank class="btn btn-default" title="FORMULARIO N° 2 (OPERACIONES)"><img src="'.base_url().'assets/Iconos/page_white_acrobat.png" WIDTH="20" HEIGHT="20"/>&nbsp;&nbsp;FORMULARIO N°2 (OPERACIONES)</a>&nbsp;&nbsp;';
           }
@@ -73,17 +61,24 @@ class Genera_informacion extends CI_Controller{
           <a href="'.site_url("").'/rep/comparativo_unidad_ppto/'.$dep_id.'/'.$dist_id.'/'.$tp_id.'" target=_blank class="btn btn-default" title="POA (ADMINISTRATIVO)"><img src="'.base_url().'assets/Iconos/page_white_acrobat.png" WIDTH="20" HEIGHT="20"/>&nbsp;&nbsp;IMPRIMIR DETALLE POA</a>&nbsp;&nbsp;
           <a href="'.site_url("").'/rep/establecimientos/'.$dep_id.'/'.$dist_id.'" target=_blank class="btn btn-default" title="ESTABLECIMIENTOS DE SALUD"><img src="'.base_url().'assets/Iconos/page_white_acrobat.png" WIDTH="20" HEIGHT="20"/>&nbsp;&nbsp;IMPRIMIR (EST. DE SALUD)</a>&nbsp;&nbsp;
           <a href="'.site_url("").'/rep/exportar_requerimientos_distrital/'.$dep_id.'/'.$dist_id.'/'.$tp_id.'" target=_blank class="btn btn-default" title="CONSOLIDADO REQUERIMIENTOS"><img src="'.base_url().'assets/Iconos/page_excel.png" WIDTH="20" HEIGHT="20"/>&nbsp;CONSOLIDADO POA (FORM. N° 5)</a>&nbsp;&nbsp;
-        </div>';
-      }
-      
-        $tabla.='
+        </div>
         <br>
-      <div class="alert alert-warning">
-        <a href="#" class="alert-link" align=center><center><b>LISTA DE '.$titulo.' '.$this->gestion.' - '.strtoupper($tit_reg).'</b></center></a>
-      </div>
-      <section class="col col-6">
-            <input id="searchTerm_lista" type="text" onkeyup="doSearch_lista()" class="form-control" placeholder="BUSCADOR...." style="width:45%;"/><br>
-      </section>
+        <!-- BANNER DE ENCABEZADO REGIONAL -->
+        <div class="alert alert-info" style="background-color: #3276b1; color: white; border-color: #2c6aa0; padding: 8px;">
+            <h5 style="margin: 0; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                POA - ' . $this->gestion . ' - ' . strtoupper($tit_reg) . '
+            </h5>
+        </div>
+
+        <!-- SECCIÓN FILTRADORA DE BÚSQUEDA RÁPIDA EN CAPA CLIENTE -->
+        <div class="row" style="margin-bottom: 10px;">
+            <section class="col col-xs-12 col-sm-6 col-md-4">
+                <div class="input-group">
+                    <span class="input-group-addon" style="background:#eee;"><i class="fa fa-search"></i></span>
+                    <input id="searchTerm_lista" type="text" onkeyup="doSearch_lista()" class="form-control" placeholder="Escriba aquí para filtrar la grilla..." style="font-weight: 500;" />
+                </div>
+            </section>
+        </div>
       <table id="datos_lista" class="table table-bordered" style="width:100%;" border=1>
         <thead>
           <tr style="background-color: #66b2e8">
@@ -99,11 +94,11 @@ class Genera_informacion extends CI_Controller{
             <th style="width:5%;">COD. PROG.</th>
             <th style="width:5%;">COD. PROY.</th>
             <th style="width:5%;">COD. ACT.</th>
-            <th style="width:20%;">'.$titulo.'</th>
+            <th style="width:20%;"></th>
             <th style="width:10%;"></th>
             <th style="width:10%;" title="">UNIDAD ADMINISTRATIVA</th>
             <th style="width:10%;" title="">UNIDAD EJECUTORA</th>
-            <th style="width:8%;" title="">'.$titulo_ppto.'</th>
+            <th style="width:8%;" title="">PPTO. ASIGNADO</th>
             <th style="width:8%;" title="">PPTO. POA '.$this->gestion.'</th>
             <th style="width:8%;" title="">SALDO</th>
             <th style="width:10%;" title=""></th>
@@ -112,31 +107,18 @@ class Genera_informacion extends CI_Controller{
         <tbody id="bdi">';
         $nro=0;
         foreach ($unidades as $row){
-          $ppto=$this->ppto_actividad($row,$tp_id);
-          $color='';
-          if($ppto[3]<0){
-            $color='#f3d8d7';
-          }
-          elseif($ppto[3]>0){
-            $color='#e4f7f4'; 
-          }
-          
           $rep='';
-          $estado='<font color="red"><b>NO APROBADO</b></font>';
           if($row['aper_proy_estado']==4){
-            //$rep='<center><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" title="REPORTE POA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></center>';
             $rep='<center><a href="'.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'" target=_blank title="REPORTE POA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></center>';
-            $estado='<font color="#1c7368"><b>APROBADO</b></font>'; 
           }
 
           $nro++;
           $tabla.='
-          <tr style="height:35px;" bgcolor="'.$color.'" title="'.$row['aper_id'].'">
+          <tr style="height:35px;" title="'.$row['aper_id'].'">
             <td>'.$nro.'</td>
             <td align=center>';
             if($row['pfec_estado']==1){
-               $tabla.=' <a href="'.site_url("").'/seg/notificacion_operaciones_mensual/'.$row['proy_id'].'" class="btn btn-default" target="_blank" title="NOTIFICACIÓN POA">NOTIFICACIÓN POA</a><br>
-              <a href="'.site_url("").'/seg/notificacion_operaciones_mensual2/'.$row['proy_id'].'" class="btn btn-default" target="_blank" title="NOTIFICACIÓN POA">NOTIFICACIÓN 2 POA</a>';
+               $tabla.=' <a href="'.site_url("").'/seg/notificacion_operaciones_mensual/'.$row['proy_id'].'" class="btn btn-default" target="_blank" title="NOTIFICACIÓN POA">NOTIFICACIÓN POA</a><br>';
             }
             else{
               $tabla.='<b>FASE NO ACTIVA</b>';
@@ -184,20 +166,20 @@ class Genera_informacion extends CI_Controller{
             <td align=center>'.$row['act'].'</td>
             <td>';
               if($tp_id==1){
-              $tabla.='<b>'.$row['proyecto'].'</b>';
+              $tabla.='<b>'.$row['proy_nombre'].'</b>';
             }
             else{
               $tabla.='<b>'.$row['tipo'].' '.$row['actividad'].' '.$row['abrev'].'</b>';
             }
             $tabla.='
             </td>
-            <td>'.$titulo.'</td>
+            <td>'.strtoupper($row['tipo_gasto_nombre']).'</td>
             <td>'.strtoupper($row['dep_departamento']).'</td>
             <td>'.strtoupper($row['dist_distrital']).'</td>
-            <td align=right>'.number_format($ppto[1], 2, ',', '.').'</td>
-            <td align=right>'.number_format($ppto[2], 2, ',', '.').'</td>
-            <td align=right>'.number_format($ppto[3], 2, ',', '.').'</td>
-            <td align=center>'.$estado.'</td>
+            <td align=right>'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>
+            <td></td>
+            <td></td>
+            <td align=center>'.strtoupper($row['estado_poa']).'</td>
           </tr>';
         }
         $tabla.='</tbody>
@@ -211,27 +193,27 @@ class Genera_informacion extends CI_Controller{
       public function ppto_actividad($proyecto,$tp_id){
         $salida[1]=0;$salida[2]=0;$salida[3]=0;
 
-        $ppto_asig=$this->model_ptto_sigep->suma_ptto_accion($proyecto['aper_id'],1); /// Asignado
-        if($tp_id==1){
-          $ppto_prog=$this->model_ptto_sigep->suma_ptto_pinversion($proyecto['proy_id']); /// Programado Proyecto Inversion
-        }
-        else{
-          $ppto_prog=$this->model_ptto_sigep->suma_ptto_accion($proyecto['aper_id'],2); /// Programado Gasto Corriente
-        }
+        // $ppto_asig=$this->model_ptto_sigep->suma_ptto_accion($proyecto['aper_id'],1); /// Asignado
+        // if($tp_id==1){
+        //   $ppto_prog=$this->model_ptto_sigep->suma_ptto_pinversion($proyecto['proy_id']); /// Programado Proyecto Inversion
+        // }
+        // else{
+        //   $ppto_prog=$this->model_ptto_sigep->suma_ptto_accion($proyecto['aper_id'],2); /// Programado Gasto Corriente
+        // }
 
-        $monto_asignado=0;$monto_programado=0;$saldo=0;
-        if(count($ppto_asig)!=0){
-          $monto_asignado=$ppto_asig[0]['monto'];
-        }
+        // $monto_asignado=0;$monto_programado=0;$saldo=0;
+        // if(count($ppto_asig)!=0){
+        //   $monto_asignado=$ppto_asig[0]['monto'];
+        // }
 
-        if(count($ppto_prog)!=0){
-          $monto_programado=$ppto_prog[0]['monto'];
-        }
+        // if(count($ppto_prog)!=0){
+        //   $monto_programado=$ppto_prog[0]['monto'];
+        // }
 
-        $saldo=($monto_asignado-$monto_programado);
-        $salida[1]=$monto_asignado; /// asignado
-        $salida[2]=$monto_programado; /// Programado
-        $salida[3]=$saldo; /// Saldo
+        // $saldo=($monto_asignado-$monto_programado);
+        // $salida[1]=$monto_asignado; /// asignado
+        // $salida[2]=$monto_programado; /// Programado
+        // $salida[3]=$saldo; /// Saldo
 
         return $salida;
     }

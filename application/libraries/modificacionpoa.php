@@ -1246,8 +1246,13 @@ class Modificacionpoa extends CI_Controller{
 
     /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE COMPLETO (2026) ------*/
     public function formN5_mod_lista_requerimientos_ConTemporalidad($cite){
-      $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']);
-
+      if($cite[0]['por_id']==1){ /// bolsa
+        $lista_insumos=$this->model_insumo->lista_insumos_prod($cite[0]['prod_id']); /// listado de items segun actividad Programas Bolsas
+      }
+      else{
+        $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']); 
+      }
+      
       $tabla='';
       $total=0;
       $tabla.=' <input type="hidden" name="proy_id" value="'.$cite[0]['proy_id'].'">

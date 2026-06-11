@@ -56,17 +56,17 @@ class Mrep_operaciones extends CI_Model {
     }
 
     /*------ LISTA DE UNIDADES/PROYECTOS POR REGIONAL 2020-2021 ------*/
-    public function list_poa_gacorriente_pinversion_regional($dep_id,$tp_id){
-        if($tp_id==1){ /// Proyecto de Inversion
-            $sql = 'select * from lista_poa_pinversion_regional('.$dep_id.','.$this->gestion.')';
-        }
-        else{
-            $sql = 'select * from lista_poa_gastocorriente_regional('.$dep_id.','.$this->gestion.')';
-        }
+    // public function list_poa_gacorriente_pinversion_regional($dep_id,$tp_id){
+    //     if($tp_id==1){ /// Proyecto de Inversion
+    //         $sql = 'select * from lista_poa_pinversion_regional('.$dep_id.','.$this->gestion.')';
+    //     }
+    //     else{
+    //         $sql = 'select * from lista_poa_gastocorriente_regional('.$dep_id.','.$this->gestion.')';
+    //     }
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*------ LISTA DE POA (GASTO CORRIENTE / PROYECTO DE INVERSION - NACIONAL) 2020-2021 ------*/

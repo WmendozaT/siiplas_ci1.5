@@ -1769,4 +1769,101 @@ class Model_proyecto extends CI_Model{
         $query = $this->db->query($sql);
         return $query->result_array();
     }
+
+    ////////// 2026
+        //// lista poa Institucional 2026
+        public function lista_programacion_poa_nacional($tp_id) {
+        $gestion = $this->gestion;
+        
+        $sql = "SELECT 
+                    poa.*,
+                    COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
+                    CASE 
+                        WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
+                        WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
+                        ELSE 'OTRO'
+                    END AS tipo_gasto_nombre,
+                    CASE 
+                        WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
+                        WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
+                        ELSE 'OBSERVADO'
+                    END AS estado_poa
+                FROM lista_poa_nacional($gestion) poa
+                LEFT JOIN (
+                    SELECT 
+                        aper_id,
+                        SUM(importe) AS ppto_asignado
+                    FROM ptto_partidas_sigep
+                    GROUP BY aper_id
+                ) ppto ON poa.aper_id = ppto.aper_id
+                WHERE poa.tp_id=$tp_id
+                ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+        //// lista poa Regional 2026
+        public function lista_programacion_poa_x_regional($dep_id,$tp_id) {
+        $gestion = $this->gestion;
+            $sql = "SELECT 
+                    poa.*,
+                    COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
+                    CASE 
+                        WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
+                        WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
+                        ELSE 'OTRO'
+                    END AS tipo_gasto_nombre,
+                    CASE 
+                        WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
+                        WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
+                        ELSE 'OBSERVADO'
+                    END AS estado_poa
+                FROM lista_poa_nacional($gestion) poa
+                LEFT JOIN (
+                    SELECT 
+                        aper_id,
+                        SUM(importe) AS ppto_asignado
+                    FROM ptto_partidas_sigep
+                    GROUP BY aper_id
+                ) ppto ON poa.aper_id = ppto.aper_id
+                WHERE dep_id=$dep_id and poa.tp_id=$tp_id
+                ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC";
+  
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+        }
+
+        //// lista poa Distrital 2026
+        public function lista_programacion_poa_x_distrital($dist_id,$tp_id) {
+        $gestion = $this->gestion;
+            $sql = "SELECT 
+                    poa.*,
+                    COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
+                    CASE 
+                        WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
+                        WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
+                        ELSE 'OTRO'
+                    END AS tipo_gasto_nombre,
+                    CASE 
+                        WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
+                        WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
+                        ELSE 'OBSERVADO'
+                    END AS estado_poa
+                FROM lista_poa_nacional($gestion) poa
+                LEFT JOIN (
+                    SELECT 
+                        aper_id,
+                        SUM(importe) AS ppto_asignado
+                    FROM ptto_partidas_sigep
+                    GROUP BY aper_id
+                ) ppto ON poa.aper_id = ppto.aper_id
+                WHERE dist_id=$dist_id and poa.tp_id=$tp_id
+                ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC";
+  
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+        }
 }

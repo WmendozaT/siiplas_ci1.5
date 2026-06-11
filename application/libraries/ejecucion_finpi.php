@@ -1913,7 +1913,10 @@ class ejecucion_finpi extends CI_Controller{
 
   /// detalle modificacion de presupuesto por proyecto
   public function detalle_modificacion_ppto_x_proyecto($aper_id){
-    $ppto_asig=$this->model_ptto_sigep->partidas_proyecto($aper_id); /// lista de partidas asignados por proyectos
+    for ($i=1; $i <=3 ; $i++) { 
+      $datos[$i]=0;
+    }
+/*    $ppto_asig=$this->model_ptto_sigep->partidas_proyecto($aper_id); /// lista de partidas asignados por proyectos
     for ($i=1; $i <=3 ; $i++) { 
       $datos[$i]=0;
     }
@@ -1931,7 +1934,7 @@ class ejecucion_finpi extends CI_Controller{
 
     $datos[1]=$suma_inicial;
     $datos[2]=$suma_modificado;
-    $datos[3]=$suma_vigente;
+    $datos[3]=$suma_vigente;*/
 
     return $datos;
   }

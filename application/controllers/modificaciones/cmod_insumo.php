@@ -1665,9 +1665,17 @@ class Cmod_insumo extends CI_Controller {
               $cod_act = $hoja->getCell('A' . $i)->getValue();
               $partida = $hoja->getCell('B' . $i)->getValue();
               $cantidad = $hoja->getCell('E' . $i)->getValue();
-              $precio = $hoja->getCell('F' . $i)->getValue();
-              $total   = $hoja->getCell('G' . $i)->getOldCalculatedValue() ? $hoja->getCell('G' . $i)->getCalculatedValue() : $hoja->getCell('G' . $i)->getValue();
-              
+              //$precio = $hoja->getCell('F' . $i)->getValue();
+              //$total   = $hoja->getCell('G' . $i)->getOldCalculatedValue() ? $hoja->getCell('G' . $i)->getCalculatedValue() : $hoja->getCell('G' . $i)->getValue();
+              $precio_crudo = $hoja->getCell('F' . $i)->getCalculatedValue();
+              $precio = ($precio_crudo !== NULL && trim($precio_crudo) !== '') ? trim($precio_crudo) : 0;
+
+              // AJUSTE: Extracción calculada del TOTAL resolviendo fórmulas en caliente
+            $celda_total = $hoja->getCell('G' . $i)->getCalculatedValue();
+            $total = (!empty($celda_total) && is_numeric($celda_total)) ? floatval($celda_total) : 0.00;
+
+
+
               if($total!=($cantidad*$precio)){
                 $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
               }
@@ -1708,6 +1716,20 @@ class Cmod_insumo extends CI_Controller {
                   $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
               }
 
+
+              if (!is_numeric($precio)) {
+                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' debe ser un valor numérico válido.";
+                } else {
+                    $precio_float = floatval($precio);
+                    
+                    // Verificación matemática: Multiplicamos por 100 y evaluamos si queda un residuo decimal
+                    // Si multiplicamos 10.55 * 100 = 1055 (Entero, residuo 0) -> OK
+                    // Si multiplicamos 10.553 * 100 = 1055.3 (Flotante, tiene residuo) -> ERROR
+                    if (floor($precio_float * 100) != ($precio_float * 100)) {
+                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio) excede el límite permitido. Solo se aceptan hasta 2 decimales (Ej: 10.55).";
+                    }
+                }
+
               // Validaciones básicas
               if (empty($cod_act)) $errores[] = "Fila $i: 'COD ACT' es obligatorio.";
               if (empty($partida)) $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
@@ -1717,16 +1739,21 @@ class Cmod_insumo extends CI_Controller {
               $suma_meses = 0;
               $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
               
+              ///----------
               foreach ($columnas_meses as $col) {
-                  $val_mes = $hoja->getCell($col . $i)->getValue();
-                  if (!empty($val_mes)) {
-                      if (!is_numeric($val_mes)) {
-                          $errores[] = "Fila $i: Valor no numérico detectado en los meses.";
-                          break;
-                      }
-                      $suma_meses += $val_mes;
-                  }
+                // Se evalúa la ecuación mensual directa en caliente
+                $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                
+                // Si la celda con fórmula o vacía no tiene valor, la homologamos a 0 puros
+                $val_mes = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+
+                if (!is_numeric($val_mes)) {
+                    $errores[] = "Fila $i: Valor no numérico detectado en el mes de la columna '$col'.";
+                    break;
+                }
+                $suma_meses += floatval($val_mes);
               }
+              ///----------
 
               // Validación de integridad: ¿La suma de los meses coincide con el TOTAL?
               if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
@@ -1742,7 +1769,8 @@ class Cmod_insumo extends CI_Controller {
                       'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
                       'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
                       'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
-                      'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
+                      'ins_costo_unitario'      => round(floatval($precio), 2),
+                      //'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
                       'ins_costo_total'     => $total,
                       'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
                       'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo modificacion

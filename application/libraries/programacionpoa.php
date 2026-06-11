@@ -437,8 +437,13 @@ class Programacionpoa extends CI_Controller{
                   }
                   
                 }
-              $tabla.='</tbody>';
-                  $partidas_asig=$this->model_ptto_sigep->partidas_proyecto($proyecto[0]['aper_id']);
+              $tabla.='</tbody>
+              <tr bgcolor="#d6ecb3">
+                      <td colspan=3 title="'.$proyecto[0]['aper_id'].'">('.$proyecto[0]['aper_id'].') <b>CONSOLIDADO TOTAL POA - PRESUPUESTO APROBADO TOTAL POR PARTIDAS </b></td> 
+                      <td align=center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_ptto_consolidado_comparativo_programa/'.$proy_id.'\');"  title="CONSOLIDADO POA - PRESUPUESTO" class="btn btn-default" ><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></td>
+                      <td colspan='.count($programas_bolsas).'></td>
+                    </tr>';
+                  /*$partidas_asig=$this->model_ptto_sigep->partidas_proyecto($proyecto[0]['aper_id']);
                   if(count($partidas_asig)!=0){ //// POA APROBADO
                     $tabla.='
                     <tr bgcolor="#d6ecb3">
@@ -446,7 +451,7 @@ class Programacionpoa extends CI_Controller{
                       <td align=center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_ptto_consolidado_comparativo_programa/'.$proy_id.'\');"  title="CONSOLIDADO POA - PRESUPUESTO" class="btn btn-default" ><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></td>
                       <td colspan='.count($programas_bolsas).'></td>
                     </tr>';
-                  }
+                  }*/
               $tabla.='
               
             </table>';

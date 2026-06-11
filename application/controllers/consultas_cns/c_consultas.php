@@ -57,73 +57,6 @@ class C_consultas extends CI_Controller {
       return $titulo;
     }
 
-    //// CONSULTA POA A OFICINA CENTRAL
-    public function poa_oficina_central(){
-      $data['menu']=$this->genera_informacion->menu(10);
-      $data['style']=$this->genera_informacion->style();
-      $data['tmes']=$this->model_evaluacion->trimestre(); /// Datos del Trimestre
-      $data['formulario']='';
-
-      $data['formulario'].='
-      <article class="col-sm-12 col-md-12 col-lg-12">
-        <div class="jarviswidget" id="wid-id-0" data-widget-colorbutton="false" data-widget-editbutton="false">
-          <header>
-            <span class="widget-icon"> <i class="fa fa-eye"></i> </span>
-            <h2>CONSULTA POA</h2>
-          </header>
-          <div>
-            <div class="jarviswidget-editbox">
-            </div>
-            <div class="widget-body">
-              <form class="form-horizontal">
-                <input type="hidden" name="base" value="'.base_url().'">
-                <fieldset>
-                  <legend>CONSULTA POA - OFICINA CENTRAL / '.$this->gestion.'</legend>
-                  <div class="form-group">
-                    <label class="control-label col-md-2"><b>GERENCIA DE AREA</b></label>
-                    <div class="col-md-8">
-                      <select class="form-control input-lg" id="proy_id" name="proy_id" title="SELECCIONE GERENCIA DE AREA">
-                        <option value="0">Seleccione Gerencia de Area</option>';
-                        if($this->gestion>2024){
-                          $data['formulario'].='
-                          <option value="3517">000000001 - HONORABLE DIRECTORIO</option>
-                          <option value="3516">000000002 - GERENCIA GENERAL</option>
-                          <option value="3515">000000003 - GERENCIA ADMINISTRATIVA FINANCIERA</option>
-                          <option value="3519">000000004 - GERENCIA DE SERVICIOS DE SALUD</option>
-                          <option value="3518">7300000010 - MEDICINA DEL TRABAJO</option>';
-                        }
-                        else{
-                          $data['formulario'].='
-                          <option value="2848">000 00 002 - GERENCIA GENERAL</option>
-                          <option value="2886">000 00 003 - GERENCIA ADMINISTRATIVA FINANCIERA</option>
-                          <option value="2887">721 00 040 - GERENCIA DE SERVICIOS DE SALUD</option>
-                          <option value="2979">730 00 010 - MEDICINA DEL TRABAJO</option>';
-                        } 
-                        $data['formulario'].='
-                      </select>
-                    </div>
-                  </div>
-
-                   <div class="form-group">
-                    <label class="control-label col-md-2"><b>UNIDAD OPERATIVA</b></label>
-                    <div class="col-md-8">
-                      <select class="form-control input-lg" id="com_id" name="com_id">
-                      </select>
-                    </div>
-                  </div>
-                </fieldset>
-              
-                <hr>
-                <div id="informacion_poa"></div>
-              </div>
-            </div>
-          </div>
-        </article>
-      </form>';
-      $this->load->view('admin/consultas_internas/menu_consultas_poa', $data);
-    }
-
-
     //// CONSULTA POA A NIVEL NACIONAL
     public function consulta_poa_nacional(){
       $data['menu']=$this->genera_informacion->menu(10);
@@ -133,29 +66,125 @@ class C_consultas extends CI_Controller {
 
       //$data['mensaje']='<div class="jumbotron"><h1>RESUMEN POA '.$this->gestion.'</h1><p>Reporte Resumen consolidado de Programación POA a nivel Regional, segun la siguiente Clasificación :</p><ol style="font-size:16px;"><li>Genera informacion de Programación, Modificacion, Evaluación y Certificacion POA, segun el tipo de Gasto</li><li>Genera Reporte Consolidado del Fornulario N° 4 (Actividades) por Regional.</li><li>Genera Reporte Consolidado del Fornulario N° 5 (requerimientos) por Regional.</li><li>Genera el listado de Certificaciones POA por Regional.</li><li>Genera Informacion sobre la Evaluación POA a nivel Regional</li></ol></div>';
       
-      $data['formulario']='
-      '.$this->menu_nacional().'
-          <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-              <div class="jarviswidget jarviswidget-color-darken" >
-                <header>
-                    <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-                    <h2 class="font-md"><strong>RESUMEN POA - '.$this->gestion.'</strong></h2>  
-                </header>
-                  <div>
-                      <div class="widget-body no-padding">
-                         <div id="lista_consolidado">
-                         <div class="jumbotron"><h1>RESUMEN POA '.$this->gestion.'</h1><p>Reporte Resumen consolidado de Programación POA a nivel Regional, segun la siguiente Clasificación :</p><ol style="font-size:16px;"><li>Genera informacion de Programación, Modificacion, Evaluación y Certificacion POA, segun el tipo de Gasto</li><li>Genera Reporte Consolidado del Fornulario N° 4 (Actividades) por Regional.</li><li>Genera Reporte Consolidado del Fornulario N° 5 (requerimientos) por Regional.</li><li>Genera el listado de Certificaciones POA por Regional.</li><li>Genera Informacion sobre la Evaluación POA a nivel Regional</li></ol></div>
-                         </div>
+      $data['formulario'] = '
+      ' . $this->menu_nacional() . '
+      <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+          <!-- WIDGET FORMAL: Estilo sobrio sin bordes de colores llamativos -->
+          <div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-resumen-poa" data-widget-editbutton="false" data-widget-colorbutton="false" data-widget-deletebutton="false">
+              <header style="background: #1a237e; color: #ffffff;">
+                  <span class="widget-icon"> <i class="fa fa-clipboard" style="color: #ffffff;"></i> </span>
+                  <h2 style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11.5px;">
+                      Resumen Ejecutivo Consolidado POA - Gestión ' . $this->gestion . '
+                  </h2>  
+              </header>
+              
+              <div>
+                  <div class="widget-body no-padding" style="background: #ffffff;">
+                      <div id="lista_consolidado">
+                          
+                          <!-- CONTENEDOR TIPO FICHA TÉCNICA MINISTERIAL -->
+                          <div style="padding: 35px 45px; max-width: 1100px;">
+                              
+                              <!-- ENCABEZADO FORMAL -->
+                              <div style="border-bottom: 2px solid #1a237e; padding-bottom: 12px; margin-bottom: 25px;">
+                                  <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #111111; text-transform: uppercase; letter-spacing: -0.2px;">
+                                      Sistema de Monitoreo al POA - CNS
+                                  </h3>
+                                  <p class="text-muted" style="font-size: 11.5px; margin-top: 5px; line-height: 1.6; text-align: justify; color: #555555;">
+                                      Bienvenida(o) al panel de control centralizado del Departamento Nacional de Planificación. Este módulo interactivo procesa, unifica y valida los registros físico-financieros remitidos por las Administraciones Regionales y Distritales de la Caja Nacional de Salud. Utilice los selectores superiores para desplegar los estados de cuenta analíticos organizados bajo la siguiente estructura oficial:
+                                  </p>
+                              </div>
+                              
+                              <!-- MATRIZ DE DESGLOSE DE COMPONENTES TÉCNICOS -->
+                              <div style="margin-top: 15px;">
+                                  <table class="table" style="width: 100%; font-size: 11.5px; margin-bottom: 0; background: transparent; border: none;">
+                                      <tbody>
+                                          
+                                          <!-- COMPONENTE 1 -->
+                                          <tr style="border-bottom: 1px solid #eeeeee;">
+                                              <td style="width: 3%; padding: 12px 5px; font-weight: bold; color: #1a237e; vertical-align: top; font-size: 12px;">I.</td>
+                                              <td style="padding: 12px 10px; vertical-align: top;">
+                                                  <strong style="color: #222222; display: block; margin-bottom: 3px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.2px;">
+                                                      Evaluación del Ciclo Financiero por Tipo de Gasto
+                                                  </strong>
+                                                  <span style="color: #555555; line-height: 1.5; display: block;">
+                                                      Consolidación de las fases de : Programación inicial, Modificaciones aprobadas, Certificaciones emitidas y estados de Evaluación cuatrimestral vigentes.
+                                                  </span>
+                                              </td>
+                                          </tr>
+                                          
+                                          <!-- COMPONENTE 2 -->
+                                          <tr style="border-bottom: 1px solid #eeeeee;">
+                                              <td style="width: 3%; padding: 12px 5px; font-weight: bold; color: #1a237e; vertical-align: top; font-size: 12px;">II.</td>
+                                              <td style="padding: 12px 10px; vertical-align: top;">
+                                                  <strong style="color: #222222; display: block; margin-bottom: 3px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.2px;">
+                                                      Consolidación de Metas Físicas y Operaciones (Formulario N° 4)
+                                                  </strong>
+                                                  <span style="color: #555555; line-height: 1.5; display: block;">
+                                                      Auditoría de indicadores de gestión, metas operativas y ponderaciones de actividades correspondientes a las Unidades Ejecutoras de la regional seleccionada.
+                                                  </span>
+                                              </td>
+                                          </tr>
+                                          
+                                          <!-- COMPONENTE 3 -->
+                                          <tr style="border-bottom: 1px solid #eeeeee;">
+                                              <td style="width: 3%; padding: 12px 5px; font-weight: bold; color: #1a237e; vertical-align: top; font-size: 12px;">III.</td>
+                                              <td style="padding: 12px 10px; vertical-align: top;">
+                                                  <strong style="color: #222222; display: block; margin-bottom: 3px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.2px;">
+                                                      Programación de Requerimientos (Formulario N° 5)
+                                                  </strong>
+                                                  <span style="color: #555555; line-height: 1.5; display: block;">
+                                                      Ficha analítica de Requerimientos, códigos de Acp, actividad vinculados, partidas presupuestarias autorizadas, precios de referencia y cronogramas de distribución mensual.
+                                                  </span>
+                                              </td>
+                                          </tr>
+                                          
+                                          <!-- COMPONENTE 4 -->
+                                          <tr style="border-bottom: 1px solid #eeeeee;">
+                                              <td style="width: 3%; padding: 12px 5px; font-weight: bold; color: #1a237e; vertical-align: top; font-size: 12px;">IV.</td>
+                                              <td style="padding: 12px 10px; vertical-align: top;">
+                                                  <strong style="color: #222222; display: block; margin-bottom: 3px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.2px;">
+                                                      Listado de Certificaciones POA Regionales
+                                                  </strong>
+                                                  <span style="color: #555555; line-height: 1.5; display: block;">
+                                                      Reporte resumido y detallado del estado de preventivos, saldos disponibles y códigos de validación digital para procesos de contratación pública.
+                                                  </span>
+                                              </td>
+                                          </tr>
+                                          
+                                          <!-- COMPONENTE 5 -->
+                                          <tr>
+                                              <td style="width: 3%; padding: 12px 5px; font-weight: bold; color: #1a237e; vertical-align: top; font-size: 12px;">V.</td>
+                                              <td style="padding: 12px 10px; vertical-align: top;">
+                                                  <strong style="color: #222222; display: block; margin-bottom: 3px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.2px;">
+                                                      Análisis de Eficiencia y Cumplimiento Trimestral
+                                                  </strong>
+                                                  <span style="color: #555555; line-height: 1.5; display: block;">
+                                                      Resumen de cuadro estadístico del grado de cumplimiento al POA REGIONAL, con el fin de emitir informes de control interno.
+                                                  </span>
+                                              </td>
+                                          </tr>
+                                          
+                                      </tbody>
+                                  </table>
+                              </div>
+                              
+                              <!-- PIE DE NOTA INSTITUCIONAL -->
+                              <div style="margin-top: 35px; padding-top: 15px; border-top: 1px dashed #cccccc; font-size: 10.5px; color: #777777; font-style: italic; text-align: right;">
+                                  * Información oficial extraída de los servidores del SIIPLAS - Departamento Nacional de Planificación.
+                              </div>
+                              
+                          </div>
+                          
                       </div>
-                      <!-- end widget content -->
                   </div>
-                  <!-- end widget div -->
               </div>
-              <!-- end widget -->
-          </article>';
+          </div>
+      </article>';
 
       $this->load->view('admin/consultas_internas/menu_consultas_poa', $data);
     }
+
 
   /*-----  OPCIONES DE CONSULTA POA -----*/
     public function get_opciones($accion=''){ 
@@ -209,106 +238,115 @@ class C_consultas extends CI_Controller {
     $tabla='';
     $regionales=$this->model_proyecto->list_departamentos();
       $tabla.='
-      <article class="col-sm-12">
-        <div class="well">
-          <form class="smart-form">
-              <input type="hidden" name="base" value="'.base_url().'">
-              <header><b>PLAN OPERATIVO ANUAL - POA '.$this->gestion.'</b></header>
-              <fieldset>          
+      <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <div class="well well-light" style="padding: 20px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa;">
+        
+        <!-- ========================================================================== -->
+        <!-- --- FORMULARIO DE FILTROS SMART-FORM CRITERIOS POA --- -->
+        <!-- ========================================================================== -->
+        <form class="smart-form" autocomplete="off" style="background: transparent; padding: 0;">
+            <input type="hidden" name="base" value="' . base_url() . '">
+            
+            <header style="border-bottom: 2px solid #3276b1; color: #1a237e; font-weight: bold; padding-bottom: 8px; font-size: 14px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="fa fa-sliders text-primary"></i> Plan Operativo Anual - POA ' . $this->gestion . '
+            </header>
+            
+            <fieldset style="background: transparent; padding: 0; margin-bottom: 15px;">          
                 <div class="row">
-                  <section class="col col-3">
-                    <label class="label"><b>REGIONAL</b></label>
-                    <select class="form-control" id="dep_id" name="dep_id" title="SELECCIONE REGIONAL">
-                    <option value="">SELECCIONE REGIONAL</option> ';
-                    foreach($regionales as $row){
-                      if($row['dep_id']!=0){
-                        $tabla.='<option value="'.$row['dep_id'].'">'.$row['dep_id'].'.- '.strtoupper($row['dep_departamento']).'</option>';
-                      }
-                    }
-                    $tabla.='
-                    </select>
-                  </section>
+                    <!-- SECCIÓN 1: COMBO SELECCIÓN REGIONAL -->
+                    <section class="col col-3">
+                        <label class="label" style="font-weight: bold; font-size: 11px; color: #333;"><i class="fa fa-map-marker text-muted"></i> REGIONAL</label>
+                        <label class="select">
+                            <select class="form-control" id="dep_id" name="dep_id" style="height: 32px; font-size: 11.5px; padding: 4px 8px;" title="SELECCIONE REGIONAL" required>
+                                <option value="">SELECCIONE REGIONAL...</option> ';
+                                foreach($regionales as $row){
+                                  if($row['dep_id'] != 0){
+                                    $tabla .= '<option value="' . $row['dep_id'] . '">' . $row['dep_id'] . '.- ' . strtoupper($row['dep_departamento']) . '</option>';
+                                  }
+                                }
+                                $tabla .= '
+                            </select>
+                            <i></i>
+                        </label>
+                    </section>
 
-                  <section class="col col-3" id="tprep">
-                    <label class="label"><b>TIPO DE REPORTE</b></label>
-                    <select class="form-control" id="tp_rep" name="tp_rep" title="SELECCIONE TIPO DE REPORTE">
-                    </select>
-                  </section>
+                    <!-- SECCIÓN 2: TIPO DE REPORTE (Cargado en caliente) -->
+                    <section class="col col-3" id="tprep">
+                        <label class="label" style="font-weight: bold; font-size: 11px; color: #333;"><i class="fa fa-file-text-o text-muted"></i> TIPO DE REPORTE</label>
+                        <label class="select">
+                            <select class="form-control" id="tp_rep" name="tp_rep" style="height: 32px; font-size: 11.5px; padding: 4px 8px;" title="SELECCIONE TIPO DE REPORTE">
+                                <option value="">ESPERANDO REGIONAL...</option>
+                            </select>
+                            <i></i>
+                        </label>
+                    </section>
 
-                  <section class="col col-3" id="tp">
-                    <label class="label"><b>TIPO DE GASTO</b></label>
-                    <select class="form-control" id="tipo" name="tipo" title="SELECCIONE TIPO DE GASTO">
-                    </select>
-                  </section>
+                    <!-- SECCIÓN 3: TIPO DE GASTO (Cargado en caliente) -->
+                    <section class="col col-3" id="tp">
+                        <label class="label" style="font-weight: bold; font-size: 11px; color: #333;"><i class="fa fa-money text-muted"></i> TIPO DE GASTO</label>
+                        <label class="select">
+                            <select class="form-control" id="tipo" name="tipo" style="height: 32px; font-size: 11.5px; padding: 4px 8px;" title="SELECCIONE TIPO DE GASTO">
+                                <option value="">ESPERANDO REPORTE...</option>
+                            </select>
+                            <i></i>
+                        </label>
+                    </section>
                 </div>
-              </fieldset>
-          </form>';
-          $tabla.='
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="javascript:abreVentana(\''.site_url("").'/me/rep_ogestion/0\');" title="IMPRIMIR ACP DISTRIBUCION REGIONAL" class="btn btn-default">
-              <img src="'.base_url().'assets/Iconos/printer_empty.png" WIDTH="20" HEIGHT="20"/>&nbsp;REP. A.C.P. (FORM N° 1)
-            </a>
-            &nbsp;
-            <div class="btn-group">
-              <a class="btn btn-default" href="javascript:void(0);"><img src="'.base_url().'assets/Iconos/printer_empty.png" WIDTH="20" HEIGHT="20"/>&nbsp;REP. OPERACIONES (FORM N° 2)</a>
-              <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);"><span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/1\');" title="REPORTE FORM 2">
-                    CHUQUISACA
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/2\');" title="REPORTE FORM 2">
-                    LA PAZ
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/3\');" title="REPORTE FORM 2">
-                    COCHABAMBA
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/4\');" title="REPORTE FORM 2">
-                    ORURO
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/5\');" title="REPORTE FORM 2">
-                    POTOSI
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/6\');" title="REPORTE FORM 2">
-                    TARIJA
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/7\');" title="REPORTE FORM 2">
-                    SANTA CRUZ
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/8\');" title="REPORTE FORM 2">
-                    BENI
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/9\');" title="REPORTE FORM 2">
-                    PANDO
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/me/rep_form2/10\');" title="REPORTE FORM 2">
-                    OFICINA CENTRAL
-                  </a>
-                </li>
+            </fieldset>
+        </form>
 
-              </ul>
-            </div>';
-            $tabla.='
-          </div>
-        </article>';
+        <!-- ========================================================================== -->
+        <!-- --- BARRA DE ACCIONES COMPACTA EN PARALELO (FLEXBOX) --- -->
+        <!-- ========================================================================== -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 15px; margin-top: 5px;">
+            
+            <!-- BLOQUE IZQUIERDO: REPORTES GERENCIALES FORM 1 Y FORM 2 -->
+            <div style="display: flex; gap: 6px;">
+                <!-- Botón de Reporte Formulario N°1 -->
+                <a href="javascript:abreVentana(\'' . site_url("me/rep_ogestion/0") . '\');" 
+                   title="IMPRIMIR ACP DISTRIBUCION REGIONAL" 
+                   class="btn btn-default btn-sm" 
+                   style="font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; align-items: center;">
+                    <img src="' . base_url() . 'assets/Iconos/printer_empty.png" width="16" height="16" style="margin-right: 6px;"/> REP. A.C.P. (FORM N° 1)
+                </a>
+                
+                <!-- Grupo Dropdown de Reportes Formulario N°2 por Regional -->
+                <div class="btn-group">
+                    <a class="btn btn-default btn-sm" href="javascript:void(0);" style="font-weight: bold; display: inline-flex; align-items: center;">
+                        <img src="' . base_url() . 'assets/Iconos/printer_empty.png" width="16" height="16" style="margin-right: 6px;"/> REP. OPERACIONES (FORM N° 2)
+                    </a>
+                    <a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);" style="padding-left: 8px; padding-right: 8px;">
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" style="font-size: 11.5px; font-weight: 500; min-width: 180px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-color:#ccc;">
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/1") . '\');" title="REPORTE FORM 2 - CHUQUISACA"><i class="fa fa-map-marker text-primary"></i> CHUQUISACA</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/2") . '\');" title="REPORTE FORM 2 - LA PAZ"><i class="fa fa-map-marker text-primary"></i> LA PAZ</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/3") . '\');" title="REPORTE FORM 2 - COCHABAMBA"><i class="fa fa-map-marker text-primary"></i> COCHABAMBA</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/4") . '\');" title="REPORTE FORM 2 - ORURO"><i class="fa fa-map-marker text-primary"></i> ORURO</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/5") . '\');" title="REPORTE FORM 2 - POTOSI"><i class="fa fa-map-marker text-primary"></i> POTOSÍ</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/6") . '\');" title="REPORTE FORM 2 - TARIJA"><i class="fa fa-map-marker text-primary"></i> TARIJA</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/7") . '\');" title="REPORTE FORM 2 - SANTA CRUZ"><i class="fa fa-map-marker text-primary"></i> SANTA CRUZ</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/8") . '\');" title="REPORTE FORM 2 - BENI"><i class="fa fa-map-marker text-primary"></i> BENI</a></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/9") . '\');" title="REPORTE FORM 2 - PANDO"><i class="fa fa-map-marker text-primary"></i> PANDO</a></li>
+                        <li class="divider" style="margin: 4px 0;"></li>
+                        <li><a href="javascript:abreVentana(\'' . site_url("me/rep_form2/10") . '\');" title="REPORTE FORM 2 - OFICINA CENTRAL" style="font-weight: bold;"><i class="fa fa-building text-success"></i> OFICINA CENTRAL</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- BLOQUE DERECHO: ACCIÓN DE SALIDA DE MÓDULO -->
+            <div>
+                <a href="' . site_url("admin/dashboard") . '" 
+                   class="btn btn-danger btn-sm" 
+                   style="font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding-left: 15px; padding-right: 15px;" 
+                   title="VOLVER ATRÁS AL MENÚ PRINCIPAL">
+                    <i class="fa fa-arrow-left"></i> SALIR
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</article>';
       return $tabla;
     }
 
@@ -448,7 +486,7 @@ class C_consultas extends CI_Controller {
         
         $salida='';
         if($tp_rep==1){
-          $salida=$this->genera_informacion->lista_gastocorriente_pinversion($dep_id,0,$tp_id);
+          $salida=$this->genera_informacion->lista_gastocorriente_pinversion($dep_id,0,$tp_id); //// Lista de Unidades Organizacionales
         }
         elseif ($tp_rep==2) {
           $salida=$this->genera_informacion->consolidado_operaciones_distrital($dep_id,0,$tp_id); /// Consolidado Formulario N° 4 

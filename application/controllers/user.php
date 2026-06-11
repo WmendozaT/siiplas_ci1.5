@@ -403,8 +403,6 @@ class User extends CI_Controller{
             ///------- Verificando Saldos
             $data['popup_saldos']=$this->dashboard->popup_ajustar_saldos();
 
-
-
             $this->load->view('admin/dashboard',$data);
             
         } else{

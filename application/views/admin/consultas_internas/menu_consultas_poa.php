@@ -21,8 +21,6 @@
         <?php echo $style;?>
     </head>
     <body class="">
-        <!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
-
         <!-- HEADER -->
         <header id="header">
             <div class="pull-right">
@@ -40,36 +38,7 @@
                 </div>
             </div>
         </header>
-        <!-- END HEADER -->
-        <!-- Left panel : Navigation area -->
-        <aside id="left-panel">
-            <!-- User info -->
-            <div class="login-info">
-                <span> <!-- User image size is adjusted inside CSS, it should stay as is --> 
-                    <a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
-                            <span>
-                                <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
-                            </span>
-                        <i class="fa fa-angle-down"></i>
-                    </a>
-                </span>
-            </div>
-            <nav>
-                <ul>
-                    <li class="">
-                    <a href="<?php echo site_url("admin").'/dashboard';?>" title="VOLVER A MENÚ PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
-                    </li>
-                    <li class="text-center">
-                        <a href="#" title="EVALUACIÓN POA"> <span class="menu-item-parent">RESUMEN POA <?php echo $this->session->userdata("gestion");?></span></a>
-                    </li>
-                    
-                </ul>
-            </nav>
-            <span class="minifyme" data-action="minifyMenu"> <i class="fa fa-arrow-circle-left hit"></i> </span>
-        </aside>
 
-        <!-- MAIN PANEL -->
-        <div id="main" role="main">
             <!-- RIBBON -->
             <div id="ribbon">
                 <span class="ribbon-button-alignment"> 
@@ -164,7 +133,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+
         <!-- ========================================================================================================= -->
         <!-- PAGE FOOTER -->
         <div class="page-footer">

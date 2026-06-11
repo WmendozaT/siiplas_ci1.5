@@ -1,10 +1,42 @@
 base = $('[name="base"]').val();
 
 
-function abreVentana(PDF){             
-  var direccion;
-  direccion = '' + PDF;
-  window.open(direccion, "REPORTE PROGRAMACIÓN POA" , "width=800,height=700,scrollbars=NO") ; 
+function abreVentana(url) {
+    var elemento = window.event ? window.event.target.closest('a') : null;
+    var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";
+    var ancho = 1000;
+    var alto = 800;
+    var posicion_x = (screen.width / 2) - (ancho / 2);
+    var posicion_y = (screen.height / 2) - (alto / 2);
+
+    // 1. Abrimos la ventana vacía primero
+    var nuevaVentana = window.open('', '_blank', "width=" + ancho + ",height=" + alto + ",menubar=0,toolbar=0,directories=0,scrollbars=no,resizable=no,left=" + posicion_x + ",top=" + posicion_y);
+
+    // 2. Inyectamos un HTML de carga estético mientras llega la respuesta del servidor
+    nuevaVentana.document.write(`
+        <html>
+            <head>
+                <title>Cargando Reporte POA...</title>
+                <style>
+                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+                    .loader-container { text-align: center; }
+                    .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #5B9360; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    h2 { color: #333; }
+                </style>
+            </head>
+            <body>
+                <div class="loader-container">
+                    <div class="spinner"></div>
+                    <h2>Generando ${tituloFinal}</h2>
+                    <p>Por favor, espere un momento.</p>
+                </div>
+            </body>
+        </html>
+    `);
+
+    // 3. Redirigimos la ventana a la URL real del reporte
+    nuevaVentana.location.href = url;
 }
 
   function confirmar(){
@@ -413,34 +445,75 @@ $(document).ready(function() {
 
 
 
-    $("#tipo").change(function () {
-      $("#tipo option:selected").each(function () {
-        dep_id=$('[name="dep_id"]').val();
-        tp_rep=$('[name="tp_rep"]').val();
-        tp_id=$(this).val();
-        $('#lista_consolidado').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Información POA ...</div>');
-          var url = base+"index.php/consultas_cns/c_consultas/get_lista_reportepoa";
-          var request;
-          if (request) {
-              request.abort();
-          }
-          request = $.ajax({
-              url: url,
-              type: "POST",
-              dataType: 'json',
-              data: "dep_id="+dep_id+"&tp_rep="+tp_rep+"&tp_id="+tp_id
-          });
+    var request_consolidado = null; 
 
-          request.done(function (response, textStatus, jqXHR) {
-              if (response.respuesta == 'correcto') {
-                  $('#lista_consolidado').fadeIn(1000).html(response.lista_reporte);
-              }
-              else{
-                  alertify.error("ERROR AL LISTAR");
-              }
-          }); 
-          
-      });
+    $("#tipo").change(function () {
+        $("#tipo option:selected").each(function () {
+            // Asignación de variables nativas de tu entorno
+            dep_id = $('[name="dep_id"]').val();
+            tp_rep = $('[name="tp_rep"]').val();
+            tp_id  = $(this).val();
+
+            // 1. Validación de cortesía institucional
+            if (tp_id == "" || tp_id == "0") {
+                $("#lista_consolidado").fadeOut(150).html("");
+                return false;
+            }
+
+            // 2. Intercepción operativa: aborta de forma segura la petición previa si el usuario cambia rápido de combo
+            if (request_consolidado && request_consolidado.readyState !== 4) {
+                request_consolidado.abort();
+            }
+
+            // 3. Despliegue estético del template de carga unificado
+            var loading_template = `
+            <div style="padding: 30px 0; text-align: center; background: #fafafa; border: 1px dashed #ddd; border-radius: 4px; margin-top: 15px;">
+                <i class="fa fa-refresh fa-spin text-primary" style="font-size: 28px; margin-bottom: 10px;"></i>
+                <h5 style="margin: 0; font-weight: bold; color: #444; font-size: 12px; letter-spacing: 0.3px;">
+                    CONSOLIDANDO INFORMACIÓN FINANCIERA POA 2026
+                </h5>
+                <small class="text-muted" style="font-size: 10.5px;">Un momento por favor, procesando registros en el servidor...</small>
+            </div>`;
+            
+            $("#lista_consolidado").html(loading_template).show();
+            
+            // 4. Configuración de ruta y envío asíncrono manteniendo tu formato original
+            var url = base + "index.php/consultas_cns/c_consultas/get_lista_reportepoa";
+            
+            // Asignamos el AJAX directo a tu canal de control global resguardando los hilos
+            request_consolidado = $.ajax({
+                url: url,
+                type: "POST",
+                dataType: 'json',
+                data: "dep_id=" + dep_id + "&tp_rep=" + tp_rep + "&tp_id=" + tp_id
+            });
+
+            // 5. Procesamiento de la respuesta exitosa
+            request_consolidado.done(function (response, textStatus, jqXHR) {
+                if (response.respuesta == 'correcto') {
+                    $('#lista_consolidado').hide().html(response.lista_reporte).fadeIn(1000);
+                }
+                else {
+                    if (typeof alertify !== "undefined") {
+                        alertify.error("ERROR AL LISTAR");
+                    } else {
+                        alert("⚠️ ERROR AL LISTAR");
+                    }
+                    $("#lista_consolidado").html("");
+                }
+            }); 
+
+            // 6. Control de contingencia ante caídas del servidor local Apache/XAMPP
+            request_consolidado.fail(function (jqXHR, textStatus) {
+                if (textStatus !== "abort") {
+                    if (typeof alertify !== "undefined") {
+                        alertify.error("ERROR CRÍTICO DE RED");
+                    }
+                    $("#lista_consolidado").html("");
+                }
+            });
+            
+        });
     });
 
 
