@@ -66,7 +66,7 @@ class Genera_informacion extends CI_Controller{
         <!-- BANNER DE ENCABEZADO REGIONAL -->
         <div class="alert alert-info" style="background-color: #3276b1; color: white; border-color: #2c6aa0; padding: 8px;">
             <h5 style="margin: 0; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">
-                POA - ' . $this->gestion . ' - ' . strtoupper($tit_reg) . '
+                POA ' . $this->gestion . ' - ' . strtoupper($tit_reg) . '
             </h5>
         </div>
 
@@ -89,14 +89,13 @@ class Genera_informacion extends CI_Controller{
             <th style="width:5%;">MODIFICACIÓN POA '.$this->gestion.'</th>
             <th style="width:5%;">CERTIFICACIÓN POA '.$this->gestion.'</th>
             <th style="width:5%;">EVALUACIÓN POA '.$this->gestion.'</th>
-            <th style="width:5%;">COD. DA.</th>
-            <th style="width:5%;">COD. UE.</th>
-            <th style="width:5%;">COD. PROG.</th>
-            <th style="width:5%;">COD. PROY.</th>
-            <th style="width:5%;">COD. ACT.</th>
-            <th style="width:20%;"></th>
+            <th style="width:3%;">COD. DA.</th>
+            <th style="width:3%;">COD. UE.</th>
+            <th style="width:3%;">COD. PROG.</th>
+            <th style="width:3%;">COD. PROY.</th>
+            <th style="width:3%;">COD. ACT.</th>
             <th style="width:10%;"></th>
-            <th style="width:10%;" title="">UNIDAD ADMINISTRATIVA</th>
+            <th style="width:10%;"></th>
             <th style="width:10%;" title="">UNIDAD EJECUTORA</th>
             <th style="width:8%;" title="">PPTO. ASIGNADO</th>
             <th style="width:8%;" title="">PPTO. POA '.$this->gestion.'</th>
@@ -107,21 +106,16 @@ class Genera_informacion extends CI_Controller{
         <tbody id="bdi">';
         $nro=0;
         foreach ($unidades as $row){
-          $rep='';
+          $rep='';$nro++;
           if($row['aper_proy_estado']==4){
             $rep='<center><a href="'.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'" target=_blank title="REPORTE POA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a></center>';
           }
-
-          $nro++;
           $tabla.='
           <tr style="height:35px;" title="'.$row['aper_id'].'">
             <td>'.$nro.'</td>
             <td align=center>';
             if($row['pfec_estado']==1){
-               $tabla.=' <a href="'.site_url("").'/seg/notificacion_operaciones_mensual/'.$row['proy_id'].'" class="btn btn-default" target="_blank" title="NOTIFICACIÓN POA">NOTIFICACIÓN POA</a><br>';
-            }
-            else{
-              $tabla.='<b>FASE NO ACTIVA</b>';
+               $tabla.=' <a href="'.site_url("").'/seg/notificacion_operaciones_mensual/'.$row['proy_id'].'" class="btn btn-default" target="_blank" title="NOTIFICACIÓN POA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30"/></a><br>';
             }
             $tabla.='
             </td>
@@ -130,33 +124,21 @@ class Genera_informacion extends CI_Controller{
             if($row['pfec_estado']==1){
               $tabla.='<a href="#" data-toggle="modal" data-target="#modal_poa" class="btn btn-default" name="'.$row['proy_id'].'"  onclick="ver_poa('.$row['proy_id'].');" title="FORMULARIO POA"><i class="fa fa-gear fa-2x fa-spin"></i> VER</a>';
             }
-            else{
-              $tabla.='<b>FASE NO ACTIVA</b>';
-            }
             $tabla.='
             </td>
             <td align=center>';
             if($row['pfec_estado']==1){
               $tabla.='<a href="#" data-toggle="modal" data-target="#modal_mpoa" class="btn bg-color-green txt-color-white" name="'.$row['proy_id'].'"  onclick="ver_mpoa('.$row['proy_id'].');" title="MODIFICACIONES POA"><i class="fa fa-gear fa-2x fa-spin"></i> VER</a>';
             }
-            else{
-              $tabla.='<b>FASE NO ACTIVA</b>';
-            }
             $tabla.='</td>
             <td align=center>';
             if($row['pfec_estado']==1){
               $tabla.='<a href="#" data-toggle="modal" data-target="#modal_certpoa" class="btn bg-color-blue txt-color-white" name="'.$row['proy_id'].'"  onclick="ver_certpoa('.$row['proy_id'].');" title="CERTIFICACIONES POA"><i class="fa fa-gear fa-2x fa-spin"></i> VER</a>';
             }
-            else{
-              $tabla.='<b>FASE NO ACTIVA</b>';
-            }
             $tabla.='</td>
             <td align=center>';
             if($row['pfec_estado']==1){
               $tabla.='<a href="#" data-toggle="modal" data-target="#modal_eval" class="btn bg-color-orange txt-color-white" name="'.$row['proy_id'].'"  onclick="ver_evaluacionpoa('.$row['proy_id'].');" title="EVALUACION POA"><i class="fa fa-gear fa-2x fa-spin"></i> VER</a>';
-            }
-            else{
-              $tabla.='<b>FASE NO ACTIVA</b>';
             }
             $tabla.='</td>
             <td align=center>'.$row['da'].'</td>
@@ -174,11 +156,10 @@ class Genera_informacion extends CI_Controller{
             $tabla.='
             </td>
             <td>'.strtoupper($row['tipo_gasto_nombre']).'</td>
-            <td>'.strtoupper($row['dep_departamento']).'</td>
             <td>'.strtoupper($row['dist_distrital']).'</td>
             <td align=right>'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>
-            <td></td>
-            <td></td>
+            <td align=right>'.number_format($row['ppto_poa'], 2, ',', '.').'</td>
+            <td align=right>'.number_format($row['ppto_saldo'], 2, ',', '.').'</td>
             <td align=center>'.strtoupper($row['estado_poa']).'</td>
           </tr>';
         }

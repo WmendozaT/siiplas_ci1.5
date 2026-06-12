@@ -182,7 +182,8 @@ class C_consultas extends CI_Controller {
           </div>
       </article>';
 
-      $this->load->view('admin/consultas_internas/menu_consultas_poa', $data);
+     // $this->load->view('admin/consultas_internas/menu_consultas_poa', $data);
+    echo $this->genera_informacion->consolidado_operaciones_distrital(1,0,4);
     }
 
 
@@ -567,7 +568,8 @@ class C_consultas extends CI_Controller {
       $tabla='';
       // === LIST CITES REQUERIMIENTOS 
         $cites_form5=$this->model_modrequerimiento->list_cites_requerimientos_proy($proy_id);
-        $cites_form4=$this->model_modfisica->list_cites_Operaciones_proy($proy_id);
+
+        $cites_form4=$this->model_modfisica->list_cites_modpoa_form4($proy_id);
 
         if($this->fun_id==399){
            $tabla.='

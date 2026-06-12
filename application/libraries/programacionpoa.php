@@ -387,7 +387,7 @@ class Programacionpoa extends CI_Controller{
         <table class="table table-bordered" id="datos">
               <thead>
               <tr>
-                <th>#<br>'.$proyecto[0]['aper_id'].'</th>
+                <th>#</th>
                 <th>UNIDAD RESPONSABLE </th>
                 <th colspan=2><b>POA PROG. '.$proyecto[0]['aper_programa'].'</b><br>'.$proyecto[0]['proy_nombre'].'</th>';
                 

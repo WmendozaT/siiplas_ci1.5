@@ -1776,28 +1776,42 @@ class Model_proyecto extends CI_Model{
         $gestion = $this->gestion;
         
         $sql = "SELECT 
-                    poa.*,
-                    COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
-                    CASE 
-                        WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
-                        WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
-                        ELSE 'OTRO'
-                    END AS tipo_gasto_nombre,
-                    CASE 
-                        WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
-                        WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
-                        ELSE 'OBSERVADO'
-                    END AS estado_poa
-                FROM lista_poa_nacional($gestion) poa
-                LEFT JOIN (
-                    SELECT 
-                        aper_id,
-                        SUM(importe) AS ppto_asignado
-                    FROM ptto_partidas_sigep
-                    GROUP BY aper_id
-                ) ppto ON poa.aper_id = ppto.aper_id
-                WHERE poa.tp_id=$tp_id
-                ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC";
+                poa.*,
+                COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
+                COALESCE(poa_ins.ppto_poa, 0) AS ppto_poa,
+                -- Operación aritmética en caliente: Asignado menos el POA consolidado
+                (COALESCE(ppto.ppto_asignado, 0) - COALESCE(poa_ins.ppto_poa, 0)) AS ppto_saldo,
+                CASE 
+                    WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
+                    WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
+                    ELSE 'OTRO'
+                END AS tipo_gasto_nombre,
+                CASE 
+                    WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
+                    WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
+                    ELSE 'OBSERVADO'
+            FROM lista_poa_nacional($gestion) poa
+
+            -- SUB_CONCEPCIÓN 1: Presupuesto Asignado desde el SIGEP
+            LEFT JOIN (
+                SELECT 
+                    aper_id,
+                    SUM(importe) AS ppto_asignado
+                FROM ptto_partidas_sigep
+                GROUP BY aper_id
+            ) ppto ON poa.aper_id = ppto.aper_id
+
+            -- SUB_CONCEPCIÓN 2: Presupuesto Programado POA (Mapeado de forma elástica a tu segunda consulta)
+            LEFT JOIN (
+                SELECT 
+                    aper_id, 
+                    SUM(ins_costo_total) AS ppto_poa
+                FROM insumos
+                -- Filtramos estrictamente por la modificación inicial '0' tal como solicitas
+                WHERE ins_tipo_modificacion = 0
+                GROUP BY aper_id
+            ) poa_ins ON poa.aper_id = poa_ins.aper_id
+            ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC;";
 
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -1807,28 +1821,44 @@ class Model_proyecto extends CI_Model{
         public function lista_programacion_poa_x_regional($dep_id,$tp_id) {
         $gestion = $this->gestion;
             $sql = "SELECT 
-                    poa.*,
-                    COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
-                    CASE 
-                        WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
-                        WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
-                        ELSE 'OTRO'
-                    END AS tipo_gasto_nombre,
-                    CASE 
-                        WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
-                        WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
-                        ELSE 'OBSERVADO'
-                    END AS estado_poa
-                FROM lista_poa_nacional($gestion) poa
-                LEFT JOIN (
-                    SELECT 
-                        aper_id,
-                        SUM(importe) AS ppto_asignado
-                    FROM ptto_partidas_sigep
-                    GROUP BY aper_id
-                ) ppto ON poa.aper_id = ppto.aper_id
-                WHERE dep_id=$dep_id and poa.tp_id=$tp_id
-                ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC";
+                poa.*,
+                COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
+                COALESCE(poa_ins.ppto_poa, 0) AS ppto_poa,
+                -- Operación aritmética en caliente: Asignado menos el POA consolidado
+                (COALESCE(ppto.ppto_asignado, 0) - COALESCE(poa_ins.ppto_poa, 0)) AS ppto_saldo,
+                CASE 
+                    WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
+                    WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
+                    ELSE 'OTRO'
+                END AS tipo_gasto_nombre,
+                CASE 
+                    WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
+                    WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
+                    ELSE 'OBSERVADO'
+                END AS estado_poa
+            FROM lista_poa_nacional($gestion) poa
+
+            -- SUB_CONCEPCIÓN 1: Presupuesto Asignado desde el SIGEP
+            LEFT JOIN (
+                SELECT 
+                    aper_id,
+                    SUM(importe) AS ppto_asignado
+                FROM ptto_partidas_sigep
+                GROUP BY aper_id
+            ) ppto ON poa.aper_id = ppto.aper_id
+
+            -- SUB_CONCEPCIÓN 2: Presupuesto Programado POA (Mapeado de forma elástica a tu segunda consulta)
+            LEFT JOIN (
+                SELECT 
+                    aper_id, 
+                    SUM(ins_costo_total) AS ppto_poa
+                FROM insumos
+                -- Filtramos estrictamente por la modificación inicial '0' tal como solicitas
+                WHERE ins_tipo_modificacion = 0
+                GROUP BY aper_id
+            ) poa_ins ON poa.aper_id = poa_ins.aper_id
+            WHERE dep_id=$dep_id and poa.tp_id=$tp_id
+            ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC;";
   
 
         $query = $this->db->query($sql);
@@ -1838,29 +1868,44 @@ class Model_proyecto extends CI_Model{
         //// lista poa Distrital 2026
         public function lista_programacion_poa_x_distrital($dist_id,$tp_id) {
         $gestion = $this->gestion;
-            $sql = "SELECT 
-                    poa.*,
-                    COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
-                    CASE 
-                        WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
-                        WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
-                        ELSE 'OTRO'
-                    END AS tipo_gasto_nombre,
-                    CASE 
-                        WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
-                        WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
-                        ELSE 'OBSERVADO'
-                    END AS estado_poa
-                FROM lista_poa_nacional($gestion) poa
-                LEFT JOIN (
-                    SELECT 
-                        aper_id,
-                        SUM(importe) AS ppto_asignado
-                    FROM ptto_partidas_sigep
-                    GROUP BY aper_id
-                ) ppto ON poa.aper_id = ppto.aper_id
-                WHERE dist_id=$dist_id and poa.tp_id=$tp_id
-                ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC";
+        $sql = "SELECT 
+                poa.*,
+                COALESCE(ppto.ppto_asignado, 0) AS ppto_asignado, 
+                COALESCE(poa_ins.ppto_poa, 0) AS ppto_poa,
+                -- Operación aritmética en caliente: Asignado menos el POA consolidado
+                (COALESCE(ppto.ppto_asignado, 0) - COALESCE(poa_ins.ppto_poa, 0)) AS ppto_saldo,
+                CASE 
+                    WHEN poa.tp_id = 1 THEN 'INVERSIÓN'
+                    WHEN poa.tp_id = 4 THEN 'GASTO CORRIENTE'
+                    ELSE 'OTRO'
+                END AS tipo_gasto_nombre,
+                CASE 
+                    WHEN poa.aper_proy_estado = 1 THEN 'ANTEPROYECTO'
+                    WHEN poa.aper_proy_estado = 4 THEN 'APROBADO'
+                    ELSE 'OBSERVADO'
+            FROM lista_poa_nacional($gestion) poa
+
+            -- SUB_CONCEPCIÓN 1: Presupuesto Asignado desde el SIGEP
+            LEFT JOIN (
+                SELECT 
+                    aper_id,
+                    SUM(importe) AS ppto_asignado
+                FROM ptto_partidas_sigep
+                GROUP BY aper_id
+            ) ppto ON poa.aper_id = ppto.aper_id
+
+            -- SUB_CONCEPCIÓN 2: Presupuesto Programado POA (Mapeado de forma elástica a tu segunda consulta)
+            LEFT JOIN (
+                SELECT 
+                    aper_id, 
+                    SUM(ins_costo_total) AS ppto_poa
+                FROM insumos
+                -- Filtramos estrictamente por la modificación inicial '0' tal como solicitas
+                WHERE ins_tipo_modificacion = 0
+                GROUP BY aper_id
+            ) poa_ins ON poa.aper_id = poa_ins.aper_id
+            WHERE dist_id=$dist_id and poa.tp_id=$tp_id
+            ORDER BY poa.dep_id, poa.dist_id, poa.prog, poa.proy, poa.act ASC;";
   
 
         $query = $this->db->query($sql);

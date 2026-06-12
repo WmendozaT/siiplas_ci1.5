@@ -1084,44 +1084,139 @@ class Cmod_insumo extends CI_Controller {
 
     /*------------- REPORTE MODIFICACION DE REQUERIMIENTOS -------------*/
     public function reporte_modificacion_financiera($cite_id){
-    $data['cite']=$this->model_modrequerimiento->get_cite_insumo($cite_id);
-    if(count($data['cite'])!=0){ /// Nuevo formato de Reporte
+    $data['cite'] = $this->model_modrequerimiento->get_cite_insumo($cite_id);
+    
+    if(count($data['cite']) != 0){ 
+        $cabecera_modpoa = $this->modificacionpoa->cabecera_modpoa($data['cite'], 2);
 
-        $cabecera_modpoa=$this->modificacionpoa->cabecera_modpoa($data['cite'],2);
-
-        if($data['cite'][0]['tp_reporte']==0){ /// rep anterior
-          $items_modificados=$this->modificacionpoa->items_modificados_form5($cite_id); /// anterior reporte
-        }
-        else{
-         $items_modificados=$this->modificacionpoa->items_modificados_form5_historial($cite_id,1); //// Nuevo Reporte
+        if($data['cite'][0]['tp_reporte'] == 0){ 
+            $items_modificados = $this->modificacionpoa->items_modificados_form5($cite_id); 
+        } else {
+            $items_modificados = $this->modificacionpoa->items_modificados_form5_historial($cite_id, 1); 
         }
         
-        $pie_mod=$this->modificacionpoa->pie_modpoa($data['cite'],$data['cite'][0]['cite_codigo']);
-        $data['pie_rep']='MOD_POA_FORM5_'.$data['cite'][0]['cite_nota'].' - '.$data['cite'][0]['tipo_subactividad'].' '.$data['cite'][0]['com_componente'].' - '.$data['cite'][0]['proy_nombre'].' '.$data['cite'][0]['abrev'].'/'.$this->gestion.'';
+        $pie_mod = $this->modificacionpoa->pie_modpoa($data['cite'], $data['cite'][0]['cite_codigo']);
+        $data['pie_rep'] = 'MOD_POA_FORM5_' . $data['cite'][0]['cite_nota'] . ' - ' . $data['cite'][0]['tipo_subactividad'] . ' ' . $data['cite'][0]['com_componente'] . ' - ' . $data['cite'][0]['proy_nombre'] . ' ' . $data['cite'][0]['abrev'] . '/' . $this->gestion;
 
-
-        $data['informacion']='
-        <page orientation="paysage"  backtop="73mm" backbottom="28mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
+        // Configuración de la página en orientación horizontal (paysage) como solicita tu etiqueta <page>
+        $data['informacion'] = '
+        <page orientation="paysage" backtop="73mm" backbottom="28mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
           <page_header>
-          <br><div class="verde"></div>
-              '.$cabecera_modpoa.'
+              <br><div class="verde"></div>
+              ' . $cabecera_modpoa . '
           </page_header>
-
           <page_footer>
-           '.$pie_mod.'
+              ' . $pie_mod . '
           </page_footer>
-          '.$items_modificados.'
-        </page> ';
+          ' . $items_modificados . '
+        </page>';
 
-        $this->load->view('admin/modificacion/moperaciones/reporte_modificacion_poa_form4', $data); 
-    }
-    else{
-      echo "Error !!!";
+        // 1. Capturamos el HTML estructurado de la vista en una variable
+        $html_reporte = $this->load->view('admin/modificacion/moperaciones/reporte_modificacion_poa_form4', $data, true); 
+
+        // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+        if (ob_get_length()) ob_clean();
+
+        // 3. Importación segura del motor conversor usando la ruta física del servidor
+        require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+        
+        try {
+            // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+            $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+            $html2pdf->pdf->SetDisplayMode('fullpage');
+            $html2pdf->writeHTML($html_reporte);
+            
+            // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+            $html2pdf->Output($data['pie_rep'] . '.pdf', 'I');
+        }
+        catch(HTML2PDF_exception $e) {
+            echo "Error al compilar el reporte: " . $e;
+        }
+        exit;
+    } else {
+        echo "Error !!! El CITE especificado no contiene registros.";
     }
   }
 
+
+
     //// CONSOLIDADO FORMULARIO N5 POR MESES
-    public function consolidado_form5_mensual($proy_id,$mes){
+  public function consolidado_form5_mensual($proy_id, $mes) {
+      // 1. Limpieza radical preliminar del búfer de salida para proteger el JSON/PDF
+      if (ob_get_length()) ob_clean();
+
+      $get_mes = $this->model_modrequerimiento->get_mes($mes);
+      $cites_mod5 = $this->model_modrequerimiento->list_cites_requerimientos_proy_x_mes($proy_id, $mes);
+
+      // Validación de cortesía: Si el mes no tiene modificaciones registradas, frenamos el proceso
+      if (empty($cites_mod5)) {
+          echo "<h3>⚠️ Información SIIPLAS: No se encontraron modificaciones financieras consolidadas para el mes seleccionado.</h3>";
+          return;
+      }
+
+      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cites_mod5[0]['proy_id']); 
+      
+      // Configuración del pie de reporte unificado
+      $data['pie_rep'] = $get_mes[0]['m_descripcion'] . ' ' . $this->gestion . ' - CONSOLIDADO_MOD_POA_FORM5 - ' . $proyecto[0]['tipo_adm'] . ' ' . $proyecto[0]['act_descripcion'] . ' ' . $proyecto[0]['abrev'];
+      
+      $tabla = '';
+      // 2. BUCLE EVOLUTIVO: Acumula las páginas de todos los CITEs del mes en la variable $tabla
+      foreach ($cites_mod5 as $row) {
+          $cite = $this->model_modrequerimiento->get_cite_insumo($row['cite_id']);
+          
+          if (count($cite) != 0) {
+              $cabecera_modpoa = $this->modificacionpoa->cabecera_modpoa($cite, 2);
+              
+              if ($cite[0]['tp_reporte'] == 0) { 
+                  $items_modificados = $this->modificacionpoa->items_modificados_form5($row['cite_id']); 
+              } else {
+                  $items_modificados = $this->modificacionpoa->items_modificados_form5_historial($row['cite_id'], 1); 
+              }
+
+              $pie_mod = $this->modificacionpoa->pie_modpoa($cite, $row['cite_codigo']);
+          
+              $tabla .= '
+              <page orientation="paysage" backtop="73mm" backbottom="30mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
+                <page_header>
+                    <br><div class="verde"></div>
+                    ' . $cabecera_modpoa . '
+                </page_header>
+                <page_footer>
+                    ' . $pie_mod . '
+                </page_footer>
+                ' . $items_modificados . '
+              </page> ';
+          }
+      }
+
+      $data['informacion'] = $tabla;
+
+      // 3. CAPTURA ASÍNCRONA: Guardamos el HTML de la subvista reutilizando tu archivo limpio
+      $html_reporte = $this->load->view('admin/modificacion/moperaciones/reporte_modificacion_poa_form4', $data, true); 
+
+      // 4. BIODETECTOR: Vaciamos el búfer de CodeIgniter para que Chrome no lance el error de carga de PDF
+      if (ob_get_length()) ob_clean();
+
+      // 5. COMPILACIÓN DIRECTA DESDE LA RUTA FÍSICA FCPATH
+      require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+      
+      try {
+          // Configuramos en Landscape ('L') y tamaño Carta (Letter) con codificación UTF-8
+          $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+          $html2pdf->pdf->SetDisplayMode('fullpage');
+          $html2pdf->writeHTML($html_reporte);
+          
+          // 6. ENVIAMOS EL ARCHIVO BINARIO COMPILADO DIRECTAMENTE A GOOGLE CHROME
+          $html2pdf->Output($data['pie_rep'] . '.pdf', 'I');
+      }
+      catch(HTML2PDF_exception $e) {
+          echo "Error al compilar el reporte mensual consolidado de la CNS: " . $e;
+      }
+      exit; // Forzamos el cierre estricto del proceso
+  }
+
+
+    /*public function consolidado_form5_mensual2($proy_id,$mes){
       $tabla='';
       $get_mes=$this->model_modrequerimiento->get_mes($mes);
 
@@ -1160,7 +1255,7 @@ class Cmod_insumo extends CI_Controller {
 
       $data['informacion']=$tabla;
       $this->load->view('admin/modificacion/moperaciones/reporte_modificacion_poa_form4', $data); 
-    }
+    }*/
 
 
 

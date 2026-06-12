@@ -908,6 +908,68 @@ class Cmod_fisica extends CI_Controller {
 
     /*----- REPORTE CITE - MODIFICACION FISICA ----*/
     public function reporte_modificacion_fisica($cite_id){
+    // 1. Limpieza preliminar del búfer de salida para proteger el PDF
+    if (ob_get_length()) ob_clean();
+
+    $data['cite'] = $this->model_modfisica->get_cite_fis($cite_id);
+    
+    if (count($data['cite']) != 0) {
+        $tabla = '';
+        $cabecera_modpoa = $this->modificacionpoa->cabecera_modpoa($data['cite'], 1);
+        
+        if ($data['cite'][0]['tp_reporte'] == 0) { 
+            $items_modificados = $this->modificacionpoa->items_modificados_form4($cite_id); 
+        } else { 
+            $items_modificados = $this->modificacionpoa->items_modificados_form4_historial($data['cite'], 1); 
+        }
+
+        $pie_mod = $this->modificacionpoa->pie_modpoa($data['cite'], $data['cite'][0]['cite_codigo']);
+        
+        $tabla .= '
+        <page orientation="paysage" backtop="73mm" backbottom="28mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
+          <page_header>
+              <br><div class="verde"></div>
+              ' . $cabecera_modpoa . '
+          </page_header>
+          <page_footer>
+              ' . $pie_mod . '
+          </page_footer>
+          ' . $items_modificados . '
+        </page> ';
+
+        $data['informacion'] = $tabla;
+
+        // Estructuración del nombre del reporte físico-operativo
+        $data['pie_rep'] = 'MOD_POA_FORM4_' . $data['cite'][0]['cite_nota'] . ' de ' . date('d-m-Y', strtotime($data['cite'][0]['cite_fecha'])) . ' - ' . $data['cite'][0]['tipo_subactividad'] . ' ' . $data['cite'][0]['com_componente'] . ' | ' . $data['cite'][0]['aper_programa'] . ' ' . $data['cite'][0]['proy_nombre'] . ' ' . $data['cite'][0]['abrev'] . '/' . $this->gestion;
+
+        // 2. CAPTURA ASÍNCRONA: Guardamos el HTML procesado de la vista en una variable
+        $html_reporte = $this->load->view('admin/modificacion/moperaciones/reporte_modificacion_poa_form4', $data, true); 
+
+        // 3. Vaciamos los buffers internos antes de renderizar para blindar contra el error en Chrome
+        if (ob_get_length()) ob_clean();
+
+        // 4. INSTANCIACIÓN DE COMPILACIÓN DESDE LA RUTA FÍSICA CORPORATIVA (FCPATH)
+        require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+        
+        try {
+            // Configuramos en Landscape ('L') y hoja Carta (Letter) con codificación UTF-8
+            $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+            $html2pdf->pdf->SetDisplayMode('fullpage');
+            $html2pdf->writeHTML($html_reporte);
+            
+            // 5. ENVIAMOS EL FLUJO BINARIO REPARADO DIRECTO AL VISOR DE GOOGLE CHROME
+            $html2pdf->Output($data['pie_rep'] . '.pdf', 'I');
+        }
+        catch(HTML2PDF_exception $e) {
+            echo "Error al compilar el reporte de modificación física en el SIIPLAS: " . $e;
+        }
+        exit; // Cortamos el hilo de ejecución de forma segura
+    }
+    else {
+        echo "Error !!! El CITE de modificación física especificado no contiene registros.";
+    }
+}
+/*    public function reporte_modificacion_fisica($cite_id){
       $data['cite']=$this->model_modfisica->get_cite_fis($cite_id);
       if(count($data['cite'])!=0){
             $tabla='';
@@ -943,7 +1005,7 @@ class Cmod_fisica extends CI_Controller {
         else{
           echo "Error !!!";
         }
-    }
+    }*/
 
 
 
