@@ -457,154 +457,64 @@ class model_producto extends CI_Model {
     /*=== LISTA DE ACTIVIDADES (NORMAL) + TEMPORALIDAD ===*/
     function lista_form4_x_regional($dep_id){
         $sql = '
+            WITH cte_objetivos AS (
+                SELECT DISTINCT 
+                    ore.or_id, 
+                    ore.or_codigo, 
+                    og.og_id, 
+                    og.og_codigo
+                FROM objetivos_regionales ore
+                INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
+                INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+            )
             SELECT 
-    -- 1. CAMPOS DE LA CABECERA GEOGRÁFICA Y DE APERTURA (POA NACIONAL)
-    poa.dist_id,
-    poa.dist_distrital AS regional,
-    poa.abrev AS abreviatura_regional,
-    poa.aper_id,
-    poa.prog AS codigo_programa,
-    poa.proy AS codigo_proyecto,
-    poa.act AS codigo_actividad,
-    poa.proy_nombre AS nombre_establecimiento_unidad,
-    poa.tipo_gasto_nombre,
-    
-    -- 2. CAMPOS DE CONTROL DEL COMPONENTE VINCULADO
-    c.com_id,
-    c.com_componente AS nombre_componente,
-    c.com_ponderacion,
-    
-    -- 3. METADATOS TÉCNICOS DE LA OPERACIÓN / PRODUCTO (FORMULARIO 4)
-    p.prod_id, 
-    p.prod_cod AS codigo_producto,
-    p.prod_producto AS descripcion_operacion, 
-    p.prod_priori AS prioridad, 
-    p.prod_ppto AS ppto_producto, 
-    p.prod_resultado AS resultado_esperado,
-    p.prod_observacion,
-    p.uni_resp AS unidad_responsable,
-    p.estado AS estado_registro_producto, 
-    p.prod_mod, 
-    p.mt_id,
-    
-    -- 4. INDICADORES Y ACCIÓN ESTRATÉGICA
-    p.indi_id, 
-    p.prod_indicador AS formula_indicador, 
-    p.prod_linea_base, 
-    p.prod_meta AS meta_anual_fisica, 
-    p.prod_fuente_verificacion,
-    p.prod_unidades AS unidad_medida,
-    i.indi_descripcion, 
-    i.indi_abreviacion,
-    
-    -- 5. OBJETIVOS ESTRATÉGICOS E INSTITUCIONALES DE LA CNS
-    p.or_id,
-    ore.or_codigo AS codigo_objetivo_regional, 
-    og.og_id, 
-    og.og_codigo AS codigo_objetivo_gestion, 
-    
-    -- 6. TEMPORALIDAD CRONOLÓGICA MENSUAL FISICA (M1 a M12)
-    prog.g_id AS gestion_programada,
-    prog.total_anual AS total_fisico_calculado,
-    prog.mes1 AS m1, 
-    prog.mes2 AS m2, 
-    prog.mes3 AS m3, 
-    prog.mes4 AS m4, 
-    prog.mes5 AS m5, 
-    prog.mes6 AS m6, 
-    prog.mes7 AS m7, 
-    prog.mes8 AS m8, 
-    prog.mes9 AS m9, 
-    prog.mes10 AS m10, 
-    prog.mes11 AS m11, 
-    prog.mes12 AS m12
+                -- Datos de la Apertura / POA
+                poa.dep_id, poa.dep_departamento, poa.dist_id, poa.dist_distrital, poa.abrev, 
+                poa.da, poa.ue, poa.aper_id, poa.prog AS aper_programa, poa.proy AS aper_proyecto, 
+                poa.act AS aper_actividad, poa.proy_id, poa.proy_estado, poa.proy_nombre, 
+                poa.aper_proy_estado, poa.pfec_id,
+                
+                -- Componentes y Subactividad
+                c.com_id, c.com_componente, c.tp_sact, sa.tipo_subactividad,
+                
+                -- Datos del Producto (Formulario 4)
+                p.prod_id, p.prod_priori, p.prod_producto, p.prod_ppto, p.indi_id, 
+                p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
+                p.prod_unidades, p.estado, p.prod_mod, p.prod_resultado, p.prod_cod, 
+                p.uni_resp, p.prod_observacion, p.mt_id, p.or_id, 
+                
+                -- Indicadores y Objetivos (Desde el CTE optimizado)
+                i.indi_descripcion, i.indi_abreviacion,
+                obj.or_codigo, obj.og_id, obj.og_codigo, 
+                
+                -- Temporalidad Mensual
+                prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
+                prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
+                prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
+                prog.g_id, prog.total_anual
+            FROM lista_poa_nacional(2026) poa
+            -- Relación 1: De la apertura al componente
+            INNER JOIN _componentes c ON c.pfec_id = poa.pfec_id
+            INNER JOIN tipo_subactividad sa ON sa.tp_sact = c.tp_sact
 
-FROM lista_poa_nacional(2026) poa
--- INNER JOIN 1: Sincroniza las aperturas programadas con sus respectivos componentes
-INNER JOIN _componentes c ON c.pfec_id = poa.pfec_id
+            -- CORRECCIÓN CRÍTICA: Se une el producto al COMPONENTE (c.com_id), NO a la apertura (pfec_id)
+            INNER JOIN _productos p ON p.com_id = c.com_id
 
--- INNER JOIN 2: Desglosa de forma elástica todas las operaciones colgadas de cada componente
-INNER JOIN _productos p ON p.com_id = c.com_id
+            -- Relaciones de catálogos directos
+            INNER JOIN indicador i ON i.indi_id = p.indi_id
+            INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
--- NEXOS DE ATRIBUTOS, CATÁLOGOS E INDICADORES
-INNER JOIN indicador i ON i.indi_id = p.indi_id
-INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-INNER JOIN (
-    SELECT DISTINCT pog_id, og_id FROM objective_programado_mensual
-) opm ON ore.pog_id = opm.pog_id
-INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+            -- ACOPLE DEL CTE: Reemplaza las subconsultas pesadas del JOIN original
+            INNER JOIN cte_objetivos obj ON obj.or_id = p.or_id
 
--- TEMPORALIDAD DE CUMPLIMIENTO MAPPED POR PRODUCTO
-INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
-
--- CONDICIONALES DE INTEGRIDAD INSTITUCIONAL
-WHERE poa.tp_id = 4          -- Filtra estrictamente por Gasto Corriente
-  AND p.estado != 3          -- Excluye registros eliminados / dados de baja en el SIIPLAS
-
--- ORDENAMIENTO JERÁRQUICO NACIONAL
-ORDER BY 
-    poa.dep_id ASC, 
-    poa.dist_id ASC, 
-    poa.prog ASC, 
-    poa.proy ASC, 
-    poa.act ASC, 
-    p.prod_cod ASC;'; 
+            -- ORDENAMIENTO DE ALTA VELOCIDAD
+            ORDER BY poa.dep_id, poa.dist_id, c.com_id, p.prod_cod ASC;'; 
 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
-    /*=== LISTA DE OPERACIONES (2020) REPORTE - GASTO CORRIENTE ===*/
-/*    function list_operaciones_pi($com_id){
-        $sql = 'SELECT 
-                    p.prod_id, p.com_id, p.prod_producto, p.prod_ppto, p.indi_id, p.prod_indicador, 
-                    p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, p.prod_unidades, 
-                    p.prod_ponderacion, p.estado, p.prod_mod, p.prod_resultado, p.acc_id, p.prod_cod, 
-                    p.prod_observacion, p.mt_id, p.or_id, 
-                    i.indi_descripcion,
-                    ore.or_id, ore.or_codigo, 
-                    og.og_id, og.og_codigo, 
-                    oe.obj_codigo,
-                    -- Traemos solo lo necesario de la vista (meses y g_id)
-                    pr.mes1, pr.mes2, pr.mes3, pr.mes4, pr.mes5, pr.mes6, 
-                    pr.mes7, pr.mes8, pr.mes9, pr.mes10, pr.mes11, pr.mes12, pr.g_id
-                FROM _productos p
-                INNER JOIN indicador i ON i.indi_id = p.indi_id
-                -- Tu nueva vista optimizada con SUM
-                INNER JOIN vista_temporalidad_form4_programado pr ON pr.prod_id = p.prod_id
-                INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-                -- Reducimos para evitar que un objetivo con 12 meses duplique el producto
-                INNER JOIN (
-                    SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
-                ) opm ON ore.pog_id = opm.pog_id
-                INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-                INNER JOIN _objetivos_estrategicos oe ON oe.obj_id = og.oe_id
-                WHERE p.com_id = '.$com_id.' 
-                  AND p.estado != 3 
-                  AND pr.g_id = '.$this->gestion.'
-                ORDER BY p.prod_cod, oe.obj_codigo ASC'; 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
 
-
-    //// Vigente
-/*    function producto_programado($prod_id,$gestion){
-        $sql = 'select *
-                from vista_productos_temporalizacion_programado_dictamen
-                where prod_id='.$prod_id.' and g_id='.$gestion.''; 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
-
-/*    function producto_ejecutado($prod_id,$gestion){
-        $sql = 'select *
-                from vista_productos_temporalizacion_ejecutado_dictamen
-                where prod_id='.$prod_id.' and g_id='.$gestion.''; 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
 
     /*------- SUMA TOTAL EVALUADO -------*/
     function suma_total_evaluado($prod_id){
