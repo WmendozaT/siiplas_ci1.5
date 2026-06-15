@@ -183,7 +183,7 @@ class C_consultas extends CI_Controller {
       </article>';
 
      // $this->load->view('admin/consultas_internas/menu_consultas_poa', $data);
-    echo $this->genera_informacion->consolidado_operaciones_distrital(1,0,4);
+    echo $this->genera_informacion->consolidado_formN4(1,0,4);
     }
 
 
@@ -490,7 +490,7 @@ class C_consultas extends CI_Controller {
           $salida=$this->genera_informacion->lista_gastocorriente_pinversion($dep_id,0,$tp_id); //// Lista de Unidades Organizacionales
         }
         elseif ($tp_rep==2) {
-          $salida=$this->genera_informacion->consolidado_operaciones_distrital($dep_id,0,$tp_id); /// Consolidado Formulario N° 4 
+          $salida=$this->genera_informacion->consolidado_formN4($dep_id,0,$tp_id); /// Consolidado Formulario N° 4 
         }
         elseif ($tp_rep==3) {
           $regional=$this->model_proyecto->get_departamento($dep_id);

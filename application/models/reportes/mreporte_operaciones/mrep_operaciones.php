@@ -159,73 +159,73 @@ class Mrep_operaciones extends CI_Model {
     }
 
     /*------- OPERACIONES POR DISTRITALES 2020-2021--------*/
-    public function operaciones_por_distritales($dist_id,$tp_id){
-        $sql = '
-                select *
-                from lista_poa_nacional('.$this->gestion.') poa
-                Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-                Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                Inner Join _productos as pr On pr.com_id=c.com_id
-                Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
-                Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
+    // public function operaciones_por_distritales($dist_id,$tp_id){
+    //     $sql = '
+    //             select *
+    //             from lista_poa_nacional('.$this->gestion.') poa
+    //             Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+    //             Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
+    //             Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
+    //             Inner Join _productos as pr On pr.com_id=c.com_id
+    //             Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
+    //             Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
+    //             Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
+    //             Inner Join objetivo_gestion as og On og.og_id=opm.og_id
 
-                where poa.dist_id='.$dist_id.' and c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
-                order by poa.da,poa.prog,poa.act, poa.proy_id,c.com_id,pr.prod_id asc';
+    //             where poa.dist_id='.$dist_id.' and c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
+    //             order by poa.da,poa.prog,poa.act, poa.proy_id,c.com_id,pr.prod_id asc';
 
-        /*$sql = '
-                select *
-                from _proyectos as p
-                Inner Join _proyectofaseetapacomponente as pf On pf.proy_id=p.proy_id
-                Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                Inner Join _departamentos as d On d.dep_id=p.dep_id
-                Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-                Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                Inner Join _componentes as c On c.pfec_id=pf.pfec_id
-                Inner Join servicios_actividad as serv On serv.serv_id=c.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
+    //     /*$sql = '
+    //             select *
+    //             from _proyectos as p
+    //             Inner Join _proyectofaseetapacomponente as pf On pf.proy_id=p.proy_id
+    //             Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+    //             Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+    //             Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+    //             Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //             Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //             Inner Join unidad_actividad as ua On ua.act_id=p.act_id
+    //             Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
+    //             Inner Join _componentes as c On c.pfec_id=pf.pfec_id
+    //             Inner Join servicios_actividad as serv On serv.serv_id=c.serv_id
+    //             Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
 
-                Inner Join _productos as pr On pr.com_id=c.com_id
-                Inner Join vista_productos_temporalizacion_programado_dictamen as vpt On vpt.prod_id=pr.prod_id
+    //             Inner Join _productos as pr On pr.com_id=c.com_id
+    //             Inner Join vista_productos_temporalizacion_programado_dictamen as vpt On vpt.prod_id=pr.prod_id
 
-                Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
+    //             Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
+    //             Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
+    //             Inner Join objetivo_gestion as og On og.og_id=opm.og_id
     
-                Inner Join _acciones_estrategicas as ae On ae.acc_id=og.acc_id
-                Inner Join _objetivos_estrategicos as oe On oe.obj_id=ae.obj_id
+    //             Inner Join _acciones_estrategicas as ae On ae.acc_id=og.acc_id
+    //             Inner Join _objetivos_estrategicos as oe On oe.obj_id=ae.obj_id
 
-                where ds.dist_id='.$dist_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and apg.aper_estado!=\'3\' and pf.pfec_estado=\'1\' and c.estado!=\'3\' and pr.estado!=\'3\' and p.tp_id='.$tp_id.' and vpt.g_id='.$this->gestion.'
-                order by p.tp_id, apg.aper_programa,apg.aper_proyecto, apg.aper_actividad, p.tp_id, c.com_id, pr.prod_cod asc';*/
+    //             where ds.dist_id='.$dist_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and apg.aper_estado!=\'3\' and pf.pfec_estado=\'1\' and c.estado!=\'3\' and pr.estado!=\'3\' and p.tp_id='.$tp_id.' and vpt.g_id='.$this->gestion.'
+    //             order by p.tp_id, apg.aper_programa,apg.aper_proyecto, apg.aper_actividad, p.tp_id, c.com_id, pr.prod_cod asc';*/
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
         /*------ OPERACIONES (formulario N4) POR REGIONALES -------*/
         public function consolidado_operaciones_regionales($dep_id,$tp_id){
-            $sql = '
-                select *
-                from lista_poa_nacional('.$this->gestion.') poa
-                Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-                Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                Inner Join _productos as pr On pr.com_id=c.com_id
-                Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
-                Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
+            // $sql = '
+            //     select *
+            //     from lista_poa_nacional('.$this->gestion.') poa
+            //     Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+            //     Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
+            //     Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
+            //     Inner Join _productos as pr On pr.com_id=c.com_id
+            //     Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
+            //     Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
+            //     Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
+            //     Inner Join objetivo_gestion as og On og.og_id=opm.og_id
 
-                where poa.dep_id='.$dep_id.' and c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
-                order by poa.da,poa.prog,poa.act, poa.proy_id,c.com_id,pr.prod_id asc';
-            $query = $this->db->query($sql);
-            return $query->result_array();
+            //     where poa.dep_id='.$dep_id.' and c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
+            //     order by poa.da,poa.prog,poa.act, poa.proy_id,c.com_id,pr.prod_id asc';
+            // $query = $this->db->query($sql);
+            // return $query->result_array();
 
         /*$sql = '
                 select d.*,ds.*,apg.*,p.*,ua.*,te.*,ser.*,tpsa.*,c.*,pr.*,vpt.*,ore.*,og.*,ae.*
@@ -257,59 +257,59 @@ class Mrep_operaciones extends CI_Model {
 
 
     /*---------------- OPERACIONES CONSOLIDADO NACIONAL ----------------*/
-    public function formulario_N4_institucional(){
-        $sql = '
-                select *
-                from lista_poa_nacional('.$this->gestion.') poa
-                Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-                Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                Inner Join _productos as pr On pr.com_id=c.com_id
-                Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
-                Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
+//     public function formulario_N4_institucional(){
+//         $sql = '
+//                 select *
+//                 from lista_poa_nacional('.$this->gestion.') poa
+//                 Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+//                 Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
+//                 Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
+//                 Inner Join _productos as pr On pr.com_id=c.com_id
+//                 Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
+//                 Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
+//                 Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
+//                 Inner Join objetivo_gestion as og On og.og_id=opm.og_id
 
-                where c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
-                order by poa.da,poa.prog,poa.act, poa.proy_id,c.com_id,pr.prod_id asc';
+//                 where c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
+//                 order by poa.da,poa.prog,poa.act, poa.proy_id,c.com_id,pr.prod_id asc';
          
-        $query = $this->db->query($sql);
-        return $query->result_array();
+//         $query = $this->db->query($sql);
+//         return $query->result_array();
 
 
-/*        $sql = '
-                select *
-                from _proyectos as p
-                Inner Join _proyectofaseetapacomponente as pf On pf.proy_id=p.proy_id
-                Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                Inner Join _departamentos as d On d.dep_id=p.dep_id
-                Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-                Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                Inner Join _componentes as c On c.pfec_id=pf.pfec_id
-                Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                Inner Join _productos as pr On pr.com_id=c.com_id
-                Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
+// /*        $sql = '
+//                 select *
+//                 from _proyectos as p
+//                 Inner Join _proyectofaseetapacomponente as pf On pf.proy_id=p.proy_id
+//                 Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+//                 Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+//                 Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+//                 Inner Join _departamentos as d On d.dep_id=p.dep_id
+//                 Inner Join _distritales as ds On ds.dist_id=p.dist_id
+//                 Inner Join unidad_actividad as ua On ua.act_id=p.act_id
+//                 Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
+//                 Inner Join _componentes as c On c.pfec_id=pf.pfec_id
+//                 Inner Join servicios_actividad as ser On c.serv_id=ser.serv_id
+//                 Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
+//                 Inner Join _productos as pr On pr.com_id=c.com_id
+//                 Inner Join vista_productos_temporalizacion_programado_dictamen as prog On prog.prod_id=pr.prod_id
 
-                Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
-                Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=opm.og_id
+//                 Inner Join objetivos_regionales as ore On ore.or_id=pr.or_id
+//                 Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
+//                 Inner Join objetivo_gestion as og On og.og_id=opm.og_id
     
-                Inner Join _acciones_estrategicas as ae On ae.ae=pr.acc_id
-                Inner Join _objetivos_estrategicos as oe On oe.obj_id=ae.obj_id
+//                 Inner Join _acciones_estrategicas as ae On ae.ae=pr.acc_id
+//                 Inner Join _objetivos_estrategicos as oe On oe.obj_id=ae.obj_id
 
-                where p.estado!=\'3\' and apg.aper_estado!=\'3\' and pf.pfec_estado=\'1\' and c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
-                order by p.tp_id, apg.aper_programa,apg.aper_proyecto, apg.aper_actividad, p.tp_id, c.com_id, pr.prod_cod asc';
+//                 where p.estado!=\'3\' and apg.aper_estado!=\'3\' and pf.pfec_estado=\'1\' and c.estado!=\'3\' and pr.estado!=\'3\' and prog.g_id='.$this->gestion.'
+//                 order by p.tp_id, apg.aper_programa,apg.aper_proyecto, apg.aper_actividad, p.tp_id, c.com_id, pr.prod_cod asc';
          
-        $query = $this->db->query($sql);
-        return $query->result_array();*/
-    }
+//         $query = $this->db->query($sql);
+//         return $query->result_array();*/
+//     }
 
     /*---------------- OPERACIONES CONSOLIDADO NACIONAL SEGUN TIPO ----------------*/
-    public function operaciones_consolidado_nacional_tipo($tp_id){
+/*    public function operaciones_consolidado_nacional_tipo($tp_id){
         $sql = '
                 select *
                 from _proyectos as p
@@ -335,7 +335,7 @@ class Mrep_operaciones extends CI_Model {
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*---------------- NRO DE OPERACIONES POR ACCIONES ----------------*/
     public function nro_operaciones_acciones($acc_id,$proy_id){

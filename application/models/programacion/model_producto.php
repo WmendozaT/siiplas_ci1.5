@@ -164,43 +164,6 @@ class model_producto extends CI_Model {
     }
 
 
-
-
-    /*----- GET UNIDAD RESPONSABLE POR programa (PROG BOLSA revisar) -----*/
-/*    function verif_get_uni_resp_programaBolsa_prog($aper_id,$com_id){
-        $sql = '
-            select prod.*,p.*,dist.*,dep.*,ua.*,te.*,apg.*,pfe.*
-            from _productos prod
-            Inner Join _componentes as c On prod.com_id=c.com_id
-            Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-            Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-            Inner Join _proyectos as p On p.proy_id=pfe.proy_id
-            Inner Join _distritales as dist On dist.dist_id=p.dist_id
-            Inner Join _departamentos as dep On dep.dep_id=p.dep_id  
-            Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-            Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-            where apg.aper_id='.$aper_id.' and prod.uni_resp='.$com_id.' and prod.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'
-            order by apg.aper_programa, prod.prod_cod asc'; 
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
-
-    /*-----GET RELACION PROG 770 - PROD PARA BUSCAR LA UNIDAD RESPONSABLE (2023) -----*/
-/*    function get_relacion_prog_770_producto($dist_id,$prog,$com_id){
-        $sql = '
-        select *
-                from lista_poa_gastocorriente_distrital('.$dist_id.','.$this->gestion.') poa
-                 Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-                 Inner Join _productos as prod On prod.com_id=c.com_id
-                where poa.prog=\''.$prog.'\' and prod.uni_resp='.$com_id.' and prod.estado!=\'3\' and c.estado!=\'3\''; 
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
-
     /*----- GET LISTA DE ACTIVIDADES ALINEADO A LA UNIDAD RESPONSABLE DE LOS PROGRAMAS BOLSA 2023 (REVISAR)-----*/
     function get_lista_form4_uniresp_prog_bolsas($com_id){
         $sql = 'select apg.aper_id,p.proy_id,apg.aper_gestion,apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,prod.com_id,prod.prod_id,prod.prod_cod,prod.prod_producto, prod.prod_indicador, prod.prod_meta,prod.prod_fuente_verificacion,prod.uni_resp
@@ -454,66 +417,33 @@ class model_producto extends CI_Model {
     }
 
 
-    /*=== LISTA DE ACTIVIDADES (NORMAL) + TEMPORALIDAD ===*/
-    function lista_form4_x_regional($dep_id){
-        $sql = '
-            WITH cte_objetivos AS (
-                SELECT DISTINCT 
-                    ore.or_id, 
-                    ore.or_codigo, 
-                    og.og_id, 
-                    og.og_codigo
-                FROM objetivos_regionales ore
-                INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
-                INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-            )
-            SELECT 
-                -- Datos de la Apertura / POA
-                poa.dep_id, poa.dep_departamento, poa.dist_id, poa.dist_distrital, poa.abrev, 
-                poa.da, poa.ue, poa.aper_id, poa.prog AS aper_programa, poa.proy AS aper_proyecto, 
-                poa.act AS aper_actividad, poa.proy_id, poa.proy_estado, poa.proy_nombre, 
-                poa.aper_proy_estado, poa.pfec_id,
-                
-                -- Componentes y Subactividad
-                c.com_id, c.com_componente, c.tp_sact, sa.tipo_subactividad,
-                
-                -- Datos del Producto (Formulario 4)
-                p.prod_id, p.prod_priori, p.prod_producto, p.prod_ppto, p.indi_id, 
-                p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion, 
-                p.prod_unidades, p.estado, p.prod_mod, p.prod_resultado, p.prod_cod, 
-                p.uni_resp, p.prod_observacion, p.mt_id, p.or_id, 
-                
-                -- Indicadores y Objetivos (Desde el CTE optimizado)
-                i.indi_descripcion, i.indi_abreviacion,
-                obj.or_codigo, obj.og_id, obj.og_codigo, 
-                
-                -- Temporalidad Mensual
-                prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
-                prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
-                prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
-                prog.g_id, prog.total_anual
-            FROM lista_poa_nacional(2026) poa
-            -- Relación 1: De la apertura al componente
-            INNER JOIN _componentes c ON c.pfec_id = poa.pfec_id
-            INNER JOIN tipo_subactividad sa ON sa.tp_sact = c.tp_sact
-
-            -- CORRECCIÓN CRÍTICA: Se une el producto al COMPONENTE (c.com_id), NO a la apertura (pfec_id)
-            INNER JOIN _productos p ON p.com_id = c.com_id
-
-            -- Relaciones de catálogos directos
-            INNER JOIN indicador i ON i.indi_id = p.indi_id
-            INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
-
-            -- ACOPLE DEL CTE: Reemplaza las subconsultas pesadas del JOIN original
-            INNER JOIN cte_objetivos obj ON obj.or_id = p.or_id
-
-            -- ORDENAMIENTO DE ALTA VELOCIDAD
-            ORDER BY poa.dep_id, poa.dist_id, c.com_id, p.prod_cod ASC;'; 
+    /*=== LISTA DE ACTIVIDADES (NORMAL) + TEMPORALIDAD 2026 ===*/
+    function lista_form4_institucional_completo(){
+        $sql = 'SELECT *
+                from get_formulario4_consolidado_nacional('.$this->gestion.')'; 
 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
+    function lista_form4_x_regional_completo($dep_id,$tp_id){
+        $sql = 'SELECT *
+                from get_formulario4_consolidado_nacional('.$this->gestion.')
+                where dep_id='.$dep_id.' and tp_id='.$tp_id.''; 
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    function lista_form4_x_distrital_completo($dep_id,$tp_id){
+        $sql = 'SELECT *
+                from get_formulario4_consolidado_nacional('.$this->gestion.')
+                where dist_id='.$dist_id.' and tp_id='.$dist_id.''; 
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+    /*=========================================
 
 
     /*------- SUMA TOTAL EVALUADO -------*/

@@ -275,7 +275,7 @@ class Rep_operaciones extends CI_Controller {
           $salida=$this->genera_informacion->lista_gastocorriente_pinversion($dep_id,$dist_id,$tp_id);
         }
         elseif ($tp_rep==2) {
-          $salida=$this->genera_informacion->consolidado_operaciones_distrital($dep_id,$dist_id,$tp_id); /// Consolidado Formulario N° 4 
+          $salida=$this->genera_informacion->consolidado_formN4($dep_id,$dist_id,$tp_id); /// Consolidado Formulario N° 4 
         }
         elseif ($tp_rep==3) {
 

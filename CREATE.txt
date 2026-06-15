@@ -619,3 +619,166 @@ create table detalle_form7_rrhh(
   act_id integer,
   primary key(det11_form11_id)
  );
+
+ ============================
+
+ CONSOLIDADO POA FORMULARIO N4
+CREATE OR REPLACE FUNCTION public.get_formulario4_consolidado_nacional(IN gest integer)
+  RETURNS TABLE(
+    -- [1 al 24] Datos de la Apertura / POA (Incrementado con dep_cod y dist_cod)
+    dep_id numeric, dep_cod character varying, dep_departamento character varying, 
+    dist_id integer, dist_cod character varying, dist_distrital character varying, abrev character varying, 
+    da character varying, ue character varying, aper_id numeric, aper_programa character varying, aper_proyecto character varying, 
+    aper_actividad character varying, proy_id numeric, proy_sisin character varying, proy_estado integer, tipo character varying, proy_nombre character varying, 
+    aper_proy_estado integer, pfec_id numeric, pfec_estado integer, aper_gestion integer, tp_id integer, por_id integer,
+    
+    -- [25 al 28] Componentes y Subactividad (Recorridos dos espacios)
+    com_id numeric, com_componente text, tp_sact integer, tipo_subactividad character varying,
+    
+    -- [29 al 47] Datos del Producto / Formulario 4
+    prod_id numeric, prod_priori integer, prod_producto text, prod_ppto numeric, indi_id numeric, 
+    prod_indicador text, prod_linea_base numeric, prod_meta numeric, prod_fuente_verificacion text, 
+    prod_unidades character varying, estado integer, prod_mod integer, prod_resultado text, prod_cod integer, 
+    uni_resp character varying, prod_observacion text, mt_id integer, or_id integer, sigep_priori integer,
+    
+    -- [48 al 52] Indicadores y Objetivos
+    indi_descripcion character varying, indi_abreviacion character varying,
+    or_codigo integer, og_id integer, og_codigo integer, 
+    
+    -- [53 al 66] Programación Mensual
+    m1 numeric, m2 numeric, m3 numeric, m4 numeric, m5 numeric, m6 numeric, 
+    m7 numeric, m8 numeric, m9 numeric, m10 numeric, m11 numeric, m12 numeric, 
+    g_id integer, total_anual numeric,
+
+    -- [67 al 78] Ejecución Mensual
+    ejec_m1 numeric, ejec_m2 numeric, ejec_m3 numeric, ejec_m4 numeric, ejec_m5 numeric, ejec_m6 numeric, 
+    ejec_m7 numeric, ejec_m8 numeric, ejec_m9 numeric, ejec_m10 numeric, ejec_m11 numeric, ejec_m12 numeric
+  ) AS
+$BODY$
+BEGIN
+    RETURN QUERY
+    WITH cte_objetivos AS (
+        SELECT DISTINCT 
+            ore.or_id, 
+            ore.or_codigo, 
+            og.og_id, 
+            og.og_codigo
+        FROM objetivos_regionales ore
+        INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
+        INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+    )
+    SELECT 
+        -- [1 al 24] Datos de la Apertura / POA (Casteo explícito de las 24 columnas iniciales)
+        poa.dep_id::numeric,
+        poa.dep_cod::character varying, 
+        poa.dep_departamento::character varying, 
+        poa.dist_id::integer, 
+        poa.dist_cod::character varying, 
+        poa.dist_distrital::character varying, 
+        poa.abrev::character varying, 
+        poa.da::character varying, 
+        poa.ue::character varying, 
+        poa.aper_id::numeric, 
+        poa.prog::character varying AS aper_programa, 
+        poa.proy::character varying AS aper_proyecto, 
+        poa.act::character varying AS aper_actividad, 
+        poa.proy_id::numeric, 
+        poa.proy_sisin::character varying, 
+        poa.proy_estado::integer,
+        poa.tipo::character varying, 
+        poa.proy_nombre::character varying, 
+        poa.aper_proy_estado::integer, 
+        poa.pfec_id::numeric,
+        poa.pfec_estado::integer,
+        poa.aper_gestion::integer,
+        poa.tp_id::integer, 
+        poa.por_id::integer,
+        
+        -- [25 al 28] Componentes y Subactividad
+        c.com_id::numeric, 
+        c.com_componente::text, 
+        c.tp_sact::integer, 
+        sa.tipo_subactividad::character varying,
+        
+        -- [29 al 47] Datos del Producto / Formulario 4
+        p.prod_id::numeric, 
+        p.prod_priori::integer, 
+        p.prod_producto::text, 
+        p.prod_ppto::numeric, 
+        p.indi_id::numeric, 
+        p.prod_indicador::text, 
+        p.prod_linea_base::numeric, 
+        p.prod_meta::numeric, 
+        p.prod_fuente_verificacion::text, 
+        p.prod_unidades::character varying, 
+        p.estado::integer, 
+        p.prod_mod::integer, 
+        p.prod_resultado::text, 
+        p.prod_cod::integer, 
+        p.uni_resp::character varying, 
+        p.prod_observacion::text, 
+        p.mt_id::integer, 
+        p.or_id::integer, 
+        p.sigep_priori::integer,
+        
+        -- [48 al 52] Indicadores y Objetivos
+        i.indi_descripcion::character varying, 
+        i.indi_abreviacion::character varying,
+        obj.or_codigo::integer, 
+        obj.og_id::integer, 
+        obj.og_codigo::integer, 
+        
+        -- [53 al 66] PROGRAMACIÓN MENSUAL (Normalizado a numeric)
+        COALESCE(prog.mes1, 0::numeric)::numeric, 
+        COALESCE(prog.mes2, 0::numeric)::numeric, 
+        COALESCE(prog.mes3, 0::numeric)::numeric, 
+        COALESCE(prog.mes4, 0::numeric)::numeric, 
+        COALESCE(prog.mes5, 0::numeric)::numeric, 
+        COALESCE(prog.mes6, 0::numeric)::numeric, 
+        COALESCE(prog.mes7, 0::numeric)::numeric, 
+        COALESCE(prog.mes8, 0::numeric)::numeric, 
+        COALESCE(prog.mes9, 0::numeric)::numeric, 
+        COALESCE(prog.mes10, 0::numeric)::numeric, 
+        COALESCE(prog.mes11, 0::numeric)::numeric, 
+        COALESCE(prog.mes12, 0::numeric)::numeric, 
+        prog.g_id::integer, 
+        COALESCE(prog.total_anual, 0::numeric)::numeric,
+
+        -- [67 al 78] EJECUCIÓN MENSUAL
+        COALESCE(ejec.e_mes1, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes2, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes3, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes4, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes5, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes6, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes7, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes8, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes9, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes10, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes11, 0::numeric)::numeric, 
+        COALESCE(ejec.e_mes12, 0::numeric)::numeric
+        
+    FROM lista_poa_nacional(gest) poa
+    INNER JOIN _componentes c ON c.pfec_id = poa.pfec_id
+    INNER JOIN tipo_subactividad sa ON sa.tp_sact = c.tp_sact
+    INNER JOIN _productos p ON p.com_id = c.com_id
+    INNER JOIN indicador i ON i.indi_id = p.indi_id
+
+    INNER JOIN vista_temporalidad_form4_programado_uresp prog 
+        ON prog.prod_id = p.prod_id 
+        AND prog.g_id = poa.aper_gestion
+
+    LEFT JOIN vista_temporalidad_form4_ejecutado_uresp ejec 
+        ON ejec.prod_id = p.prod_id 
+        AND ejec.g_id = poa.aper_gestion
+
+    INNER JOIN cte_objetivos obj ON obj.or_id = p.or_id
+    ORDER BY poa.dep_id ASC, poa.dist_id ASC, c.com_id ASC, p.prod_cod ASC;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+ALTER FUNCTION public.get_formulario4_consolidado_nacional(integer)
+  OWNER TO postgres;
