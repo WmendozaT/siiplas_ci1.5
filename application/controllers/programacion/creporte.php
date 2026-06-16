@@ -333,130 +333,275 @@ class Creporte extends CI_Controller {
 
 
     //// REPORTE FORMULARIO POA N 4 - CONSOLIDADO POA 2026 (vigente)
-    public function reporte_formulario4_consolidado($proy_id){
-        ini_set('memory_limit', '-1');
-        set_time_limit(0);
-        $tabla='';
-        $data['mes'] = $this->mes_nombre();
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
-        if(count($proyecto)!=0){
-            $unidades_responsables=$this->model_componente->lista_UnidadesResponsables($proy_id); /// Unidades Responsables
-            $pie=$this->programacionpoa->pie_form($proyecto);
+    // public function reporte_formulario4_consolidado($proy_id){
+    //     ini_set('memory_limit', '-1');
+    //     set_time_limit(0);
+    //     $tabla='';
+    //     $data['mes'] = $this->mes_nombre();
+    //     $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+    //     if(count($proyecto)!=0){
+    //         $unidades_responsables=$this->model_componente->lista_UnidadesResponsables($proy_id); /// Unidades Responsables
+    //         $pie=$this->programacionpoa->pie_form($proyecto);
             
-            if($proyecto[0]['tp_id']==4){ //// Gasto Corriente
-                $tabla.=$this->programacionpoa->caratula_poa_gacorriente($proyecto);
-                $data['pie_rep']=$proyecto[0]['tipo'].' '.$proyecto[0]['proy_nombre'].' '.$proyecto[0]['abrev'].'-'.$this->gestion;
-            }
-            else{ /// Proyecto de Inversion
-                $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); //// DATOS PROYECTO
-                $tabla.=$this->programacionpoa->caratula_poa_pinversion($proyecto);
-                $data['pie_rep']=$proyecto[0]['proy_nombre'].'-'.$this->gestion;
-            }
+    //         if($proyecto[0]['tp_id']==4){ //// Gasto Corriente
+    //             $tabla.=$this->programacionpoa->caratula_poa_gacorriente($proyecto);
+    //             $data['pie_rep']=$proyecto[0]['tipo'].' '.$proyecto[0]['proy_nombre'].' '.$proyecto[0]['abrev'].'-'.$this->gestion;
+    //         }
+    //         else{ /// Proyecto de Inversion
+    //             $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); //// DATOS PROYECTO
+    //             $tabla.=$this->programacionpoa->caratula_poa_pinversion($proyecto);
+    //             $data['pie_rep']=$proyecto[0]['proy_nombre'].'-'.$this->gestion;
+    //         }
             
             
-            foreach($unidades_responsables as $pr){
-                if($this->model_producto->lista_productos($pr['com_id'])!=0){
-                    $componente=$this->model_componente->get_componente($pr['com_id'],$this->gestion);
-                    $cabecera=$this->programacionpoa->cabecera($componente,4);
-                    $formulario_N4=$this->programacionpoa->rep_formulario_N4_Uresponsable($componente);
+    //         foreach($unidades_responsables as $pr){
+    //             if($this->model_producto->lista_productos($pr['com_id'])!=0){
+    //                 $componente=$this->model_componente->get_componente($pr['com_id'],$this->gestion);
+    //                 $cabecera=$this->programacionpoa->cabecera($componente,4);
+    //                 $formulario_N4=$this->programacionpoa->rep_formulario_N4_Uresponsable($componente);
                     
-                    $cabecera_f5=$this->programacionpoa->cabecera($componente,5);
+    //                 $cabecera_f5=$this->programacionpoa->cabecera($componente,5);
 
-                    $lista_partidas=$this->model_insumo->list_consolidado_partidas_uResponsable($pr['com_id']);
-                    $partidas=$this->consolidado_partida_reporte($lista_partidas);
+    //                 $lista_partidas=$this->model_insumo->list_consolidado_partidas_uResponsable($pr['com_id']);
+    //                 $partidas=$this->consolidado_partida_reporte($lista_partidas);
 
-                    $list_insumos=$this->model_insumo->list_requerimientos_uresponsable($pr['com_id']); //// nuevo
-                    $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($list_insumos);
+    //                 $list_insumos=$this->model_insumo->list_requerimientos_uresponsable($pr['com_id']); //// nuevo
+    //                 $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($list_insumos);
 
-                    $tabla.='
+    //                 $tabla.='
+    //                 <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
+    //                     <page_header>
+    //                         <br><div class="verde"></div>
+    //                         '.$cabecera.'
+    //                     </page_header>
+    //                     <page_footer>
+    //                         '.$pie.'
+    //                     </page_footer>
+    //                     '.$formulario_N4.'
+    //                 </page>';
+    //                 if(count($list_insumos)!=0){
+    //                     $tabla.='
+    //                     <page backtop="75mm" backbottom="29mm" backleft="5mm" backright="5mm" pagegroup="new">
+    //                         <page_header>
+    //                             <br><div class="verde"></div>
+    //                             '.$cabecera_f5.'
+    //                         </page_header>
+    //                         <page_footer>
+    //                             '.$pie.'
+    //                         </page_footer>
+    //                         '.$requerimientos.'
+    //                     </page>
+    //                     <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
+    //                         <page_header>
+    //                             <br><div class="verde"></div>
+    //                             '.$cabecera_f5.'
+    //                         </page_header>
+    //                         <page_footer>
+    //                             '.$pie.'
+    //                         </page_footer>
+    //                         '.$partidas.'
+    //                     </page>';
+    //                 }
+
+      
+    //                     //// funcion que devuelve 
+    //                     $programas_bolsas=$this->model_proyecto->lista_programas_bolsas_distrital($proyecto[0]['dist_id']);
+             
+    //                     if(count($programas_bolsas)!=0){
+    //                         foreach($programas_bolsas as $row){
+    //                             $get_prog_bolsa=[];
+    //                             $get_prog_bolsa[]=$row;
+    //                             $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($row['aper_id'],$pr['com_id']); /// lista de requerimientos
+
+    //                             if(count($lista_insumos)!=0){
+    //                                 $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($lista_insumos);
+    //                                 $lista_partidas=$this->model_insumo->list_consolidado_partidas_programas_boLsas_uresponsable($row['aper_id'],$pr['com_id']);
+    //                                 $partidas=$this->consolidado_partida_reporte($lista_partidas);
+    //                                 $cabecera=$this->programacionpoa->cabecera_bolsa($get_prog_bolsa,$componente);
+
+    //                                 $tabla.='
+    //                                 <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
+    //                                     <page_header>
+    //                                     <br><div class="verde"></div>
+    //                                     '.$cabecera.'
+    //                                     </page_header>
+    //                                     <page_footer>
+    //                                     '.$pie.'
+    //                                     </page_footer>
+    //                                     '.$requerimientos.'
+    //                                 </page>
+    //                                 <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
+    //                                     <page_header>
+    //                                     <br><div class="verde"></div>
+    //                                     '.$cabecera.'
+    //                                     </page_header>
+    //                                     <page_footer>
+    //                                     '.$pie.'
+    //                                     </page_footer>
+    //                                     '.$partidas.'
+    //                                 </page>';
+    //                             } 
+    //                         }                      
+    //                     }
+                  
+                    
+    //             }
+    //         }
+
+    //         $data['lista']=$tabla;
+    //         $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data);
+    //     }
+    //     else{
+    //         echo "Error !!!";
+    //     }
+    // }
+
+
+
+    public function reporte_formulario4_consolidado($proy_id){
+        // 1. Ampliación y control de recursos de hardware en el servidor
+        ini_set('memory_limit', '2048M'); 
+        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        
+        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        if (ob_get_length()) ob_clean();
+
+        $tabla = '';
+        $data['mes'] = $this->mes_nombre();
+        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); 
+
+        if (count($proyecto) != 0) {
+            $unidades_responsables = $this->model_componente->lista_UnidadesResponsables($proy_id); 
+            $pie = $this->programacionpoa->pie_form($proyecto);
+            
+            if ($proyecto[0]['tp_id'] == 4) { 
+                $tabla .= $this->programacionpoa->caratula_poa_gacorriente($proyecto);
+                $data['pie_rep'] = $proyecto[0]['tipo'] . ' ' . $proyecto[0]['proy_nombre'] . ' ' . $proyecto[0]['abrev'] . '-' . $this->gestion;
+            } else { 
+                $proyecto_inv = $this->model_proyecto->get_id_proyecto($proy_id); 
+                $tabla .= $this->programacionpoa->caratula_poa_pinversion($proyecto_inv);
+                $data['pie_rep'] = $proyecto_inv[0]['proy_nombre'] . '-' . $this->gestion;
+            }
+            
+            foreach ($unidades_responsables as $pr) {
+                if ($this->model_producto->lista_productos($pr['com_id']) != 0) {
+                    $componente = $this->model_componente->get_componente($pr['com_id'], $this->gestion);
+                    $cabecera = $this->programacionpoa->cabecera($componente, 4);
+                    $formulario_N4 = $this->programacionpoa->rep_formulario_N4_Uresponsable($componente);
+                    
+                    $cabecera_f5 = $this->programacionpoa->cabecera($componente, 5);
+
+                    $lista_partidas = $this->model_insumo->list_consolidado_partidas_uResponsable($pr['com_id']);
+                    $partidas = $this->consolidado_partida_reporte($lista_partidas);
+
+                    $list_insumos = $this->model_insumo->list_requerimientos_uresponsable($pr['com_id']); 
+                    $requerimientos = $this->programacionpoa->rep_formulario_N5_Uresponsable($list_insumos);
+
+                    $tabla .= '
                     <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
                         <page_header>
                             <br><div class="verde"></div>
-                            '.$cabecera.'
+                            ' . $cabecera . '
                         </page_header>
                         <page_footer>
-                            '.$pie.'
+                            ' . $pie . '
                         </page_footer>
-                        '.$formulario_N4.'
+                        ' . $formulario_N4 . '
                     </page>';
-                    if(count($list_insumos)!=0){
-                        $tabla.='
+
+                    if (count($list_insumos) != 0) {
+                        $tabla .= '
                         <page backtop="75mm" backbottom="29mm" backleft="5mm" backright="5mm" pagegroup="new">
                             <page_header>
                                 <br><div class="verde"></div>
-                                '.$cabecera_f5.'
+                                ' . $cabecera_f5 . '
                             </page_header>
                             <page_footer>
-                                '.$pie.'
+                                ' . $pie . '
                             </page_footer>
-                            '.$requerimientos.'
+                            ' . $requerimientos . '
                         </page>
                         <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
                             <page_header>
                                 <br><div class="verde"></div>
-                                '.$cabecera_f5.'
+                                ' . $cabecera_f5 . '
                             </page_header>
                             <page_footer>
-                                '.$pie.'
+                                ' . $pie . '
                             </page_footer>
-                            '.$partidas.'
+                            ' . $partidas . '
                         </page>';
                     }
 
-                    //// funcion que devuelve 
-                    $programas_bolsas=$this->model_proyecto->lista_programas_bolsas_distrital($proyecto[0]['dist_id']);
-         
-                    if(count($programas_bolsas)!=0){
-                        foreach($programas_bolsas as $row){
-                            $get_prog_bolsa=[];
-                            $get_prog_bolsa[]=$row;
-                            $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($row['aper_id'],$pr['com_id']); /// lista de requerimientos
+                    // Inyección y acople del módulo de programas bolsas distritales
+                    $programas_bolsas = $this->model_proyecto->lista_programas_bolsas_distrital($proyecto[0]['dist_id']);
+             
+                    if (count($programas_bolsas) != 0) {
+                        foreach ($programas_bolsas as $row) {
+                            $get_prog_bolsa = array($row);
+                            $lista_insumos = $this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($row['aper_id'], $pr['com_id']); 
 
-                            if(count($lista_insumos)!=0){
-                                $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($lista_insumos);
-                                $lista_partidas=$this->model_insumo->list_consolidado_partidas_programas_boLsas_uresponsable($row['aper_id'],$pr['com_id']);
-                                $partidas=$this->consolidado_partida_reporte($lista_partidas);
-                                $cabecera=$this->programacionpoa->cabecera_bolsa($get_prog_bolsa,$componente);
+                            if (count($lista_insumos) != 0) {
+                                $requerimientos_bolsa = $this->programacionpoa->rep_formulario_N5_Uresponsable($lista_insumos);
+                                $lista_partidas_bolsa = $this->model_insumo->list_consolidado_partidas_programas_boLsas_uresponsable($row['aper_id'], $pr['com_id']);
+                                $partidas_bolsa = $this->consolidado_partida_reporte($lista_partidas_bolsa);
+                                $cabecera_bolsa = $this->programacionpoa->cabecera_bolsa($get_prog_bolsa, $componente);
 
-                                $tabla.='
+                                $tabla .= '
                                 <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
                                     <page_header>
-                                    <br><div class="verde"></div>
-                                    '.$cabecera.'
+                                        <br><div class="verde"></div>
+                                        ' . $cabecera_bolsa . '
                                     </page_header>
                                     <page_footer>
-                                    '.$pie.'
+                                        ' . $pie . '
                                     </page_footer>
-                                    '.$requerimientos.'
+                                    ' . $requerimientos_bolsa . '
                                 </page>
                                 <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
                                     <page_header>
-                                    <br><div class="verde"></div>
-                                    '.$cabecera.'
+                                        <br><div class="verde"></div>
+                                        ' . $cabecera_bolsa . '
                                     </page_header>
                                     <page_footer>
-                                    '.$pie.'
+                                        ' . $pie . '
                                     </page_footer>
-                                    '.$partidas.'
+                                    ' . $partidas_bolsa . '
                                 </page>';
                             } 
                         }                      
                     }
- 
                 }
             }
 
-            $data['lista']=$tabla;
-            $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data);
-        }
-        else{
-            echo "Error !!!";
+            $data['lista'] = $tabla;
+
+            // 2. CAPTURA ASÍNCRONA: Guardamos la estructuración HTML en una variable
+            $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
+
+            // 3. Vaciamos buffers internos remanentes de CodeIgniter para blindar el binario
+            if (ob_get_length()) ob_clean();
+
+            // 4. INSTANCIACIÓN DE COMPILACIÓN DESDE LA RUTA FÍSICA CORPORATIVA FCPATH
+            require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+            
+            try {
+                // Inicializamos por defecto en formato horizontal ('L') y hoja Carta (Letter)
+                $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+                $html2pdf->pdf->SetDisplayMode('fullpage');
+                $html2pdf->writeHTML($html_reporte);
+                
+                // 5. ENVIAMOS EL FLUJO BINARIO REPARADO DIRECTO AL VISOR DE GOOGLE CHROME
+                $html2pdf->Output('FORM_POA_' . $data['pie_rep'] . '.pdf', 'I');
+            }
+            catch(HTML2PDF_exception $e) {
+                echo "Error crítico al compilar el reporte maestro consolidado: " . $e;
+            }
+            exit;
+        } else {
+            echo "Error !!! El código de unidad o proyecto especificado no registra datos activos.";
         }
     }
-
-
-
-
 
 
     //// REPORTE FORMULARIO POA N 5 ( REQUERIMIENTOS NORMAL) 2026

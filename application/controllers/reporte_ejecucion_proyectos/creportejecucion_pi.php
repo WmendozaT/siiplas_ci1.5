@@ -65,7 +65,6 @@ public function menu_pi(){
    
     $data['titulo_modulo']=$tabla;
     $this->load->view('admin/reportes_cns/repejecucion_pi/menu_pi', $data); 
-
 }
 
   //// MENU UNIDADES ORGANIZACIONAL 2022

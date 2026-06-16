@@ -157,36 +157,158 @@
 
 
 
-    /*------ EXPORTAR FORM 2 LISTA DE FORM 4 POR DISTRITAL (2020-2021-2022) -------*/
-    public function operaciones_distrital($dep_id,$dist_id,$tp_id){
-      $tip_rep='PROYECTO DE INVERSION';
-      if($tp_id==4){
-        $tip_rep='GASTO CORRIENTE';
+    /*------ EXPORTAR ACTIVIDADES Regional - Distrital 2026 -------*/
+    public function exportar_formularioN4($dep_id, $dist_id, $tp_id) {
+      // 1. Configuración y ampliación drástica de recursos del servidor
+      set_time_limit(1200);             // 20 minutos de ejecución interna
+      ini_set('memory_limit', '1024M'); // 1 GB de memoria RAM asignada
+
+      // 2. Extracción de datos nacionales parametrizados por la función SQL corregida
+      //$form4 = $this->model_proyecto->get_formulario4_consolidado_nacional($this->gestion, $dep_id, $dist_id, $tp_id);
+
+        if($dist_id==0){
+          $regional=$this->model_proyecto->get_departamento($dep_id);
+          $form4=$this->model_producto->lista_form4_x_regional_completo($dep_id,$tp_id); /// Actividades a Nivel de Regional
+          $tit=strtoupper($regional[0]['dep_departamento']);
+        }
+        else{
+          $dist=$this->model_proyecto->dep_dist($dist_id);
+          $form4=$this->model_producto->lista_form4_x_distrital_completo($dist_id,$tp_id); /// Actividades a Nivel de distritales
+          $tit=strtoupper($dist[0]['dist_distrital']);
+        }
+
+        if (!empty($form4)) {
+          // Estructuración formal del nombre del archivo según el estándar del PEI
+          $nombre_archivo = "Consolidado_Formulario_N4_" . $this->gestion . "_Reg_" . $tit . ".xls";
+
+          // 3. Limpieza radical de buffers fantasmas para blindar el binario
+          if (ob_get_length()) {
+              ob_clean();
+          }
+          ob_start();
+
+          // 4. Protocolo de cabeceras HTTP rígidas para forzar descarga directa
+          header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
+          header("Content-Disposition: attachment; filename=\"" . $nombre_archivo . "\"");
+          header("Cache-Control: max-age=0, no-cache, must-revalidate");
+          header("Pragma: public");
+
+          // 5. Inyección de la directiva BOM UTF-8 para proteger acentos y Ñs en Windows
+          echo "\xEF\xBB\xBF";
+
+          // 6. Construcción idéntica de la sábana de datos en una sola variable string
+          $tabla = '';
+          $tabla .= '
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+          <table border="1">
+            <thead>
+              <tr style="background-color: #1a237e; color: #ffffff; font-weight: bold; height: 35px;">
+                <th style="background-color: #1a237e; color: #ffffff;">COD. DA</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. UE</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. PROG</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. SISIN</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. ACT</th>
+                <th style="background-color: #1a237e; color: #ffffff;">ESTABLECIMIENTO / UNIDAD</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COMPONENTE / UNIDAD RESPONSABLE</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. ACP</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. OPE</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. ACT. POA</th>
+                <th style="background-color: #1a237e; color: #ffffff;">PRIORIDAD</th>
+                <th style="background-color: #1a237e; color: #ffffff;">DESCRIPCIÓN DE LA OPERACIÓN</th>
+                <th style="background-color: #1a237e; color: #ffffff;">RESULTADO ESPERADO</th>
+                <th style="background-color: #1a237e; color: #ffffff;">FÓRMULA DEL INDICADOR</th>
+                <th style="background-color: #1a237e; color: #ffffff;">UNIDAD RESPONSABLE</th>
+                <th style="background-color: #1a237e; color: #ffffff;">META ANUAL</th>
+                
+                <!-- Meses Programados -->
+                <th style="background-color: #2e7d32; color: #ffffff;">P. ENE</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. FEB</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. MAR</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. ABR</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. MAY</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. JUN</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. JUL</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. AGO</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. SEP</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. OCT</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. NOV</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">P. DIC</th>
+                <th style="background-color: #1a237e; color: #ffffff;">MEDIO DE VERIFICACIÓN</th>
+                <!-- Meses Ejecutados -->
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. ENE</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. FEB</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. MAR</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. ABR</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. MAY</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. JUN</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. JUL</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. AGO</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. SEP</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. OCT</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. NOV</th>
+                <th style="background-color: #e3f6f8; color: #ffffff;">E. DIC</th>
+              </tr>
+            </thead>
+            <tbody>';
+
+            foreach ($form4 as $row) {
+                $priori = ($row['prod_priori'] == 1) ? 'SÍ' : 'NO';
+
+                $tabla .= '<tr>';
+                    // Formato de texto estricto (@) para amarrar ceros a la izquierda (ej. "01")
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . (!empty($row['dep_cod']) ? strtoupper($row['dep_cod']) : '0') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . (!empty($row['dist_cod']) ? strtoupper($row['dist_cod']) : '0') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['aper_programa'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: left;">' . (!empty($row['proy_sisin']) ? $row['proy_sisin'] : '---') . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . $row['aper_actividad'] . '</td>';
+                    
+                    $tabla .= '<td>' . strtoupper($row['tipo'] . ' ' . $row['proy_nombre'] . ' - ' . $row['abrev']) . '</td>';
+                    $tabla .= '<td>' . strtoupper($row['tipo_subactividad'] . ' ' . $row['com_componente']) . '</td>';
+                    
+                    $tabla .= '<td style="text-align: center;">' . $row['og_codigo'] . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . $row['or_codigo'] . '</td>';
+                    $tabla .= '<td style="text-align: center; font-weight: bold;">' . $row['prod_cod'] . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . $priori . '</td>';
+                    
+                    $tabla .= '<td>' . htmlspecialchars($p_desc = !empty($row['prod_producto']) ? $row['prod_producto'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars($p_res  = !empty($row['prod_resultado']) ? $row['prod_resultado'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars($p_ind  = !empty($row['prod_indicador']) ? $row['prod_indicador'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . strtoupper($row['prod_unidades']) . '</td>';
+                    
+                    // Formato numérico crudo para que Excel lo reconozca como celda de cálculo operable
+                    $tabla .= '<td style="text-align: right;">' . number_format($row['prod_meta'], 2, '.', '') . '</td>';
+                    
+                    
+                    // Renderizado directo de la matriz de temporalidad
+                    for ($i = 1; $i <= 12; $i++) {
+                        $val_mes = isset($row['m' . $i]) ? $row['m' . $i] : 0;
+                        $estilo_mes = ($val_mes > 0) ? 'background-color: #e8f5e9; font-weight: bold;' : '';
+                        
+                        $tabla .= '<td style="text-align: right; ' . $estilo_mes . '">' . number_format($val_mes, 2, '.', '') . '</td>';
+                    }
+                    $tabla .= '<td>' . htmlspecialchars($p_ver  = !empty($row['prod_fuente_verificacion']) ? $row['prod_fuente_verificacion'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    // Renderizado directo de la matriz de temporalidad
+                    for ($i = 1; $i <= 12; $i++) {
+                        $val_mes = isset($row['ejec_m' . $i]) ? $row['ejec_m' . $i] : 0;
+                        $estilo_mes = ($val_mes > 0) ? 'background-color: #e3f6f8; font-weight: bold;' : '';
+                        
+                        $tabla .= '<td style="text-align: right; ' . $estilo_mes . '">' . number_format($val_mes, 2, '.', '') . '</td>';
+                    }
+                $tabla .= '</tr>';
+            }
+
+          $tabla .= '
+            </tbody>
+          </table>';
+
+          // Imprimimos la variable que contiene el HTML y vaciamos el buffer
+          echo $tabla;
+          ob_end_flush();
+          exit;
+      } else {
+          echo "<h3>⚠️ Error SIIPLAS: No se encontraron registros actividades cargados para los criterios seleccionados.</h3>";
       }
-
-
-      if($dist_id==0){ // Regional
-        $regional=$this->model_proyecto->get_departamento($dep_id);
-        $form4=$this->mrep_operaciones->consolidado_operaciones_regionales($dep_id,$tp_id); /// Actividades a Nivel de REGIONAL
-        $titulo='CONSOLIDADO : '.mb_convert_encoding($regional[0]['dep_departamento'], 'cp1252', 'UTF-8').' - '.$this->gestion.'';
-      }
-      else{ /// Distrital
-        $dist=$this->model_proyecto->dep_dist($dist_id);
-        $titulo=' '.mb_convert_encoding($dist[0]['dist_distrital'], 'cp1252', 'UTF-8').' - '.$this->gestion.'';
-        $form4=$this->mrep_operaciones->operaciones_por_distritales($dist_id,$tp_id); /// Operaciones a Nivel de distritales
-      }
-
-      $tabla=$this->genera_informacion->lista_operaciones_regional_distrital($form4,$titulo,$tip_rep); // Regional Operaciones Distrital 2020-2021
-
-      date_default_timezone_set('America/Lima');
-      $fecha = date("d-m-Y H:i:s");
-      header('Content-type: application/vnd.ms-excel');
-      header("Content-Disposition: attachment; filename=CONSOLIDADO_FORMULARIO N4_".$titulo."_$fecha.xls"); //Indica el nombre del archivo resultante
-      header("Pragma: no-cache");
-      header("Expires: 0");
-      echo $tabla;
     }
-
 
 
     /*--- EXPORTAR CONSOLIDADO FORMULARIO N 5 INSTITUCIONAL ---*/
@@ -296,8 +418,8 @@
       echo $tabla;
     }
 
-    /*--- EXPORTAR REQUERIMIENTOS A DETALLE ---*/
-    public function requerimientos_distrital($dep_id,$dist_id,$tp_id){
+    /*--- EXPORTAR REQUERIMIENTOS A DETALLE 2026 a mejorar ---*/
+    public function exportar_formularioN5($dep_id,$dist_id,$tp_id){
       date_default_timezone_set('America/Lima');
       $fecha = date("d-m-Y H:i:s");
 
@@ -511,154 +633,10 @@
 
 
 
-
-
-
-
-/*    public function requerimientos_servicio($com_id){
-      date_default_timezone_set('America/Lima');
-      $fecha = date("d-m-Y H:i:s");
-
-      $componente=$this->model_componente->get_componente($com_id,$this->gestion);
-      $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-      $proyecto=$this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
-
-      $requerimientos=$this->model_insumo->list_requerimientos_operacion_procesos($com_id);
-      $tabla=$this->lista_ejecucion_requerimientos_uresponsable($requerimientos,$proyecto,$componente); // Requerimientos Unidad responsable 2020-2021
-
-      header('Content-type: application/vnd.ms-excel');
-      header("Content-Disposition: attachment; filename=formulario_N5_".$componente[0]['tipo_subactividad']."_".$componente[0]['serv_descripcion']."_$fecha.xls"); //Indica el nombre del archivo resultante
-      header("Pragma: no-cache");
-      header("Expires: 0");
-      echo "";
-      ini_set('max_execution_time', 0); 
-      ini_set('memory_limit','3072M');
-      echo $tabla;
-    }*/
-
-
-
-
-     /*----- LISTA DE REQUERIMIENTOS POR UNIDAD RESPONSABLE (2023) ----*/
-/*    public function lista_ejecucion_requerimientos_uresponsable($requerimientos,$proyecto,$componente){
-        $tit='PROYECTO DE INVERSI&Oacute;N';
-        $tit_proy=$proyecto[0]['proy_sisin'].'.-'.$proyecto[0]['proy_nombre'];
-        if($proyecto[0]['tp_id']==4){
-          $tit_proy=$proyecto[0]['aper_prog'].''.$proyecto[0]['aper_proy'].''.$proyecto[0]['aper_act'].'.-'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'];
-          $tit=$proyecto[0]['tipo_adm'];
-        }
-
-        $tabla='';
-        $tabla .='
-          <style>
-            table{font-size: 9px;
-              width: 100%;
-              max-width:1550px;
-              overflow-x: scroll;
-            }
-            th{
-              padding: 1.4px;
-              text-align: center;
-              font-size: 10px;
-            }
-          </style>';
-
-        $tabla.='
-          <table border="1" cellpadding="0" cellspacing="0" class="tabla">
-            <tr class="modo1">
-              <td colspan=22 align=left style="height:50px;">
-                <b> DA : </b> '.$proyecto[0]['dep_cod'].' .-'.mb_convert_encoding(strtoupper($proyecto[0]['dep_departamento']), 'cp1252', 'UTF-8').'<br>
-                <b> UE : </b> '.$proyecto[0]['dist_cod'].' .-'.mb_convert_encoding(strtoupper($proyecto[0]['dist_distrital']), 'cp1252', 'UTF-8').'<br>
-                <b> '.mb_convert_encoding($tit, 'cp1252', 'UTF-8').' : </b> '.mb_convert_encoding($tit_proy, 'cp1252', 'UTF-8').'<br>
-                <b> UNIDAD RESPONSABLE : </b> '.mb_convert_encoding($componente[0]['serv_cod'].' '.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'], 'cp1252', 'UTF-8').'<br>
-              </td>
-            </tr>
-          </table><br>
-          <table border="1" cellpadding="0" cellspacing="0" class="tabla">
-              <thead>
-                 <tr style="background-color: #66b2e8">
-                    <th style="width:3%;height:40px;background-color: #eceaea;">TIP. MOD.</th>
-                    <th style="width:2%;height:40px;background-color: #eceaea;">COD. ACT.</th>
-                    <th style="width:2%;background-color: #eceaea;">PARTIDA</th>
-                    <th style="width:20%;background-color: #eceaea;">REQUERIMIENTO</th>
-                    <th style="width:5%;background-color: #eceaea;">UNIDAD DE MEDIDA</th>
-                    <th style="width:3%;background-color: #eceaea;">CANTIDAD</th>
-                    <th style="width:5%;background-color: #eceaea;">PRECIO</th>
-                    <th style="width:5%;background-color: #eceaea;">COSTO TOTAL</th>
-                    <th style="width:5%;background-color: #eceaea;">TOTAL CERTIFICADO</th>
-                    <th style="width:4%;background-color: #eceaea;">P. ENE.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. FEB.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. MAR.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. ABR.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. MAY.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. JUN.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. JUL.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. AGOS.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. SEPT.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. OCT.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. NOV.</th>
-                    <th style="width:4%;background-color: #eceaea;">P. DIC.</th>
-                    <th style="width:5%;background-color: #eceaea;">OBSERVACI&Oacute;N</th>
-                  </tr>
-              </thead>
-            <tbody>';
-            $nro=0;$sum_programado=0;$sum_certificado=0;
-            foreach ($requerimientos as $row){
-              $tipo_modificacion='REG. POA';
-              if($row['ins_tipo_modificacion']==1){
-                $tipo_modificacion='REG. REV. POA';
-              }
-              $prog=$this->model_insumo->lista_prog_fin($row['ins_id']);
-              $nro++;
-              $tabla.='<tr>';
-                $tabla.='<td style="width:3%; font-size: 8px; height:50px;" align=center><b>'.$tipo_modificacion.'</b></td>';
-                $tabla.='<td style="width:2%; font-size: 15px; height:50px;" align=center><b>'.$row['prod_cod'].'</b></td>';
-                $tabla.='<td style="width:2%; font-size: 15px;" align=center><b>'.$row['par_codigo'].'</b></td>';
-                $tabla.='<td style="font-family: Arial;">'.mb_convert_encoding(strtoupper($row['ins_detalle']), 'cp1252', 'UTF-8').'</td>';
-                $tabla.='<td style="font-family: Arial;">'.strtoupper($row['ins_unidad_medida']).'</td>';
-                $tabla.='<td>'.round($row['ins_cant_requerida'],2).'</td>';
-                $tabla.='<td>'.round($row['ins_costo_unitario'],2).'</td>';
-                $tabla.='<td>'.round($row['ins_costo_total'],2).'</td>';
-                $tabla.='<td style="width:5%; font-size: 15px;" bgcolor="#c1f5ee" align=right><b>'.round($row['ins_monto_certificado'],2).'</b></td>';
-                if(count($prog)!=0){
-                  $temporalidad = $this->model_insumo->list_temporalidad_insumo($row['ins_id']);
-                  if(round($row['ins_costo_total'],2)==round($row['ins_monto_certificado'],2)){
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:4%;" align=right bgcolor="#ddf7dd">'.$temporalidad[0]['mes'.$i].'</td>';
-                    }
-                  }
-                  else{
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:4%;" align=right>'.$temporalidad[0]['mes'.$i].'</td>';
-                    }
-                  }
-                }
-                $tabla.='
-                  <td style="width:5%;font-family: Arial;">'.mb_convert_encoding(strtoupper($row['ins_observacion']), 'cp1252', 'UTF-8').'</td>
-                </tr>';
-                $sum_programado=$sum_programado+$row['ins_costo_total'];
-                $sum_certificado=$sum_certificado+$row['ins_monto_certificado'];
-            }
-            $tabla.='
-            </tbody>
-            <tr>
-              <td colspan=7 style="height:30px;"></td>
-              <td style="font-size: 15px;"  align=right><b>'.round($sum_programado,2).'</b></td>
-              <td style="font-size: 15px;" align=right><b>'.round($sum_certificado,2).'</b></td>
-              <td colspan=13></td>
-            </tr>
-        </table>';
-
-      return $tabla;
-    }*/
-
-  /// ---------------------------------------------
-
-
-
   /*--- FORM 5 POA POR UNIDAD RESPONSABLE + PROGRAMAS BOLSAS (EXCEL) ---*/
   public function consolidado_requerimientos_mas_programas_bolsas_unidad($com_id){
-    date_default_timezone_set('America/Lima');
+    echo "Fuera de servicio ..";
+/*    date_default_timezone_set('America/Lima');
     $fecha = date("d-m-Y H:i:s");
     $tabla='';
 
@@ -690,7 +668,7 @@
     echo "";
     ini_set('max_execution_time', 0); 
     ini_set('memory_limit','3072M');
-    echo $tabla;
+    echo $tabla;*/
   }
 
 
@@ -706,7 +684,8 @@
 
   /*--- FORM 4 POA POR UNIDAD RESPONSABLE (EXCEL) ---*/
   public function form4_x_unidad_responsable($com_id){
-    date_default_timezone_set('America/Lima');
+    echo "Fuera de Servicio ...";
+/*    date_default_timezone_set('America/Lima');
     $fecha = date("d-m-Y H:i:s");
 
     $componente=$this->model_componente->get_componente($com_id,$this->gestion);
@@ -869,332 +848,8 @@
     echo "";
     ini_set('max_execution_time', 0); 
     ini_set('memory_limit','3072M');
-    echo $tabla;
+    echo $tabla;*/
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*--- FORM 4 EJECUCION PRESUPUESTARIA (PROG-CERT) POR SUBACTIVIDAD (2020 - 2021) PDF ---*/
-  /*  public function rep_ejecucion_requerimientos_servicio($com_id){
-        $requerimientos=$this->model_insumo->list_requerimientos_operacion_procesos($com_id);
-        $data['componente']=$this->model_componente->get_componente($com_id,$this->gestion);
-        $fase=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']);
-        $data['proyecto']=$this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
-        $data['mes'] = $this->mes_nombre();
-        $data['cabecera']=$this->cabecera($data['componente'],$data['proyecto'],1); /// Cabecera
-        $data['requerimientos']=$this->rep_lista_ejecucion_requerimientos_subactividad($requerimientos,$com_id); // Requerimientos Distrital 2020-2021
-        $this->load->view('admin/reportes_cns/programacion_poa/reporte_poa_form5', $data);
-    }*/
-
-    /*----- EJECUCION POA REQUERIMIENTOS SUBACTIVIDAD (2020-2021) PDF----*/
-   /* public function rep_lista_ejecucion_requerimientos_subactividad($requerimientos,$com_id){
-        $tabla='';
-        $tabla.='
-          <table cellpadding="0" cellspacing="0" class="tabla" border=0.2 style="width:100%;">
-              <thead>
-               <tr style="font-size: 7px;" bgcolor="#1c7368" align=center>
-                    <th style="width:2%;height:18px;color:#FFF;">COD. ACT.</th>
-                    <th style="width:3.5%;color:#FFF;">PARTIDA</th>
-                    <th style="width:15%;color:#FFF;">DETALLE REQUERIMIENTO</th>
-                    <th style="width:5%;color:#FFF;">UNIDAD</th>
-                    <th style="width:4.3%;color:#FFF;">CANTIDAD</th>
-                    <th style="width:4.5%;color:#FFF;">UNITARIO</th>
-                    <th style="width:5.2%;color:#FFF;">TOTAL PROGRAMADO</th>
-                    <th style="width:5.2%;color:#FFF;">MONTO CERTIFICADO</th>
-                    <th style="width:4%;color:#FFF;">ENE.</th>
-                    <th style="width:4%;color:#FFF;">FEB.</th>
-                    <th style="width:4%;color:#FFF;">MAR.</th>
-                    <th style="width:4%;color:#FFF;">ABR.</th>
-                    <th style="width:4%;color:#FFF;">MAY.</th>
-                    <th style="width:4%;color:#FFF;">JUN.</th>
-                    <th style="width:4%;color:#FFF;">JUL.</th>
-                    <th style="width:4%;color:#FFF;">AGO.</th>
-                    <th style="width:4%;color:#FFF;">SEPT.</th>
-                    <th style="width:4%;color:#FFF;">OCT.</th>
-                    <th style="width:4%;color:#FFF;">NOV.</th>
-                    <th style="width:4%;color:#FFF;">DIC.</th>
-                    <th style="width:8%;color:#FFF;">OBSERVACI&Oacute;N</th>  
-                </tr>
-              </thead>
-            <tbody>';
-            $nro=0;$sum_programado=0;$sum_certificado=0;
-            foreach ($requerimientos as $row){
-              $prog=$this->model_insumo->lista_prog_fin($row['ins_id']);
-              
-              $nro++;
-              $tabla.='<tr title='.$row['ins_id'].'>';
-                $tabla.='<td style="width: 2%; font-size: 8px; text-align: center;height:13px;"><b>'.$row['prod_cod'].'</b></td>';
-                $tabla.='<td style="width: 3.5%; text-align: center;font-size: 8px;" bgcolor="#eceaea">'.$row['par_codigo'].'</td>';
-                $tabla.='<td style="width: 15%; text-align: left;font-size: 7.2px;">'.strtoupper($row['ins_detalle']).'</td>';
-                $tabla.='<td>'.strtoupper($row['ins_unidad_medida']).'</td>';
-                $tabla.='<td style="width: 4.3%; text-align: right;font-size: 7.5px;">'.round($row['ins_cant_requerida'],2).'</td>';
-                $tabla.='<td style="width: 4.5%; text-align: right;font-size: 7.5px;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>';
-                $tabla.='<td style="width: 5.2%; text-align: right;font-size: 7.5px;">'.number_format($row['ins_costo_total'], 2, ',', '.').'</td>';
-                $tabla.='<td style="width: 5.2%;" bgcolor="#c1f5ee" align=right><b>'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</b></td>';
-                if(count($prog)!=0){
-                  $temporalidad = $this->model_insumo->list_temporalidad_insumo($row['ins_id']);
-                  if(round($row['ins_costo_total'],2)==round($row['ins_monto_certificado'],2)){
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:4%;" align=right bgcolor="#ddf7dd">'.number_format($temporalidad[0]['mes'.$i], 2, ',', '.').'</td>';
-                    }
-                  }
-                  else{
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:4%;" align=right>'.number_format($temporalidad[0]['mes'.$i], 2, ',', '.').'</td>';
-                    }
-                  }
-                }
-
-                $tabla.='
-                  <td style="width:5%;">'.mb_convert_encoding(strtoupper($row['ins_observacion']), 'cp1252', 'UTF-8').'</td>
-                </tr>';
-                $sum_programado=$sum_programado+$row['ins_costo_total'];
-                $sum_certificado=$sum_certificado+$row['ins_monto_certificado'];
-            }
-
-            $tabla.='
-            </tbody>
-              <tr>
-                <td style="font-size: 8px;height:13px;" colspan=6></td>
-                <td align=right><b>'.number_format($sum_programado, 2, ',', '.').'</b></td>
-                <td align=right><b>'.number_format($sum_certificado, 2, ',', '.').'</b></td>
-                <td colspan=13></td>
-              </tr>
-
-            </table>';
-      return $tabla;
-    }*/
-
-
-    /*------- Ejecucion presupuestaria al total programado (Nuevo) --------*/
-/*    public function ejecucion_presupuestaria_acumulado_total($com_id){
-      $tabla='';
-      $monto_total=0;
-      $ppto_total=$this->model_componente->componente_ppto_total($com_id);
-      if (count($ppto_total)!=0) {
-        $monto_total=$ppto_total[0]['total_ppto'];
-      }
-
-      $monto_partida=0;
-      $suma_partida=$this->model_evaluacion->suma_grupo_partida_programado($com_id,10000); /// total partida 10000
-      if(count($suma_partida)!=0){
-        $monto_partida=$suma_partida[0]['suma_partida'];
-      }
-
-      $monto_certificado=0;
-      $suma_certificado=$this->model_evaluacion->suma_monto_certificado_servicio($com_id); // Ejecutado al trimestre
-      if(count($suma_certificado)!=0){
-        $monto_certificado=$suma_certificado[0]['ppto_certificado'];
-      }
-
-      if($this->gestion>=2020){
-      $tabla.='
-        <div align=center>
-       
-        <table cellpadding="0" cellspacing="0" class="tabla" border=0.2 style="width:100%;" align=center>
-          <thead>
-          <tr>
-            <th style="width:10%; height:18px;"></th>';
-            for ($i=1; $i <=$this->tmes ; $i++) {
-              $trimestre=$this->model_evaluacion->get_trimestre($i);
-              $tabla.='<th style="width:12%;">'.$trimestre[0]['trm_descripcion'].'</th>';
-            }
-          
-        $tabla.='
-            <th style="width:10%;">TOTAL N° CERT. POA</th>
-            <th style="width:10%;">MONTO PROGRAMADO TOTAL</th>
-            <th style="width:10%;">MONTO EJECUTADO</th>
-            <th style="width:5%;">% EJECUTADO</th>
-          </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="width: 10%; font-size: 7px; text-align: left;height:13px;"><b>CERTIFICACIONES POA</b></td>';
-              $nro_total=0;
-              for ($i=1; $i <= $this->tmes; $i++) {
-                $nro=0;
-                $cert=$this->model_evaluacion->nro_certificaciones_trimestre($com_id,$i);
-                if(count($cert)!=0){
-                  $nro=$cert[0]['numero_certificaciones'];
-                  $nro_total=$nro_total+$nro;
-                }
-                
-                $tabla.='<td align=right><b>'.$nro.'</b></td>';
-              }
-          $tabla.='
-              <td align=right bgcolor="#d9f9f5"><b>'.$nro_total.'</b></td>
-              <td align=right bgcolor="#d9f9f5"><b>'.number_format($monto_total, 2, ',', '.').'</b></td>
-              <td align=right bgcolor="#d9f9f5"><b>'.number_format(($monto_partida+$monto_certificado), 2, ',', '.').'</b></td>';
-                if($monto_total!=0){
-                  $tabla.='<td align=right bgcolor="#d9f9f5"><b>'.(round(((($monto_partida+$monto_certificado)/$monto_total)*100),2)).' %</b></td>';
-                }
-                else{
-                  $tabla.='<td align=right bgcolor="#d9f9f5"><b>0 %</b></td>';
-                }
-              $tabla.='
-            </tr>
-          </tbody>
-        </table>
-        </div>';
-      }
-
-      return $tabla;
-    }*/
-
-
-
-
-
-
-    /*------- Ejecucion presupuestaria al trimestre (a borrar) --------*/
-   /* public function ejecucion_presupuestaria_acumulado($com_id){
-      $tabla='';
-      $monto_total=0;
-      $ppto_total=$this->model_evaluacion->suma_ppto_programado_trimestre($com_id); // Prog. al trimestre
-      if (count($ppto_total)!=0) {
-        $monto_total=$ppto_total[0]['total_ppto'];
-      }
-
-      $monto_partida=0;
-      $suma_partida=$this->model_evaluacion->suma_grupo_partida_programado($com_id,10000); /// total partida 10000
-      if(count($suma_partida)!=0){
-        $monto_partida=$suma_partida[0]['suma_partida'];
-      }
-
-      $monto_certificado=0;
-      $suma_certificado=$this->model_evaluacion->suma_monto_certificado_servicio($com_id); // Ejecutado al trimestre
-      if(count($suma_certificado)!=0){
-        $monto_certificado=$suma_certificado[0]['ppto_certificado'];
-      }
-
-      if($this->gestion>=2020){
-      $tabla.='
-        <div align=center>
-        programado al trimestre : '.$monto_total.'-- monto partida defecto '.$monto_partida.'--- monto certificado '.$monto_certificado.'
-        <table cellpadding="0" cellspacing="0" class="tabla" border=0.2 style="width:100%;" align=center>
-          <thead>
-          <tr>
-            <th style="width:10%; height:18px;"></th>';
-            for ($i=1; $i <=$this->tmes ; $i++) {
-              $trimestre=$this->model_evaluacion->get_trimestre($i);
-              $tabla.='<th style="width:12%;">'.$trimestre[0]['trm_descripcion'].'</th>';
-            }
-          
-        $tabla.='
-            <th style="width:12%;">TOTAL N° CERT. POA</th>
-            <th style="width:12%;">MONTO EJECUTADO</th>
-            <th style="width:5%;">% EJECUTADO</th>
-          </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="width: 10%; font-size: 7px; text-align: left;height:13px;"><b>CERTIFICACIONES POA</b></td>';
-              $nro_total=0;
-              for ($i=1; $i <= $this->tmes; $i++) {
-                $nro=0;
-                $cert=$this->model_evaluacion->nro_certificaciones_trimestre($com_id,$i);
-                if(count($cert)!=0){
-                  $nro=$cert[0]['numero_certificaciones'];
-                  $nro_total=$nro_total+$nro;
-                }
-                
-                $tabla.='<td align=right><b>'.$nro.'</b></td>';
-              }
-          $tabla.='
-              <td align=right bgcolor="#d9f9f5"><b>'.$nro_total.'</b></td>
-              <td align=right bgcolor="#d9f9f5"><b>'.number_format(($monto_partida+$monto_certificado), 2, ',', '.').'</b></td>';
-                if($monto_total!=0){
-                  $tabla.='<td align=right bgcolor="#d9f9f5"><b>'.(round(((($monto_partida+$monto_certificado)/$monto_total)*100),2)).' %</b></td>';
-                }
-                else{
-                  $tabla.='<td align=right bgcolor="#d9f9f5"><b>0 %</b></td>';
-                }
-              $tabla.='
-            </tr>
-          </tbody>
-        </table>
-        </div>';
-      }
-
-      return $tabla;
-    }*/
-
-    /*----- TITULO DEL REPORTE tp:1 (pdf), 2:(Excel) 2021 -----*/
-/*    public function cabecera($componente,$proyecto,$tp){
-      $tabla='';
-      $tabla.=' <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
-                    <tr>
-                      <td colspan="2" style="width:100%; height: 1.2%; font-size: 14pt;"><b>'.$this->session->userdata('entidad').'</b></td>
-                    </tr>
-                    <tr style="font-size: 8pt;">
-                      <td style="width:10%; height: 1.2%;"><b>DIR. ADM.</b></td>
-                      <td style="width:90%;">: '.$proyecto[0]['dep_cod'].' '.strtoupper($proyecto[0]['dep_departamento']).'</td>
-                    </tr>
-                    <tr style="font-size: 8pt;">
-                      <td style="width:10%; height: 1.2%;"><b>UNI. EJEC.</b></td>
-                      <td style="width:90%;">: '.$proyecto[0]['dist_cod'].' '.strtoupper($proyecto[0]['dist_distrital']).'</td>
-                    </tr>
-                    <tr style="font-size: 8pt;">';
-                        if($proyecto[0]['tp_id']==1){ /// Proyecto de Inversion
-                            $tabla.='
-                            <td style="width:10%;"><b>PROY. INV.</b></td>
-                            <td style="width:90%;">: '.$proyecto[0]['aper_programa'].' '.$proyecto[0]['proy_sisin'].' 000 - '.$proyecto[0]['proy_nombre'].'</td>';
-                        }
-                        else{ /// Gasto Corriente
-                            $tabla.='
-                            <td style="width:10%;"><b>ACTIVIDAD</b></td>
-                            <td style="width:90%;">: '.$proyecto[0]['aper_programa'].' '.$proyecto[0]['aper_proyecto'].' '.$proyecto[0]['aper_actividad'].' - '.strtoupper($proyecto[0]['proy_nombre']).'</td>';
-                        }
-
-                    $tabla.='
-                    </tr>
-                    <tr style="font-size: 8pt;">
-                        <td style="height: 1.2%; width:10%;"><b>';
-                          if($proyecto[0]['tp_id']==1){
-                            $tabla.='UNI. RESP. ';
-                          }
-                          else{
-                            $tabla.='SUBACT. ';
-                          }
-                        $tabla.='</b></td>
-                        <td style="width:90%;">: '.strtoupper($componente[0]['serv_cod']).' '.strtoupper($componente[0]['tipo_subactividad']).' '.strtoupper($componente[0]['serv_descripcion']).'</td>
-                    </tr>
-                </table>';
-      return $tabla;
-    }*/
-    /*----------------------------------------------------------------------------------------*/
-
-
-
 
 
 

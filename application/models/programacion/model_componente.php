@@ -134,7 +134,7 @@ class Model_componente extends CI_Model{
     public function lista_UnidadesResponsables($proy_id){
         $sql = 'SELECT *
                 from vista_lista_UnidadesResponsables
-                where proy_id='.$proy_id.'
+                where proy_id='.$proy_id.' and aper_gestion='.$this->gestion.'
                 order by com_id asc'; 
         $query = $this->db->query($sql);
         return $query->result_array();

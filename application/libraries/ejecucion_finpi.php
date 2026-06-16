@@ -875,7 +875,7 @@ class ejecucion_finpi extends CI_Controller{
                 <td style="font-size: 11px;font-family: Arial;" align=right><b>'.round($row['avance_fisico'],2).' %</b></td>
                 <td style="font-size: 11px;font-family: Arial;" align=right><b>'.round($row['avance_financiero'],2).' %</b></td>
               </tr>';
-              $ppto_asig=$this->model_ptto_sigep->partidas_proyecto($row['aper_id']); /// lista de partidas asignados por proyectos
+              $ppto_asig=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($row['aper_id']); /// lista de partidas asignados por proyectos
               foreach($ppto_asig as $partida){
                   /// ------ Datos de Modifcacion de la partida
                   $monto_partida=$this->detalle_modificacion_partida($partida);
@@ -1916,7 +1916,7 @@ class ejecucion_finpi extends CI_Controller{
     for ($i=1; $i <=3 ; $i++) { 
       $datos[$i]=0;
     }
-/*    $ppto_asig=$this->model_ptto_sigep->partidas_proyecto($aper_id); /// lista de partidas asignados por proyectos
+    $ppto_asig=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($aper_id); /// lista de partidas asignados por proyectos
     for ($i=1; $i <=3 ; $i++) { 
       $datos[$i]=0;
     }
@@ -1934,7 +1934,7 @@ class ejecucion_finpi extends CI_Controller{
 
     $datos[1]=$suma_inicial;
     $datos[2]=$suma_modificado;
-    $datos[3]=$suma_vigente;*/
+    $datos[3]=$suma_vigente;
 
     return $datos;
   }
@@ -1944,9 +1944,9 @@ class ejecucion_finpi extends CI_Controller{
   public function detalle_modificacion_partida($partida){
 
     $ppto_modificado=$this->model_ptto_sigep->monto_modificado_x_partida($partida['sp_id']); /// ppto modificado por partida
-    $datos[1]=$partida['importe'];
+    $datos[1]=$partida['ppto_asignado'];
     $datos[2]=0;
-    $datos[3]=$partida['importe'];
+    $datos[3]=$partida['ppto_asignado'];
     if(count($ppto_modificado)!=0){
       $datos[1]=$ppto_modificado[0]['ppto_ini']; //// ppto inicial
       $datos[2]=$ppto_modificado[0]['ppto_modificado']; //// ppto modificado
@@ -2078,7 +2078,7 @@ class ejecucion_finpi extends CI_Controller{
   /// % DE CUMPLIMIENTO POR PROYECTOS DE INVERSION
   public function cumplimiento_pi($proyecto){
     //// DATOS DE PPTO (ASIG-EJEC)
-    $total_ppto_asignado=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],1); /// monto total asignado poa
+    $total_ppto_asignado=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],1); /// monto total asignado poa
     $total_ppto_ejecutado=$this->model_ptto_sigep->suma_monto_ejecutado_total_ppto_sigep($proyecto[0]['aper_id']); /// monto total ejecutado poa
     
     $ppto_asig=0;$ppto_ejec=0;
@@ -2282,7 +2282,7 @@ class ejecucion_finpi extends CI_Controller{
   /// Lista de Ejecucion Presupuestaria x Partida - Proyectos de Inversion
   public function detalle_ejecucion_presupuestaria_pi($proyecto){
     $tabla='';
-    $lista_partidas_ppto_asig=$this->model_ptto_sigep->partidas_proyecto($proyecto[0]['aper_id']); /// lista de partidas asignados por proyectos
+/*    $lista_partidas_ppto_asig=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($proyecto[0]['aper_id']); /// lista de partidas asignados por proyectos
 
     $tabla.='
       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
@@ -2416,7 +2416,7 @@ class ejecucion_finpi extends CI_Controller{
        }
 
        $tabla.='<div style="height:25px;"><b>DETALLE CONSOLIDADO POA PRESUPUESTO '.$this->gestion.' </b></div>';
-      // $tabla.=$cumplimiento;
+      // $tabla.=$cumplimiento;*/
 
     return $tabla;
   }

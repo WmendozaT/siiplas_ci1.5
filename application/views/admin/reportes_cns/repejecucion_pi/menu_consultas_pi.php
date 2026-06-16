@@ -41,35 +41,8 @@
             </div>
         </header>
         <!-- END HEADER -->
-        <!-- Left panel : Navigation area -->
-        <aside id="left-panel">
-            <!-- User info -->
-            <div class="login-info">
-                <span> <!-- User image size is adjusted inside CSS, it should stay as is --> 
-                    <a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
-                            <span>
-                                <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
-                            </span>
-                        <i class="fa fa-angle-down"></i>
-                    </a>
-                </span>
-            </div>
-            <nav>
-                <ul>
-                    <li class="">
-                    <a href="<?php echo site_url("admin").'/dashboard';?>" title="VOLVER A MENÚ PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
-                    </li>
-                    <li class="text-center">
-                        <a href="#" title="EVALUACIÓN POA"> <span class="menu-item-parent">RESUMEN POA <?php echo $this->session->userdata("gestion");?></span></a>
-                    </li>
-                    
-                </ul>
-            </nav>
-            <span class="minifyme" data-action="minifyMenu"> <i class="fa fa-arrow-circle-left hit"></i> </span>
-        </aside>
-
         <!-- MAIN PANEL -->
-        <div id="main" role="main">
+        <div >
             <!-- RIBBON -->
             <div id="ribbon">
                 <span class="ribbon-button-alignment"> 
@@ -112,15 +85,6 @@
 
         </div>
         <!-- ========================================================================================================= -->
-        <!-- PAGE FOOTER -->
-        <div class="page-footer">
-            <div class="row">
-                <div class="col-xs-12 col-sm-6">
-                    <span class="txt-color-white"><?php echo $this->session->userData('name').' @ '.$this->session->userData('gestion') ?></span>
-                </div>
-            </div>
-        </div>
-        <!-- END PAGE FOOTER -->
         <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
         <script data-pace-options='{ "restartOnRequestAfter": true }' src="<?php echo base_url(); ?>assets/js/plugin/pace/pace.min.js"></script>
         <script>

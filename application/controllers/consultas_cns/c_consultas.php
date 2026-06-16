@@ -182,8 +182,8 @@ class C_consultas extends CI_Controller {
           </div>
       </article>';
 
-     // $this->load->view('admin/consultas_internas/menu_consultas_poa', $data);
-    echo $this->genera_informacion->consolidado_formN4(1,0,4);
+      $this->load->view('admin/consultas_internas/menu_consultas_poa', $data);
+   // echo $this->genera_informacion->consolidado_formN4(1,0,4);
     }
 
 
@@ -373,7 +373,6 @@ class C_consultas extends CI_Controller {
         }
 
         $salida='
-
               <div class="well">
                 <div class="row">
                   <div class="collapse navbar-collapse navbar-inverse">

@@ -116,6 +116,23 @@
                 </div>
             </div>
 
+            <!-- MODAL GET CERTIFICACION POA x ITEMS -->
+            <div class="modal fade" id="modal_getcpoas" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog" id="certificacion">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                        </div>
+                        <div class="modal-body">
+                        <h2 class="alert alert-info"><center>MIS CERTIFICACIONES POA - <?php echo $this->session->userData('gestion');?></center></h2>
+                            <div class="row">
+                                <div id="content_getcertpoa"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- MODAL EVALUACION POA -->
             <div class="modal fade" id="modal_eval" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                 <div class="modal-dialog" id="evaluacion">
@@ -135,15 +152,6 @@
             </div>
 
         <!-- ========================================================================================================= -->
-        <!-- PAGE FOOTER -->
-        <div class="page-footer">
-            <div class="row">
-                <div class="col-xs-12 col-sm-6">
-                    <span class="txt-color-white"><?php echo $this->session->userData('name').' @ '.$this->session->userData('gestion') ?></span>
-                </div>
-            </div>
-        </div>
-        <!-- END PAGE FOOTER -->
         <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
         <script data-pace-options='{ "restartOnRequestAfter": true }' src="<?php echo base_url(); ?>assets/js/plugin/pace/pace.min.js"></script>
         <script>
@@ -191,4 +199,5 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
         <script src="<?php echo base_url(); ?>mis_js/consultapoa/consultaspoa.js"></script> 
+    </body>
 </html>
