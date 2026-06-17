@@ -782,3 +782,85 @@ $BODY$
 
 ALTER FUNCTION public.get_formulario4_consolidado_nacional(integer)
   OWNER TO postgres;
+
+
+
+  ========================>>>>>>>>>>> DIAGNOSTICO DE EQUIPAMIENTO
+
+  ================ creacion de tabla para el diagnostico de Equipamiento
+-- TABLA MAESTRA 1: Parámetros del Diagnóstico Plurianual (2026 - 2030)
+CREATE TABLE public.diagnostico_equipamiento(
+    equip_id serial NOT NULL,
+    g_id_inicio integer NOT NULL,
+    g_id_fin integer NOT NULL,
+    estado integer DEFAULT 0, -- 0: Borrador, 1: Aprobado, 2: Cerrado
+    CONSTRAINT pk_diagnostico_equipamiento PRIMARY KEY (equip_id)
+);
+
+-- TABLA MAESTRA 2: Ficha del Formulario de Requerimiento de Equipamiento
+CREATE TABLE public.formulario_diagnostico_equipamiento(
+    form_equip_id serial NOT NULL,
+    equip_id integer NOT NULL,
+    dist_id integer NOT NULL,
+    responsable character varying(2000),
+    act_id integer NOT NULL, -- Unidad / Actividad Física CNS
+    nombre_equipamiento character varying(2000) NOT NULL,
+    servicio_unidad character varying(2000),
+    ubicacion_fisica character varying(2000),
+    tp_compra integer DEFAULT 0, -- 1: Reposición, 2: Compra Nueva, etc.
+    cantidad integer DEFAULT 0,
+    costo_unitario numeric(18,2) NOT NULL DEFAULT 0.00,
+    costo_total numeric(18,2) NOT NULL DEFAULT 0.00,
+    par_id integer, -- Partida de Gasto (Ej. 43110)
+    tp_adecuacion integer DEFAULT 0, -- 0: No requiere, 1: Requiere Adecuación
+    observaciones character varying(2000),
+    tp_firma integer DEFAULT 0,
+    estado integer DEFAULT 1, -- 1: Activo, 3: Eliminado / Baja
+    
+    CONSTRAINT pk_formulario_diagnostico_equipamiento PRIMARY KEY (form_equip_id),
+    CONSTRAINT fk_form_equip_maestro FOREIGN KEY (equip_id)
+        REFERENCES public.diagnostico_equipamiento (equip_id) ON DELETE CASCADE
+);
+
+-- TABLA DETALLE 3: Temporalidad Quinquenal de Programación (Física o Financiera)
+CREATE TABLE public.temporalidad_diagnostico_equipamiento(
+    temp_id serial NOT NULL,
+    form_equip_id integer NOT NULL,
+    g_id integer NOT NULL, -- Gestión (2026, 2027, 2028, 2029, 2030)
+    prog_equi numeric(18,2) NOT NULL DEFAULT 0.00, -- Cantidad o presupuesto asignado a ese año
+    
+    CONSTRAINT pk_temporalidad_diagnostico_equipamiento PRIMARY KEY (temp_id),
+    CONSTRAINT fk_temp_equip_formulario FOREIGN KEY (form_equip_id)
+        REFERENCES public.formulario_diagnostico_equipamiento (form_equip_id) ON DELETE CASCADE
+);
+
+-- TABLA DETALLE 4: Especificaciones Técnicas o Equipos Adicionales
+CREATE TABLE public.equipamiento_adicionales(
+    adi_equi_id serial NOT NULL,
+    form_equip_id integer NOT NULL,
+    tp_equi_adi integer DEFAULT 1, -- Catálogo de atributos adicionales
+    detalle_equi_adi character varying(5000),
+    
+    CONSTRAINT pk_equipamiento_adicionales PRIMARY KEY (adi_equi_id),
+    CONSTRAINT fk_adi_equip_formulario FOREIGN KEY (form_equip_id)
+        REFERENCES public.formulario_diagnostico_equipamiento (form_equip_id) ON DELETE CASCADE
+);
+
+
+CREATE OR REPLACE VIEW public.v_temporalidad_diagnostico_equipamiento_quinquenal AS 
+ SELECT 
+    t.form_equip_id,
+    -- Agregación Condicional Numérica Directa por cada gestión del plan estructural
+    COALESCE(SUM(CASE WHEN t.g_id = 2026 THEN t.prog_equi END), 0::numeric) AS g_2026,
+    COALESCE(SUM(CASE WHEN t.g_id = 2027 THEN t.prog_equi END), 0::numeric) AS g_2027,
+    COALESCE(SUM(CASE WHEN t.g_id = 2028 THEN t.prog_equi END), 0::numeric) AS g_2028,
+    COALESCE(SUM(CASE WHEN t.g_id = 2029 THEN t.prog_equi END), 0::numeric) AS g_2029,
+    COALESCE(SUM(CASE WHEN t.g_id = 2030 THEN t.prog_equi END), 0::numeric) AS g_2030,
+    -- Sumatoria analítica acumulada del quinquenio
+    COALESCE(SUM(t.prog_equi), 0::numeric) AS total_quinquenal,
+    COUNT(*) AS registros_temporales
+ FROM public.temporalidad_diagnostico_equipamiento t
+ GROUP BY t.form_equip_id;
+
+ALTER TABLE public.v_temporalidad_diagnostico_equipamiento_quinquenal
+  OWNER TO postgres;

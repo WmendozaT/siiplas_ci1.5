@@ -1515,7 +1515,7 @@ class Certificacionpoa extends CI_Controller{
                 <th style="width:35%;">DETALLE REQUERIMIENTO</th>
                 <th style="width:15%;">UNIDAD DE MEDIDA</th>
                 <th style="width:15%;">PRECIO TOTAL</th>
-                <th style="width:15%;">PRESUPUESTO SOLICITADO</th>
+                <th style="width:15%;">PRESUPUESTO CERTIFICADO</th>
                 <th style="width:19%;">TEMPORALIDAD SELECCIONADO</th>
               </tr>
           </thead>

@@ -698,6 +698,7 @@ $route['Diagnostico_pei/rep_diagnostico_form/(:any)'] = 'Cdiagnostico_pei/CDiagn
 $route['Diagnostico_pei/exportar_consolidado_excel/(:any)'] = 'Cdiagnostico_pei/CDiagnostico_pei/exportar_consolidado_excel/$1/$2'; ///// Exportar formulario Pei Institucional - Distrital
 
 //// ====== DIAGNOSTICO EQUIPAMIENTO
-$route['Diagnostico_equipamiento'] = 'Cdiagnostico_equipamiento/CDiagnostico_equipamiento/diagnostico_principal'; ///// Principal formulario de Diagnosticos
+$route['Diagnostico_equipamiento'] = 'Cdiagnostico_equipamiento/CDiagnostico_equipamiento/diagnostico_principal'; ///// Principal formulario de Diagnosticos Equipamiento
+$route['Diagnostico_equip/exportar_consolidado_excel_equipamiento/(:any)'] = 'Cdiagnostico_equipamiento/CDiagnostico_equipamiento/exportar_consolidado_excel_equipamiento/$1/$2'; ///// Exportar formulario Pei Institucional - Distrital
 
 

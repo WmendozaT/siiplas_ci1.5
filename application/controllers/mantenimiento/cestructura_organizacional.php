@@ -1166,12 +1166,10 @@ class Cestructura_organizacional extends CI_Controller {
                       <th style="width:5%;">COD. PROG.</th>
                       <th style="width:5%;">COD. PROY.</th>
                       <th style="width:5%;">COD. ACT.</th>
-                      <th style="width:5%;">COD. SUBACT.</th>
                       <th style="width:10%;">DESCRIPCIÓN DA</th>
                       <th style="width:10%;">DESCRIPCIÓN UE</th>
-                      <th style="width:10%;">DESCRIPCIÓN PROGRAMA</th>
-                      <th style="width:15%;">DESCRIPCIÓN ACTIVIDAD</th>
-                      <th style="width:15%;">DESCRIPCIÓN SUBACTIVIDAD</th>
+                      <th style="width:15%;">UNIDAD ORGANIZACIONAL</th>
+                      <th style="width:15%;">UNIDAD RESPONSABLE DEPENDIENTE</th>
                       <th style="width:15%;">COM ID</th>
                     </tr>
                   </thead>
@@ -1184,12 +1182,10 @@ class Cestructura_organizacional extends CI_Controller {
                       <td>'.$row['aper_programa'].'</td>
                       <td>'.$row['aper_proyecto'].'</td>
                       <td>'.$row['aper_actividad'].'</td>
-                      <td>'.$row['serv_cod'].'</td>
                       <td>'.strtoupper($row['dep_departamento']).'</td>
                       <td>'.strtoupper($row['dist_distrital']).'</td>
-                      <td></td>
                       <td>'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].'</td>
-                      <td>'.$row['serv_descripcion'].'</td>
+                      <td>'.$row['serv_cod'].' - '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</td>
                       <td>'.$row['com_id'].'</td>
                     </tr>';
                   }

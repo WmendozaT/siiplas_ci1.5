@@ -709,7 +709,7 @@ class model_estructura_org extends CI_Model {
 
     /*==== LISTA DE UNIDADES Y SERVICIOS A NIVEL NACIONAL ====*/
     public function lista_unidad_servicio_poa(){
-        $sql = 'select d.dep_id,ds.dist_id,apg.aper_programa,apg.aper_proyecto,apg.aper_actividad, ua.act_descripcion,sa.serv_cod, sa.serv_descripcion, d.dep_departamento, ds.dist_distrital, ds.abrev, te.*, c.com_id
+        $sql = 'select d.dep_id,ds.dist_id,apg.aper_programa,apg.aper_proyecto,apg.aper_actividad, ua.act_descripcion,sa.serv_cod, stp.tipo_subactividad,sa.serv_descripcion, d.dep_departamento, ds.dist_distrital, ds.abrev, te.*, c.com_id
                 from _proyectos as p
                 Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
                 Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
@@ -721,6 +721,7 @@ class model_estructura_org extends CI_Model {
                 Inner Join uni_gestion as ug On ua.act_id=ug.act_id
                 Inner Join _proyectofaseetapacomponente as pfec On pfec.proy_id=p.proy_id
                 Inner Join _componentes as c On c.pfec_id=pfec.pfec_id
+                Inner Join tipo_subactividad as stp On stp.tp_sact=c.tp_sact
                 Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
                 where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id=\'4\' and ug.g_id='.$this->gestion.' and apg.aper_estado!=\'3\' and pfec.pfec_estado=\'1\' and c.estado!=\'3\'
                 ORDER BY d.dep_id, ds.dist_id,apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,te.tn_id, te.te_id asc';
