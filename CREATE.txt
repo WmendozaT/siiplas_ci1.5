@@ -803,7 +803,9 @@ CREATE TABLE public.formulario_diagnostico_equipamiento(
     equip_id integer NOT NULL,
     dist_id integer NOT NULL,
     responsable character varying(2000),
+    tp_registro integer NOT NULL, --- tipo de registro establecimiento / inversion
     act_id integer NOT NULL, -- Unidad / Actividad Física CNS
+    nombre_inversion character varying(2000) NOT NULL,
     nombre_equipamiento character varying(2000) NOT NULL,
     servicio_unidad character varying(2000),
     ubicacion_fisica character varying(2000),
@@ -813,6 +815,8 @@ CREATE TABLE public.formulario_diagnostico_equipamiento(
     costo_total numeric(18,2) NOT NULL DEFAULT 0.00,
     par_id integer, -- Partida de Gasto (Ej. 43110)
     tp_adecuacion integer DEFAULT 0, -- 0: No requiere, 1: Requiere Adecuación
+    tp_adecuacion_infra character varying(2000),
+    tp_adecuacion_instalacion character varying(2000),
     observaciones character varying(2000),
     tp_firma integer DEFAULT 0,
     estado integer DEFAULT 1, -- 1: Activo, 3: Eliminado / Baja
