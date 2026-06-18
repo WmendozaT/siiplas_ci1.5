@@ -122,7 +122,13 @@
         <script src="<?php echo base_url(); ?>assets/js/demo.min.js"></script>
         <!-- MAIN APP JS FILE -->
         <script src="<?php echo base_url(); ?>assets/js/app.min.js"></script>
-
+        <!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
+        <!-- Voice command : plugin -->
+        <script src="<?php echo base_url(); ?>assets/js/app.min.js"></script>
+        <script src="<?php echo base_url(); ?>assets/js/speech/voicecommand.min.js"></script>
+        <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/jquery.dataTables.min.js"></script>
+        <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
+        <script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
         <script src="<?php echo base_url(); ?>mis_js/Js_diagnostico/Js_diagnosticoEquipamiento.js"></script>
     </body>
 </html>

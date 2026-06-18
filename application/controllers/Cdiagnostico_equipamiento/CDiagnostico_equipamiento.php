@@ -51,7 +51,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
 
         $this->load->view('admin/diagnostico_equipamiento/View_diagnostico_equipamiento', $data);
-      
+      //echo $this->unidad_ejecutora_seleccionado(1,1,1);
     }
 
 
@@ -187,107 +187,218 @@ class CDiagnostico_equipamiento extends CI_Controller {
     }
 
     /*------- Listado de formularios -------*/
-    public function unidad_ejecutora_seleccionado($equip_id,$dist_id,$tp_adm){
-        $get_form_distrital=$this->model_diagnosticoequip->get_distrital_formulario_diagnostico_activo($equip_id,$dist_id);
-        
-        $tabla='
-        <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5">
-            <div class="well well-light" style="padding: 15px; background: #fff; border: 1px solid #ddd; border-radius: 4px; min-height: 550px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <header style="border-bottom: 2px solid #2e7d32; padding-bottom: 8px; margin-bottom: 15px; font-weight: bold; color: #1b5e20; text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.3px;">
-                    <i class="fa fa-list-ul"></i> Listado de Registros Solicitados
-                </header>
+public function unidad_ejecutora_seleccionado($equip_id, $dist_id, $tp_adm){
+    $get_form_distrital = $this->model_diagnosticoequip->get_distrital_formulario_diagnostico_activo($equip_id, $dist_id);
+    $tabla = '';
+    
+    $tabla .= '
+    <section id="widget-grid" class="" style="margin-top: 5px;">
+        <div class="row">
+            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                 
-                <!-- Botón de Alta Rápida de Equipamiento -->
-                <div style="margin-bottom: 15px;">
-                    <button type="button" id="btn_nuevo_registro" class="btn btn-warning btn-sm" style="font-weight: bold; width: 100%; text-transform: uppercase; border: none; height: 32px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); background: #e67e22;">
-                        <i class="fa fa-plus"></i> + Adicionar Nuevo Registro
+                <!-- 1. ACCIÓN MAESTRA PLURIANUAL: Disparador del Formulario por Modal -->
+                <div style="margin-bottom: 15px; text-align: left;">
+                    <button type="button" class="btn btn-success btn-sm font-md" data-toggle="modal" data-target="#modal_nuevo_equipamiento" style="font-weight: bold; background: #e67e22; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.15); letter-spacing:0.3px; padding: 6px 15px;">
+                        <i class="fa fa-plus-circle"></i> + REGISTRAR NUEVO REQUERIMIENTO DE EQUIPAMIENTO
                     </button>
                 </div>
-                
-                <!-- CONTENEDOR ESPECÍFICO PARA LA TABLA AJAX -->
-                <div id="contenedor_lista_ajax" style="max-height: 440px; overflow-y: auto;">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>DISTRITAL</th>
-                            <th>NOMBRE DEL RESPONSABLE</th>
-                            <th>NOMBRE DEL ESTABLECIMIENTO</th>
-                            <th>NOMBRE DEL EQUIPAMIENTO MEDICO</th>
-                            <th>SERVICIO / UNIDAD</th>
-                            <th>UBICACION</th>
-                            <th>TIPO DE COMPRA</th>
-                            <th>MODIFICAR</th>
-                            <th>ELIMINAR</th>
-                        </tr>
-                        </thead>
-                        <tbody>';
-                        foreach($get_form_distrital as $row){
-                            $tabla.='
-                            <tr>
-                                <td>'.$row['nombre_distrital'].'</td>
-                                <td>'.$row['responsable'].'</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td><button> MODIFICAR</button></td>
-                                <td><button> ELIMINAR</button></td>
-                            </tr>';
-                        }
-                        $tabla.='
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
-            <div class="well well-light" style="padding: 15px; background: #fff; border: 1px solid #ddd; border-radius: 4px; min-height: 550px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" id="contenedor_formulario_ajax">
-                <div id="formulario">
-
-                    <!-- Pizarra Neutra por defecto -->
-                    <div style="text-align: center; color: #999; padding-top: 170px;">
-                        <i class="fa fa-object-group" style="font-size: 46px; margin-bottom: 15px; color: #e0e0e0;"></i>
-                        <h5 style="font-weight: bold; color: #444; font-size: 13px; margin: 0 0 5px 0;">Ficha de Equipamiento</h5>
-                        <p style="font-size: 11px; color: #888; max-width: 320px; margin: 0 auto; line-height: 1.4;">
-                            Seleccione un equipo de la izquierda para modificar o haga clic en el botón naranja para abrir el formulario de alta.
-                        </p>
+                <!-- 2. JARVISWIDGET ESTILO PREMIUM CORPORATIVO (CNS) -->
+                <div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-diagnostico-equip" data-widget-editbutton="false" data-widget-colorbutton="false" data-widget-deletebutton="false">
+                    <header style="background: #1a237e; color: #ffffff;">
+                        <span class="widget-icon"> <i class="fa fa-table" style="color: #ffffff;"></i> </span>
+                        <h2 class="font-md" style="font-weight: bold; text-transform: uppercase;"> Matriz General de Requerimientos de Inversión Fija Quinquenal </h2>  
+                    </header>
+                    
+                    <div>
+                        <div class="widget-body no-padding" style="background: #ffffff;">
+                            <div class="table-responsive" style="width: 100%; overflow-x: auto;">
+                                <table id="datatable_fixed_column" class="table table-bordered table-striped table-hover" style="width:100%; font-size: 10.5px; margin-bottom: 0; white-space: nowrap; vertical-align: middle;" border="1">
+                                    <thead>
+                                        <!-- FILA CABECERA A: BUSCADORES EN CALIENTE POR COLUMNA -->
+                                        <tr style="background-color: #f5f5f5;">
+                                            <th></th> <!-- # -->
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px; text-align:center;" placeholder="🔍 Distrito"/></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px;" placeholder="🔍 Responsable"/></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px;" placeholder="🔍 Establ."/></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px; font-weight:bold; color:#0d47a1;" placeholder="🔍 Equipo Médico"/></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px;" placeholder="🔍 Servicio"/></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px;" placeholder="🔍 Ubicación"/></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px; text-align:center;" placeholder="🔍 Compra"/></th>
+                                            <th></th> <!-- Cantidad -->
+                                            <th></th> <!-- Costo Unit -->
+                                            <th></th> <!-- Costo Total -->
+                                            <!-- Columnas de Temporalidad Plurianual (No requieren inputs individuales) -->
+                                            <th></th><th></th><th></th><th></th><th></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px; text-align:center;" placeholder="🔍 Partida"/></th>
+                                            <th class="hasinput"><input type="text" class="form-control col-search-input-equip input-xs" style="font-size:9px; padding:2px;" placeholder="🔍 Observación"/></th>
+                                        </tr>                          
+                                        
+                                        <!-- FILA CABECERA B: TÍTULOS TÉCNICOS OFICIALES DE LA PLANILLA -->
+                                        <tr style="background-color: #1a237e; color: #ffffff; height: 35px;">
+                                            <th style="width:1%; text-align:center; vertical-align: middle;">#</th>
+                                            <th style="width:5%; text-align:center; vertical-align: middle;">DISTRITAL</th>
+                                            <th style="width:7%; text-align:center; vertical-align: middle;">RESPONSABLE / SOLICITANTE</th>
+                                            <th style="width:8%; text-align:center; vertical-align: middle;">ESTABLECIMIENTO DE SALUD</th>
+                                            <th style="width:12%; text-align:center; vertical-align: middle;">NOMBRE DEL EQUIPAMIENTO</th>
+                                            <th style="width:8%; text-align:center; vertical-align: middle;">SERVICIO/UNIDAD</th>
+                                            <th style="width:8%; text-align:center; vertical-align: middle;">UBICACIÓN FÍSICA</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle;">TIPO COMPRA</th>
+                                            <th style="width:3%; text-align:center; vertical-align: middle;">CANT.</th>
+                                            <th style="width:6%; text-align:center; vertical-align: middle;">COSTO UNITARIO (Bs.)</th>
+                                            <th style="width:6%; text-align:center; vertical-align: middle;">COSTO TOTAL (Bs.)</th>
+                                            <!-- Temporalidad Quinquenal de Asignación Física -->
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2026</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2027</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2028</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2029</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2030</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle;">PARTIDA</th>
+                                            <th style="width:10%; text-align:center; vertical-align: middle;">OBSERVACIONES / JUSTIFICACIÓN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bdi_equipamiento">';
+                                    foreach($get_form_distrital as $row){
+                                        $tabla.='
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>';
+                                    }
+                                    $tabla.='
+                                    </tbody>
+                                </table>
+                               </div>
+                            </div>
+                           </div>
+                          </div>
+                        </article>
                     </div>
-                
+        </div>
+        </section>
+
+        <div class="modal fade" id="modal_nuevo_equipamiento" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" style="width: 75%; max-width: 950px;">
+                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+                    <div class="modal-header" style="background: #1a237e; color: white; padding: 12px 15px;">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:white; opacity:0.8;">&times;</button>
+                        <h4 class="modal-title" style="font-weight: bold; font-size: 13px; text-transform: uppercase;">
+                            <i class="fa fa-plus-circle"></i> Formulario de Planificación y Alta de Equipamiento Médico
+                        </h4>
+                    </div>
+                    <div class="modal-body" style="padding: 15px; background: #fafafa;">
+                         <form class="smart-form" id="form_guardar_equipamiento_modal" autocomplete="off">
+            <input type="hidden" name="equip_id" value="' . $equip_id . '">
+            <input type="hidden" name="dist_id" value="' . $dist_id . '">
+            
+            <!-- PESTAÑAS DE ENLACE NATIVAS -->
+            <ul class="nav nav-tabs" style="margin-bottom:15px; font-size:11px; font-weight:bold;">
+                <li class="active"><a href="#modal-tab-general" data-toggle="tab"><i class="fa fa-info-circle"></i> 1. Ficha del Activo</a></li>
+                <li><a href="#modal-tab-quinquenio" data-toggle="tab"><i class="fa fa-calendar"></i> 2. Cronograma (2026 - 2030)</a></li>
+            </ul>
+            
+            <div class="tab-content">
+                <!-- CONTENEDOR TABS 1: DETALLES GENERALES -->
+                <div class="tab-pane active" id="modal-tab-general">
+                    <fieldset style="background:transparent; padding:0;">
+                        <div class="row">
+                            <section class="col col-6">
+                                <label class="label"><b>Nombre del Equipamiento Médico *</b></label>
+                                <label class="input"><i class="icon-append fa fa-tag"></i>
+                                    <input type="text" name="nombre_equipamiento" value="" required placeholder="Ej. Equipo de Ultrasonido Diagnóstico">
+                                </label>
+                            </section>
+                            <section class="col col-6">
+                                <label class="label"><b>Nombre del Responsable / Solicitante</b></label>
+                                <label class="input"><i class="icon-append fa fa-user"></i>
+                                    <input type="text" name="responsable" value="" placeholder="Ej. Dr. Carlos Murillo">
+                                </label>
+                            </section>
+                        </div>
+                        <div class="row">
+                            <section class="col col-4">
+                                <label class="label"><b>Servicio / Unidad Destino</b></label>
+                                <label class="input"><i class="icon-append fa fa-hospital-o"></i>
+                                    <input type="text" name="servicio_unidad" value="" placeholder="Ej. Neonatología">
+                                </label>
+                            </section>
+                            <section class="col col-4">
+                                <label class="label"><b>Ubicación Física</b></label>
+                                <label class="input"><i class="icon-append fa fa-map-marker"></i>
+                                    <input type="text" name="ubicacion_fisica" value="" placeholder="Ej. Pabellón de Maternidad - Piso 1">
+                                </label>
+                            </section>
+                            <section class="col col-4">
+                                <label class="label"><b>Partida de Gasto (par_id)</b></label>
+                                <label class="input"><i class="icon-append fa fa-folder-open-o"></i>
+                                    <input type="number" name="par_id" value="" placeholder="Ej. 43110">
+                                </label>
+                            </section>
+                        </div>
+                        <div class="row">
+                            <section class="col col-3">
+                                <label class="label"><b>Cantidad Total *</b></label>
+                                <label class="input"><i class="icon-append fa fa-calculator"></i>
+                                    <input type="number" name="cantidad" id="m_cantidad" value="" min="1" required style="text-align:center;">
+                                </label>
+                            </section>
+                            <section class="col col-3">
+                                <label class="label"><b>Costo Unitario (Bs.) *</b></label>
+                                <label class="input"><i class="icon-append fa fa-money"></i>
+                                    <input type="text" name="costo_unitario" id="m_costo_unit" value="" required style="text-align:right;">
+                                </label>
+                            </section>
+                            <section class="col col-3">
+                                <label class="label"><b>Tipo de Compra</b></label>
+                                <label class="select">
+                                    <select name="tp_compra">
+                                        <option value="1">REPOSICIÓN</option>
+                                        <option value="2">COMPRA NUEVA</option>
+                                        <option value="3">ADECUACIÓN</option>
+                                    </select><i></i>
+                                </label>
+                            </section>
+                            <section class="col col-3">
+                                <label class="label"><b>Requiere Adecuación</b></label>
+                                <label class="select">
+                                    <select name="tp_adecuacion">
+                                        <option value="0">0.- NO REQUIERE</option>
+                                        <option value="1">1.- REQUIERE TRABAJOS</option>
+                                    </select><i></i>
+                                </label>
+                            </section>
+                        </div>
+                        <div class="row">
+                            <section class="col col-12" style="width:100%;">
+                                <label class="label"><b>Observaciones / Justificaciones</b></label>
+                                <label class="textarea">
+                                    <textarea name="observaciones" rows="2" placeholder="Describa justificaciones del requerimiento..."></textarea>
+                                </label>
+                            </section>
+                        </div>
+                    </fieldset>
+                </div>
+                </form>
+                    </div>
                 </div>
             </div>
         </div>';
-
-        $tabla .= '
-            function cargar_formulario_derecho_ajax(form_equip_id, dist_id) {
-                // REVISIÓN SIIPLAS: Escapamos las comillas simples para evitar errores de sintaxis en PHP
-                var $target_formulario = $(\'#formulario\');
-                
-                $.ajax({
-                    url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/get_formulario_equipamiento",
-                    type: \'POST\',
-                    data: { form_equip_id: form_equip_id, dist_id: dist_id },
-                    dataType: \'json\',
-                    beforeSend: function() {
-                        $target_formulario.html(
-                            \'<div class="text-center" style="padding-top:140px;">\' +
-                            \'   <i class="fa fa-gear fa-spin fa-3x text-warning"></i>\' +
-                            \'   <h5 style="margin-top:15px; font-weight:bold; color:#666;">Sincronizando campos con la base de datos...</h5>\' +
-                            \'</div>\'
-                        );
-                    },
-                    success: function(data) {
-                        if(data.respuesta == \'correcto\') {
-                            // Reemplazamos la pizarra por el formulario HTML con una animación suave
-                            $target_formulario.hide().html(data.html).fadeIn(300);
-                        }
-                    },
-                    error: function() {
-                        $target_formulario.html(\'<div class="alert alert-danger">Error al estructurar el formulario.</div>\');
-                    }
-                });
-            }';
         return $tabla;
     }
 
