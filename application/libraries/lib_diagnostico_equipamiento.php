@@ -20,474 +20,10 @@ class lib_diagnostico_equipamiento extends CI_Controller{
 
     }
 
-        //// validacion js
-    public function js_validacion(){
-        $tabla='';
-        $tabla .= '
-        <script type="text/javascript">
-            // REVISIÓN DE INTEGRIDAD SIIPLAS: Espera la carga de la librería central JQuery
-            window.addEventListener("load", function() {
-                if (typeof $ !== "undefined") {
-
-                    // ==========================================================================
-                    // 1. CONMUTACIÓN REACTIVA DE CAMPOS (Establecimiento vs Proyecto)
-                    // ==========================================================================
-                    $(document).on(\'change\', \'#tp_registro\', function() {
-                        var tipo = $(this).val();
-                        var $div_est = $(\'#est\');
-                        var $div_inv = $(\'#inv\');
-                        var $select_act = $(\'#act_id\');
-                        var $text_inv = $(\'#nombre_inversion\');
-
-                        if (tipo == 1 || tipo == 0) {
-                            $div_inv.hide();
-                            $text_inv.val(\'\').removeAttr(\'required\');
-                            $div_est.fadeIn(200);
-                            $select_act.attr(\'required\', \'required\');
-                        } 
-                        else if (tipo == 2) {
-                            $div_est.hide();
-                            $select_act.val(\'\').removeAttr(\'required\');
-                            $div_inv.fadeIn(200);
-                            $text_inv.attr(\'required\', \'required\');
-                        }
-                    });
-
-                    $(\'#act_id\').attr(\'required\', \'required\');
-
-                    // ==========================================================================
-                    // 2. CALCULO ARITMÉTICO EN CALIENTE: Cantidad * Costo Unitario
-                    // ==========================================================================
-                    function procesar_calculo_matriz_financiera() {
-                        // Obtenemos los valores limpiando cualquier residuo no numérico
-                        var cantidad   = parseFloat($(\'#cantidad\').val()) || 0;
-                        var costo_unit = parseFloat($(\'#costo_unitario\').val()) || 0;
-
-                        // Operación aritmética directa en memoria RAM
-                        var costo_total = cantidad * costo_unit;
-                        
-                        // Inyectamos el resultado formateado a dos decimales contables en el campo bloqueado
-                        $(\'#costo_total\').val(costo_total.toFixed(2));
-                        
-                        // Forzamos la verificación de cuadre contra la temporalidad de los 5 años
-                        verificar_cuadre_financiero_quinquenal();
-                    }
-
-                    // ==========================================================================
-                    // 3. ENTRADA SANITIZADA CRÍTICA: Bloqueo de letras/comas para montos y gestiones
-                    // ==========================================================================
-                    // REVISIÓN: Añadidos #cantidad y #costo_unitario al selector dinámico
-                    $(document).on(\'input\', \'.prog-anio, #costo_unitario, #cantidad\', function() {
-                        var $input = $(this);
-                        
-                        // Paso A: Convertimos comas en puntos decimales legibles por el motor en caliente
-                        var valor_sanitizado = $input.val().replace(\',\', \'.\');
-                        
-                        // Paso B: Removemos de forma agresiva cualquier carácter que no sea número o punto
-                        valor_sanitizado = valor_sanitizado.replace(/[^0-9.]/g, \'\');
-                        
-                        // Paso C: Impedimos la inyección de múltiples puntos decimales que corrompan el tipo
-                        var partes = valor_sanitizado.split(\'.\');
-                        if (partes.length > 2) {
-                            valor_sanitizado = partes[0] + \'.\' + partes.slice(1).join(\'\');
-                        }
-                        
-                        // Devolvemos el valor limpio al campo de texto de forma invisible para el operador
-                        $input.val(valor_sanitizado);
-                        
-                        // Si la edición viene de los campos maestros, recalculamos el costo total consolidado
-                        if ($input.attr(\'id\') === \'cantidad\' || $input.attr(\'id\') === \'costo_unitario\') {
-                            procesar_calculo_matriz_financiera();
-                        } else {
-                            // Si viene de los años (gestiones), calculamos la sumatoria quinquenal
-                            calcular_sumatoria_quinquenal();
-                        }
-                    });
-
-                    // ==========================================================================
-                    // --- SUB-FUNCIONES CORE DE CONTROL ARITMÉTICO ---
-                    // ==========================================================================
-                    function calcular_sumatoria_quinquenal() {
-                        var suma = 0;
-                        $(\'.prog-anio\').each(function() {
-                            var valor_casilla = parseFloat($(this).val()) || 0;
-                            suma += valor_casilla;
-                        });
-                        
-                        $(\'#total_prog\').val(suma.toFixed(2));
-                        verificar_cuadre_financiero_quinquenal();
-                    }
-
-                    function verificar_cuadre_financiero_quinquenal() {
-                        var costo_total  = parseFloat($(\'#costo_total\').val()) || 0;
-                        var total_prog   = parseFloat($(\'#total_prog\').val()) || 0;
-                        var $btn_guardar = $(\'#btn_guardar_requerimiento\'); 
-                        
-                        $(\'#alerta_descuadre_poa\').remove();
-
-                        // Margen de tolerancia contable por redondeo de coma flotante
-                        if (Math.abs(total_prog - costo_total) > 0.01) {
-                            $btn_guardar.fadeOut(150); // Oculta el botón guardar inyectando alerta
-                            
-                            var plantilla_error = `
-                            <div id="alerta_descuadre_poa" class="alert alert-danger" style="margin: 10px 0 0 0; padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; width: 100%;">
-                                <i class="fa fa-times-circle"></i> Restricción Financiera CNS: El Total Distribuido Quinquenal (${total_prog.toFixed(2)} Bs.) no iguala al Costo Total Consolidado (${costo_total.toFixed(2)} Bs.). El botón de guardado permanecerá bloqueado.
-                            </div>`;
-                            
-                            $(\'#total_prog\').closest(\'.row\').after(plantilla_error);
-                        } else {
-                            // Habilita el botón únicamente si los montos cuadran perfectamente
-                            $btn_guardar.fadeIn(150);
-                        }
-                    }
-
-                } else {
-                    console.error("SIIPLAS Error: No se pudo iniciar el validador de expresiones de entrada.");
-                }
-            });
-        </script>';
-
-        $tabla .= '
-        <script type="text/javascript">
-            window.addEventListener("load", function() {
-                if (typeof $ !== "undefined") {
-
-                    // ==========================================================================
-                    // ESCUCHA TRANSACCIONAL: VALIDACIÓN ABSOLUTA DE TODOS LOS CAMPOS
-                    // ==========================================================================
-                    $(document).on(\'submit\', \'#form_nuevo\', function(e) {
-                        e.preventDefault();
-
-                        // --------------------------------------------------------------------------
-                        // CAPA 1: VALIDACIÓN MANUAL DE OBLIGATORIEDAD INDIVIDUAL
-                        // --------------------------------------------------------------------------
-                        var tp_registro = $(\'#tp_registro\').val();
-                        
-                        // 1. Validar Sección Dinámica (Establecimiento o Proyecto)
-                        if (tp_registro == "1") {
-                            if ($(\'#act_id\').val() === "" || $(\'#act_id\').val() === "0") {
-                                alertify.error("⚠️ Campo Obligatorio: Seleccione el Establecimiento de Salud Vinculado.");
-                                $(\'#act_id\').focus();
-                                return false;
-                            }
-                        } else if (tp_registro == "2") {
-                            if ($(\'#nombre_inversion\').val().trim() === "") {
-                                alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Proyecto de Inversión.");
-                                $(\'#nombre_inversion\').focus();
-                                return false;
-                            }
-                        }
-
-                        // 2. Validar Datos de Identificación Fijos
-                        if ($(\'#responsable\').val().trim() === "") {
-                            alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Responsable / Solicitante.");
-                            $(\'#responsable\').focus();
-                            return false;
-                        }
-
-                        // 3. Validar Especificaciones Técnicas del Equipo
-                        if ($(\'#nombre_equipamiento\').val().trim() === "") {
-                            alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Equipamiento Médico.");
-                            $(\'#nombre_equipamiento\').focus();
-                            return false;
-                        }
-                        if ($(\'#servicio_unidad\').val().trim() === "") {
-                            alertify.error("⚠️ Campo Obligatorio: Ingrese el Servicio / Unidad Destino.");
-                            $(\'#servicio_unidad\').focus();
-                            return false;
-                        }
-                        if ($(\'#ubicacion_fisica\').val().trim() === "") {
-                            alertify.error("⚠️ Campo Obligatorio: Ingrese la Ubicación Física Exacta.");
-                            $(\'#ubicacion_fisica\').focus();
-                            return false;
-                        }
-                        if ($(\'#tp_compra\').val() === "") {
-                            alertify.error("⚠️ Campo Obligatorio: Seleccione el Tipo de Compra.");
-                            $(\'#tp_compra\').focus();
-                            return false;
-                        }
-
-                        // 4. Validar Matriz Financiera Básica
-                        if ($(\'#par_id\').val() === "") {
-                            alertify.error("⚠️ Campo Obligatorio: Seleccione la Partida Presupuestaria.");
-                            $(\'#par_id\').focus();
-                            return false;
-                        }
-
-                        var cantidad = parseInt($(\'#cantidad\').val()) || 0;
-                        var costo_unit = parseFloat($(\'#costo_unitario\').val()) || 0;
-
-                        if (cantidad <= 0) {
-                            alertify.error("⚠️ Restricción: La Cantidad Total debe ser un número mayor a cero.");
-                            $(\'#cantidad\').focus();
-                            return false;
-                        }
-                        if (costo_unit <= 0) {
-                            alertify.error("⚠️ Restricción: El Costo Unitario debe ser un monto mayor a cero.");
-                            $(\'#costo_unitario\').focus();
-                            return false;
-                        }
-
-                        // --------------------------------------------------------------------------
-                        // CAPA 2: VALIDACIÓN DE INTEGRIDAD FINANCIERA (CUADRE QUINQUENAL)
-                        // --------------------------------------------------------------------------
-                        var costo_total  = parseFloat($(\'#costo_total\').val()) || 0;
-                        var suma_quinquenio = 0;
-                        $(\'.prog-anio\').each(function() {
-                            suma_quinquenio += parseFloat($(this).val()) || 0;
-                        });
-
-                        if (Math.abs(suma_quinquenio - costo_total) > 0.01) {
-                            alertify.error("🚨 Error Financiero: La suma de las 5 gestiones (" + suma_quinquenio.toFixed(2) + " Bs.) debe igualar al Costo Total Consolidado (" + costo_total.toFixed(2) + " Bs.).");
-                            return false;
-                        }
-
-                        // --------------------------------------------------------------------------
-                        // CAPA 3: PROCESAMIENTO DE ENVÍO SEGURO POR AJAX
-                        // --------------------------------------------------------------------------
-                        var formulario_data = $(this).serialize();
-                        var $btn_ejecutar = $(\'#btn_guardar_requerimiento\');
-                        var $loader_gif = $(\'#loada\');
-
-                        $.ajax({
-                            url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/guardar_requerimiento_equipamiento",
-                            type: "POST",
-                            dataType: "json",
-                            data: formulario_data,
-                            beforeSend: function() {
-                                $btn_ejecutar.attr("disabled", "disabled").hide();
-                                $loader_gif.fadeIn(150);
-                            },
-                            success: function(data) {
-                                $loader_gif.hide();
-                                $btn_ejecutar.removeAttr("disabled").show();
-
-                                if (data.respuesta === "correcto") {
-                                    if (typeof alertify !== "undefined") {
-                                        alertify.success("✅ Éxito: Registro de equipamiento consolidado en el SIIPLAS.");
-                                    }
-                                    
-                                    // 1. CIERRE DEL MODAL FLOTANTE
-                                    $("#modal_nuevo_equipamiento").modal("hide");
-
-                                    // 🚨 SOLUCIÓN AL ERROR DE LA SOMBRA NEGRA (BACKDROP PERSISTENTE)
-                                    // Eliminamos de forma manual el fondo oscuro remanente en el DOM de SmartAdmin
-                                    $(\'.modal-backdrop\').remove();
-                                    // Removemos la clase de congelamiento del body para restaurar los clics de la grilla
-                                    $(\'body\').removeClass(\'modal-open\').css(\'padding-right\', \'\');
-
-                                    // 2. REINICIO DE VALORES: Vacía el formulario para el siguiente registro
-                                    if ($(\'#form_nuevo\').length > 0) {
-                                        $(\'#form_nuevo\')[0].reset();
-                                    }
-                                    
-                                    // Restablecemos manualmente campos ocultos y numéricos que no limpia el reset común
-                                    $("#form_equip_id").val("0");
-                                    $("#cantidad").val("0");
-                                    $("#costo_unitario").val("0.00");
-                                    $("#costo_total").val("0.00");
-                                    $("#total_prog").val("0.00");
-                                    $(".prog-anio").val("0");
-                                    $("#tp_registro").val("1").trigger("change"); // Muestra sección establecimientos
-                                    $("#alerta_descuadre_poa").remove(); // Quita alertas de error previas
-
-                                    // 3. REFRESCO AUTOMÁTICO EN CALIENTE DE LA TABLA SIN RECARGAR LA PÁGINA
-                                    $("#dist_id").trigger("change");
-
-                                } else {
-                                    if (typeof alertify !== "undefined") {
-                                        alertify.error("❌ Restricción: " + data.mensaje);
-                                    }
-                                }
-                            },
-                            error: function() {
-                                $loader_gif.hide();
-                                $btn_ejecutar.removeAttr("disabled").show();
-                                alertify.error("❌ Error Crítico: Falla de comunicación con el servidor.");
-                            }
-                        });
-                    });
-
-                }
-            });
-        </script>';
-
-       $tabla .= '
-        <script type="text/javascript">
-            window.addEventListener("load", function() {
-                if (typeof $ !== "undefined") {
-
-                    // ==========================================================================
-                    // 🚨 DESTRUCTORES DE MEMORIA EN EL CIERRE (EVITA RESIDUOS GRÁFICOS)
-                    // ==========================================================================
-                    $(\'#modal_nuevo_equipamiento, #modal_modificar_equipamiento\').on(\'hide.bs.modal\', function () {
-                        $(this).find(\'.modal-body\').html(\'\');
-                        $(\'.modal-backdrop\').remove();
-                        $(\'body\').removeClass(\'modal-open\').css(\'padding-right\', \'\');
-                    });
-
-                    // ==========================================================================
-                    // ACCIONES DE APERTURA ASÍNCRONA (NUEVO / MODIFICAR)
-                    // ==========================================================================
-                    $(document).on(\'click\', \'.btn_nuevo_equip\', function(e) {
-                        e.preventDefault();
-                        var dist_id = $(\'#dist_id\').val();
-                        if (dist_id == 0 || dist_id == "") {
-                            alertify.error("⚠️ Restricción: Seleccione primero una Unidad Ejecutora.");
-                            return false;
-                        }
-                        procesar_apertura_duplo_modal(0, dist_id, \'#modal_nuevo_equipamiento\');
-                    });
-
-                    $(document).on(\'click\', \'.btn_modificar_equip\', function(e) {
-                        e.preventDefault();
-                        var form_equip_id = $(this).attr(\'data-id\');
-                        var dist_id = $(\'#dist_id\').val();
-                        procesar_apertura_duplo_modal(form_equip_id, dist_id, \'#modal_modificar_equipamiento\');
-                    });
-
-                    function procesar_apertura_duplo_modal(form_equip_id, dist_id, id_modal_target) {
-                        var $modal = $(id_modal_target);
-                        var $body_modal = $modal.find(\'.modal-body\');
-
-                        $.ajax({
-                            url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/get_formulario_modal_html",
-                            type: \'POST\',
-                            data: { form_equip_id: form_equip_id, dist_id: dist_id },
-                            dataType: \'json\',
-                            beforeSend: function() {
-                                $body_modal.html(
-                                    \'<div class="text-center" style="padding: 70px 0;">\' +
-                                    \'   <i class="fa fa-gear fa-spin fa-3x text-warning" style="margin-bottom:15px;"></i>\' +
-                                    \'   <h5 style="font-weight:bold; color:#444; margin:0 0 5px 0;">SINCRO DE DATOS PLURIANUALES</h5>\' +
-                                    \'   <small class="text-muted">Mapeando base de datos de la CNS...</small>\' +
-                                    \'</div>\'
-                                );
-                                $modal.modal(\'show\');
-                            },
-                            success: function(data) {
-                                if (data.respuesta === "correcto") {
-                                    $body_modal.html(data.html);
-                                    
-                                    // 🌟 AJUSTE CRÍTICO: Disparación reactiva aislada dentro del modal activo
-                                    $modal.find(\'.form_tp_registro\').trigger(\'change\');
-                                    
-                                    // Recalculamos la sumatoria inicial si es edición
-                                    var _suma = 0;
-                                    $modal.find(\'.prog-anio\').each(function() {
-                                        _suma += parseFloat($(this).val()) || 0;
-                                    });
-                                    $modal.find(\'.form_total_prog\').val(_suma.toFixed(2));
-                                }
-                            }
-                        });
-                    }
-
-                    // ==========================================================================
-                    // INTERACCIONES INTERNAS DINÁMICAS (AISLADAS POR ENTORNO CONTEXTUAL)
-                    // ==========================================================================
-                    // A. Conmutación de campos Establecimiento vs Inversión
-                    $(document).on(\'change\', \'.form_tp_registro\', function() {
-                        var $modal = $(this).closest(\'.modal\'); // Detecta cuál de los dos modales está activo
-                        var tipo = $(this).val();
-
-                        if (tipo == 1) {
-                            $modal.find(\'.div_inv\').hide();
-                            $modal.find(\'.form_nombre_inversion\').val(\'\').removeAttr(\'required\');
-                            $modal.find(\'.div_est\').fadeIn(200);
-                            $modal.find(\'.form_act_id\').attr(\'required\', \'required\');
-                        } else {
-                            $modal.find(\'.div_est\').hide();
-                            $modal.find(\'.form_act_id\').val(\'\').removeAttr(\'required\');
-                            $modal.find(\'.div_inv\').fadeIn(200);
-                            $modal.find(\'.form_nombre_inversion\').attr(\'required\', \'required\');
-                        }
-                    });
-
-                    // B. Cálculo de Costo Total Referencial Aislado
-                    $(document).on(\'input change\', \'.form_cantidad, .form_costo_unitario\', function() {
-                        var $modal = $(this).closest(\'.modal\');
-                        var cant = parseInt($modal.find(\'.form_cantidad\').val()) || 0;
-                        var unit = parseFloat($modal.find(\'.form_costo_unitario\').val().replace(\',\', \'.\')) || 0;
-
-                        var total = cant * unit;
-                        $modal.find(\'.form_costo_total\').val(total.toFixed(2));
-                        verificar_cuadre_financiero_contextual($modal);
-                    });
-
-                    // C. Sanitización y sumatoria de Gestiones Quinquenales
-                    $(document).on(\'input\', \'.prog-anio\', function() {
-                        var $modal = $(this).closest(\'.modal\');
-                        var valor = $(this).val().replace(\',\', \'.\').replace(/[^0-9.]/g, \'\');
-                        $(this).val(valor);
-
-                        var suma = 0;
-                        $modal.find(\'.prog-anio\').each(function() {
-                            suma += parseFloat($(this).val()) || 0;
-                        });
-                        $modal.find(\'.form_total_prog\').val(suma.toFixed(2));
-                        verificar_cuadre_financiero_contextual($modal);
-                    });
-
-                    function verificar_cuadre_financiero_contextual($modal) {
-                        var total = parseFloat($modal.find(\'.form_costo_total\').val()) || 0;
-                        var prog  = parseFloat($modal.find(\'.form_total_prog\').val()) || 0;
-                        var $btn  = $modal.find(\'.btn_guardar_requerimiento_pluri\');
-
-                        $modal.find(\'.alerta_descuadre_poa\').remove();
-
-                        if (Math.abs(prog - total) > 0.01) {
-                            $btn.fadeOut(150);
-                            var alerta = \'<div class="alerta_descuadre_poa alert alert-danger" style="margin:10px 0 0 0; padding:6px; font-size:11px; font-weight:bold; width:100%;"><i class="fa fa-times-circle"></i> Error de cuadre quinquenal.</div>\';
-                            $modal.find(\'.form_total_prog\').closest(\'.row\').after(alerta);
-                        } else {
-                            $btn.fadeIn(150);
-                        }
-                    }
-
-                    // ==========================================================================
-                    // ENVÍO DE DATOS ASÍNCRONO DEL MODAL ACTIVO
-                    // ==========================================================================
-                    $(document).on(\'submit\', \'.form_transaccional_equipamiento\', function(e) {
-                        e.preventDefault();
-                        var $form = $(this);
-                        var $modal = $form.closest(\'.modal\');
-
-                        // Validación manual estricta antes de impactar el backend
-                        if (window.confirm("¿Confirma el registro de los datos de equipamiento referenciales en el sistema?")) {
-                            $.ajax({
-                                url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/guardar_requerimiento_equipamiento",
-                                type: "POST",
-                                dataType: "json",
-                                data: $form.serialize(),
-                                beforeSend: function() {
-                                    $modal.find(\'.btn_guardar_requerimiento_pluri\').attr("disabled", "disabled").hide();
-                                    $modal.find(\'.loada_spinner\').fadeIn(150);
-                                },
-                                success: function(data) {
-                                    if (data.respuesta === "correcto") {
-                                        alertify.success("✅ Datos consolidados con éxito.");
-                                        $modal.modal("hide");
-                                        $("#dist_id").trigger("change"); // Refresca grilla izquierda
-                                    } else {
-                                        alertify.error("❌ Error: " + data.mensaje);
-                                        $modal.find(\'.btn_guardar_requerimiento_pluri\').removeAttr("disabled").show();
-                                        $modal.find(\'.loada_spinner\').hide();
-                                    }
-                                }
-                            });
-                        }
-                    });
-
-                }
-            });
-        </script>';
-        return $tabla;
-    }
 
 
     /*------- Listado de formularios -------*/
-public function unidad_ejecutora_seleccionado($equip_id, $dist_id, $tp_adm){
+  public function unidad_ejecutora_seleccionado($equip_id, $dist_id, $tp_adm){
     $get_diagnostico=$this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
     $get_form_distrital = $this->model_diagnosticoequip->get_distrital_formulario_diagnostico_activo($equip_id, $dist_id);
     $establecimientos=$this->model_diagnosticoequip->get_establecimientos_distrital($dist_id,$this->gestion);
@@ -909,6 +445,685 @@ public function unidad_ejecutora_seleccionado($equip_id, $dist_id, $tp_adm){
        
         return $tabla;
     }
+
+
+        //// validacion js
+    public function js_validacion(){
+        $tabla='';
+        $tabla .= '
+        <script type="text/javascript">
+            // REVISIÓN DE INTEGRIDAD SIIPLAS: Espera la carga de la librería central JQuery
+            window.addEventListener("load", function() {
+                if (typeof $ !== "undefined") {
+
+                    // ==========================================================================
+                    // 1. CONMUTACIÓN REACTIVA DE CAMPOS (Establecimiento vs Proyecto)
+                    // ==========================================================================
+                    $(document).on(\'change\', \'#tp_registro\', function() {
+                        var tipo = $(this).val();
+                        var $div_est = $(\'#est\');
+                        var $div_inv = $(\'#inv\');
+                        var $select_act = $(\'#act_id\');
+                        var $text_inv = $(\'#nombre_inversion\');
+
+                        if (tipo == 1 || tipo == 0) {
+                            $div_inv.hide();
+                            $text_inv.val(\'\').removeAttr(\'required\');
+                            $div_est.fadeIn(200);
+                            $select_act.attr(\'required\', \'required\');
+                        } 
+                        else if (tipo == 2) {
+                            $div_est.hide();
+                            $select_act.val(\'\').removeAttr(\'required\');
+                            $div_inv.fadeIn(200);
+                            $text_inv.attr(\'required\', \'required\');
+                        }
+                    });
+
+                    $(\'#act_id\').attr(\'required\', \'required\');
+
+                    // ==========================================================================
+                    // 2. CALCULO ARITMÉTICO EN CALIENTE: Cantidad * Costo Unitario
+                    // ==========================================================================
+                    function procesar_calculo_matriz_financiera() {
+                        // Obtenemos los valores limpiando cualquier residuo no numérico
+                        var cantidad   = parseFloat($(\'#cantidad\').val()) || 0;
+                        var costo_unit = parseFloat($(\'#costo_unitario\').val()) || 0;
+
+                        // Operación aritmética directa en memoria RAM
+                        var costo_total = cantidad * costo_unit;
+                        
+                        // Inyectamos el resultado formateado a dos decimales contables en el campo bloqueado
+                        $(\'#costo_total\').val(costo_total.toFixed(2));
+                        
+                        // Forzamos la verificación de cuadre contra la temporalidad de los 5 años
+                        verificar_cuadre_financiero_quinquenal();
+                    }
+
+                    // ==========================================================================
+                    // 3. ENTRADA SANITIZADA CRÍTICA: Bloqueo de letras/comas para montos y gestiones
+                    // ==========================================================================
+                    // REVISIÓN: Añadidos #cantidad y #costo_unitario al selector dinámico
+                    $(document).on(\'input\', \'.prog-anio, #costo_unitario, #cantidad\', function() {
+                        var $input = $(this);
+                        
+                        // Paso A: Convertimos comas en puntos decimales legibles por el motor en caliente
+                        var valor_sanitizado = $input.val().replace(\',\', \'.\');
+                        
+                        // Paso B: Removemos de forma agresiva cualquier carácter que no sea número o punto
+                        valor_sanitizado = valor_sanitizado.replace(/[^0-9.]/g, \'\');
+                        
+                        // Paso C: Impedimos la inyección de múltiples puntos decimales que corrompan el tipo
+                        var partes = valor_sanitizado.split(\'.\');
+                        if (partes.length > 2) {
+                            valor_sanitizado = partes[0] + \'.\' + partes.slice(1).join(\'\');
+                        }
+                        
+                        // Devolvemos el valor limpio al campo de texto de forma invisible para el operador
+                        $input.val(valor_sanitizado);
+                        
+                        // Si la edición viene de los campos maestros, recalculamos el costo total consolidado
+                        if ($input.attr(\'id\') === \'cantidad\' || $input.attr(\'id\') === \'costo_unitario\') {
+                            procesar_calculo_matriz_financiera();
+                        } else {
+                            // Si viene de los años (gestiones), calculamos la sumatoria quinquenal
+                            calcular_sumatoria_quinquenal();
+                        }
+                    });
+
+                    // ==========================================================================
+                    // --- SUB-FUNCIONES CORE DE CONTROL ARITMÉTICO ---
+                    // ==========================================================================
+                    function calcular_sumatoria_quinquenal() {
+                        var suma = 0;
+                        $(\'.prog-anio\').each(function() {
+                            var valor_casilla = parseFloat($(this).val()) || 0;
+                            suma += valor_casilla;
+                        });
+                        
+                        $(\'#total_prog\').val(suma.toFixed(2));
+                        verificar_cuadre_financiero_quinquenal();
+                    }
+
+                    function verificar_cuadre_financiero_quinquenal() {
+                        var costo_total  = parseFloat($(\'#costo_total\').val()) || 0;
+                        var total_prog   = parseFloat($(\'#total_prog\').val()) || 0;
+                        var $btn_guardar = $(\'#btn_guardar_requerimiento\'); 
+                        
+                        $(\'#alerta_descuadre_poa\').remove();
+
+                        // Margen de tolerancia contable por redondeo de coma flotante
+                        if (Math.abs(total_prog - costo_total) > 0.01) {
+                            $btn_guardar.fadeOut(150); // Oculta el botón guardar inyectando alerta
+                            
+                            var plantilla_error = `
+                            <div id="alerta_descuadre_poa" class="alert alert-danger" style="margin: 10px 0 0 0; padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; width: 100%;">
+                                <i class="fa fa-times-circle"></i> Restricción Financiera CNS: El Total Distribuido Quinquenal (${total_prog.toFixed(2)} Bs.) no iguala al Costo Total Consolidado (${costo_total.toFixed(2)} Bs.). El botón de guardado permanecerá bloqueado.
+                            </div>`;
+                            
+                            $(\'#total_prog\').closest(\'.row\').after(plantilla_error);
+                        } else {
+                            // Habilita el botón únicamente si los montos cuadran perfectamente
+                            $btn_guardar.fadeIn(150);
+                        }
+                    }
+
+                } else {
+                    console.error("SIIPLAS Error: No se pudo iniciar el validador de expresiones de entrada.");
+                }
+            });
+        </script>';
+
+        $tabla .= '
+        <script type="text/javascript">
+            window.addEventListener("load", function() {
+                if (typeof $ !== "undefined") {
+
+                    // ==========================================================================
+                    // ESCUCHA TRANSACCIONAL: VALIDACIÓN ABSOLUTA DE TODOS LOS CAMPOS
+                    // ==========================================================================
+                    $(document).on(\'submit\', \'#form_nuevo\', function(e) {
+                        e.preventDefault();
+
+                        // --------------------------------------------------------------------------
+                        // CAPA 1: VALIDACIÓN MANUAL DE OBLIGATORIEDAD INDIVIDUAL
+                        // --------------------------------------------------------------------------
+                        var tp_registro = $(\'#tp_registro\').val();
+                        
+                        // 1. Validar Sección Dinámica (Establecimiento o Proyecto)
+                        if (tp_registro == "1") {
+                            if ($(\'#act_id\').val() === "" || $(\'#act_id\').val() === "0") {
+                                alertify.error("⚠️ Campo Obligatorio: Seleccione el Establecimiento de Salud Vinculado.");
+                                $(\'#act_id\').focus();
+                                return false;
+                            }
+                        } else if (tp_registro == "2") {
+                            if ($(\'#nombre_inversion\').val().trim() === "") {
+                                alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Proyecto de Inversión.");
+                                $(\'#nombre_inversion\').focus();
+                                return false;
+                            }
+                        }
+
+                        // 2. Validar Datos de Identificación Fijos
+                        if ($(\'#responsable\').val().trim() === "") {
+                            alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Responsable / Solicitante.");
+                            $(\'#responsable\').focus();
+                            return false;
+                        }
+
+                        // 3. Validar Especificaciones Técnicas del Equipo
+                        if ($(\'#nombre_equipamiento\').val().trim() === "") {
+                            alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Equipamiento Médico.");
+                            $(\'#nombre_equipamiento\').focus();
+                            return false;
+                        }
+                        if ($(\'#servicio_unidad\').val().trim() === "") {
+                            alertify.error("⚠️ Campo Obligatorio: Ingrese el Servicio / Unidad Destino.");
+                            $(\'#servicio_unidad\').focus();
+                            return false;
+                        }
+                        if ($(\'#ubicacion_fisica\').val().trim() === "") {
+                            alertify.error("⚠️ Campo Obligatorio: Ingrese la Ubicación Física Exacta.");
+                            $(\'#ubicacion_fisica\').focus();
+                            return false;
+                        }
+                        if ($(\'#tp_compra\').val() === "") {
+                            alertify.error("⚠️ Campo Obligatorio: Seleccione el Tipo de Compra.");
+                            $(\'#tp_compra\').focus();
+                            return false;
+                        }
+
+                        // 4. Validar Matriz Financiera Básica
+                        if ($(\'#par_id\').val() === "") {
+                            alertify.error("⚠️ Campo Obligatorio: Seleccione la Partida Presupuestaria.");
+                            $(\'#par_id\').focus();
+                            return false;
+                        }
+
+                        var cantidad = parseInt($(\'#cantidad\').val()) || 0;
+                        var costo_unit = parseFloat($(\'#costo_unitario\').val()) || 0;
+
+                        if (cantidad <= 0) {
+                            alertify.error("⚠️ Restricción: La Cantidad Total debe ser un número mayor a cero.");
+                            $(\'#cantidad\').focus();
+                            return false;
+                        }
+                        if (costo_unit <= 0) {
+                            alertify.error("⚠️ Restricción: El Costo Unitario debe ser un monto mayor a cero.");
+                            $(\'#costo_unitario\').focus();
+                            return false;
+                        }
+
+                        // --------------------------------------------------------------------------
+                        // CAPA 2: VALIDACIÓN DE INTEGRIDAD FINANCIERA (CUADRE QUINQUENAL)
+                        // --------------------------------------------------------------------------
+                        var costo_total  = parseFloat($(\'#costo_total\').val()) || 0;
+                        var suma_quinquenio = 0;
+                        $(\'.prog-anio\').each(function() {
+                            suma_quinquenio += parseFloat($(this).val()) || 0;
+                        });
+
+                        if (Math.abs(suma_quinquenio - costo_total) > 0.01) {
+                            alertify.error("🚨 Error Financiero: La suma de las 5 gestiones (" + suma_quinquenio.toFixed(2) + " Bs.) debe igualar al Costo Total Consolidado (" + costo_total.toFixed(2) + " Bs.).");
+                            return false;
+                        }
+
+                        // --------------------------------------------------------------------------
+                        // CAPA 3: PROCESAMIENTO DE ENVÍO SEGURO POR AJAX
+                        // --------------------------------------------------------------------------
+                        var formulario_data = $(this).serialize();
+                        var $btn_ejecutar = $(\'#btn_guardar_requerimiento\');
+                        var $loader_gif = $(\'#loada\');
+
+                        $.ajax({
+                            url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/guardar_requerimiento_equipamiento",
+                            type: "POST",
+                            dataType: "json",
+                            data: formulario_data,
+                            beforeSend: function() {
+                                $btn_ejecutar.attr("disabled", "disabled").hide();
+                                $loader_gif.fadeIn(150);
+                            },
+                            success: function(data) {
+                                $loader_gif.hide();
+                                $btn_ejecutar.removeAttr("disabled").show();
+
+                                if (data.respuesta === "correcto") {
+                                    if (typeof alertify !== "undefined") {
+                                        alertify.success("✅ Éxito: Registro de equipamiento consolidado en el SIIPLAS.");
+                                    }
+                                    
+                                    // 1. CIERRE DEL MODAL FLOTANTE
+                                    $("#modal_nuevo_equipamiento").modal("hide");
+
+                                    // 🚨 SOLUCIÓN AL ERROR DE LA SOMBRA NEGRA (BACKDROP PERSISTENTE)
+                                    // Eliminamos de forma manual el fondo oscuro remanente en el DOM de SmartAdmin
+                                    $(\'.modal-backdrop\').remove();
+                                    // Removemos la clase de congelamiento del body para restaurar los clics de la grilla
+                                    $(\'body\').removeClass(\'modal-open\').css(\'padding-right\', \'\');
+
+                                    // 2. REINICIO DE VALORES: Vacía el formulario para el siguiente registro
+                                    if ($(\'#form_nuevo\').length > 0) {
+                                        $(\'#form_nuevo\')[0].reset();
+                                    }
+                                    
+                                    // Restablecemos manualmente campos ocultos y numéricos que no limpia el reset común
+                                    $("#form_equip_id").val("0");
+                                    $("#cantidad").val("0");
+                                    $("#costo_unitario").val("0.00");
+                                    $("#costo_total").val("0.00");
+                                    $("#total_prog").val("0.00");
+                                    $(".prog-anio").val("0");
+                                    $("#tp_registro").val("1").trigger("change"); // Muestra sección establecimientos
+                                    $("#alerta_descuadre_poa").remove(); // Quita alertas de error previas
+
+                                    // 3. REFRESCO AUTOMÁTICO EN CALIENTE DE LA TABLA SIN RECARGAR LA PÁGINA
+                                    $("#dist_id").trigger("change");
+
+                                } else {
+                                    if (typeof alertify !== "undefined") {
+                                        alertify.error("❌ Restricción: " + data.mensaje);
+                                    }
+                                }
+                            },
+                            error: function() {
+                                $loader_gif.hide();
+                                $btn_ejecutar.removeAttr("disabled").show();
+                                alertify.error("❌ Error Crítico: Falla de comunicación con el servidor.");
+                            }
+                        });
+                    });
+
+                }
+            });
+        </script>';
+
+       $tabla .= '
+      <script type="text/javascript">
+          // REVISIÓN DE INTEGRIDAD SIIPLAS: Espera de manera nativa la disponibilidad de JQuery en el DOM
+          window.addEventListener("load", function() {
+              if (typeof $ !== "undefined") {
+
+                  // ==========================================================================
+                  // ESCUCHA ASÍNCRONA: RECUPERACIÓN E INYECCIÓN DE DATOS EN EL MODAL DE EDICIÓN
+                  // ==========================================================================
+                  $(document).on(\'click\', \'.btn_modificar_equip\', function(e) {
+                      e.preventDefault(); // Detiene cualquier comportamiento nativo de redirección
+
+                      // Captura de variables de control del entorno POA
+                      var form_equip_id = $(this).attr(\'data-id\');
+                      var dist_id = $(\'#dist_id\').val();
+                      
+                      // Elementos de referencia del modal de modificación independiente
+                      var $modal = $(\'#modal_modificar_equipamiento\');
+                      var $body_modal = $modal.find(\'.modal-body\');
+
+                      $.ajax({
+                          url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/get_formulario_modal_html",
+                          type: \'POST\',
+                          dataType: \'json\',
+                          data: { 
+                              form_equip_id: form_equip_id, 
+                              dist_id: dist_id 
+                          },
+                          beforeSend: function() {
+                              // 1. LIMPIEZA PREVENTIVA: Forzamos el spinner de carga antes de levantar la ventana
+                              $body_modal.html(
+                                  \'<div class="text-center" style="padding: 60px 0;">\' +
+                                  \'   <i class="fa fa-gear fa-spin fa-3x text-warning" style="margin-bottom:15px;"></i>\' +
+                                  \'   <h5 style="font-weight:bold; color:#555; margin:0;">SINCRONIZANDO INFORMACIÓN</h5>\' +
+                                  \'   <small class="text-muted">Extrayendo registros y temporalidades de la base de datos...</small>\' +
+                                  \'</div>\'
+                              );
+                              
+                              // 2. DESPLIEGUE CONTROLADO: Mostramos la ventana flotante de modificación
+                              $modal.modal(\'show\');
+                          },
+                          success: function(data) {
+                              if (data.respuesta === "correcto") {
+                                  // 3. INYECCIÓN DE LA ENTRADA RECUPERADA DESDE EL CONTROLADOR
+                                  $body_modal.hide().html(data.html).fadeIn(250);
+                                  
+                                  // Gatillamos la conmutación de campos dinámicos (Establecimiento vs Inversión)
+                                  $modal.find(\'.form_tp_registro\').trigger(\'change\');
+                                  
+                                  // 4. PRE-CÁLCULO QUINQUENAL: Sumamos y poblamos el total programado inicial
+                                  var suma_inicial_poa = 0;
+                                  $modal.find(\'.prog-anio\').each(function() {
+                                      suma_inicial_poa += parseFloat($(this).val()) || 0;
+                                  });
+                                  $modal.find(\'.form_total_prog\').val(suma_inicial_poa.toFixed(2));
+                                  
+                              } else {
+                                  if (typeof alertify !== "undefined") {
+                                      alertify.error("❌ Error operativo: El servidor denegó la recuperación de la ficha.");
+                                  }
+                                  $modal.modal(\'hide\');
+                              }
+                          },
+                          error: function(xhr) {
+                              console.error(xhr.responseText);
+                              if (typeof alertify !== "undefined") {
+                                  alertify.error("❌ Error Crítico: Falla en la comunicación con el servidor local.");
+                              }
+                              $modal.modal(\'hide\');
+                          }
+                      });
+                  });
+
+              }
+          });
+      </script>';
+
+      ///// VALIDADOR PARA MODIFICAR REGISTRO
+      $tabla .= '
+      <script type="text/javascript">
+          // REVISIÓN DE INTEGRIDAD SIIPLAS: Espera nativamente la carga de la librería central JQuery
+          window.addEventListener("load", function() {
+              if (typeof $ !== "undefined") {
+
+                  // ==========================================================================
+                  // 1. CONMUTACIÓN REACTIVA DE CAMPOS (Establecimiento de Salud vs Proyecto)
+                  // ==========================================================================
+                  $(document).on(\'change\', \'.form_tp_registro\', function() {
+                      var $modal = $(this).closest(\'.modal\'); 
+                      var tipo = $(this).val();
+                      
+                      var $div_est = $modal.find(\'.div_est\');
+                      var $div_inv = $modal.find(\'.div_inv\');
+                      var $select_act = $modal.find(\'.form_act_id\');
+                      var $text_inv = $modal.find(\'.form_nombre_inversion\');
+
+                      if (tipo == 1 || tipo == 0) {
+                          $div_inv.hide();
+                          $text_inv.val(\'\').removeAttr(\'required\');
+                          $div_est.fadeIn(200);
+                          $select_act.attr(\'required\', \'required\');
+                      } 
+                      else if (tipo == 2) {
+                          $div_est.hide();
+                          $select_act.val(\'\').removeAttr(\'required\');
+                          $div_inv.fadeIn(200);
+                          $text_inv.attr(\'required\', \'required\');
+                      }
+                  });
+
+                  // ==========================================================================
+                  // 2. CALCULO ARITMÉTICO EN CALIENTE: Cantidad * Costo Unitario Aislado
+                  // ==========================================================================
+                  $(document).on(\'input change\', \'.form_cantidad, .form_costo_unitario\', function() {
+                      var $modal = $(this).closest(\'.modal\');
+                      
+                      var cantidad = parseInt($modal.find(\'.form_cantidad\').val()) || 0;
+                      var costo_unit = $modal.find(\'.form_costo_unitario\').val().replace(\',\', \'.\');
+                      costo_unit = parseFloat(costo_unit) || 0;
+
+                      var costo_total = cantidad * costo_unit;
+                      $modal.find(\'.form_costo_total\').val(costo_total.toFixed(2));
+                      
+                      verificar_cuadre_financiero_contextual($modal);
+                  });
+
+                  // ==========================================================================
+                  // 3. SANITIZACIÓN CRÍTICA Y SUMATORIA DE GESTIONES QUINQUENALES
+                  // ==========================================================================
+                  $(document).on(\'input\', \'.prog-anio\', function() {
+                      var $modal = $(this).closest(\'.modal\');
+                      var valor_sanitizado = $(this).val().replace(\',\', \'.\').replace(/[^0-9.]/g, \'\');
+                      
+                      var partes = valor_sanitizado.split(\'.\');
+                      if (partes.length > 2) {
+                          valor_sanitizado = partes[0] + \'.\' + partes.slice(1).join(\'\');
+                      }
+                      $(this).val(valor_sanitizado);
+
+                      var suma = 0;
+                      $modal.find(\'.prog-anio\').each(function() {
+                          suma += parseFloat($(this).val()) || 0;
+                      });
+                      
+                      $modal.find(\'.form_total_prog\').val(suma.toFixed(2));
+                      verificar_cuadre_financiero_contextual($modal);
+                  });
+
+                  // ==========================================================================
+                  // 4. VERIFICACIÓN DE INTEGRIDAD FINANCIERA Y BLOQUEO DE BOTÓN EN CALIENTE
+                  // ==========================================================================
+                  function verificar_cuadre_financiero_contextual($modal) {
+                      var costo_total  = parseFloat($modal.find(\'.form_costo_total\').val()) || 0;
+                      var total_prog   = parseFloat($modal.find(\'.form_total_prog\').val()) || 0;
+                      var $btn_guardar = $modal.find(\'.btn_guardar_requerimiento_pluri\'); 
+                      
+                      $modal.find(\'.alerta_descuadre_poa\').remove();
+
+                      if (Math.abs(total_prog - costo_total) > 0.01) {
+                          $btn_guardar.fadeOut(150);
+                          
+                          var plantilla_error = `
+                          <div id="alerta_descuadre_poa" class="alerta_descuadre_poa alert alert-danger" style="margin: 10px 0 0 0; padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; width: 100%;">
+                              <i class="fa fa-times-circle"></i> Restricción Financiera CNS: El Total Distribuido (${total_prog.toFixed(2)} Bs.) no iguala al Costo Total Consolidado (${costo_total.toFixed(2)} Bs.). El botón de guardado permanecerá bloqueado.
+                          </div>`;
+                          
+                          $modal.find(\'.form_total_prog\').closest(\'.row\').after(plantilla_error);
+                      } else {
+                          $btn_guardar.fadeIn(150);
+                      }
+                  }
+
+                  // ==========================================================================
+                  // 5. CAPA TRANSACCIONAL: VALIDACIÓN ABSOLUTA AL HACER SUBMIT (GUARDAR)
+                  // ==========================================================================
+                  $(document).on(\'submit\', \'.form_transaccional_equipamiento\', function(e) {
+                      e.preventDefault();
+                      
+                      var $form = $(this);
+                      var $modal = $form.closest(\'.modal\');
+                      var tp_registro = $modal.find(\'.form_tp_registro\').val();
+                      
+                      // --- VALIDACIÓN MANUAL DE OBLIGATORIEDAD CAMPO POR CAMPO ---
+                      if (tp_registro == "1") {
+                          if ($modal.find(\'.form_act_id\').val() === "" || $modal.find(\'.form_act_id\').val() === "0") {
+                              alertify.error("⚠️ Campo Obligatorio: Seleccione el Establecimiento de Salud Vinculado.");
+                              $modal.find(\'.form_act_id\').focus();
+                              return false;
+                          }
+                      } else if (tp_registro == "2") {
+                          if ($modal.find(\'.form_nombre_inversion\').val().trim() === "") {
+                              alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Proyecto de Inversión.");
+                              $modal.find(\'.form_nombre_inversion\').focus();
+                              return false;
+                          }
+                      }
+
+                      if ($modal.find(\'.form_responsable\').val().trim() === "") {
+                          alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Responsable / Solicitante.");
+                          $modal.find(\'.form_responsable\').focus();
+                          return false;
+                      }
+                      if ($modal.find(\'.form_nombre_equipamiento\').val().trim() === "") {
+                          alertify.error("⚠️ Campo Obligatorio: Ingrese el Nombre del Equipamiento Médico.");
+                          $modal.find(\'.form_nombre_equipamiento\').focus();
+                          return false;
+                      }
+                      if ($modal.find(\'.form_servicio_unidad\').val().trim() === "") {
+                          alertify.error("⚠️ Campo Obligatorio: Ingrese el Servicio / Unidad Destino.");
+                          $modal.find(\'.form_servicio_unidad\').focus();
+                          return false;
+                      }
+                      if ($modal.find(\'.form_ubicacion_fisica\').val().trim() === "") {
+                          alertify.error("⚠️ Campo Obligatorio: Ingrese la Ubicación Física Exacta.");
+                          $modal.find(\'.form_ubicacion_fisica\').focus();
+                          return false;
+                      }
+                      if ($modal.find(\'.form_tp_compra\').val() === "" || $modal.find(\'.form_tp_compra\').val() === "0") {
+                          alertify.error("⚠️ Campo Obligatorio: Seleccione el Tipo de Compra.");
+                          $modal.find(\'.form_tp_compra\').focus();
+                          return false;
+                      }
+                      if ($modal.find(\'.form_par_id\').val() === "") {
+                          alertify.error("⚠️ Campo Obligatorio: Seleccione la Partida Presupuestaria.");
+                          $modal.find(\'.form_par_id\').focus();
+                          return false;
+                      }
+
+                      var cantidad = parseInt($modal.find(\'.form_cantidad\').val()) || 0;
+                      var costo_unit = parseFloat($modal.find(\'.form_costo_unitario\').val()) || 0;
+
+                      if (cantidad <= 0) {
+                          alertify.error("⚠️ Restricción: La Cantidad Total debe ser un número mayor a cero.");
+                          $modal.find(\'.form_cantidad\').focus();
+                          return false;
+                      }
+                      if (costo_unit <= 0) {
+                          alertify.error("⚠️ Restricción: El Costo Unitario debe ser un monto mayor a cero.");
+                          $modal.find(\'.form_costo_unitario\').focus();
+                          return false;
+                      }
+
+                      var costo_total_maestro = parseFloat($modal.find(\'.form_costo_total\').val()) || 0;
+                      
+                      var suma_quinquenio_real = 0;
+                      $modal.find(\'.prog-anio\').each(function() {
+                          suma_quinquenio_real += parseFloat($(this).val()) || 0;
+                      });
+
+                      // Convertimos ambos montos a texto de 2 decimales para una comparación contable pura
+                      var total_formateado_check = costo_total_maestro.toFixed(2);
+                      var suma_formateada_check  = suma_quinquenio_real.toFixed(2);
+
+                      if (suma_formateada_check !== total_formateado_check) {
+                          if (typeof alertify !== "undefined") {
+                              alertify.error("🚨 Restricción POA: La sumatoria programada en el quinquenio (" + suma_formateada_check + " Bs.) debe ser exactamente igual al Costo Total Consolidado (" + total_formateado_check + " Bs.).");
+                          } else {
+                              alert("⚠️ Error: La distribución quinquenal no coincide con el Costo Total.");
+                          }
+                          
+                          $modal.find(\'.prog-anio\').first().focus();
+                          return false; // Bloquea el envío al controlador
+                      }
+
+                      // --- ENVÍO SEGURO POR AJAX DINÁMICO ---
+                      var url_destino = base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/guardar_requerimiento_equipamiento";
+                      var $btn_ejecutar = $modal.find(\'.btn_guardar_requerimiento_pluri\');
+                      var $loader_gif = $modal.find(\'.loada_spinner\');
+
+                      $.ajax({
+                          url: url_destino,
+                          type: "POST",
+                          dataType: "json",
+                          data: $form.serialize(),
+                          beforeSend: function() {
+                              $btn_ejecutar.attr("disabled", "disabled").hide();
+                              $loader_gif.fadeIn(150);
+                          },
+                          success: function(data) {
+                              $loader_gif.hide();
+                              $btn_ejecutar.removeAttr("disabled").show();
+
+                              if (data.respuesta === "correcto") {
+                                  alertify.success("✅ Éxito: Registro consolidado correctamente en el SIIPLAS.");
+                                  
+                                  $modal.modal("hide");
+                                  $(\'.modal-backdrop\').remove();
+                                  $(\'body\').removeClass(\'modal-open\').css(\'padding-right\', \'\');
+
+                                  // Refresca la tabla automáticamente sin parpadeos
+                                  $("#dist_id").trigger("change");
+                              } else {
+                                  alertify.error("❌ Restricción: " + data.mensaje);
+                              }
+                          },
+                          error: function() {
+                              $loader_gif.hide();
+                              $btn_ejecutar.removeAttr("disabled").show();
+                              alertify.error("❌ Error Crítico: Falla de comunicación con el servidor.");
+                          }
+                      });
+                  });
+
+              }
+          });
+      </script>';
+
+      ///// ELIMINAR REGISTRO
+     $tabla .= '
+    <script type="text/javascript">
+        window.addEventListener("load", function() {
+            if (typeof $ !== "undefined") {
+
+                // ==========================================================================
+                // ESCUCHA CORREGIDA: ELIMINACIÓN / BAJA LÓGICA CON COMPATIBILIDAD ALERTIFY
+                // ==========================================================================
+                $(document).on(\'click\', \'.btn_eliminar_equip\', function(e) {
+                    e.preventDefault();
+                    
+                    var form_equip_id = $(this).attr(\'data-id\');
+                    
+                    if(!form_equip_id || form_equip_id == 0) {
+                        if (typeof alertify !== "undefined") {
+                            alertify.error("⚠️ Error: Identificador de registro no válido.");
+                        }
+                        return false;
+                    }
+
+                    // 🛠️ REPARACIÓN DE SINTAXIS PARA COMPATIBILIDAD GLOBAL DE ALERTIFY
+                    if (typeof alertify !== "undefined" && typeof alertify.confirm === "function") {
+                        
+                        alertify.confirm(
+                            "¿Está absolutamente seguro de dar de baja este requerimiento de equipamiento? Esta acción eliminará el registro y sus temporalidades (2026-2030) del consolidado distrital.", 
+                            function (e) {
+                                if (e) {
+                                    // MODO EXCLUSIVO: Si el usuario presionó "Aceptar" (true)
+                                    $.ajax({
+                                        url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/eliminar_requerimiento_equipamiento",
+                                        type: \'POST\',
+                                        dataType: \'json\',
+                                        data: { form_equip_id: form_equip_id },
+                                        success: function(data) {
+                                            if (data.respuesta === "correcto") {
+                                                alertify.success("🗑️ Éxito: El requerimiento fue dado de baja correctamente.");
+                                                // Sincroniza la tabla izquierda en caliente sin recargar la página
+                                                $("#dist_id").trigger("change");
+                                            } else {
+                                                alertify.error("❌ Restricción: " + data.mensaje);
+                                            }
+                                        },
+                                        error: function() {
+                                            alertify.error("❌ Error Crítico: El servidor no procesó la baja.");
+                                        }
+                                    });
+                                } else {
+                                    // Si el usuario presionó "Cancelar" (false)
+                                    alertify.error("Operación de baja cancelada.");
+                                }
+                            }
+                        );
+
+                    } else {
+                        // Capa de seguridad por si Alertify sufre caídas de carga en el cliente
+                        if (window.confirm("¿Está seguro de dar de baja este requerimiento de equipamiento plurianual?")) {
+                            $.ajax({
+                                url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/eliminar_requerimiento_equipamiento",
+                                type: \'POST\',
+                                dataType: \'json\',
+                                data: { form_equip_id: form_equip_id },
+                                success: function(data) {
+                                    if (data.respuesta === "correcto") {
+                                        $("#dist_id").trigger("change");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
+            }
+        });
+    </script>';
+        return $tabla;
+    }
+
 
 }
 ?>
