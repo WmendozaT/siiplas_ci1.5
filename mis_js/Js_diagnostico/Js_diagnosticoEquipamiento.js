@@ -1,5 +1,56 @@
 base = $('[name="base"]').val();
 
+    
+$(document).ready(function() {
+  pageSetUp();
+  /* BASIC ;*/
+      var responsiveHelper_dt_basic = undefined;
+      var responsiveHelper_datatable_fixed_column = undefined;
+      var responsiveHelper_datatable_col_reorder = undefined;
+      var responsiveHelper_datatable_tabletools = undefined;
+      
+      var breakpointDefinition = {
+          tablet : 1024,
+          phone : 480
+      };
+
+  /* END BASIC */
+  
+  /* COLUMN FILTER  */
+  var otable = $('#datatable_fixed_column').DataTable({
+      "sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
+              "t"+
+              "<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+      "autoWidth" : true,
+      "preDrawCallback" : function() {
+          // Initialize the responsive datatables helper once.
+          if (!responsiveHelper_datatable_fixed_column) {
+              responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
+          }
+      },
+      "rowCallback" : function(nRow) {
+          responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
+      },
+      "drawCallback" : function(oSettings) {
+          responsiveHelper_datatable_fixed_column.respond();
+      }       
+  
+  });
+  
+  // custom toolbar
+//  $("div.toolbar").html('');
+  // Apply the filter
+  $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
+      otable
+          .column( $(this).parent().index()+':visible' )
+          .search( this.value )
+          .draw();   
+  } );
+  /* END COLUMN FILTER */   
+})
+
+
+     
 function abreVentana_poa(url) {
     var elemento = window.event ? window.event.target.closest('a') : null;
     var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";
@@ -37,62 +88,3 @@ function abreVentana_poa(url) {
     // 3. Redirigimos la ventana a la URL real del reporte
     nuevaVentana.location.href = url;
 }
-
-
-// DO NOT REMOVE : GLOBAL FUNCTIONS!
-  $(document).ready(function() {
-      pageSetUp();
-      $("#menu").menu();
-      $('.ui-dialog :button').blur();
-      $('#tabs').tabs();
-  })
-
-  //// Obtiene distrital
-  $(document).ready(function() {
-    $('#dist_id').change(function() {
-        var dist_id = $(this).val();
-
-        var $contenedor = $('#contenedor_formulario');
-
-        // Si selecciona la opción "Seleccione..", limpiamos el contenedor
-        if (dist_id == 0) {
-            $contenedor.fadeOut().html('');
-            return;
-        }
-
-        $.ajax({
-          url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/get_unidad_ejecutora",
-          type: 'POST',
-          data: { id: dist_id }, // Enviamos como 'id'
-          dataType: 'json',      // Especificamos que esperamos un JSON
-          beforeSend: function() {
-              $contenedor.html(
-                    '<div class="well text-center" style="padding: 50px;">' +
-                    '   <i class="fa fa-refresh fa-spin fa-3x text-primary"></i>' +
-                    '   <h4 class="text-primary" style="margin-top:20px;">Cargando Diagnóstico...</h4>' +
-                    '   <p class="text-muted">Por favor espere un momento.</p>' +
-                    '</div>'
-                );
-          },
-          success: function(data) {
-              if(data.respuesta == 'correcto') {
-                  // Accedemos a data.tabla
-                  $contenedor.hide().html(data.tabla).fadeIn(600);
-              } else {
-                  $contenedor.html(
-                    '<div class="alert alert-danger">' +
-                    '   <i class="fa fa-times"></i> Error crítico al conectar con el servidor.' +
-                    '</div>'
-                );
-              }
-          },
-          error: function(xhr) {
-              console.error(xhr.responseText);
-              $contenedor.html('<div class="alert alert-danger">Error en el servidor.</div>');
-          }
-      });
-    });
-  });
-
-
-

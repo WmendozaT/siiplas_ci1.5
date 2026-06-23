@@ -63,7 +63,7 @@
                 </span>
                 <!-- breadcrumb -->
                 <ol class="breadcrumb">
-                    <li>PEI</li><li>Mis Acciones de Corto Plazo</li><li>Alineación POA-PEI</li>
+                    <li>CNS</li><li>Formulario de Información Quincenal PEI</li>
                 </ol>
             </div>
             <!-- MAIN CONTENT -->
@@ -89,38 +89,39 @@
                                         <tr>
                                             <th></th>
                                             <th class="hasinput"></th>
+                                            <th class="hasinput"></th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Distrital.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Responsable.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Establecimiento.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Equipamiento.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Servicio.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Ubicación.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Tipo compra.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Partida.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Cantidad.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Costo Unitario.."/>
                                             </th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Costo Total.."/>
                                             </th>
                                             <th></th>
                                             <th></th>
@@ -128,16 +129,17 @@
                                             <th></th>
                                             <th></th>
                                             <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder="Observacion"/>
+                                                <input type="text" class="form-control" placeholder="Buscar: Observacion.."/>
                                             </th>
                                         </tr>                          
                                         <tr >
                                             <th style="width:1%; text-align:center; vertical-align: middle;">#</th>
-                                            <th style="width:5%; text-align:center; vertical-align: middle;"></th>
+                                            <th style="width:5%; text-align:center; vertical-align: middle;">OPCIONES</th>
+                                            <th style="width:5%; text-align:center; vertical-align: middle;">ADICIONALES</th>
                                             <th style="width:5%; text-align:center; vertical-align: middle;">DISTRITAL</th>
                                             <th style="width:7%; text-align:center; vertical-align: middle;">RESPONSABLE</th>
                                             <th style="width:8%; text-align:center; vertical-align: middle;">ESTABLECIMIENTO / INVERSIÓN</th>
-                                            <th style="width:10%; text-align:center; vertical-align: middle;">NOMBRE DEL EQUIPAMIENTO</th>
+                                            <th style="width:10%; text-align:center; vertical-align: middle;">NOMBRE DEL EQUIPO</th>
                                             <th style="width:8%; text-align:center; vertical-align: middle;">SERVICIO/UNIDAD</th>
                                             <th style="width:8%; text-align:center; vertical-align: middle;">UBICACIÓN FÍSICA</th>
                                             <th style="width:4%; text-align:center; vertical-align: middle;">TIPO COMPRA</th>
@@ -146,11 +148,11 @@
                                             <th style="width:6%; text-align:center; vertical-align: middle;">COSTO UNITARIO (Bs.)</th>
                                             <th style="width:6%; text-align:center; vertical-align: middle;">COSTO TOTAL (Bs.)</th>
                                             <!-- Temporalidad Quinquenal de Asignación Física -->
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2026</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2027</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2028</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2029</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2030</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32; color: #ffffff;">2026</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32; color: #ffffff;">2027</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32; color: #ffffff;">2028</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32; color: #ffffff;">2029</th>
+                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32; color: #ffffff;">2030</th>
                                             
                                             <th style="width:10%; text-align:center; vertical-align: middle;">OBSERVACIONES</th>
                                         </tr>
@@ -222,6 +224,6 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/jquery.dataTables.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-        <script src="<?php echo base_url(); ?>mis_js/Js_diagnostico/Js_diagnosticoEquipamiento.js"></script>
+        <script src="<?php echo base_url(); ?>mis_js/Js_diagnostico/Js_diagnosticoEquipamiento.js"></script> 
     </body>
 </html>
