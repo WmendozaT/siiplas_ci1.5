@@ -20,7 +20,6 @@
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.core.css" />
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
         <script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
-
         <meta name="viewport" content="width=device-width">
     </head>
     <body class="">
@@ -63,7 +62,7 @@
                 </span>
                 <!-- breadcrumb -->
                 <ol class="breadcrumb">
-                    <li>PEI</li><li>Mis Acciones de Corto Plazo</li><li>Alineación POA-PEI</li>
+                    <li>Diagnostico Pei</li><li>Formulario</li>
                 </ol>
             </div>
             <!-- MAIN CONTENT -->
@@ -71,107 +70,15 @@
                 <!-- widget grid -->
                 <section id="widget-grid" class="">
                     <div class="row">
-                        <?php echo $titulo; ?>
+                        <?php echo $titulo;?>
                     </div>
                     <div class="row">
-                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                        <div class="jarviswidget jarviswidget-color-darken" >
-                          <header>
-                              <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-                              <h2 class="font-md"></h2>  
-                          </header>
-                          <div>
-                            <div class="widget-body no-padding">
-                              <div class="table-responsive">
-                                <table id="datatable_fixed_column" class="table table-bordered" width="100%">
-                                <!-- <table id="datatable_fixed_column" class="table table-bordered" width="100%"> -->
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th class="hasinput"></th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder=""/>
-                                            </th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th class="hasinput">
-                                                <input type="text" class="form-control" placeholder="Observacion"/>
-                                            </th>
-                                        </tr>                          
-                                        <tr >
-                                            <th style="width:1%; text-align:center; vertical-align: middle;">#</th>
-                                            <th style="width:5%; text-align:center; vertical-align: middle;"></th>
-                                            <th style="width:5%; text-align:center; vertical-align: middle;">DISTRITAL</th>
-                                            <th style="width:7%; text-align:center; vertical-align: middle;">RESPONSABLE</th>
-                                            <th style="width:8%; text-align:center; vertical-align: middle;">ESTABLECIMIENTO / INVERSIÓN</th>
-                                            <th style="width:10%; text-align:center; vertical-align: middle;">NOMBRE DEL EQUIPAMIENTO</th>
-                                            <th style="width:8%; text-align:center; vertical-align: middle;">SERVICIO/UNIDAD</th>
-                                            <th style="width:8%; text-align:center; vertical-align: middle;">UBICACIÓN FÍSICA</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle;">TIPO COMPRA</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle;">PARTIDA</th>
-                                            <th style="width:5%; text-align:center; vertical-align: middle;">CANT.</th>
-                                            <th style="width:6%; text-align:center; vertical-align: middle;">COSTO UNITARIO (Bs.)</th>
-                                            <th style="width:6%; text-align:center; vertical-align: middle;">COSTO TOTAL (Bs.)</th>
-                                            <!-- Temporalidad Quinquenal de Asignación Física -->
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2026</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2027</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2028</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2029</th>
-                                            <th style="width:4%; text-align:center; vertical-align: middle; background:#2e7d32;">2030</th>
-                                            
-                                            <th style="width:10%; text-align:center; vertical-align: middle;">OBSERVACIONES</th>
-                                        </tr>
-                                    </thead>
-                                    <?php echo $listado;?>
-                                </table>
-                               </div>
-                            </div>
-                           </div>
-                          </div>
-                        </article>
+                       <?php echo $cuerpo;?>
                     </div>
                 </section>
             </div>
             <!-- END MAIN CONTENT -->
 
-    <!-- END MAIN PANEL -->
-
-        <!-- PAGE FOOTER -->
-
-        <!-- END PAGE FOOTER -->
         <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
         <script>
             if (!window.jQuery) {
