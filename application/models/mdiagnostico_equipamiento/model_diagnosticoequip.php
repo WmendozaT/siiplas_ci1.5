@@ -279,7 +279,6 @@ class model_diagnosticoequip extends CI_Model {
             CASE 
                 WHEN form.tp_compra = 1 THEN \'NUEVO\'
                 WHEN form.tp_compra = 2 THEN \'REPOSICIÓN\'
-                WHEN form.tp_compra = 3 THEN \'ADECUACIÓN\'
                 ELSE \'NO DEFINIDO\'
             END AS tp_compra_nombre,
 
@@ -344,6 +343,55 @@ class model_diagnosticoequip extends CI_Model {
         $query = $this->db->query($sql);
         return $query->result_array(); // Retorna la matriz de años (2026 a 2030)
     }
+
+
+    //// Get lista de adicionales por equipo
+    public function get_list_adcionales_x_equipo($form_equip_id) {
+        // Selecciona la gestión y el valor programado de la tabla de temporalidad
+        $sql = 'SELECT 
+                adi_equi_id,
+                form_equip_id,
+                tp_equi_adi,
+                CASE 
+                    WHEN tp_equi_adi = 1 THEN \'ACCESORIO\'
+                    WHEN tp_equi_adi = 2 THEN \'SOFTWARE\'
+                    ELSE \'NO DEFINIDO\'
+                END as tipo_detalle_nombre,
+                detalle_equi_adi
+            FROM public.equipamiento_adicionales
+            WHERE form_equip_id = '.$form_equip_id.'
+            ORDER BY adi_equi_id ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array(); // Retorna la matriz de años (2026 a 2030)
+    }
+
+
+    //// Get lista de adicionales por equipo
+    public function get_list_adcionales_consolidado($equip_id) {
+        // Selecciona la gestión y el valor programado de la tabla de temporalidad
+        $sql = 'SELECT form.equip_id,form.form_equip_id,form.dist_id,d.dist_distrital,act.tipo,act.act_descripcion,d.abrev,form.responsable,form.nombre_equipamiento,
+                ea.tp_equi_adi,
+                                CASE 
+                                    WHEN ea.tp_equi_adi = 1 THEN \'ACCESORIO\'
+                                    WHEN ea.tp_equi_adi = 2 THEN \'SOFTWARE\'
+                                    ELSE \'NO DEFINIDO\'
+                                END as tipo_detalle_nombre,
+                                ea.detalle_equi_adi
+                                
+                FROM formulario_diagnostico_equipamiento form
+                Inner Join _distritales d On d.dist_id=form.dist_id
+                Inner Join vlista_establecimientos_salud act On act.act_id=form.act_id and act.aper_gestion = '.$this->gestion.'
+                Inner Join equipamiento_adicionales ea On ea.form_equip_id=form.form_equip_id
+                where form.equip_id='.$equip_id.' 
+                ORDER BY form.dist_id,form.form_equip_id,ea.adi_equi_id ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array(); // Retorna la matriz de años (2026 a 2030)
+    }
+
+
+
 
     /*--------- Lista de Unidades Ejecutoras ----------*/
     public function lista_UnidadEjecutora(){

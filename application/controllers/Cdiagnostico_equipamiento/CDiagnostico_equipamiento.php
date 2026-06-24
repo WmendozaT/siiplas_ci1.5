@@ -43,7 +43,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #f8fafc; padding-bottom: 14px;">
                         <div>
                             <h2 style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin: 0; letter-spacing: -0.2px;">
-                                Información Quinquenal PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'
+                                Programación Quinquenal PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'
                             </h2>
                             <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: 500;">
                                 <i class="fa fa-calendar-check-o"></i> Planificación y Control de Requerimientos de Equipamiento Médico
@@ -172,7 +172,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #f8fafc; padding-bottom: 14px;">
                         <div>
                             <h2 style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin: 0; letter-spacing: -0.2px;">
-                                Información Quinquenal PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'
+                                Programación Quinquenal PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'
                             </h2>
                             <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: 500;">
                                 <i class="fa fa-calendar-check-o"></i> Planificación y Control de Requerimientos de Equipamiento Médico - '.strtoupper($distrital[0]['dist_distrital']).'
@@ -495,8 +495,8 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
 
 
-
-    public function get_formulario_adicionales_modal_html() {
+    ///// Get Recupera listado de Adicionales
+     public function get_formulario_adicionales_modal_html() {
         // 1. Capa de Seguridad: Validar que sea una petición legítima AJAX por POST
         if ($this->input->is_ajax_request() && $this->input->post('form_equip_id')) {
             
@@ -508,79 +508,100 @@ class CDiagnostico_equipamiento extends CI_Controller {
             $dist_id = intval($dist_id);
 
             // 2. Consulta al Modelo para traer el listado relacional de accesorios de este equipo
-            // 🚨 NOTA: Asegúrate de tener implementado este método de selección en tu modelo
-           // $lista_adicionales = $this->model_diagnosticoequip->get_subtable_adicionales_by_form_id($form_equip_id);
+            $lista_adicionales = $this->model_diagnosticoequip->get_list_adcionales_x_equipo($form_equip_id);
 
-            // 3. Maquetación del Formulario Superior de Inserción Rápida (Smart-Form Compacto)
+            // 3. Maquetación del Formulario Superior de Inserción Rápida (Estilo Premium)
             $html = '
-            <form class="smart-form form_interno_adicionales" style="background: #edf2f7; padding: 12px; border-radius: 4px; border: 1px dashed #2563eb; margin-bottom: 15px;">
+            <!-- Se asignó el ID id="form_interno_adicionales" para el mapeo estricto del JavaScript -->
+            <form id="form_interno_adicionales" class="smart-form" style="background: #f8fafc; padding: 16px; border-radius: 6px; border: 1px dashed #bfdbfe; margin-bottom: 20px;">
                 <input type="hidden" name="form_equip_id" value="' . $form_equip_id . '">
                 <input type="hidden" name="dist_id" value="' . $dist_id . '">
                 
                 <div class="row">
-                    <section class="col col-7" style="margin-bottom:0;">
-                        <label class="label" style="color:#1e293b;"><b>Descripción del Componente / Accesorio Adicional *</b></label>
-                        <label class="input"><i class="icon-append fa fa-cube"></i>
-                            <input type="text" class="sub_descripcion" name="descripcion_adicional" placeholder="Ej. BATERÍA RECARGABLE DE LITIO" required style="text-transform: uppercase;">
-                        </label>
-                    </section>
+                    <div class="col-md-3 form-group" style="margin-bottom:0;">
+                        <label style="color:#1e293b; font-weight:bold; font-size:11px; display:block; margin-bottom:4px;">TIPO *</label>
+                        <!-- Se ajustó name y el ID a tipo_adi para sincronización con el controlador de guardado -->
+                        <select class="form-control" id="tipo_adi" name="tipo_adi" required style="font-weight:bold; color:#2563eb; height:32px;">
+                            <option value="1">1.- ACCESORIO</option>        
+                            <option value="2">2.- SOFTWARE</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group" style="margin-bottom:0;">
+                        <label style="color:#1e293b; font-weight:bold; font-size:11px; display:block; margin-bottom:4px;">DESCRIPCIÓN DEL COMPONENTE / ACCESORIO ADICIONAL *</label>
+                        <!-- Se ajustó name a descripcion_adicional para que coincida con el serialize() -->
+                        <input type="text" class="form-control" name="descripcion_adicional" id="m_descripcion_adicional" required placeholder="EJ. BATERÍA RECARGABLE DE LITIO" style="text-transform: uppercase; font-weight:500; height:32px;">
+                    </div>
                     
-                    <section class="col col-2" style="margin-bottom:0;">
-                        <label class="label" style="color:#1e293b;"><b>Cantidad *</b></label>
-                        <label class="input"><i class="icon-append fa fa-calculator"></i>
-                            <input type="number" class="sub_cantidad" name="cantidad_adicional" value="1" min="1" required style="text-align:center; font-weight:bold;">
-                        </label>
-                    </section>
-                    
-                    <section class="col col-3" style="margin-bottom:0; padding-top: 17px;">
-                        <button type="submit" class="btn btn-primary btn-sm btn_sub_registrar" style="background: #2563eb; border: none; font-weight: bold; width: 100%; height: 32px; border-radius: 3px; color:white; font-size:11px;">
-                            <i class="fa fa-plus"></i> AGREGAR ITEM
+                    <div class="col-md-3 form-group" style="margin-bottom:0; padding-top: 19px;">
+                        <!-- Se añadió el ID id="btn_sub_registrar" para controlar el Loading -->
+                        <button type="submit" id="btn_sub_registrar" class="btn btn-primary btn-sm" style="background: #2563eb; border: none; font-weight: bold; width: 100%; height: 32px; border-radius: 4px; color:white; font-size:11px; box-shadow: 0 2px 6px rgba(37,99,235,0.15);">
+                            <i class="fa fa-plus-circle"></i> AGREGAR ITEM
                         </button>
-                    </section>
+                    </div>
                 </div>
             </form>';
 
             // 4. Maquetación de la Tabla Inferior para Enlistar los Registros Adicionales
             $html .= '
-            <div style="background: #ffffff; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                <header style="border-bottom: 1px solid #cbd5e1; font-weight: bold; color: #334155; padding-bottom: 4px; margin-bottom: 8px; font-size:11px; background: transparent;">
-                    <i class="fa fa-list"></i> COMPONENTES COMPLEMENTARIOS REGISTRADOS
+            <div style="background: #ffffff; padding: 15px; border: 1px solid #edf2f7; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <header style="border-bottom: 1px solid #edf2f7; font-weight: bold; color: #1e293b; padding-bottom: 6px; margin-bottom: 10px; font-size:11.5px; background: transparent; letter-spacing:0.3px;">
+                    <i class="fa fa-list" style="color:#2563eb;"></i> COMPONENTES COMPLEMENTARIOS REGISTRADOS
                 </header>
                 
-                <table class="table table-bordered table-striped" style="width: 100%; font-size: 11px; margin-bottom: 0; background:white; table-layout: fixed;">
-                    <thead>
-                        <tr style="background: #475569; color: white; height: 26px;">
-                            <th style="width: 8%; text-align: center; vertical-align: middle; padding: 4px;">NRO</th>
-                            <th style="width: 72%; vertical-align: middle; padding: 4px;">DESCRIPCIÓN DEL ACCESORIO ADICIONAL</th>
-                            <th style="width: 20%; text-align: center; vertical-align: middle; padding: 4px;">CANTIDAD</th>
-                        </tr>
-                    </thead>
-                    <tbody id="m_body_tabla_adicionales">';
-                    
-                    /*$sub_nro = 0;
-                    if (!empty($lista_adicionales)) {
-                        foreach ($lista_adicionales as $item) {
-                            $sub_nro++;
+                <div style="max-height: 250px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 4px;">
+                    <table class="table table-bordered table-striped" style="width: 100%; font-size: 11.5px; margin-bottom: 0; background:white; table-layout: fixed;">
+                        <thead>
+                            <tr style="background: #f1f5f9; color: #475569; height: 28px;">
+                                <th style="width: 5%; text-align: center; vertical-align: middle; padding: 4px; font-weight:700;">#</th>
+                                <th style="width: 10%; text-align: center; vertical-align: middle; padding: 4px; font-weight:700;">BORRAR</th>
+                                <th style="width: 20%; vertical-align: middle; padding: 4px; font-weight:700; text-align:center;">TIPO</th>
+                                <th style="width: 65%; vertical-align: middle; padding: 4px; font-weight:700; padding-left:8px;">DESCRIPCIÓN DEL ACCESORIO ADICIONAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="m_body_tabla_adicionales">';
+                        
+                        $sub_nro = 0;
+                        if (!empty($lista_adicionales)) {
+                            foreach ($lista_adicionales as $item) {
+                                $sub_nro++;
+                                
+                                // Generación de etiquetas estilizadas para el tipo
+                                $badge_tipo = ($item['tipo_detalle_nombre'] == 'ACCESORIO' || $item['tp_equi_ad'] == 1) 
+                                    ? '<span class="label" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; font-weight:bold; padding:2px 6px; border-radius:4px;">ACCESORIO</span>' 
+                                    : '<span class="label" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe; font-weight:bold; padding:2px 6px; border-radius:4px;">SOFTWARE</span>';
+
+                                $html .= '
+                                <tr style="height:32px; vertical-align: middle; border-bottom:1px solid #f1f5f9;">
+                                    <td style="text-align: center; font-weight: bold; background: #f8fafc; color: #64748b; vertical-align: middle;">' . $sub_nro . '</td>
+                                    
+                                    <!-- 🌟 BOTÓN ELIMINAR REAL: Estilizado en Rojo con captura asíncrona de IDs -->
+                                    <td style="text-align: center; vertical-align: middle; padding:0;">
+                                        <button type="button" class="btn btn-danger btn-xs btn_eliminar_sub_item" 
+                                                data-sub-id="' . $item['adi_equi_id'] . '" 
+                                                data-form-id="' . $form_equip_id . '" 
+                                                style="background:#dc2626; color:#ffffff; border:none; padding:3px 8px; border-radius:4px; font-size:10px;" 
+                                                title="Remover este componente">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
+                                    
+                                    <td style="text-align: center; vertical-align: middle; padding:0;">' . $badge_tipo . '</td>
+                                    <td style="text-align: left; padding-left: 8px; text-transform: uppercase; font-weight:500; color:#1e293b; vertical-align: middle;">' . htmlspecialchars($item['detalle_equi_adi'], ENT_QUOTES, 'UTF-8') . '</td>
+                                </tr>';
+                            }
+                        } else {
                             $html .= '
-                            <tr style="height:24px; vertical-align: middle;">
-                                <td style="text-align: center; font-weight: bold; background: #f8fafc; color: #64748b;">' . $sub_nro . '</td>
-                                <td style="text-align: left; padding-left: 5px; text-transform: uppercase;">' . htmlspecialchars($item['descripcion_adicional'], ENT_QUOTES, 'UTF-8') . '</td>
-                                <td style="text-align: center; font-weight: bold; color: #2563eb;">' . intval($item['cantidad_adicional']) . ' U.</td>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #94a3b8; font-style: italic; padding: 25px 0; font-size:11px;">
+                                    📋 Ningún accesorio adicional registrado todavía para este requerimiento.
+                                </td>
                             </tr>';
                         }
-                    } else {
-                        // Hilera informativa estética por si la tabla relacional está en blanco
+                        
                         $html .= '
-                        <tr>
-                            <td colspan="3" style="text-align: center; color: #94a3b8; font-style: italic; padding: 20px 0;">
-                                📋 Ningún accesorio adicional registrado todavía para este requerimiento.
-                            </td>
-                        </tr>';
-                    }*/
-                    
-                    $html .= '
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>';
 
             // 5. Limpieza del búfer de salida para erradicar cualquier Notice flotante de PHP
@@ -598,8 +619,99 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
 
 
+    public function guardar_sub_item_adicional() {
+        // 1. Capa de Seguridad: Validar que sea una petición legítima AJAX por POST
+        if ($this->input->is_ajax_request() && $this->input->post('form_equip_id')) {
+            
+            // Cargar la librería de base de datos de forma explícita si no está en el autoload
+            $this->load->database();
 
+            // 2. Recolección, sanitización XSS y tipado forzado de variables del POST
+            $form_equip_id    = intval($this->security->xss_clean($this->input->post('form_equip_id')));
+            $tp_equi_adi      = intval($this->security->xss_clean($this->input->post('tipo_adi'))); // Mapeado desde <select name="tipo_adi">
+            $detalle_equi_adi = $this->security->xss_clean($this->input->post('descripcion_adicional')); // Mapeado desde <input name="descripcion_adicional">
+            
+            // Forzar formateo a mayúsculas y remover espacios vacíos periféricos
+            $detalle_equi_adi = trim(strtoupper($detalle_equi_adi));
 
+            // 3. Validación de consistencia en el Servidor antes de impactar PostgreSQL
+            if ($form_equip_id > 0 && !empty($detalle_equi_adi)) {
+                
+                // 🌟 MATRIZ SINCRONIZADA AL 100% CON TU TABLA REAL public.equipamiento_adicionales
+                $data_insert = array(
+                    'form_equip_id'    => $form_equip_id,
+                    'tp_equi_adi'      => $tp_equi_adi,
+                    'detalle_equi_adi' => $detalle_equi_adi
+                );
+
+                // 4. Inserción mediante Active Record clásico
+                $insercion_exitosa = $this->db->insert('public.equipamiento_adicionales', $data_insert);
+
+                if ($insercion_exitosa) {
+                    $result = array('status' => 'success');
+                } else {
+                    $result = array(
+                        'status'  => 'error', 
+                        'message' => 'Error de base de datos: PostgreSQL rechazó la inserción en equipamiento_adicionales.'
+                    );
+                }
+            } else {
+                $result = array(
+                    'status'  => 'error', 
+                    'message' => 'Error de validación: La descripción del componente adicional no puede estar vacía.'
+                );
+            }
+
+            // 5. Despacho y entrega del objeto JSON nativo libre de funciones obsoletas
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode($result);
+            exit; // Cortar cualquier ejecución o remanente HTML accidental del Framework
+        } else {
+            // Si intentan ingresar directo por URL sin ser AJAX, denegar el acceso
+            show_404();
+        }
+    }
+
+    /// eliminar registro de sub item adicional
+    public function eliminar_sub_item_adicional() {
+        // 1. Validar estrictamente que provenga de una llamada legítima de AJAX
+        if ($this->input->is_ajax_request()) {
+            
+            // Cargar base de datos nativa (PostgreSQL)
+            $this->load->database();
+            
+            // Recolección y tipado forzado del ID primario enviado por el JS
+            $adi_equi_id = intval($this->input->post('adi_equi_id'));
+
+            if ($adi_equi_id > 0) {
+                
+                // 2. Ejecutar DELETE físico sobre la tabla relacional mapeando tu PK
+                $this->db->where('adi_equi_id', $adi_equi_id);
+                $operacion_exitosa = $this->db->delete('public.equipamiento_adicionales');
+
+                if ($operacion_exitosa) {
+                    $result = array('status' => 'success');
+                } else {
+                    $result = array(
+                        'status'  => 'error', 
+                        'message' => 'Error relacional: PostgreSQL rechazó la eliminación física de la fila.'
+                    );
+                }
+            } else {
+                $result = array(
+                    'status'  => 'error', 
+                    'message' => 'Error de consistencia: El identificador de sub-registro no es válido.'
+                );
+            }
+
+            // 3. Despacho y entrega de JSON plano nativo compatible con PHP 5.6
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode($result);
+            exit; // Prevenir remanentes HTML
+        } else {
+            show_404();
+        }
+    }
 
 
     /// Reporte Formulario Diagnostico Pei Equipamiento
@@ -618,7 +730,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
             $listado=$this->model_diagnosticoequip->get_consolidado_formulario_diagnostico_activo($equipamiento[0]['equip_id']); /// Consolidado
         }
         else{
-            $listado=$this->model_diagnosticoequip->get_distrital_formulario_diagnostico_activo($equipamiento[0]['equip_id'],$this->dist_id); /// distrital
+            $listado=$this->model_diagnosticoequip->get_distrital_formulario_diagnostico_activo($equipamiento[0]['equip_id'],$dist_id); /// distrital
         }
 
         $tabla='';
@@ -773,7 +885,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
                 <table style="width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif; table-layout: fixed;">
                     <tr>
                         <td style="width: 20%; text-align: left; vertical-align: middle; font-size:9px;">
-                            <b>FORMULARIO PEI EQUIPAMIENTO</b>
+                            <b>DPTO. NAL. PLANIFICACIÓN</b>
                         </td>
                         
                         <td style="width: 60%; text-align: center; vertical-align: middle;">
@@ -782,7 +894,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
                             </span>
                             <br>
                             <span style="font-size: 17px; font-weight: bold; color: #212121; line-height: 1.2;">
-                                FORMULARIO DE INFORMACIÓN QUINCENAL PEI  
+                                PROGRAMACIÓN QUINQUENAL PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin' ].'
                             </span>
                             <br>
                             <span style="font-size: 11px; font-weight: bold; color: #212121; line-height: 1.2;">
@@ -966,7 +1078,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
         // 3. RECUPERACIÓN DE LOS REGISTROS DESDE EL MODELO NACIONAL SIIPLAS
         $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
-        $listado = $this->model_diagnosticoequip->get_consolidado_formulario_diagnostico_activo($equipamiento);
+        $listado = $this->model_diagnosticoequip->get_consolidado_formulario_diagnostico_activo($equipamiento[0]['equip_id']);
 
         // 4. BUCLE DE VOLCADO DE DATOS (Comienza en la Fila 2)
         $fila = 2;
@@ -1053,12 +1165,110 @@ class CDiagnostico_equipamiento extends CI_Controller {
         }
     }
 
-    private function _generar_adicionales(&$objPHPExcel,$styles) {
-        // Crear la segunda pestaña de forma explícita antes de seleccionarla
-        $objPHPExcel->createSheet(); 
+    private function _generar_adicionales(&$objPHPExcel, $styles) {
+        // 1. Crear y activar formalmente la segunda pestaña del libro de trabajo
+        $objPHPExcel->createSheet();
         $objPHPExcel->setActiveSheetIndex(1);
         $sheet = $objPHPExcel->getActiveSheet();
-        $sheet->setTitle("ADICIONALES CONSOLIDADOS");
-        // Aquí pones el bucle de la segunda consulta SQL de temporalidad
+        $sheet->setTitle("ADICIONALES");
+
+        // Habilitar las líneas de cuadrícula visibles por defecto en Excel
+        $sheet->setShowGridlines(true);
+
+        // Estilo complementario de alto impacto para la cabecera de componentes adicionales (Púrpura Corporativo)
+        $style_adicionales_header = array(
+            'font' => array('bold' => true, 'color' => array('rgb' => 'FFFFFF'), 'size' => 10, 'name' => 'Arial'),
+            'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => array('rgb' => '059669')), // Verde Esmeralda llamativo
+            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER, 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER),
+            'borders' => array('allborders' => array('style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => array('rgb' => 'CCCCCC')))
+        );
+
+        // Estilo destacado de texto para las etiquetas de tipo de componente
+        $style_badge_accesio = array('font' => array('bold' => true, 'color' => array('rgb' => '2563EB'))); // Azul Cobalto
+        $style_badge_software = array('font' => array('bold' => true, 'color' => array('rgb' => '7C3AED'))); // Púrpura Oscuro
+
+        // 2. DEFINICIÓN REAL DE LAS COLUMNAS DE LA GRILLA SECUNDARIA (FILA 1)
+        $columnas_headers = array(
+            'A1' => 'NRO',
+            'B1' => 'DISTRITAL',
+            'C1' => 'ESTABLECIMIENTO MÉDICO',
+            'D1' => 'RESPONSABLE DEL SERVICIO',
+            'E1' => 'EQUIPO PRINCIPAL ASOCIADO',
+            'F1' => 'TIPO COMPONENTE',
+            'G1' => 'DETALLE ESPECÍFICO DEL ACCESORIO / SOFTWARE ADICIONAL'
+        );
+
+        // Inyectar los textos de cabecera aplicando el nuevo color Púrpura de Categoría
+        foreach ($columnas_headers as $celda => $texto) {
+            $sheet->setCellValue($celda, $texto);
+            $sheet->getStyle($celda)->applyFromArray($style_adicionales_header);
+        }
+
+        // Fijar la altura de la fila de cabeceras para que respire visualmente
+        $sheet->getRowDimension(1)->setRowHeight(28);
+
+        // 3. RECUPERACIÓN DE LOS REGISTROS RELACIONALES DESDE TU MODELO
+        // Usamos el ID de equipamiento activo que tienes en memoria global ($this->equip_id) o recuperándolo de tu objeto activo
+        // Si no tienes el $equip_id global, puedes extraerlo del arreglo $equipamiento que cargaste en el paso anterior: $equipamiento['equip_id']
+        $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
+
+        // Invocar directamente a tu consulta SQL personalizada
+        $listado_adicionales = $this->model_diagnosticoequip->get_list_adcionales_consolidado($equipamiento[0]['equip_id']);
+
+        // 4. BUCLE DE VOLCADO DE DATOS (Comienza en la Fila 2)
+        $fila = 2;
+        $nro = 0;
+
+        if (!empty($listado_adicionales)) {
+            foreach ($listado_adicionales as $row) {
+                $nro++;
+
+                // Formatear la cadena de texto del Establecimiento (Tipo + Descripción + Abrev)
+                $establecimiento_txt = strtoupper($row['tipo'] . ' ' . $row['act_descripcion'] . ' [' . $row['abrev'] . ']');
+
+                // Inyección de celdas descriptivas limpias (Sin etiquetas HTML residuales)
+                $sheet->setCellValue('A' . $fila, $nro);
+                $sheet->setCellValue('B' . $fila, strtoupper($row['dist_distrital']));
+                $sheet->setCellValue('C' . $fila, $establecimiento_txt);
+                $sheet->setCellValue('D' . $fila, strtoupper($row['responsable']));
+                $sheet->setCellValue('E' . $fila, strtoupper($row['nombre_equipamiento']));
+                $sheet->setCellValue('F' . $fila, strtoupper($row['tipo_detalle_nombre'])); // 'ACCESORIO' o 'SOFTWARE'
+                $sheet->setCellValue('G' . $fila, strtoupper($row['detalle_equi_adi']));    // Descripción del accesorio
+
+                // 5. APLICACIÓN DE FORMATOS Y ENFOQUES DE TEXTO POR FILA
+                // Aplicar la cuadrícula fina general (estilo data) sobre toda la fila actual (De A hasta G)
+                $sheet->getStyle('A' . $fila . ':G' . $fila)->applyFromArray($styles['data']);
+
+                // Destacar con formato en negrita y color el Tipo de Componente para facilitar la auditoría
+                if ($row['tp_equi_adi'] == 1) {
+                    $sheet->getStyle('F' . $fila)->applyFromArray($style_badge_accesio);
+                } else if ($row['tp_equi_adi'] == 2) {
+                    $sheet->getStyle('F' . $fila)->applyFromArray($style_badge_software);
+                }
+
+                // Alineaciones específicas por tipo de dato para orden institucional
+                $sheet->getStyle('A' . $fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('B' . $fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('F' . $fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                
+                // Fijar la altura de cada fila de datos de manera uniforme
+                $sheet->getRowDimension($fila)->setRowHeight(22);
+
+                $fila++;
+            }
+        } else {
+            // Hilera informativa estética por si el consolidado nacional no tiene accesorios registrados
+            $sheet->setCellValue('A2', "No se tienen registrados componentes adicionales o complementarios en el SIIPLAS para este PEI.");
+            $sheet->mergeCells('A2:G2');
+            $sheet->getStyle('A2:G2')->applyFromArray($styles['data']);
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A2')->getFont()->setItalic(true)->getColor()->setRGB('7F7F7F');
+            $sheet->getRowDimension(2)->setRowHeight(25);
+        }
+
+        // 6. MOTOR DE AUTO-ANCHO DINÁMICO PARA LAS COLUMNAS (A a G)
+        foreach (range('A', 'G') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
     }
 }

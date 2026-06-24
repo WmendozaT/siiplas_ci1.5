@@ -29,11 +29,11 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                     "149" => "39400 - INSTRUMENTAL MENOR MÉDICO QUIRÚRGICO",
                     "173" => "43110 - EQUIPO DE OFICINA Y MUEBLES",
                     "174" => "43120 - EQUIPO DE COMPUTACIÓN",
-                    "175" => "43200 - MAQUINARIA Y EQUIPO DE PRODUCCIÓN",
                     "179" => "43330 - MAQUINARIA Y EQUIPO DE TRANSPORTE",
                     "181" => "43400 - EQUIPO MÉDICO Y DE LABORATORIO",
                     "182" => "43500 - EQUIPO DE COMUNICACIÓN",
-                    "183" => "43600 - EQUIPO EDUCACIONAL Y RECREATIVO"
+                    "183" => "43600 - EQUIPO EDUCACIONAL Y RECREATIVO",
+                    "184" => "43700 - OTRA MAQUINARIA Y EQUIPO"
         );
         $tabla='';
             if($this->tp_adm==1){
@@ -48,20 +48,19 @@ class lib_diagnostico_equipamiento extends CI_Controller{
         <tbody id="bdi_equipamiento">';
             $nro = 0;
             foreach($listado as $row){
-                $nro++;
-                
-                // Configuración semántica del nombre del establecimiento según el Tipo de Registro
-                $establecimiento_detallado = '';
-                if ($row['tp_registro'] == 1) {
-                    $establecimiento_detallado = '<span style="color: #2563eb; font-weight: 700; font-size: 11.5px;">' . strtoupper($row['tipo_establecimiento'] . ' ' . $row['nombre_establecimiento']) . '</span><br><small style="color: #64748b; font-weight: 600; letter-spacing:0.3px;">[' . strtoupper($row['abrev_establecimiento']) . ']</small>';
-                } else {
-                    $establecimiento_detallado = '<span class="label" style="background: #eff6ff; color: #2563eb; font-size: 9px; padding: 2px 5px; font-weight: 700; border: 1px solid #bfdbfe; border-radius: 4px; letter-spacing: 0.3px;">PROY. INVERSIÓN</span><br><small style="white-space: normal; font-weight: 700; color: #334155; display: inline-block; margin-top: 3px;">' . strtoupper($row['nombre_establecimiento']) . '</small>';
+                 // 🌟 EVALUACIÓN RELACIONAL: Si el equipo tiene adicionales se le asigna un Azul Cobalto Suave
+                $color_fila = '#ffffff'; // Color blanco por defecto
+                if(count($this->model_diagnosticoequip->get_list_adcionales_x_equipo($row['form_equip_id'])) > 0){
+                    $color_fila = '#f0f5ff'; // Azul translúcido premium
                 }
 
+                $nro++;
+                $establecimiento_detallado = '<span style="color: #2563eb; font-weight: 700; font-size: 11.5px;">' . strtoupper($row['tipo_establecimiento'] . ' ' . $row['nombre_establecimiento']) . '</span><br><small style="color: #64748b; font-weight: 600; letter-spacing:0.3px;">[' . strtoupper($row['abrev_establecimiento']) . ']</small>';
+
                 $tabla .= '
-                <tr style="height: 38px; border-bottom: 1px solid #f1f5f9; transition: background 0.15s ease;">
+                 <tr style="height: 38px;  border-bottom: 1px solid #f1f5f9; transition: background 0.15s ease;">
                     <!-- Columnas Base -->
-                    <td style="text-align: center; font-weight: 700; background: #f8fafc; color: #64748b; vertical-align: middle; font-size: 11px; border-right: 1px solid #edf2f7;">' . $nro . '</td>
+                    <td style="text-align: center; background-color: '.$color_fila.'; font-weight: 700; background: #f8fafc; color: #64748b; vertical-align: middle; font-size: 11px; border-right: 1px solid #edf2f7;" title="'.$row['form_equip_id'].'">' . $nro . '</td>
                     
                     <!-- 🛠️ BOTONERA DE ACCIÓN ASÍNCRONA (MODAL / ELIMINAR) -->
                     <td style="text-align: center; vertical-align: middle; white-space: nowrap; padding: 6px; background: #ffffff; border-right: 1px solid #edf2f7;">
@@ -195,20 +194,11 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                           </div>
                           <div id="campos_detalle_equipamiento" style="' . ($this->tp_adm == 1 ? 'display:none;' : '') . '">
                                 <header style="border-bottom: 2px solid #1a237e; color: #1a237e; font-weight: bold; font-size: 11.5px; padding-bottom:4px; margin-bottom:12px; background:transparent;">
-                                    <b>II. ESPECIFICACIONES TÉCNICAS DEL BIEN</b>
+                                    <b>I. ESTABLECIMIENTO DE SALUD</b>
                                 </header>
                                 <fieldset style="background:transparent; padding:0; margin-bottom:10px;">
                                 <div class="row" style="margin-bottom: 15px;">
-                                    <!-- Columna de tamaño 2 -->
-                                    <div class="col-md-4 form-group">
-                                      <label for="rol">Tipo de Registro</label>
-                                        <select id="m_tp_registro" name="tp_registro" class="form-control" style="font-weight: bold; color: #0d47a1;" onchange="conmutar_tipo_origen_modal(this.value)" required>
-                                            <option value="1">1.- Establecimiento</option>
-                                            <option value="2">2.- Inversión</option>
-                                        </select>
-                                    </div>
-                                    
-                           
+
                                     <div id="m_sec_establecimiento">
                                         <div class="col-md-4 form-group">
                                         <label for="rol">Establecimiento: *</label>
@@ -225,14 +215,7 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                                             </select>
                                         </div>
                                     </div>
-                                    
-                                    <div id="m_sec_inversion" style="display:none;">
-                                        <div class="col-md-4 form-group">
-                                          <label for="email">Inversión: *</label>
-                                          <textarea rows="2" class="form-control" name="nombre_inversion" id="m_nombre_inversion" placeholder="Escriba el nombre oficial del proyecto de inversión..."></textarea>
-                                        </div>
-                                    </div>
-
+                              
                                     <div class="col-md-4 form-group">
                                       <label for="notas">Responsable: *</label>
                                       <textarea rows="3" class="form-control" name="responsable" id="m_responsable" required placeholder="Ej. Dr. Carlos Murillo - Jefe del Servicio de Quirófano"></textarea>
@@ -242,7 +225,7 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                                 </fieldset>
 
                                 <header style="border-bottom: 2px solid #1a237e; color: #1a237e; font-weight: bold; font-size: 11.5px; padding-bottom:4px; margin-bottom:12px; background:transparent;">
-                                    <b>II. ESPECIFICACIONES TÉCNICAS</b>
+                                    <b>II. ESPECIFICACIONES DEL EQUIPO</b>
                                 </header>
                                 <fieldset style="background:transparent; padding:0; margin-bottom:10px;">
                                     <div class="row" style="margin-bottom: 15px;">
@@ -262,15 +245,14 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                                           <label for="rol">Tipo de Compra: *</label>
                                           <select class="form-control" id="rol" name="rol" required>
                                             <option value="1">REPOSICIÓN</option>        
-                                            <option value="2">COMPRA NUEVA</option>        
-                                            <option value="3">ADECUACIÓN</option> 
+                                            <option value="2">COMPRA NUEVA</option>
                                           </select>
                                         </div>
                                     </div>
                                 </fieldset>
 
                                 <header style="border-bottom: 2px solid #2e7d32; color: #1b5e20; font-weight: bold; font-size: 11.5px; padding-bottom:4px; margin-bottom:12px; background:transparent;">
-                                    <b>III. MATRIZ FINANCIERA Y TOTALIZACIÓN DE GESTIONES (Bs.)</b>
+                                    <b>III. PROGRAMACIÓN FINANCIERA (Bs.)</b>
                                 </header>
                                 <fieldset style="background:transparent; padding:0; margin-bottom:10px;">
                                     <div class="row" style="margin-bottom: 15px;">
@@ -319,19 +301,22 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                                     </div>
                                     </fieldset>
 
+                                    <header style="border-bottom: 2px solid #1a237e; color: #1a237e; font-weight: bold; font-size: 11.5px; padding-bottom:4px; margin-bottom:12px; background:transparent;">
+                                        <b>IV. ASPECTO TECNICOS A CONSIDERAR</b>
+                                    </header>
                                     <fieldset style="background:transparent; padding:0; margin-bottom:10px;">
                                         <div class="row" style="margin-bottom: 15px;">
                                             <div class="col-md-4 form-group">
                                               <label for="notas">Adecuación de Infraestructura: *</label>
-                                              <textarea rows="3" class="form-control" name="ade_infraestructura" id="m_ade_infraestructura" ></textarea>
+                                              <textarea rows="3" class="form-control" name="ade_infraestructura" id="m_ade_infraestructura" placeholder="Ej. Describa si requiere la ampliacion de areas, etc..."></textarea>
                                             </div>
                                             <div class="col-md-4 form-group">
                                               <label for="notas">Adecuación de Instalación: *</label>
-                                              <textarea rows="3" class="form-control" name="ade_instalaciones" id="m_ade_instalaciones" ></textarea>
+                                              <textarea rows="3" class="form-control" name="ade_instalaciones" id="m_ade_instalaciones" placeholder="Ej. Describa si requiere un transformador, etc..."></textarea>
                                             </div>
                                             <div class="col-md-4 form-group">
                                               <label for="notas">Observaciones / Justificaciones:: *</label>
-                                              <textarea rows="3" class="form-control" name="observaciones" id="m_observaciones" required ></textarea>
+                                              <textarea rows="3" class="form-control" name="observaciones" id="m_observaciones" required placeholder="Ej. Se debe considerar las adecuaciones para la adecuada instalacion y funcionamiento del equipo..."></textarea>
                                             </div>
                                         </div>
 
@@ -349,6 +334,7 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                   </div>
                 </div>';
 
+        ///// JS MODAL ADICIONALES
         $tabla .= '
         <script type="text/javascript">
             window.addEventListener("load", function() {
@@ -421,12 +407,124 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                             }
                         });
                     });
-
                 }
             });
         </script>';
 
-        
+        $tabla .= '
+        <script type="text/javascript">
+        // 🌟 TEMPORIZADOR DE BLINDAJE: Garantiza que jQuery ($) exista antes de inyectar los listeners
+            var checkJQuerySubItems = setInterval(function() {
+            if (typeof $ !== "undefined") {
+                clearInterval(checkJQuerySubItems); // Detener el bucle de espera de inmediato
+
+                // ==========================================================================
+                // 🌟 SUB-MOTOR: ACCIÓN AGREGAR COMPONENTE POR AJAX Y AUTO-REFRESCO
+                // ==========================================================================
+                $(document).on("submit", "#form_interno_adicionales", function(e) {
+                    e.preventDefault(); // Detener el salto de página nativo del formulario
+
+                    var $form = $(this);
+                    var $btn = $("#btn_sub_registrar");
+                    var textOriginal = $btn.html();
+                    
+                    // Recolección de parámetros para el guardado y el gatillador de recarga
+                    var form_equip_id = $form.find("input[name=\'form_equip_id\']").val();
+                    var datosSubForm = $form.serialize();
+
+                    // Validación del campo de texto descriptivo
+                    var texto_adicional = $("#m_descripcion_adicional").val();
+                    if (!texto_adicional || texto_adicional.trim() === "") {
+                        alertify.error("⚠️ Error: Defina la descripción del accesorio.");
+                        $("#m_descripcion_adicional").focus();
+                        return false;
+                    }
+
+                    $.ajax({
+                        url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/guardar_sub_item_adicional",
+                        type: "POST",
+                        dataType: "json",
+                        data: datosSubForm,
+                        beforeSend: function() {
+                            // Desactivar botón y mutar a cargador de SmartAdmin
+                            $btn.prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i>");
+                        },
+                        success: function(response) {
+                            $btn.prop("disabled", false).html(textOriginal);
+                            
+                            if (response && response.status === "success") {
+                                alertify.success("✔️ ¡Componente registrado correctamente!");
+                                
+                                // Vaciar únicamente el input de texto para el ingreso del siguiente item
+                                $("#m_descripcion_adicional").val("");
+                                
+                                // 🌟 GATILLADOR DE ACTUALIZACIÓN EN CALIENTE:
+                                // Simulamos un clic computarizado sobre el botón del listado que abrió este modal.
+                                // Esto vuelve a llamar de forma transparente a tu consulta SQL, re-renderizando la lista con la nueva fila.
+                                $(".btn_modificar_adcionales[data-id=\'" + form_equip_id + "\']").trigger("click");
+                            } else {
+                                alertify.error("❌ " + (response.message || "No se pudo almacenar el registro."));
+                            }
+                        },
+                        error: function(xhr) {
+                            $btn.prop("disabled", false).html(textOriginal);
+                            alertify.error("❌ Error de red " + xhr.status + ": Servidor inaccesible.");
+                        }
+                    });
+                });
+
+
+                $(document).on("click", ".btn_eliminar_sub_item", function(e) {
+                e.preventDefault(); // Detener comportamientos nativos de la etiqueta
+                
+                // 1. Extraer identificadores del botón mapeado en tu bucle
+                var adi_equi_id = $(this).attr("data-sub-id"); // Clave primaria real (adi_equi_id)
+                var form_equip_id = $(this).attr("data-form-id"); // Llave foránea maestra
+                var $btn = $(this);
+                var textoOriginalBtn = $btn.html();
+
+                // 2. Alerta confirmatoria con la sintaxis clásica de tu Alertify
+                alertify.confirm("⚠️ ADVERTENCIA: ¿Está completamente seguro de remover este componente o accesorio complementario?", function(confirmacion) {
+                    
+                    if (confirmacion) {
+                        // CASO AFIRMATIVO: Procesar el borrado por AJAX
+                        $.ajax({
+                            url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/eliminar_sub_item_adicional",
+                            type: "POST",
+                            dataType: "json",
+                            data: { adi_equi_id: adi_equi_id },
+                            beforeSend: function() {
+                                // Cambiar icono a cargador de SmartAdmin
+                                $btn.prop("disabled", true).html("<i class=\'fa fa-refresh fa-spin\'></i>");
+                            },
+                            success: function(response) {
+                                if (response && response.status === "success") {
+                                    alertify.success("✔️ Componente adicional removido.");
+                                    
+                                    // 🌟 AUTO-REFRESCO: Simulamos el clic para volver a renderizar la tabla interna en limpio
+                                    $(".btn_modificar_adcionales[data-id=\'" + form_equip_id + "\']").trigger("click");
+                                } else {
+                                    $btn.prop("disabled", false).html(textoOriginalBtn);
+                                    alertify.error("❌ Error: " + (response.message || "No se pudo eliminar."));
+                                }
+                            },
+                            error: function(xhr) {
+                                $btn.prop("disabled", false).html(textoOriginalBtn);
+                                alertify.error("❌ Error de red " + xhr.status + ": El servidor de datos no respondió.");
+                            }
+                        });
+                    } else {
+                        // CASO NEGATIVO: Cancelación voluntaria
+                        alertify.log("Operación de eliminación cancelada.");
+                    }
+                });
+            });
+
+            } // Cierra el check de jQuery
+        }, 50); // Intenta compilar cada 50ms hasta que jQuery esté listo en memoria
+        </script>';
+
+        //// MODAL REGISTRO DE EQUIPOS        
       $tabla .= '
         <script type="text/javascript">
         window.addEventListener("load", function() {
@@ -550,20 +648,11 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                     }
 
                     var dist_id = $(\'#m_dist_id\').val() || "";
-                    var tp_registro = $(\'#m_tp_registro\').val();
-                    
                     var establecimiento_val = $(\'#m_act_id\').val() || "";
-                    var proyecto_val = $(\'#m_nombre_inversion\').val() ? $(\'#m_nombre_inversion\').val().trim() : "";
-
                     var origen_valido = false;
 
-                    if (dist_id !== "" && dist_id !== "0") {
-                        if (tp_registro == "1" && establecimiento_val !== "") {
-                            origen_valido = true; // Completó Distrital + Hospital
-                        } 
-                        else if (tp_registro == "2" && proyecto_val !== "") {
-                            origen_valido = true; // Completó Distrital + Texto del Proyecto
-                        }
+                    if (dist_id !== "" && dist_id !== "0" && establecimiento_val !== "") {
+                        origen_valido = true; // Completó Distrital + Hospital
                     }
 
                     // El botón de guardado responde de manera estricta al cumplimiento del origen
@@ -663,14 +752,11 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                             // 🆕 MODO REGISTRO NUEVO: Mantiene el flujo restrictivo original
                             if (ES_ADMINISTRADOR) {
                                 var dist_id = $(\'#m_dist_id\').val() || "";
-                                var tp_registro = $(\'#m_tp_registro\').val();
                                 var establecimiento_val = $(\'#m_act_id\').val() || "";
-                                var proyecto_val = $(\'#m_nombre_inversion\').val() ? $(\'#m_nombre_inversion\').val().trim() : "";
-
+                                
                                 var origen_valido = false;
-                                if (dist_id !== "" && dist_id !== "0") {
-                                    if (tp_registro == "1" && establecimiento_val !== "") { origen_valido = true; } 
-                                    else if (tp_registro == "2" && proyecto_val !== "") { origen_valido = true; }
+                                if (dist_id !== "" && dist_id !== "0" && establecimiento_val !== "") {
+                                    origen_valido = true; 
                                 }
 
                                 if (origen_valido) {
@@ -707,20 +793,15 @@ class lib_diagnostico_equipamiento extends CI_Controller{
 
                 // 3. Validaciones de campos requeridos obligatorios de texto y selectores
                 var dist_id = $(\'#m_dist_id\').val() || "";
-                var tp_registro = $(\'#m_tp_registro\').val();
+                
                 var responsable = $(\'#m_responsable\').val() ? $(\'#m_responsable\').val().trim() : "";
                 var nombre_equip = $(\'#m_nombre_equipamiento\').val() ? $(\'#m_nombre_equipamiento\').val().trim() : "";
                 var servicio = $(\'#m_servicio_unidad\').val() ? $(\'#m_servicio_unidad\').val().trim() : "";
 
                 if (dist_id === "" || dist_id === "0") { alertify.error("⚠️ Debe seleccionar una Distrital."); $(\'#m_dist_id\').focus(); return false; }
                 
-                if (tp_registro === "1") {
-                    var act_id = $(\'#m_act_id\').val() || "";
-                    if (act_id === "") { alertify.error("⚠️ Seleccione el Centro de Salud."); $(\'#m_act_id\').focus(); return false; }
-                } else {
-                    var inversion = $(\'#m_nombre_inversion\').val() ? $(\'#m_nombre_inversion\').val().trim() : "";
-                    if (inversion === "") { alertify.error("⚠️ Ingrese el nombre oficial del proyecto de inversión."); $(\'#m_nombre_inversion\').focus(); return false; }
-                }
+                var act_id = $(\'#m_act_id\').val() || "";
+                if (act_id === "") { alertify.error("⚠️ Seleccione el Centro de Salud."); $(\'#m_act_id\').focus(); return false; }
 
                 if (responsable === "") { alertify.error("⚠️ Ingrese el responsable del servicio."); $(\'#m_responsable\').focus(); return false; }
                 if (nombre_equip === "") { alertify.error("⚠️ Ingrese el nombre del equipo."); $(\'#m_nombre_equipamiento\').focus(); return false; }
