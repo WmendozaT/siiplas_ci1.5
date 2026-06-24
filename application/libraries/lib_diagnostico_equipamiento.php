@@ -17,7 +17,6 @@ class lib_diagnostico_equipamiento extends CI_Controller{
       $this->sistema_pie   = $this->session->userdata("sistema_pie");
       $this->usuario   = $this->session->userdata("usuario");
       $this->direccion   = $this->session->userdata("direccion");
-
     }
 
 
@@ -80,11 +79,17 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                                 data-id="' . $row['form_equip_id'] . '" 
                                 style="background: #dc2626; color: #ffffff; border: none; font-weight: 600; padding: 5px 12px; margin-left: 4px; border-radius: 6px; font-size: 10px; letter-spacing: 0.3px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.15);" 
                                 title="Dar de baja este registro del sistema">
-                            <i class="fa fa-trash"></i> BAJA
+                            <i class="fa fa-trash"></i> ELIMINAR
                         </button>
                     </td>
                     <td>
-                        
+                        <button type="button" class="btn btn-default btn-xs btn_modificar_adcionales" 
+                                data-id="' . $row['form_equip_id'] . '" 
+                                data-distrital="' . $row['dist_id'] . '" 
+                                style="background: #1c7368; color: #ffffff; border: none; font-weight: 600; padding: 5px 12px; border-radius: 6px; font-size: 10px; letter-spacing: 0.3px; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);" 
+                                title="registrar adicionales">
+                            <i class="fa fa-edit"></i> ADICIONALES
+                        </button>
                     </td>
                     
                     <td style="vertical-align: middle; white-space: normal; min-width: 110px; padding: 6px; font-size: 11.5px; font-weight: 600; color: #475569;">' . strtoupper($row['dist_distrital']) . '</td>
@@ -113,7 +118,38 @@ class lib_diagnostico_equipamiento extends CI_Controller{
             }
             $tabla .= '</tbody>';
 
-                $tabla.='
+            //// Modal Adicionales
+            $tabla.='
+            <div class="modal fade" id="modal_adicionales_equipamiento" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" style="width: 55% !important; max-width: 750px; margin: 50px auto;">
+                    <div class="modal-content" style="border-radius: 4px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); border: 1px solid #2563eb;">
+                        
+                        <!-- CABECERA DEL MODAL ADICIONAL (ESTILO AZUL CORPORATIVO) -->
+                        <div class="modal-header" style="background: #2563eb; color: white; padding: 10px 15px;">
+                            <button type="button" class="close" data-dismiss="modal" title="CERRAR VENTANA" style="color: white; opacity: 0.9; font-size: 14px; margin-top: 2px;">
+                                <span aria-hidden="true"><i class="fa fa-times-circle"></i> Cerrar</span>
+                            </button>
+                            <h4 class="modal-title" style="font-weight: bold; font-size: 13px; text-transform: uppercase; color: white; letter-spacing: 0.5px;">
+                                <i class="fa fa-plus-square"></i> SIIPLAS v2.0: Componentes y Accesorios Adicionales
+                            </h4>
+                        </div>
+                        
+                        <!-- CONTENEDOR RECEPTOR DEL FORMULARIO Y TABLA INTERNA -->
+                        <div class="modal-body" style="padding: 15px; background: #fafafa; min-height: 200px;">
+                            <!-- El motor JQuery inyectará aquí el sub-formulario y el listado en tiempo real -->
+                        </div>
+                        
+                        <div class="modal-footer" style="padding: 8px 15px; background: #f5f5f5;">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold; font-size: 12px;">FINALIZAR Y SALIR</button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>';
+            
+
+            ////// Modal Registro
+            $tabla.='
                 <style>
                     #mdialTamanio{
                       width: 75% !important;
@@ -313,6 +349,82 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                   </div>
                 </div>';
 
+        $tabla .= '
+        <script type="text/javascript">
+            window.addEventListener("load", function() {
+                if (typeof $ !== "undefined") {
+
+                    // DESTRUCTOR DE CACHÉ PARA EVITAR SOLAPAMIENTOS AL CERRAR
+                    $(\'#modal_adicionales_equipamiento\').on(\'hide.bs.modal\', function () {
+                        $(this).find(\'.modal-body\').html(\'\');
+                        $(\'.modal-backdrop\').remove();
+                        $(\'body\').removeClass(\'modal-open\').css(\'padding-right\', \'\');
+                    });
+
+                    // ==========================================================================
+                    // 🌟 EXCLUSIVO: CAPTURA DE CLIC Y APERTURA DE MODAL ASÍNCRONO DE ADICIONALES
+                    // ==========================================================================
+                    $(document).on(\'click\', \'.btn_modificar_adcionales\', function(e) {
+                        e.preventDefault(); // Detiene comportamientos de redirección nativos
+                        
+                        // Captura segura de variables contextuales multi-rol
+                        var form_equip_id = $(this).attr(\'data-id\');
+                        var dist_id = $(\'#dist_id\').val() || $(this).attr(\'data-distrital\') || 0;
+                        
+                        var $modal = $(\'#modal_adicionales_equipamiento\');
+                        var $body_modal = $modal.find(\'.modal-body\');
+
+                        if(!form_equip_id || form_equip_id == "0") {
+                            if (typeof alertify !== "undefined") {
+                                alertify.error("⚠️ Error: Identificador de requerimiento no válido.");
+                            }
+                            return false;
+                        }
+
+                        $.ajax({
+                            url: base + "index.php/Cdiagnostico_equipamiento/CDiagnostico_equipamiento/get_formulario_adicionales_modal_html",
+                            type: \'POST\',
+                            dataType: \'json\',
+                            data: { 
+                                form_equip_id: form_equip_id,
+                                dist_id: dist_id
+                            },
+                            beforeSend: function() {
+                                // 1. LIMPIEZA DEL CONTENEDOR: Inyectamos el loader oficial de SmartAdmin
+                                $body_modal.html(
+                                    \'<div class="text-center" style="padding: 40px 0;">\' +
+                                    \'   <i class="fa fa-refresh fa-spin fa-2x text-primary" style="margin-bottom:10px;"></i>\' +
+                                    \'   <h5 style="font-weight:bold; color:#444; margin:0 0 5px 0;">SINCRONIZANDO ADICIONALES</h5>\' +
+                                    \'   <small class="text-muted">Cargando catálogo secundario de la CNS...</small>\' +
+                                    \'</div>\'
+                                );
+                                
+                                // 2. APERTURA CONTROLADA: Desplegamos la ventana flotante en la pantalla
+                                $modal.modal(\'show\');
+                            },
+                            success: function(data) {
+                                if (data.respuesta === "correcto") {
+                                    // 3. INYECCIÓN FLUIDA: Pintamos la respuesta HTML dentro del cuerpo del modal
+                                    $body_modal.html(data.html);
+                                } else {
+                                    if (typeof alertify !== "undefined") {
+                                        alertify.error("❌ Error operativo: El servidor denegó la carga del panel.");
+                                    }
+                                    $modal.modal(\'hide\');
+                                }
+                            },
+                            error: function() {
+                                if (typeof alertify !== "undefined") {
+                                    alertify.error("❌ Error Crítico: Falla de comunicación con el servidor local.");
+                                }
+                                $modal.modal(\'hide\');
+                            }
+                        });
+                    });
+
+                }
+            });
+        </script>';
 
         
       $tabla .= '

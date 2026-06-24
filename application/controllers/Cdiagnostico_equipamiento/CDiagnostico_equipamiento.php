@@ -11,14 +11,11 @@ class CDiagnostico_equipamiento extends CI_Controller {
       $this->fun_id = $this->session->userData('fun_id'); ///
       $this->conf_pei = $this->session->userData('conf_pei'); /// Conf Pei
       $this->tp_adm = $this->session->userdata("tp_adm");
+      $this->entidad = $this->session->userdata("entidad");
+      $this->sistema = $this->session->userdata("sistema");
+      $this->sistema_pie = $this->session->userdata("sistema_pie");
+      $this->usuario = $this->session->userdata("usuario");
       $this->load->library('lib_diagnostico_equipamiento');
-     // $this->load->library('lib_diagnosticopei_reporte');
-        // Si CI no creó la propiedad, la asignamos nosotros a mano
-        // if (!isset($this->lib_diagnosticopei_reporte)) {
-        //     $CI =& get_instance();
-        //     $this->lib_diagnosticopei_reporte = $CI->lib_diagnosticopei_reporte;
-        // }
-        
       }else{
           redirect('/','refresh');
       }
@@ -34,83 +31,83 @@ class CDiagnostico_equipamiento extends CI_Controller {
         if($this->tp_adm==1){
         $titulo .='
          <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-            <input type="hidden" name="base" value="'.base_url().'">
-            
-            <!-- Contenedor Premium: Formato Tarjeta Flotante Minimalista -->
-            <div style="background: #ffffff; border-radius: 8px; padding: 22px 24px; margin-bottom: 26px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); border: 1px solid #edf2f7; position: relative;">
+                <input type="hidden" name="base" value="'.base_url().'">
                 
-                <!-- Indicador Flotante Lateral de Categoría -->
-                <div style="position: absolute; left: 0; top: 24px; width: 4px; height: 26px; background: #2563eb; border-radius: 0 4px 4px 0;"></div>
-                
-                <!-- Sección de Encabezado: Título y Metadata del PEI -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #f8fafc; padding-bottom: 14px;">
-                    <div>
-                        <h2 style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin: 0; letter-spacing: -0.2px;">
-                            Información Quinquenal PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'
-                        </h2>
-                        <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: 500;">
-                            <i class="fa fa-calendar-check-o"></i> Planificación y Control de Requerimientos de Equipamiento Médico
-                        </p>
-                    </div>
-                    <!-- Sello de Estado Institucional -->
-                    <span style="background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; letter-spacing: 0.3px; border: 1px solid #bfdbfe;">
-                        <i class="fa fa-shield"></i> SIIPLAS ACTIVO
-                    </span>
-                </div>
-                
-                <!-- Sección de Botonera: Minimalista y Sincronizada -->
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                <!-- Contenedor Premium: Formato Tarjeta Flotante Minimalista -->
+                <div style="background: #ffffff; border-radius: 8px; padding: 22px 24px; margin-bottom: 26px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); border: 1px solid #edf2f7; position: relative;">
                     
-                    <!-- Botón Registro Principal: Azul Cobalto Profesional -->
-                    <button type="button" class="btn btn-sm" 
-                            onclick="window.abrirModalNuevaEquipamiento();" 
-                            style="font-weight: 600; background: #2563eb; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 11px; letter-spacing: 0.3px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.2s;">
-                        <i class="fa fa-plus-circle" style="font-size:12px;"></i> NUEVO REQUERIMIENTO
-                    </button>
+                    <!-- Indicador Flotante Lateral de Categoría -->
+                    <div style="position: absolute; left: 0; top: 24px; width: 4px; height: 26px; background: #2563eb; border-radius: 0 4px 4px 0;"></div>
                     
-                    <!-- Botón PDF Consolidado: Fondo sutil Gris Ceniza -->
-                    <a href="javascript:abreVentana_poa(\''.site_url("").'/Diagnostico_equip/rep_diagnostico_equipamiento/0\');" 
-                       title="GENERAR REPORTE CONSOLIDADO" 
-                       class="btn btn-sm" 
-                       style="font-weight: 600; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px; font-size: 11px;">
-                        <i class="fa fa-file-pdf-o" style="color: #ef4444;"></i> CONSOLIDADO.PDF
-                    </a>
-                    
-                    <!-- Grupo Desplegable Elegante: Reportes por Distritales -->
-                    <div class="btn-group">
-                        <button class="btn btn-sm" style="font-weight: 600; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px 0 0 6px; font-size: 11px;">
-                            <i class="fa fa-file-pdf-o" style="color: #ef4444;"></i> REPORTES DISTRITALES
-                        </button>
-                        <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 10px; border-radius: 0 6px 6px 0; border-left: none;">
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" style="border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; padding: 4px 0; font-size: 11.5px;">';
-                        foreach($distritales as $d) {
-                            $titulo.='
-                            <li>
-                              <a href="javascript:abreVentana_poa(\''.site_url("").'/Diagnostico_equip/rep_diagnostico_equipamiento/'.$d['dist_id'].'\');" style="padding: 8px 16px; color: #334155;"><i class="fa fa-file-pdf-o" style="color:#ef4444; margin-right:6px;"></i> '.strtoupper($d['dist_distrital']).'</a>
-                            </li>';
-                        }
-                      $titulo.='
-                        </ul>
+                    <!-- Sección de Encabezado: Título y Metadata del PEI -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #f8fafc; padding-bottom: 14px;">
+                        <div>
+                            <h2 style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin: 0; letter-spacing: -0.2px;">
+                                Información Quinquenal PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'
+                            </h2>
+                            <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: 500;">
+                                <i class="fa fa-calendar-check-o"></i> Planificación y Control de Requerimientos de Equipamiento Médico
+                            </p>
+                        </div>
+                        <!-- Sello de Estado Institucional -->
+                        <span style="background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; letter-spacing: 0.3px; border: 1px solid #bfdbfe;">
+                            <i class="fa fa-shield"></i> SIIPLAS ACTIVO
+                        </span>
                     </div>
                     
-                    <!-- 🌟 BOTÓN EXCEL CORREGIDO: Removido width:100% y padding exagerado, sincronizado al diseño base -->
-                    <button type="button" id="btn_descargar_consolidado" class="btn btn-success btn-sm" 
-                            style="font-weight: 600; color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 16px; border-radius: 6px; font-size: 11px; letter-spacing: 0.3px; box-shadow: none;">
-                        <i class="fa fa-file-excel-o"></i> EXPORTAR EN EXCEL
-                    </button>
-                    
-                    <!-- 🌟 BOTÓN ADICIONAL: VOLVER / SALIR (Empujado a la derecha en la misma línea) -->
-                    <a href="'.site_url("").'/admin/dashboard" 
-                       title="VOLVER AL MENÚ ANTERIOR" 
-                       class="btn btn-sm" 
-                       style="font-weight: 600; color: #64748b; background: #ffffff; border: 1px solid #e2e8f0; padding: 7px 16px; border-radius: 6px; font-size: 11px; margin-left: auto;">
-                        <i class="fa fa-arrow-left"></i> VOLVER
-                    </a>
+                    <!-- Sección de Botonera: Minimalista y Sincronizada -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                        
+                        <!-- Botón Registro Principal: Azul Cobalto Profesional -->
+                        <button type="button" class="btn btn-sm" 
+                                onclick="window.abrirModalNuevaEquipamiento();" 
+                                style="font-weight: 600; background: #2563eb; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 11px; letter-spacing: 0.3px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.2s;">
+                            <i class="fa fa-plus-circle" style="font-size:12px;"></i> NUEVO REQUERIMIENTO
+                        </button>
+                        
+                        <!-- Botón PDF Consolidado: Fondo sutil Gris Ceniza -->
+                        <a href="javascript:abreVentana_poa(\''.site_url("").'/Diagnostico_equip/rep_diagnostico_equipamiento/0\');" 
+                           title="GENERAR REPORTE CONSOLIDADO" 
+                           class="btn btn-sm" 
+                           style="font-weight: 600; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px; font-size: 11px;">
+                            <i class="fa fa-file-pdf-o" style="color: #ef4444;"></i> CONSOLIDADO.PDF
+                        </a>
+                        
+                        <!-- Grupo Desplegable Elegante: Reportes por Distritales -->
+                        <div class="btn-group">
+                            <button class="btn btn-sm" style="font-weight: 600; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px 0 0 6px; font-size: 11px;">
+                                <i class="fa fa-file-pdf-o" style="color: #ef4444;"></i> REPORTES DISTRITALES
+                            </button>
+                            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 10px; border-radius: 0 6px 6px 0; border-left: none;">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" style="border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; padding: 4px 0; font-size: 11.5px;">';
+                            foreach($distritales as $d) {
+                                $titulo.='
+                                <li>
+                                  <a href="javascript:abreVentana_poa(\''.site_url("").'/Diagnostico_equip/rep_diagnostico_equipamiento/'.$d['dist_id'].'\');" style="padding: 8px 16px; color: #334155;"><i class="fa fa-file-pdf-o" style="color:#ef4444; margin-right:6px;"></i> '.strtoupper($d['dist_distrital']).'</a>
+                                </li>';
+                            }
+                          $titulo.='
+                            </ul>
+                        </div>
+                        
+                        <!-- 🌟 BOTÓN EXCEL CORREGIDO: Removido width:100% y padding exagerado, sincronizado al diseño base -->
+                        <button type="button" id="btn_descargar_consolidado" class="btn btn-success btn-sm" 
+                                style="font-weight: 600; color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 16px; border-radius: 6px; font-size: 11px; letter-spacing: 0.3px; box-shadow: none;">
+                            <i class="fa fa-file-excel-o"></i> EXPORTAR EN EXCEL
+                        </button>
+                        
+                        <!-- 🌟 BOTÓN ADICIONAL: VOLVER / SALIR (Empujado a la derecha en la misma línea) -->
+                        <a href="'.site_url("").'/admin/dashboard" 
+                           title="VOLVER AL MENÚ ANTERIOR" 
+                           class="btn btn-sm" 
+                           style="font-weight: 600; color: #64748b; background: #ffffff; border: 1px solid #e2e8f0; padding: 7px 16px; border-radius: 6px; font-size: 11px; margin-left: auto;">
+                            <i class="fa fa-arrow-left"></i> VOLVER
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </article>';
+            </article>';
 
             $titulo .= '
             <script type="text/javascript">
@@ -163,23 +160,59 @@ class CDiagnostico_equipamiento extends CI_Controller {
             $distrital=$this->model_diagnosticoequip->get_distrital($dist_id);
             $titulo .='
             <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-            <input type="hidden" name="base" value="'.base_url().'">
-              <div class="well">
-                <h2>FORMULARIO DE INFORMACIÓN QUINCENAL PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'</h2><br>
-                <h2>'.strtoupper($distrital[0]['dist_distrital']).'</h2>
-                <button type="button" class="btn btn-success btn-sm font-md" 
-                        onclick="window.abrirModalNuevaEquipamiento();" 
-                        style="font-weight: bold; background: #e67e22; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.15); letter-spacing:0.3px; padding: 6px 15px;">
-                    <i class="fa fa-plus-circle"></i> + REQUERIMIENTO DE EQUIPAMIENTO
-                </button>
-                <a href="'.site_url("").'/me/exportar_alineacion_ope_acp/" title="EXPORTAR EN EXCEL" class="btn btn-default">
-                  <img src="'.base_url().'assets/Iconos/printer_empty.png" WIDTH="20" HEIGHT="20"/>&nbsp;EXPORTAR ALINEACION EN EXCEL
-                </a>
+                <input type="hidden" name="base" value="'.base_url().'">
                 
-              </div>
+                <!-- Contenedor Premium: Formato Tarjeta Flotante Minimalista -->
+                <div style="background: #ffffff; border-radius: 8px; padding: 22px 24px; margin-bottom: 26px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); border: 1px solid #edf2f7; position: relative;">
+                    
+                    <!-- Indicador Flotante Lateral de Categoría -->
+                    <div style="position: absolute; left: 0; top: 24px; width: 4px; height: 26px; background: #2563eb; border-radius: 0 4px 4px 0;"></div>
+                    
+                    <!-- Sección de Encabezado: Título y Metadata del PEI -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #f8fafc; padding-bottom: 14px;">
+                        <div>
+                            <h2 style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin: 0; letter-spacing: -0.2px;">
+                                Información Quinquenal PEI '.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin'].'
+                            </h2>
+                            <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: 500;">
+                                <i class="fa fa-calendar-check-o"></i> Planificación y Control de Requerimientos de Equipamiento Médico - '.strtoupper($distrital[0]['dist_distrital']).'
+                            </p>
+                        </div>
+                        <!-- Sello de Estado Institucional -->
+                        <span style="background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; letter-spacing: 0.3px; border: 1px solid #bfdbfe;">
+                            <i class="fa fa-shield"></i> SIIPLAS ACTIVO
+                        </span>
+                    </div>
+                    
+                    <!-- Sección de Botonera: Minimalista y Sincronizada -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                        
+                        <!-- Botón Registro Principal: Azul Cobalto Profesional -->
+                        <button type="button" class="btn btn-sm" 
+                                onclick="window.abrirModalNuevaEquipamiento();" 
+                                style="font-weight: 600; background: #2563eb; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 11px; letter-spacing: 0.3px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.2s;">
+                            <i class="fa fa-plus-circle" style="font-size:12px;"></i> NUEVO REQUERIMIENTO
+                        </button>
+                        
+                        <!-- Botón PDF Consolidado: Fondo sutil Gris Ceniza -->
+                        <a href="javascript:abreVentana_poa(\''.site_url("").'/Diagnostico_equip/rep_diagnostico_equipamiento/'.$this->dist_id.'\');" 
+                           title="GENERAR REPORTE" 
+                           class="btn btn-sm" 
+                           style="font-weight: 600; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px; font-size: 11px;">
+                            <i class="fa fa-file-pdf-o" style="color: #ef4444;"></i> Equipamiento.PDF
+                        </a>
+                        
+                        <!-- 🌟 BOTÓN ADICIONAL: VOLVER / SALIR (Empujado a la derecha en la misma línea) -->
+                        <a href="'.site_url("").'/admin/dashboard" 
+                           title="VOLVER AL MENÚ ANTERIOR" 
+                           class="btn btn-sm" 
+                           style="font-weight: 600; color: #64748b; background: #ffffff; border: 1px solid #e2e8f0; padding: 7px 16px; border-radius: 6px; font-size: 11px; margin-left: auto;">
+                            <i class="fa fa-arrow-left"></i> VOLVER
+                        </a>
+                    </div>
+                </div>
             </article>';
         }
-
 
         $data['titulo']=$titulo;
         if(count($equipamiento)!=0){
@@ -420,6 +453,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
         }
     }
 
+
     //// eliminar Equipamiento 
      public function eliminar_requerimiento_logico() {
         // Validar estrictamente que sea una petición legítima por AJAX
@@ -460,90 +494,252 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
 
 
+
+
+    public function get_formulario_adicionales_modal_html() {
+        // 1. Capa de Seguridad: Validar que sea una petición legítima AJAX por POST
+        if ($this->input->is_ajax_request() && $this->input->post('form_equip_id')) {
+            
+            // Sanitización estricta de variables contra inyecciones XSS
+            $form_equip_id = $this->security->xss_clean($this->input->post('form_equip_id'));
+            $form_equip_id = intval($form_equip_id);
+            
+            $dist_id = $this->security->xss_clean($this->input->post('dist_id'));
+            $dist_id = intval($dist_id);
+
+            // 2. Consulta al Modelo para traer el listado relacional de accesorios de este equipo
+            // 🚨 NOTA: Asegúrate de tener implementado este método de selección en tu modelo
+           // $lista_adicionales = $this->model_diagnosticoequip->get_subtable_adicionales_by_form_id($form_equip_id);
+
+            // 3. Maquetación del Formulario Superior de Inserción Rápida (Smart-Form Compacto)
+            $html = '
+            <form class="smart-form form_interno_adicionales" style="background: #edf2f7; padding: 12px; border-radius: 4px; border: 1px dashed #2563eb; margin-bottom: 15px;">
+                <input type="hidden" name="form_equip_id" value="' . $form_equip_id . '">
+                <input type="hidden" name="dist_id" value="' . $dist_id . '">
+                
+                <div class="row">
+                    <section class="col col-7" style="margin-bottom:0;">
+                        <label class="label" style="color:#1e293b;"><b>Descripción del Componente / Accesorio Adicional *</b></label>
+                        <label class="input"><i class="icon-append fa fa-cube"></i>
+                            <input type="text" class="sub_descripcion" name="descripcion_adicional" placeholder="Ej. BATERÍA RECARGABLE DE LITIO" required style="text-transform: uppercase;">
+                        </label>
+                    </section>
+                    
+                    <section class="col col-2" style="margin-bottom:0;">
+                        <label class="label" style="color:#1e293b;"><b>Cantidad *</b></label>
+                        <label class="input"><i class="icon-append fa fa-calculator"></i>
+                            <input type="number" class="sub_cantidad" name="cantidad_adicional" value="1" min="1" required style="text-align:center; font-weight:bold;">
+                        </label>
+                    </section>
+                    
+                    <section class="col col-3" style="margin-bottom:0; padding-top: 17px;">
+                        <button type="submit" class="btn btn-primary btn-sm btn_sub_registrar" style="background: #2563eb; border: none; font-weight: bold; width: 100%; height: 32px; border-radius: 3px; color:white; font-size:11px;">
+                            <i class="fa fa-plus"></i> AGREGAR ITEM
+                        </button>
+                    </section>
+                </div>
+            </form>';
+
+            // 4. Maquetación de la Tabla Inferior para Enlistar los Registros Adicionales
+            $html .= '
+            <div style="background: #ffffff; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <header style="border-bottom: 1px solid #cbd5e1; font-weight: bold; color: #334155; padding-bottom: 4px; margin-bottom: 8px; font-size:11px; background: transparent;">
+                    <i class="fa fa-list"></i> COMPONENTES COMPLEMENTARIOS REGISTRADOS
+                </header>
+                
+                <table class="table table-bordered table-striped" style="width: 100%; font-size: 11px; margin-bottom: 0; background:white; table-layout: fixed;">
+                    <thead>
+                        <tr style="background: #475569; color: white; height: 26px;">
+                            <th style="width: 8%; text-align: center; vertical-align: middle; padding: 4px;">NRO</th>
+                            <th style="width: 72%; vertical-align: middle; padding: 4px;">DESCRIPCIÓN DEL ACCESORIO ADICIONAL</th>
+                            <th style="width: 20%; text-align: center; vertical-align: middle; padding: 4px;">CANTIDAD</th>
+                        </tr>
+                    </thead>
+                    <tbody id="m_body_tabla_adicionales">';
+                    
+                    /*$sub_nro = 0;
+                    if (!empty($lista_adicionales)) {
+                        foreach ($lista_adicionales as $item) {
+                            $sub_nro++;
+                            $html .= '
+                            <tr style="height:24px; vertical-align: middle;">
+                                <td style="text-align: center; font-weight: bold; background: #f8fafc; color: #64748b;">' . $sub_nro . '</td>
+                                <td style="text-align: left; padding-left: 5px; text-transform: uppercase;">' . htmlspecialchars($item['descripcion_adicional'], ENT_QUOTES, 'UTF-8') . '</td>
+                                <td style="text-align: center; font-weight: bold; color: #2563eb;">' . intval($item['cantidad_adicional']) . ' U.</td>
+                            </tr>';
+                        }
+                    } else {
+                        // Hilera informativa estética por si la tabla relacional está en blanco
+                        $html .= '
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #94a3b8; font-style: italic; padding: 20px 0;">
+                                📋 Ningún accesorio adicional registrado todavía para este requerimiento.
+                            </td>
+                        </tr>';
+                    }*/
+                    
+                    $html .= '
+                    </tbody>
+                </table>
+            </div>';
+
+            // 5. Limpieza del búfer de salida para erradicar cualquier Notice flotante de PHP
+            if (ob_get_length()) {
+                ob_clean();
+            }
+
+            // 6. Despacho y entrega del objeto JSON
+            $result = array('respuesta' => 'correcto', 'html' => $html);
+            $this->output->set_content_type('application/json')->set_output(json_encode($result));
+        } else {
+            show_404();
+        }
+    }
+
+
+
+
+
+
+
     /// Reporte Formulario Diagnostico Pei Equipamiento
     public function reporte_formulario_equipamiento($dist_id){
         $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
-        $data['reporte']= 'Reporte ...';
+        $data['reporte']= $this->rep_diagnostico_equipamiento($dist_id);
         $data['pie_rep']='dnp';
         $this->load->view('admin/diagnostico_equipamiento/View_report_form_diagequipamiento', $data);
+        //echo $data['reporte'];
     }
 
     //// Detalle Reporte
     public function rep_diagnostico_equipamiento($dist_id) {
-        //$listado_ambulancias=$this->CI->model_diagnosticopei->get_detalle_ambulancias($get_form_distrital[0]['dist_id']);
+        $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
+        if($dist_id==0){
+            $listado=$this->model_diagnosticoequip->get_consolidado_formulario_diagnostico_activo($equipamiento[0]['equip_id']); /// Consolidado
+        }
+        else{
+            $listado=$this->model_diagnosticoequip->get_distrital_formulario_diagnostico_activo($equipamiento[0]['equip_id'],$this->dist_id); /// distrital
+        }
 
         $tabla='';
        // $tabla = $this->style_report();
         $tabla .= ' 
-        <page orientation="portrait" backtop="30mm" backbottom="15mm" backleft="15mm" backright="15mm">
-        '.$this->cabecera_report($dist_id).'
+        <style>
+            /* Estilos globales obligatorios para html2pdf (Estandarización CNS) */
+            p.bold { font-weight: bold; color: #1a237e; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
+            .box-container { border: 1px solid #b3b3b3; background: #fafafa; font-size: 10px; padding: 6px; margin-bottom: 12px; border-radius: 3px; }
+            
+            /* Configuración Maestra de Rejilla del Reporte */
+            .tabla-datos { width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif; }
+            .tabla-datos th { 
+                background: #404040; 
+                color: #ffffff; 
+                font-weight: bold; 
+                font-size: 6.5px; 
+                text-align: center; 
+                vertical-align: middle; 
+                border: 0.5px solid #ffffff;
+                padding: 5px 2px;
+            }
+            .tabla-datos td { 
+                font-size: 6.5px; 
+                vertical-align: middle; 
+                border: 0.5px solid #b3b3b3; 
+                padding: 4px 3px; 
+            }
+            
+            /* Clases de Control de Temporalidad y Redondeo */
+            .celda-monto-activa { background: #f0fdf4; font-weight: bold; color: #16a34a; text-align: right; }
+            .celda-monto-vacia { color: #94a3b8; text-align: right; }
+        </style>
+        <page orientation="landscape" backtop="28mm" backbottom="15mm" backleft="10mm" backright="10mm">
+        '.$this->cabecera_report($equipamiento,$dist_id).'
 
         <p class="bold">1. Objetivo</p>
         <div class="box-container" style="width: 100%; border: 1px solid #000; font-size:10.5px; padding: 8px; margin-bottom: 15px;">
-            Inventario General del Parque Automotor de Ambulancias por Establecimiento de Salud de la Regional/Distrital
+            Recopilar Informacion sobre el equipamiento medico por Establecimiento de Salud de la Regional/Distrital
         </div>';
             
-            $tabla.='
-            <table class="tabla-datos" style="font-size: 8px; width: 100%; border-collapse: collapse; table-layout: fixed;" border="1">
-                <thead>
-                    <tr style="background: #e8eaf6; color: #1a237e; font-weight: bold; height: 25px;">
-                        <th style="width:3%; text-align:center; vertical-align: middle; font-size: 8.5px; padding: 5px 0;">#</th>
-                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">PLACA</th>
-                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">AÑO ADJUDICACIÓN</th>
-                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">ESTADO</th>
-                        <th style="width:18%; text-align:center; vertical-align: middle; font-size: 8.5px;">SITUACIÓN</th>
-                        <th style="width:25%; text-align:center; vertical-align: middle; font-size: 8.5px;">ESTABLECIMIENTO</th>
-                    </tr>
-                </thead>
-                <tbody>';
-                
-                // Contador correlativo plano independiente
-               /* $nro = 0; 
-                
-                foreach ($listado_ambulancias as $row) {
-                    $nro++;
-                    
-                    // Formateamos las cadenas para asegurar consistencia contable en mayúsculas
-                    $placa_rep       = !empty($row['placa']) ? strtoupper(trim($row['placa'])) : '---';
-                    $gestion_rep     = ($row['anio_adjudicacion'] > 0) ? intval($row['anio_adjudicacion']) : '---';
-                    $estado_rep      = !empty($row['estado_ambulancia']) ? strtoupper(trim($row['estado_ambulancia'])) : 'SIN REGISTRO';
-                    $situacion_rep   = !empty($row['situacion_ambulancia']) ? strtoupper(trim($row['situacion_ambulancia'])) : 'SIN REGISTRO';
-                    $establecimiento = !empty($row['establecimiento']) ? strtoupper(trim($row['establecimiento'])) : 'SIN ASIGNACIÓN';
-
-                    $tabla .= '
-                    <tr style="height: 22px;">
-                        <!-- Número correlativo automático de la grilla -->
-                        <td style="text-align:center; vertical-align: middle; font-weight: bold; background:#f9f9f9;">' . $nro . '</td>
-                        
-                        <!-- Datos técnicos del parque automotor sanitario -->
-                        <td style="text-align:center; vertical-align: middle; font-weight: bold; color: #0d47a1;">' . $placa_rep . '</td>
-                        <td style="text-align:center; vertical-align: middle; font-size:8px;">' . $gestion_rep . '</td>
-                        <td style="text-align:center; vertical-align: middle; font-weight: 500;font-size:8px;">' . $estado_rep . '</td>
-                        <td style="text-align:center; vertical-align: middle; font-weight: 500;font-size:8px;">' . $situacion_rep . '</td>
-                        
-                        <!-- Alineación del Centro de Salud a la derecha con padding de resguardo -->
-                        <td style="text-align:left; vertical-align: middle; font-weight: bold; color: #1a237e; padding-left: 5px;font-size:8px;">' . $establecimiento . '</td>
-                    </tr>';
-                }
-
-                // CONTROL DE REJILLA VACÍA: Si no hay registros inyectados, dibuja una fila informativa para mantener la estética
-                if ($nro === 0) {
-                    $tabla .= '
-                    <tr style="height: 30px;">
-                        <td style="text-align:center; vertical-align: middle; color:#777; font-weight:bold;">-</td>
-                        <td colspan="5" style="text-align:center; vertical-align: middle; color:#999; font-style:italic; font-size:9px;">
-                            <i class="fa fa-info-circle"></i> No se encontraron unidades de transporte sanitario registradas en el inventario oficial de esta regional.
-                        </td>
-                    </tr>';
-                }*/
+        $tabla.='
+        <table class="tabla-datos">
+        <thead>
+            <tr>
+                <th style="width: 2%;">#</th>
+                <th style="width: 7%;">DISTRITAL</th>
+                <th style="width: 8%;">RESPONSABLE</th>
+                <th style="width: 8%;">ESTABLECIMIENTO / INVERSIÓN</th>
+                <th style="width: 8%;">NOMBRE DEL EQUIPO</th>
+                <th style="width: 8%;">SERVICIO / UNIDAD</th>
+                <th style="width: 8%;">UBICACIÓN FÍSICA</th>
+                <th style="width: 4%;">TIPO COMPRA</th>
+                <th style="width: 4%;">PARTIDA</th>
+                <th style="width: 3%;">CANT.</th>
+                <th style="width: 5%;">COSTO UNIT.</th>
+                <th style="width: 6%;">COSTO TOTAL</th>
+                <th style="width: 4.5%;">2026</th>
+                <th style="width: 4.5%;">2027</th>
+                <th style="width: 4.5%;">2028</th>
+                <th style="width: 4.5%;">2029</th>
+                <th style="width: 4.5%;">2030</th>
+                <th style="width: 7%;">OBSERVACIÓN</th>
+            </tr>
+        </thead>
+        <tbody>';
+        
+        $nro = 0; 
+        foreach ($listado as $row) {
+            $nro++;
+            
+            $establecimiento_detallado = '';
+            if ($row['tp_registro'] == 1) {
+                $establecimiento_detallado = strtoupper($row['tipo_establecimiento'] . ' ' . $row['nombre_establecimiento']) . ' [' . strtoupper($row['abrev_establecimiento']) . ']';
+            } else {
+                $establecimiento_detallado = 'P.I. - ' . strtoupper($row['nombre_establecimiento']);
+            }
 
             $tabla .= '
-                </tbody>
-            </table>';
+            <tr style="background: #ffffff;">
+                <td style="text-align: center; font-weight: bold; background: #f8fafc; color: #94a3b8; height:2%;width: 2%;">' . $nro . '</td>
+                <td style="text-align: left; font-weight: bold; color: #475569;width: 7%;">' . strtoupper($row['dist_distrital']) . '</td>
+                <td style="text-align: left;width: 8%;">' . strtoupper($row['responsable']) . '</td>
+                <td class="texto-bold-plomo" style="text-align: left;width: 8%;">' . $establecimiento_detallado . '</td>
+                <td class="texto-bold-plomo" style="text-align: left;width: 8%;">' . strtoupper($row['nombre_equipamiento']) . '</td>
+                <td style="text-align: left;width: 8%;">' . strtoupper($row['servicio_unidad']) . '</td>
+                <td style="text-align: left;width: 8%;">' . strtoupper($row['ubicacion_fisica']) . '</td>
+                <td style="text-align: left;width: 4%;">' . strtoupper($row['tp_compra_nombre']) . '</td>
+                <td style="text-align: center; font-weight: bold;width: 4%;">' . $row['par_codigo'] . '</td>
+                <td style="text-align: center; font-weight: bold; color: #334155;width: 3%;">' . intval($row['cantidad']) . '</td>
+                <td style="text-align: right;width: 5%;">' . number_format($row['costo_unitario'], 2, '.', ',') . '</td>
+                <td style="text-align: right; font-weight: bold; background: #f8fafc; color: #334155;width: 6%;">' . number_format($row['costo_total'], 2, '.', ',') . '</td>
+                
+                <!-- Distribución Anual en Plomo Ceniza con Resalte de Contraste Suave -->
+                <td style="width: 4.5%;" class="' . ($row['g_2026'] > 0 ? 'celda-monto-activa' : 'celda-monto-vacia') . '">' . number_format($row['g_2026'], 2, '.', ',') . '</td>
+                <td style="width: 4.5%;" class="' . ($row['g_2027'] > 0 ? 'celda-monto-activa' : 'celda-monto-vacia') . '">' . number_format($row['g_2027'], 2, '.', ',') . '</td>
+                <td style="width: 4.5%;" class="' . ($row['g_2028'] > 0 ? 'celda-monto-activa' : 'celda-monto-vacia') . '">' . number_format($row['g_2028'], 2, '.', ',') . '</td>
+                <td style="width: 4.5%;" class="' . ($row['g_2029'] > 0 ? 'celda-monto-activa' : 'celda-monto-vacia') . '">' . number_format($row['g_2029'], 2, '.', ',') . '</td>
+                <td style="width: 4.5%;" class="' . ($row['g_2030'] > 0 ? 'celda-monto-activa' : 'celda-monto-vacia') . '">' . number_format($row['g_2030'], 2, '.', ',') . '</td>
+                
+                <td style="text-align: left;width: 7%;">' . htmlspecialchars(strtoupper($row['observaciones']), ENT_QUOTES, 'UTF-8') . '</td>
+            </tr>';
+        }
+
+        if ($nro === 0) {
+            $tabla .= '
+            <tr style="background: #ffffff;">
+                <td style="text-align: center; font-weight: bold; background: #f8fafc;">-</td>
+                <td colspan="17" style="text-align: center; color: #94a3b8; font-style: italic; padding: 4px 0;">
+                    No se identificaron requerimientos de registrados para la presente gestión distrital.
+                </td>
+            </tr>';
+        }
+
+        $tabla .= '
+        </tbody>
+    </table>';
 
         $tabla .= '
         <div style="width: 100%; margin-top: 20mm; text-align: center; page-break-inside: avoid; display: block;">
-            <p style="font-size: 11px; margin: 0; padding: 0;"><strong>firma</strong></p>
+            <p style="font-size: 11px; margin: 0; padding: 0;"><strong>FIRMA</strong></p>
         </div>';
 
         $tabla .= '
@@ -554,8 +750,19 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
 
 
-        /// cabecera reporte
-    public function cabecera_report($dist_id) {
+
+
+    /// cabecera reporte
+    public function cabecera_report($equipamiento,$dist_id) {
+        
+        if($dist_id==0){
+            $tit_distrital='CONSOLIDADO INSTITUCIONAL';
+        }
+        else{
+            $distrital=$this->model_diagnosticoequip->get_distrital($dist_id);
+            $tit_distrital=strtoupper($distrital[0]['dist_distrital']);
+        }
+
         $tabla='';
         $tabla.='
         <page_header>
@@ -566,25 +773,25 @@ class CDiagnostico_equipamiento extends CI_Controller {
                 <table style="width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif; table-layout: fixed;">
                     <tr>
                         <td style="width: 20%; text-align: left; vertical-align: middle; font-size:9px;">
-                            <b>FORMULARIO PEI N° </b>
+                            <b>FORMULARIO PEI EQUIPAMIENTO</b>
                         </td>
                         
                         <td style="width: 60%; text-align: center; vertical-align: middle;">
                             <span style="font-size: 13px; font-weight: bold; color: #004640; letter-spacing: 0.5px;">
-                                entidad
+                                '.$this->entidad.'
                             </span>
                             <br>
                             <span style="font-size: 17px; font-weight: bold; color: #212121; line-height: 1.2;">
-                                titulo
+                                FORMULARIO DE INFORMACIÓN QUINCENAL PEI  
                             </span>
                             <br>
                             <span style="font-size: 11px; font-weight: bold; color: #212121; line-height: 1.2;">
-                                dist id
+                                '.$tit_distrital.'
                             </span>
                         </td>
                         
                         <td style="width: 20%; text-align: right; vertical-align: middle; font-size: 8px; color: #424242; line-height: 1.3;">
-                            PERIODO: <b style="color: #212121;"></b>
+                            PERIODO: <b style="color: #212121;">'.$equipamiento[0]['g_id_inicio'].' - '.$equipamiento[0]['g_id_fin' ].'</b>
                             <br>
                             Fecha de Impresión: '.date('d/m/Y').'
                         </td>
@@ -609,12 +816,12 @@ class CDiagnostico_equipamiento extends CI_Controller {
                     <tr>
                         <!-- Zona Izquierda (50% proporcional) -->
                         <td style="width: 50%; text-align: left; vertical-align: middle; font-size: 8.5px; color: #666666; font-weight: 500;">
-                            
+                            '.$this->sistema_pie.'
                         </td>
                         
                         <!-- Zona Derecha (50% proporcional) -->
                         <td style="width: 50%; text-align: right; vertical-align: middle; font-size: 8.5px; color: #424242; font-weight: bold;">
-                         - Página [[page_cu]] de [[page_nb]]
+                         '.$this->usuario.' - Página [[page_cu]] de [[page_nb]]
                         </td>
                     </tr>
                 </table>
