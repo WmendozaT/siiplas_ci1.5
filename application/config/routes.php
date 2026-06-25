@@ -91,7 +91,7 @@ $route['me/rep_form2/(:any)'] = 'mestrategico/cobjetivo_regional/reporte_form2/$
 //$route['me/objetivos_regionales/(:any)'] = 'mestrategico/cobjetivo_regional/rep_alineacion_acp/$1'; ///// ver datos de la regional alineado al objetivo de Gestion form 2 2022
 
 
-/* ANALISIS DE SITUACION */
+/* ANALISIS DE SITUACION (A BORRAR)*/
 $route['admin/analisis_sit'] = 'analisis_situacion/canalisis_situacion/lista_unidades';	//// Lista Unidades, Establecimientos
 $route['as/list_foda/(:any)'] = 'analisis_situacion/canalisis_situacion/lista_foda/$1';	//// Lista de formularios
 $route['as/rep_list_foda/(:any)'] = 'analisis_situacion/canalisis_situacion/reporte_lista_foda/$1';	//// Imprimir lisat Foda
@@ -113,7 +113,7 @@ $route['prog/valida_temporalidad_ptcplazo'] = 'analisis_situacion/cpterminal_cpl
 $route['admin/proy/combo_distrital'] = 'programacion/proyecto/combo_distrital'; ////// Combo distrital
 $route['admin/proy/combo_administrativas'] = 'programacion/proyecto/combo_da'; ////// Combo Unidades Administrativas
 $route['admin/proy/combo_uejecutoras'] = 'programacion/proyecto/combo_ue'; ////// Combo Unidades Ejecutoras
-$route['admin/proy/list_proy'] = 'programacion/proyecto/list_proyectos';  //// lista de proyectos 
+$route['admin/proy/list_proy'] = 'programacion/proyecto/list_poa';  //// lista Poa 2026 
 $route['proy/add_unidad'] = 'programacion/proyecto/form_poa_unidades'; //// formularios de registro - Unidad/Establecimientos
 $route['admin/proy/proyecto'] = 'programacion/proyecto/form_proy_inv'; //// formularios de registro - proyectos de Inversion
 $route['admin/proy/proyecto_pi/(:any)'] = 'programacion/proyecto/form_operacion_resumen/$1'; //// Proyecto de Inversion

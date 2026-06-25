@@ -19,7 +19,7 @@
 		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/estilosh.css"> 
 	    <meta name="viewport" content="width=device-width">
 		<!--fin de stiloh-->
-          <script>
+<!--           <script>
 		  	function abreVentana(PDF){
 				var direccion;
 				direccion = '' + PDF;
@@ -37,7 +37,7 @@
               text-align: center;
               font-size: 10px;
             }
-			</style>
+			</style> -->
 	</head>
 	<body class="">
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->

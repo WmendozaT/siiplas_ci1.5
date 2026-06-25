@@ -32,6 +32,12 @@ class Proyecto extends CI_Controller {
       $this->conf_poa_estado = $this->session->userData('conf_poa_estado'); /// Ajuste POA 1: Inicial, 2 : Ajuste, 3 : aprobado
       
       $this->load->library('programacionpoa');
+      $this->load->library('lib_foda');
+        // Si CI no creó la propiedad, la asignamos nosotros a mano
+        if (!isset($this->lib_foda)) {
+            $CI =& get_instance();
+            $this->lib_foda = $CI->lib_foda;
+        }
       }else{
           $this->session->sess_destroy();
           redirect('/','refresh');
@@ -39,8 +45,8 @@ class Proyecto extends CI_Controller {
     }
 
 
-  /*=== LISTA DE PROYECTOS TECNICO DE UE (2020) ===*/  
-    public function list_proyectos(){
+  /*=== LISTA POA 2026 ===*/  
+    public function list_poa(){
       $data['menu']=$this->programacionpoa->menu(2);
       $data['mod']=1;
       $data['res_dep']=$this->programacionpoa->tp_resp();
@@ -71,17 +77,6 @@ class Proyecto extends CI_Controller {
               <a href="'.site_url("").'/proy/add_unidad" class="btn btn-default" title="AGREGAR UNIDAD" target=_blank>
                 <img src="'.base_url().'assets/Iconos/add.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>AGREGAR UNIDAD</b>
               </a>
-              <a href="'.site_url("").'/proy/verif_plantillas" title="VERIFICAR PLANTILLA" class="btn btn-default" target=_blank>
-                  <img src="'.base_url().'assets/Iconos/application_osx.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>VERIFICAR PLANTILLA</b>
-                </a>';
-              /*if ($this->session->userData('conf_poa_estado')!=3) {
-                $tabla.='
-                <a href="'.site_url("").'/proy/verif_plantillas" title="VERIFICAR PLANTILLA" class="btn btn-default" target=_blank>
-                  <img src="'.base_url().'assets/Iconos/application_osx.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>VERIFICAR PLANTILLA</b>
-                </a>';
-              }*/
-
-              $tabla.='
               <br><br>
               <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                 <div class="jarviswidget jarviswidget-color-darken">
