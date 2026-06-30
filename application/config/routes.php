@@ -92,7 +92,7 @@ $route['me/rep_form2/(:any)'] = 'mestrategico/cobjetivo_regional/reporte_form2/$
 
 
 /* ANALISIS DE SITUACION (A BORRAR)*/
-$route['admin/analisis_sit'] = 'analisis_situacion/canalisis_situacion/lista_unidades';	//// Lista Unidades, Establecimientos
+//$route['admin/analisis_sit'] = 'analisis_situacion/canalisis_situacion/lista_unidades';	//// Lista Unidades, Establecimientos
 $route['as/list_foda/(:any)'] = 'analisis_situacion/canalisis_situacion/lista_foda/$1';	//// Lista de formularios
 $route['as/rep_list_foda/(:any)'] = 'analisis_situacion/canalisis_situacion/reporte_lista_foda/$1';	//// Imprimir lisat Foda
 
@@ -161,7 +161,7 @@ $route['rep/exportar_poa_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/e
 $route['rep/exportar_form4_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/form4_x_unidad_responsable/$1'; ///// Exportar formulario 4 por Unidad Reponsable (Formulario 4) (Excel)
 $route['rep/consolidado_requerimientos_mas_programas_bolsas_unidad/(:any)'] = 'reportes_cns/exporting_datos/consolidado_requerimientos_mas_programas_bolsas_unidad/$1'; ///// Exportar Requerimientos consolidado (mas bolsas) por Unidad Reponsable (Ejecucion Presupuestaria) (Excel)
 
-
+//// ajustara a 2026
 $route['rep/comparativo_unidad_ppto/(:any)'] = 'reportes_cns/rep_operaciones/comparativo_presupuesto_distrital/$1/$2/$3'; ///// cuadro comparativo pto asig. poa - Partidas por unidad (DISTRITAL) 2020-2021
 $route['rep/establecimientos/(:any)'] = 'reportes_cns/rep_operaciones/establecimientos_salud/$1/$2'; ///// cuadro Establecimientos de salud (DISTRITAL) 2020-2021
 $route['rep/print_modificaciones_poa/(:any)'] = 'reportes_cns/rep_operaciones/rep_cuadro_modificacion_poa/$1/$2'; ///// cuadro Modificacion poa (DISTRITAL) 2020-2021

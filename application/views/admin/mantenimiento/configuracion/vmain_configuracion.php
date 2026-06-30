@@ -569,6 +569,26 @@
                                                                         </div>
 
                                                                         <div class="form-group">
+                                                                            <label class="col-md-2 control-label">REGISTRO DEL FORM. N°3</label>
+                                                                            <div class="col-md-10">
+                                                                                <select class="form-control" id="estado_poa_form3" name="estado_poa_form3" title="SELECCIONE ESTADO FORMULARIO N3">
+                                                                                    <?php 
+                                                                                        if($this->session->userData('conf_form3')==1){ ?>
+                                                                                            <option value="1" selected>HABILITADO PARA REGISTRO </option>
+                                                                                            <option value="0">NO HABILITADO</option>     
+                                                                                            <?php
+                                                                                        }
+                                                                                        else{ ?>
+                                                                                            <option value="1">HABILITADO PARA REGISTRO </option>
+                                                                                            <option value="0" selected>NO HABILITADO</option> 
+                                                                                            <?php
+                                                                                        }
+                                                                                    ?>
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="form-group">
                                                                             <label class="col-md-2 control-label">REGISTRO DEL FORM. N°4</label>
                                                                             <div class="col-md-10">
                                                                                 <select class="form-control" id="estado_poa_form4" name="estado_poa_form4" title="SELECCIONE ESTADO FORMULARIO N4">
@@ -1222,6 +1242,41 @@
                             type:"post",
                             url:url,
                             data:{estado:est_poa,g_id:id},
+                            success:function(datos){
+                                if(datos.trim() =='true'){
+                                    window.location.reload(true);
+                                }else{
+                                    alertify.error("Error al Actualizar ..");
+                                }
+                        }});
+                    } else {
+                        alertify.error("OPCI\u00D3N CANCELADA");
+                    }
+                  });
+
+                });
+
+                
+                //// ESTADO FORMULARIO 3
+                $("#estado_poa_form3").change(function () {            
+                var estado = $(this).val();
+                var id = <?php echo $conf[0]['ide'];?>;
+
+                var mensaje='';
+                if(estado==1){
+                    mensaje='HABILITAR FORMULARIO N°3 ?';
+                }
+                else{
+                    mensaje='DESHABILITAR FORMULARIO N°3 ?';
+                }
+
+                alertify.confirm(mensaje, function (a) {
+                    if (a) {
+                        var url = "<?php echo site_url().'/mantenimiento/cconfiguracion/valida_update_estadoform3'?>";
+                        $.ajax({
+                            type:"post",
+                            url:url,
+                            data:{estado:estado,g_id:id},
                             success:function(datos){
                                 if(datos.trim() =='true'){
                                     window.location.reload(true);

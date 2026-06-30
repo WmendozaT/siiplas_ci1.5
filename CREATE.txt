@@ -868,3 +868,172 @@ CREATE OR REPLACE VIEW public.v_temporalidad_diagnostico_equipamiento_quinquenal
 
 ALTER TABLE public.v_temporalidad_diagnostico_equipamiento_quinquenal
   OWNER TO postgres;
+
+
+  //////////////// Lista POa Institucional
+  
+
+CREATE OR REPLACE FUNCTION public.fn_lista_poa_nacional(p_gestion INT)
+RETURNS TABLE (
+    dep_id numeric,
+    dep_departamento character varying,
+    dep_cod character varying,
+    dist_id integer,
+    dist_distrital character varying,
+    dist_cod character varying,
+    abrev character varying,
+    da character varying,
+    ue character varying,
+    aper_programa character varying,
+    aper_proyecto character varying,
+    aper_actividad character varying,
+    proy_id numeric,
+    proy_estado integer,
+    unidad_organizacional character varying,
+    te_id integer,
+    tipo character varying,
+    ta_id integer,
+    tipo_adm character varying,
+    tn_id integer,
+    nivel character varying,
+    proy_sisin character varying,
+    proy_nombre character varying,
+    aper_id numeric,
+    aper_proy_estado integer,
+    pfec_id numeric,
+    pfec_descripcion character varying,
+    fas_id numeric,
+    eta_id numeric,
+    pfec_estado integer,
+    aper_gestion integer,
+    tp_id numeric,
+    por_id integer,
+    fase_nombre text,
+    etapa_nombre TEXT,
+    ppto_asignado NUMERIC,
+    ppto_poa NUMERIC,
+    ppto_saldo NUMERIC,
+    tipo_gasto_nombre TEXT,
+    estado_poa TEXT
+) AS $$
+BEGIN -- 🛠️ CORRECCIÓN 1: Bloque de apertura obligatorio añadido
+    RETURN QUERY -- 🛠️ CORRECCIÓN 2: Directiva de retorno obligatoria añadida
+    WITH 
+    -- 1. Consolidado del Presupuesto Asignado desde el SIGEP
+    cte_sigep AS (
+        SELECT 
+            ps.aper_id, -- Especificado alias interno por higiene
+            SUM(ps.importe) AS ppto_asignado
+        FROM public.ptto_partidas_sigep ps
+        GROUP BY ps.aper_id
+    ),
+
+    -- 2. Consolidado del Presupuesto Programado POA (Insumos Modificación 0)
+    cte_insumos AS (
+        SELECT 
+            i.aper_id, -- Especificado alias interno por higiene
+            SUM(i.ins_costo_total) AS ppto_poa
+        FROM public.insumos i
+        WHERE i.ins_tipo_modificacion = 0
+        GROUP BY i.aper_id
+    )
+
+    -- 3. Consulta Principal con Mapeo de Fases y Etapas
+    SELECT 
+        d.dep_id::numeric, 
+        d.dep_departamento::character varying, 
+        d.dep_cod::character varying,
+        ds.dist_id::integer, 
+        ds.dist_distrital::character varying, 
+        ds.dist_cod::character varying, 
+        ds.abrev::character varying, 
+        ds.da::character varying, 
+        ds.ue::character varying,
+        apg.aper_programa::character varying, 
+        apg.aper_proyecto::character varying, 
+        apg.aper_actividad::character varying,
+        p.proy_id::numeric, 
+        p.proy_estado::integer, 
+        ua.act_descripcion::character varying AS unidad_organizacional, 
+    te.te_id::integer,
+        te.tipo::character varying,
+        te.ta_id::integer,
+        te.tipo_adm::character varying,
+        te.tn_id::integer,
+        te.nivel::character varying, 
+        p.proy_sisin::character varying, 
+        p.proy_nombre::character varying,
+        apg.aper_id::numeric, 
+        apg.aper_proy_estado::integer, 
+        pfe.pfec_id::numeric,
+        pfe.pfec_descripcion::character varying,
+        pfe.fas_id::numeric,
+        pfe.eta_id::numeric, 
+        pfe.pfec_estado::integer, 
+        apg.aper_gestion::integer, 
+        p.tp_id::numeric, 
+        p.por_id::integer,
+        
+        -- Mapeo de pfe.fas_id (Fase del Requerimiento) con casteo explícito a text
+        CASE 
+            WHEN pfe.fas_id = 1 THEN 'PREINVERSIÓN'::text
+            WHEN pfe.fas_id = 2 THEN 'INVERSIÓN'::text
+            ELSE 'NINGUNO'::text
+        END AS fase_nombre,
+
+        -- Mapeo de pfe.eta_id (Etapa del Requerimiento) con casteo explícito a text
+        CASE 
+            WHEN pfe.eta_id = 1 THEN 'ITCP'::text
+            WHEN pfe.eta_id = 2 THEN 'TESA'::text
+            WHEN pfe.eta_id = 3 THEN 'INVERSION'::text
+            WHEN pfe.eta_id = 4 THEN 'OPERACION'::text
+            WHEN pfe.eta_id = 5 THEN 'ESTUDIO'::text
+            WHEN pfe.eta_id = 6 THEN 'EJECUCION'::text
+            WHEN pfe.eta_id = 7 THEN 'FUNCIONAMIENTO'::text
+            WHEN pfe.eta_id = 8 THEN 'EDTP'::text
+            ELSE 'NINGUNO'::text
+        END AS etapa_nombre,
+
+        -- Valores Presupuestarios Consolidados desde las CTEs castrados a NUMERIC
+        COALESCE(ppto.ppto_asignado, 0)::numeric AS ppto_asignado, 
+        COALESCE(poa_ins.ppto_poa, 0)::numeric AS ppto_poa,
+        (COALESCE(ppto.ppto_asignado, 0) - COALESCE(poa_ins.ppto_poa, 0))::numeric AS ppto_saldo,
+        
+        -- Clasificaciones Organizacionales y de Estado castrados a TEXT
+        CASE 
+            WHEN p.tp_id = 1 THEN 'INVERSIÓN'::text
+            WHEN p.tp_id = 4 THEN 'GASTO CORRIENTE'::text
+            ELSE 'OTRO'::text
+        END AS tipo_gasto_nombre,
+        CASE 
+            WHEN apg.aper_proy_estado = 1 THEN 'ANTEPROYECTO'::text
+            WHEN apg.aper_proy_estado = 4 THEN 'APROBADO'::text
+            ELSE 'OBSERVADO'::text
+        END AS estado_poa
+
+    FROM public._proyectofaseetapacomponente pfe
+    INNER JOIN public.aperturaprogramatica apg ON apg.aper_id = pfe.aper_id
+    INNER JOIN public._proyectos p ON p.proy_id = pfe.proy_id
+    INNER JOIN public._departamentos d ON d.dep_id = p.dep_id
+    INNER JOIN public._distritales ds ON ds.dist_id = p.dist_id
+    INNER JOIN public.unidad_actividad ua ON ua.act_id = p.act_id
+    INNER JOIN public.v_tp_establecimiento te ON te.te_id = ua.te_id
+
+    -- 🛠️ CORRECCIÓN 3: Especificación estricta de alias sobre apg.aper_id para romper ambigüedad
+    LEFT JOIN cte_sigep ppto ON apg.aper_id = ppto.aper_id
+    LEFT JOIN cte_insumos poa_ins ON apg.aper_id = poa_ins.aper_id
+
+    WHERE p.estado != 3 
+      AND apg.aper_gestion = p_gestion
+      AND apg.aper_estado != 3 
+      AND pfe.pfec_estado = 1 
+
+    ORDER BY 
+        d.dep_id ASC,
+        ds.dist_id ASC,
+        apg.aper_programa ASC,
+        apg.aper_proyecto ASC,
+        apg.aper_actividad ASC,
+        p.tp_id ASC;
+END;
+$$ LANGUAGE plpgsql;

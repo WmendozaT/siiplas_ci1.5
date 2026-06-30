@@ -38,18 +38,18 @@ class Canalisis_situacion extends CI_Controller {
     }
 
     /*------ Lista de Unidad - Establecimiento - Proyecto de Inversion -----*/
-    public function lista_unidades(){
+/*    public function lista_unidades(){
       $data['menu']=$this->menu();
      // $data['res_dep']=$this->tp_resp();
      // $data['resp']=$this->session->userdata('funcionario');
       
       $data['unidades']=$this->lista_operaciones(4); // Gasto Corrientes 
       $this->load->view('admin/programacion/foda/list_proy', $data);
-    }
+    }*/
 
 
     /*---- LISTA DE UNIDADES/PROYECTOS DE INVERSION ----*/
-    function lista_operaciones($tp){
+    /*function lista_operaciones($tp){
       $unidades=$this->model_proyecto->list_unidades(4,1); // Tipo de Operacion, Estado del establecimiento
       $tabla='';
       $nrop=0;
@@ -74,7 +74,7 @@ class Canalisis_situacion extends CI_Controller {
       }
 
       return $tabla;
-    }
+    }*/
 
     /*------ Lista de fodas -----*/
     public function lista_foda($proy_id){

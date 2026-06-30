@@ -113,163 +113,184 @@ class Model_proyecto extends CI_Model{
         $this->db->delete('aperturaprogramatica');
     }
 
+    /*---------- LISTA POA 2026 ----------*/
+    public function list_unidades($tp_id,$est_proy){
+        if($this->adm==1){ /// Nacional
+           $sql = 'select *
+                    from fn_lista_poa_nacional('.$this->gestion.')
+                    where aper_proy_estado='.$est_proy.' and tp_id='.$tp_id.'
+                    order by aper_programa,aper_actividad, aper_actividad asc'; 
+        }
+        else{
+          $sql = 'select *
+                    from fn_lista_poa_nacional('.$this->gestion.')
+                    where aper_proy_estado='.$est_proy.' and tp_id='.$tp_id.' and dist_id='.$this->dist.'
+                    order by aper_programa,aper_actividad, aper_actividad asc';   
+        }
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
 
     /*---------- LISTA UNIDADES (2019-2020) ----------*/
-    public function list_unidades($tp_id,$est_proy){
-        $dep=$this->dep_dist($this->dist);
-        /// Administrador Nacional
-        if($this->adm==1){
-            $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
-                        apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev,ua.*,te.*
-                        from _proyectos as p
-                        Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                        Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                        Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                        Inner Join _departamentos as d On d.dep_id=p.dep_id
-                        Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                        Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-                        Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                        Inner Join uni_gestion as ug On ua.act_id=ug.act_id
-                        where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id='.$tp_id.' and apg.aper_proy_estado='.$est_proy.'  and ug.g_id='.$this->gestion.' and apg.aper_estado!=\'3\'
-                        ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,te.tn_id, te.te_id asc';
-        }
-        /// Administrador Regional/Distrital
-        else{
-            if($this->dist_tp==1){ /// Regional
-                $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
-                        apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev,ua.*,te.*
-                        from _proyectos as p
-                        Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                        Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                        Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                        Inner Join _departamentos as d On d.dep_id=p.dep_id
-                        Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                        Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-                        Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                        Inner Join uni_gestion as ug On ua.act_id=ug.act_id
-                        where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id='.$tp_id.' and p.dep_id='.$dep[0]['dep_id'].' and apg.aper_proy_estado='.$est_proy.' and ug.g_id='.$this->gestion.' and apg.aper_estado!=\'3\'
-                        ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,te.tn_id, te.te_id asc';
-            }
-            else{ /// Distrital
-                $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
-                        apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev,ua.*,te.*
-                        from _proyectos as p
-                        Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                        Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                        Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                        Inner Join _departamentos as d On d.dep_id=p.dep_id
-                        Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                        Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-                        Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                        Inner Join uni_gestion as ug On ua.act_id=ug.act_id
-                        where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id='.$tp_id.' and p.dep_id='.$dep[0]['dep_id'].' and p.dist_id='.$this->dist.' and apg.aper_proy_estado='.$est_proy.' and ug.g_id='.$this->gestion.' and apg.aper_estado!=\'3\'
-                        ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,te.tn_id, te.te_id asc';
-            }
-        }
+    // public function list_unidades2($tp_id,$est_proy){
+    //     $dep=$this->dep_dist($this->dist);
+    //     /// Administrador Nacional
+    //     if($this->adm==1){
+    //         $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
+    //                     apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev,ua.*,te.*
+    //                     from _proyectos as p
+    //                     Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+    //                     Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+    //                     Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+    //                     Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                     Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                     Inner Join unidad_actividad as ua On ua.act_id=p.act_id
+    //                     Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
+    //                     Inner Join uni_gestion as ug On ua.act_id=ug.act_id
+    //                     where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id='.$tp_id.' and apg.aper_proy_estado='.$est_proy.'  and ug.g_id='.$this->gestion.' and apg.aper_estado!=\'3\'
+    //                     ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,te.tn_id, te.te_id asc';
+    //     }
+    //     /// Administrador Regional/Distrital
+    //     else{
+    //         if($this->dist_tp==1){ /// Regional
+    //             $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
+    //                     apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev,ua.*,te.*
+    //                     from _proyectos as p
+    //                     Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+    //                     Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+    //                     Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+    //                     Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                     Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                     Inner Join unidad_actividad as ua On ua.act_id=p.act_id
+    //                     Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
+    //                     Inner Join uni_gestion as ug On ua.act_id=ug.act_id
+    //                     where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id='.$tp_id.' and p.dep_id='.$dep[0]['dep_id'].' and apg.aper_proy_estado='.$est_proy.' and ug.g_id='.$this->gestion.' and apg.aper_estado!=\'3\'
+    //                     ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,te.tn_id, te.te_id asc';
+    //         }
+    //         else{ /// Distrital
+    //             $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
+    //                     apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev,ua.*,te.*
+    //                     from _proyectos as p
+    //                     Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+    //                     Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+    //                     Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+    //                     Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                     Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                     Inner Join unidad_actividad as ua On ua.act_id=p.act_id
+    //                     Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
+    //                     Inner Join uni_gestion as ug On ua.act_id=ug.act_id
+    //                     where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id='.$tp_id.' and p.dep_id='.$dep[0]['dep_id'].' and p.dist_id='.$this->dist.' and apg.aper_proy_estado='.$est_proy.' and ug.g_id='.$this->gestion.' and apg.aper_estado!=\'3\'
+    //                     ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,te.tn_id, te.te_id asc';
+    //         }
+    //     }
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
-    /*---------- LISTA PROYECTOS DE INVERSION (2020) ----------*/
-    public function list_pinversion($tp_id,$est_proy){
-        $dep=$this->dep_dist($this->dist);
-        // $est_proy=1 (Programacion) -> aper_gestion==$this->gestion and aper_proy_estado==1
-        // $est_proy=4 (Aprobado) -> pfec_estado==1 & aper_gestion==$this->gestion & aper_proy_estado==4
+    // /*---------- LISTA PROYECTOS DE INVERSION (2020) ----------*/
+    // public function list_pinversion($tp_id,$est_proy){
+    //     $dep=$this->dep_dist($this->dist);
+    //     // $est_proy=1 (Programacion) -> aper_gestion==$this->gestion and aper_proy_estado==1
+    //     // $est_proy=4 (Aprobado) -> pfec_estado==1 & aper_gestion==$this->gestion & aper_proy_estado==4
 
-        if($est_proy==1){ /// Proyectos en etapa Inicial (Programacion Inicial)
-            /// Administrador Nacional
-            if($this->adm==1){
-                $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,p.proy_estado,
-                            apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev
-                            from _proyectos as p
-                            Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                            Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
-                            Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                            Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                            Inner Join _departamentos as d On d.dep_id=p.dep_id
-                            Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                            where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id=\'1\' and apg.aper_proy_estado=\'1\' and apg.aper_estado!=\'3\'
-                            ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
-            }
-            /// Administrador Regional/Distrital
-            else{
-                if($this->dist_tp==1){ /// Regional
-                    $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
-                            apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev
-                            from _proyectos as p
-                            Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                            Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
-                            Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                            Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                            Inner Join _departamentos as d On d.dep_id=p.dep_id
-                            Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                            where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id=\'1\' and p.dep_id='.$dep[0]['dep_id'].' and apg.aper_proy_estado=\'1\' and apg.aper_estado!=\'3\'
-                            ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
-                }
-                else{ /// Distrital
-                    $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
-                            apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev
-                            from _proyectos as p
-                            Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
-                            Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
-                            Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
-                            Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
-                            Inner Join _departamentos as d On d.dep_id=p.dep_id
-                            Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                            where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id=\'1\' and p.dep_id='.$dep[0]['dep_id'].' and p.dist_id='.$this->dist.' and apg.aper_proy_estado=\'1\' and apg.aper_estado!=\'3\'
-                            ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
-                }
-            }
-        }
-        else{ /// Proyectos Aprobados y con fase activa
-            /// Administrador Nacional
-            if($this->adm==1){
-                $sql = 'select *
-                        from _proyectofaseetapacomponente pfe
-                        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-                        Inner Join _proyectos as p On p.proy_id=pfe.proy_id
-                        Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
-                        Inner Join _departamentos as d On d.dep_id=p.dep_id
-                        Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                        where apg.aper_gestion='.$this->gestion.' and pfe.estado!=\'3\' and p.estado!=\'3\' and p.tp_id=\'1\' and apg.aper_estado!=\'3\' and apg.aper_proy_estado=\'4\'
-                        order by apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
-            }
-            /// Administrador Regional/Distrital
-            else{
-                if($this->dist_tp==1){ /// Regional
-                    $sql = 'select *
-                        from _proyectofaseetapacomponente pfe
-                        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-                        Inner Join _proyectos as p On p.proy_id=pfe.proy_id
-                        Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
-                        Inner Join _departamentos as d On d.dep_id=p.dep_id
-                        Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                        where p.dep_id='.$dep[0]['dep_id'].' and apg.aper_gestion='.$this->gestion.' and pfe.estado!=\'3\' and p.estado!=\'3\' and p.tp_id=\'1\' and apg.aper_estado!=\'3\' and apg.aper_proy_estado=\'4\'
-                        order by apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc ';
-                }
-                else{ /// Distrital
-                    $sql = 'select *
-                        from _proyectofaseetapacomponente pfe
-                        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-                        Inner Join _proyectos as p On p.proy_id=pfe.proy_id
-                        Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
-                        Inner Join _departamentos as d On d.dep_id=p.dep_id
-                        Inner Join _distritales as ds On ds.dist_id=p.dist_id
-                        where p.dep_id='.$dep[0]['dep_id'].' and p.dist_id='.$this->dist.' and apg.aper_gestion='.$this->gestion.' and pfe.estado!=\'3\' and p.estado!=\'3\' and p.tp_id=\'1\' and apg.aper_estado!=\'3\' and apg.aper_proy_estado=\'4\'
-                        order by apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc ';
-                }
-            }
-        }
+    //     if($est_proy==1){ /// Proyectos en etapa Inicial (Programacion Inicial)
+    //         /// Administrador Nacional
+    //         if($this->adm==1){
+    //             $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,p.proy_estado,
+    //                         apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev
+    //                         from _proyectos as p
+    //                         Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+    //                         Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
+    //                         Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+    //                         Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+    //                         Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                         Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                         where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id=\'1\' and apg.aper_proy_estado=\'1\' and apg.aper_estado!=\'3\'
+    //                         ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
+    //         }
+    //         /// Administrador Regional/Distrital
+    //         else{
+    //             if($this->dist_tp==1){ /// Regional
+    //                 $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
+    //                         apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev
+    //                         from _proyectos as p
+    //                         Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+    //                         Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
+    //                         Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+    //                         Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+    //                         Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                         Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                         where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id=\'1\' and p.dep_id='.$dep[0]['dep_id'].' and apg.aper_proy_estado=\'1\' and apg.aper_estado!=\'3\'
+    //                         ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
+    //             }
+    //             else{ /// Distrital
+    //                 $sql = 'select p.proy_id,p.proy_codigo,p.por_id,p.proy_nombre,p.proy_estado,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,apg.archivo_pdf,
+    //                         apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.aper_proy_estado,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,d.dep_departamento,ds.dist_distrital,ds.abrev
+    //                         from _proyectos as p
+    //                         Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
+    //                         Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
+    //                         Inner Join aperturaproyectos as ap On ap.proy_id=p.proy_id
+    //                         Inner Join aperturaprogramatica as apg On apg.aper_id=ap.aper_id
+    //                         Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                         Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                         where p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and p.tp_id=\'1\' and p.dep_id='.$dep[0]['dep_id'].' and p.dist_id='.$this->dist.' and apg.aper_proy_estado=\'1\' and apg.aper_estado!=\'3\'
+    //                         ORDER BY apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
+    //             }
+    //         }
+    //     }
+    //     else{ /// Proyectos Aprobados y con fase activa
+    //         /// Administrador Nacional
+    //         if($this->adm==1){
+    //             $sql = 'select *
+    //                     from _proyectofaseetapacomponente pfe
+    //                     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //                     Inner Join _proyectos as p On p.proy_id=pfe.proy_id
+    //                     Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
+    //                     Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                     Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                     where apg.aper_gestion='.$this->gestion.' and pfe.estado!=\'3\' and p.estado!=\'3\' and p.tp_id=\'1\' and apg.aper_estado!=\'3\' and apg.aper_proy_estado=\'4\'
+    //                     order by apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc';
+    //         }
+    //         /// Administrador Regional/Distrital
+    //         else{
+    //             if($this->dist_tp==1){ /// Regional
+    //                 $sql = 'select *
+    //                     from _proyectofaseetapacomponente pfe
+    //                     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //                     Inner Join _proyectos as p On p.proy_id=pfe.proy_id
+    //                     Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
+    //                     Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                     Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                     where p.dep_id='.$dep[0]['dep_id'].' and apg.aper_gestion='.$this->gestion.' and pfe.estado!=\'3\' and p.estado!=\'3\' and p.tp_id=\'1\' and apg.aper_estado!=\'3\' and apg.aper_proy_estado=\'4\'
+    //                     order by apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc ';
+    //             }
+    //             else{ /// Distrital
+    //                 $sql = 'select *
+    //                     from _proyectofaseetapacomponente pfe
+    //                     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //                     Inner Join _proyectos as p On p.proy_id=pfe.proy_id
+    //                     Inner Join _estadoproyecto as ep On ep.ep_id=p.proy_estado
+    //                     Inner Join _departamentos as d On d.dep_id=p.dep_id
+    //                     Inner Join _distritales as ds On ds.dist_id=p.dist_id
+    //                     where p.dep_id='.$dep[0]['dep_id'].' and p.dist_id='.$this->dist.' and apg.aper_gestion='.$this->gestion.' and pfe.estado!=\'3\' and p.estado!=\'3\' and p.tp_id=\'1\' and apg.aper_estado!=\'3\' and apg.aper_proy_estado=\'4\'
+    //                     order by apg.aper_programa,apg.aper_proyecto,apg.aper_actividad asc ';
+    //             }
+    //         }
+    //     }
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*-------- LISTA DE OPERACIONES POR DEPARTAMENTOS ------------*/
-    public function list_proyectos_departamentos($prog,$est_proy,$tpf,$dep_id,$tp_id){
+/*    public function list_proyectos_departamentos($prog,$est_proy,$tpf,$dep_id,$tp_id){
         $sql = 'select tap.*,p.*,tp.*,fu.*
                     from _proyectos as p
                     Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
@@ -285,9 +306,9 @@ class Model_proyecto extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
-    public function list_proyectos_poa($prog,$est_proy,$tp){
+/*    public function list_proyectos_poa($prog,$est_proy,$tp){
          $sql = 'select tap.*,p.*,tp.*,fu.*
                     from _proyectos as p
                     Inner Join _tipoproyecto as tp On p.tp_id=tp.tp_id
@@ -304,10 +325,10 @@ class Model_proyecto extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     /*---------- (NUEVO) LISTA DE PROYECTOS, PROGRAMAS  PARA RESPORTES FORMULARIOS POA (NACIONALES,REGIONALES)-------*/
-    public function fpoa_operaciones($prog,$gestion){
+/*    public function fpoa_operaciones($prog,$gestion){
         $dep=$this->dep_dist($this->dist);
         if($this->adm==1) {
             if($this->rol==1){
@@ -427,11 +448,11 @@ class Model_proyecto extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*--------- LISTA PROYECTOS DE INVERSIÓN  --------*/
-    public function list_proyectos_inversion(){
+/*    public function list_proyectos_inversion(){
         $sql = 'select p.proy_id,p.proy_codigo,p.proy_nombre,p.tp_id,p.proy_sisin,tp.tp_tipo,apg.aper_id,
                         apg.aper_programa,apg.aper_proyecto,apg.aper_actividad,apg.aper_descripcion,apg.tp_obs,aper_observacion,p.proy_pr,p.proy_act,f.fun_id,f.fun_nombre,f.fun_paterno,f.fun_materno,d.dep_departamento,ds.dist_distrital
                         from _proyectos as p
@@ -447,7 +468,7 @@ class Model_proyecto extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
     /*-----------------------------------------------------------------------------------------------------------*/
 
     /*==================================== NUMERO DE RESPONSABLES DE PROYECTOS================================*/

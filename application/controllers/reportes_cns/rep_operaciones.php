@@ -345,7 +345,7 @@ class Rep_operaciones extends CI_Controller {
 
     
 
-    /*-----REPORTE COMPARATIVO PRESUPUESTO ASIG-POA (DISTRITAL) 2020-2021-----*/
+    /*-----REPORTE COMPARATIVO PRESUPUESTO ASIG-POA (DISTRITAL) 2020-2021 (Ajustar)-----*/
     public function comparativo_presupuesto_distrital($dep_id,$dist_id,$tp_id){
       $this->genera_informacion->comparativo_presupuesto_distrital($dep_id,$dist_id,$tp_id);
     }

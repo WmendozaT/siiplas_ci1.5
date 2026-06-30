@@ -793,6 +793,7 @@ class User extends CI_Controller{
             'trimestre' => $gestion[0]['conf_mes_otro'], /// Trimestre 1,2,3,4
             'verif_ppto' => $gestion[0]['ppto_poa'], /// Ppto poa : 0 (Ante proyecto), 1: (Aprobado)
             'conf_poa_estado' => $gestion[0]['conf_poa_estado'], /// Estado Poa Estado : 1 (Inicial), 2: (Ajuste), 3: (Aprobado)
+            'conf_form3' => $gestion[0]['conf_form3'], /// Estado de Registro del formulario N3, 0 (Inactivo), 1 (Activo)
             'conf_form4' => $gestion[0]['conf_form4'], /// Estado de Registro del formulario N4, 0 (Inactivo), 1 (Activo)
             'conf_form5' => $gestion[0]['conf_form5'], /// Estado de Registro del formulario N5, 0 (Inactivo), 1 (Activo)
             'conf_mod_ope' => $gestion[0]['conf_mod_ope'], /// Estado de modificacion del formulario N4, 0 (Inactivo), 1 (Activo)

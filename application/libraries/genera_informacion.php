@@ -202,9 +202,10 @@ class Genera_informacion extends CI_Controller{
 
 
 
-    /*-----REPORTE COMPARATIVO PRESUPUESTO ASIG-POA (DISTRITAL) 2020-2021-----*/
+    /*-----REPORTE COMPARATIVO PRESUPUESTO ASIG-POA (DISTRITAL) 2020-2021 (A trabajar en el ajuste) -----*/
     public function comparativo_presupuesto_distrital($dep_id,$dist_id,$tp_id){
-      $data['mes'] = $this->mes_nombre();
+      echo "en mantenimiento ...";
+/*      $data['mes'] = $this->mes_nombre();
       if($dist_id==0){ // Nacional
         
         $unidades=$this->mrep_operaciones->list_poa_gastocorriente_pinversion($tp_id);
@@ -310,7 +311,7 @@ class Genera_informacion extends CI_Controller{
           
           $data['lista']=$tabla;
         
-          $this->load->view('admin/reportes_cns/resumen_operaciones/reporte_comparativo', $data);
+          $this->load->view('admin/reportes_cns/resumen_operaciones/reporte_comparativo', $data);*/
     }
 
 

@@ -101,7 +101,7 @@
 					<div class="row">
 						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 							<div class="well well-sm well-light">
-								<?php echo $res_dep.'  '.$listado; ?>
+								<?php echo $listado; ?>
 							</div>
 						</article>
 						<!-- WIDGET END -->
