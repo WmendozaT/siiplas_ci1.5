@@ -1,6 +1,4 @@
 <?php
-define("DOMPDF_ENABLE_REMOTE", true);
-define("DOMPDF_TEMP_DIR", "/tmp");
 class Componente extends CI_Controller { 
   public function __construct (){
         parent::__construct();
@@ -24,6 +22,9 @@ class Componente extends CI_Controller {
             $this->rol = $this->session->userData('rol_id');
             $this->dist_tp = $this->session->userData('dist_tp');
             $this->fun_id = $this->session->userdata("fun_id");
+            $this->conf_form4 = $this->session->userData('conf_form4');
+            $this->conf_form5 = $this->session->userData('conf_form5');
+            $this->load->library('programacionpoa');
 
             }else{
                 redirect('/','refresh');
@@ -31,80 +32,418 @@ class Componente extends CI_Controller {
     }
 
 
-    /*------------ DELETE COMPONENTE (PROYECTOS DE INVERSIÓN) --------------*/
-    // function elimina_operaciones_componente_pi(){
-    //   if ($this->input->is_ajax_request() && $this->input->post()) {
-    //       $post = $this->input->post();
-    //       $com_id = $this->security->xss_clean($post['com_id']);
-    //       $productos = $this->model_producto->list_prod($com_id);
+    /*----- VERIFICA EL TIPO DE GASTO ------*/
+    public function verif_tipo_gasto($proy_id){
+        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id); // Proy
+        if(count($data['proyecto'])!=0){
+            $data['menu']=$this->genera_menu($proy_id);
+            if($data['proyecto'][0]['tp_id']==1){ //// Proyecto
+                $this->lista_componentes($proy_id);
+            }
+            else{ /// Gasto Corriente
 
-    //         foreach ($productos as $rowp) {
-    //         $update_prod= array(
-    //             'fun_id' => $this->fun_id,
-    //             'estado' => 3
-    //         );
-    //         $this->db->where('prod_id', $rowp['prod_id']);
-    //         $this->db->update('_productos', $this->security->xss_clean($update_prod));
+                if($data['proyecto'][0]['por_id']==0){
+                    $this->lista_uresponsables($proy_id); /// lista de unidades responsables
+                }
+                else{
+                    $componente=$this->model_componente->proyecto_componente($proy_id); /// Programas Bolsa
+                    redirect(site_url("").'/admin/prog/list_prod/'.$componente[0]['com_id'].''); /// redireccionadmos a Lista de form 4
+                }
+            }
+        }
+        else{
+            $this->session->set_flashdata('danger','ERROR !!!');
+            redirect('admin/proy/list_proy');
+        }
 
-    //         $actividad=$this->model_actividad->list_act_anual($rowp['prod_id']);
-    //         foreach ($actividad as $rowa) {
-    //             /*---------------------------------------*/
-    //             $insumos = $this->model_actividad->insumo_actividad($rowa['act_id']);
-    //             foreach ($insumos as $rowi) {
-    //               $update_ins= array(
-    //                 'fun_id' => $this->fun_id,
-    //                 'aper_id' => 0,
-    //                 'ins_estado' => 3,
-    //                 'num_ip' => $this->input->ip_address(), 
-    //                 'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
-    //               );
-    //               $this->db->where('ins_id', $rowi['ins_id']);
-    //               $this->db->update('insumos', $this->security->xss_clean($update_ins));
+    }
 
-    //               $update_insg= array(
-    //               'insg_estado' => 3
-    //               );
-    //               $this->db->where('ins_id', $ins_id);
-    //               $this->db->update('insumo_gestion', $this->security->xss_clean($update_insg));
-    //             }
+    /*--------- LISTA DE COMPONENTES------*/
+    public function lista_componentes($proy_id){
+        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id); // Proy
+        $data['fase'] = $this->model_faseetapa->get_id_fase($proy_id); //// recupera datos de la tabla fase activa
+        if(count($data['fase'])!=0){
+            $data['menu']=$this->genera_menu($proy_id);
+            $data['unidad']=$this->model_componente->list_subactividades_pi();
+            $data['componente']=$this->list_componentes_pi($proy_id); 
+            $this->load->view('admin/programacion/componente/list_componentes_pi', $data);
+        }
+        else{
+            redirect('admin/proy/fase_etapa/'.$proy_id); ///// fase sin habilitar
+        }
+        
+    }
+
+    /*------- GASTO CORRIENTE-----------*/
+    /*--------- LISTA DE UNIDADES RESPONSABLES ------*/
+    public function lista_uresponsables($proy_id){
+        $unidad_responsable = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        
+
+        if(count($unidad_responsable)!=0){
+            $data['menu']=$this->genera_menu($proy_id);
+            $button='';
+            if($this->conf_form4==1 || $this->tp_adm==1){
+                $button='
+                <br>&nbsp;
+                <a href="#" data-toggle="modal" data-target="#modal_importar" class="btn btn-default importar_ff" title="SUBIR ARCHIVO EXCEL">
+                  <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="25" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO ACTIVIDADES.Xls </b>
+                </a>
+                <hr>';
+            }
+            $listado='';
+            $listado.='
+            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+              <section id="widget-grid" class="well" style="background: #ffffff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                  <div class="row" style="margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                      
+                      <!-- Tu etiqueta h1 con un espaciado regular y tipografía color plomo oscuro -->
+                      <h1 style="margin: 0; line-height: 1.4;">
+                          <small>
+                              ' . $unidad_responsable[0]['aper_programa'] . ' ' . $unidad_responsable[0]['aper_proyecto'] . ' ' . $unidad_responsable[0]['aper_actividad'] . ' - ' . $unidad_responsable[0]['tipo'] . ' ' . $unidad_responsable[0]['act_descripcion'] . ' - ' . $unidad_responsable[0]['abrev'] . '
+                          </small>
+                      </h1>
+                      
+                      <!-- Contenedor flex dinámico para alinear tus botones en la misma fila horizontal -->
+                      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+                          
+                          <!-- Tu párrafo original con el botón de colapso estilizado al formato SmartAdmin -->
+                          <p style="margin: 0;">
+                              <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2" style="font-weight: bold; color: #334155; border-color: #cbd5e1; background: #ffffff; padding: 6px 12px;">
+                                  <i class="fa fa-arrows-v"></i> LISTA DE OBJETIVOS REGIONALES ALINEADOS
+                              </button>
+                          </p>
+                          
+                          <!-- Tu enlace original "VOLVER" adaptado estéticamente a la botonera formal -->
+                          <a href="' . site_url("admin/proy/list_proy") . '" 
+                             title="VOLVER AL MENÚ ANTERIOR" 
+                             class="btn btn-default btn-sm" 
+                             style="font-weight: bold; color: #475569; border-color: #cbd5e1; background: #ffffff; padding: 6px 12px; display: inline-block;">
+                              <i class="fa fa-arrow-left"></i> VOLVER
+                          </a>
+                          
+                      </div>
+                      
+                      <!-- Tu contenedor collapse sin alterar identificadores -->
+                      <div class="collapse multi-collapse" id="multiCollapseExample1" style="margin-top: 5px;">
+                          <!-- Tu tarjeta adaptada con bordes discontinuos elegantes para resaltar el contenido -->
+                          <div class="card card-body well" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; margin-bottom: 0; box-shadow: none;">
+                              ' . $this->verif_oregional($proy_id) . '
+                          </div>
+                      </div>
+                      
+                  </div>
+              </section>
+          </article>
+
+          <section id="widget-grid" class="">
+            <div class="row">
+              <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <!-- Widget ID (each widget will need unique ID)-->
+                <div class="jarviswidget jarviswidget-color-darken" >
+                  <header>
+                    <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+                    <h2 class="font-md"><strong>MIS UNIDADES RESPONSABLES</strong></h2>               
+                  </header>
+                  <div>
+                    <div class="widget-body no-padding">
+                        '.$button.'
+                      <div class="table-responsive">
+                        '.$this->unidades_resp($proy_id).'
+                      </div>
+                    </div>
+                    <!-- end widget content -->
+                  </div>
+                  <!-- end widget div -->
+                </div>
+                <!-- end widget -->
+              </article>
+            <!-- WIDGET END -->
+            </div>
+          </section>';
+
+          $data['listado']=$listado;
+          $this->load->view('admin/programacion/componente/list_componentes', $data);
+        }
+        else{
+            $this->session->set_flashdata('danger','ERROR !!!');
+            redirect('admin/proy/list_proy');
+        }
+    }
+
+
+
+
+
+    //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2026
+    public function valida_add_requerimientos() {
+      ini_set('max_execution_time', 300); // 5 minutos
+      ini_set('memory_limit', '512M');    // Aumentar memoria
+
+      $this->load->library('excel'); // Carga el archivo que creamos arriba
+     // $path = $_FILES['archivo']['tmp_name'];
+      $cite_id = $this->input->post('cite_id');
+      $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
+
+      // Validar que el CITE exista antes de seguir
+      if (empty($cite)) {
+        echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información del CITE. Verifique su sesión.')));
+        return;
+      }
+
+      $archivo = $_FILES['archivo']['tmp_name'];
+      $errores = array();
+      $data_insertar = array();
+
+      try {
+          $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+          $lector = PHPExcel_IOFactory::createReader($archivoTipo);
+          $phpExcel = $lector->load($archivo);
+          $hoja = $phpExcel->getSheet(0);
+          $filasMax = $hoja->getHighestRow();
+          // --- 1. VALIDACIÓN DE ESTRUCTURA (Columnas) ---
+          // Obtener la última columna con datos (ej: 'S') y convertirla a número (19)
+          $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+          $totalColumnas = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+          $limitePermitido = 20; // Columna T es la 20
+
+          if (($totalColumnas > $limitePermitido) || ($totalColumnas < $limitePermitido)) {
+              echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. Solo se permiten $limitePermitido (hasta la 'T'). Por favor, elimine columnas sobrantes.")));
+              return;
+          }
+
+          // --- 1. VALIDACIÓN DE ENCABEZADOS (Columnas A a la T) ---
+          // Verificamos las primeras columnas críticas para asegurar que sea el formato correcto
+          if (trim($hoja->getCell('A1')->getValue()) != 'COD ACT' || 
+              trim($hoja->getCell('B1')->getValue()) != 'PARTIDA' || 
+              trim($hoja->getCell('G1')->getValue()) != 'TOTAL') {
+              echo json_encode(array('status' => 'error', 'errors' => array('El formato del Excel no es válido. Verifique los encabezados.')));
+              return;
+          }
+
+          // --- 2. VALIDACIÓN FILA POR FILA ---
+          for ($i = 2; $i <= $filasMax; $i++) {
+              // Extraer valores básicos
+              $cod_act = $hoja->getCell('A' . $i)->getValue();
+              $partida = $hoja->getCell('B' . $i)->getValue();
+              $cantidad = $hoja->getCell('E' . $i)->getValue();
+              //$precio = $hoja->getCell('F' . $i)->getValue();
+              //$total   = $hoja->getCell('G' . $i)->getOldCalculatedValue() ? $hoja->getCell('G' . $i)->getCalculatedValue() : $hoja->getCell('G' . $i)->getValue();
+              $precio_crudo = $hoja->getCell('F' . $i)->getCalculatedValue();
+              $precio = ($precio_crudo !== NULL && trim($precio_crudo) !== '') ? trim($precio_crudo) : 0;
+
+              // AJUSTE: Extracción calculada del TOTAL resolviendo fórmulas en caliente
+            $celda_total = $hoja->getCell('G' . $i)->getCalculatedValue();
+            $total = (!empty($celda_total) && is_numeric($celda_total)) ? floatval($celda_total) : 0.00;
+
+
+
+              if($total!=($cantidad*$precio)){
+                $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
+              }
+
+
+              // --- VALIDACION CODIGO DE ACTIVIDAD---
+              if (!empty($cod_act)) {
+                  $get_form4=$this->model_producto->verif_form4_vigente_para_alineacion($cite[0]['com_id'],$cod_act);
+                  if(count($get_form4)==1){
+                    $prod_id=$get_form4[0]['prod_id'];
+                  }
+                  else{
+                    $errores[] = "Fila $i: sin Actividad disponible para su alineacion, revisar el codigo de Actividad.";
+                  }
+              } else {
+                  $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
+              }
+
+              // --- NUEVA VALIDACIÓN: TAMAÑO DE PARTIDA ---
+              if (!empty($partida)) {
+                  // strlen cuenta cuántos caracteres tiene la cadena
+
+                  if (strlen($partida) != 5) {
+                      $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres (tiene " . strlen($partida) . ").";
+                  }
+                  else{
+                    $get_partida=$this->model_partidas->dato_par_codigo($partida);
+                    if(count($get_partida)==1){
+                      if(count($this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],$get_partida[0]['par_id']))==0){
+                        $errores[] = "Fila $i: Error !! la 'PARTIDA' ($partida) Nose encuentra asignado al programa, verifique la asignacion de partida..";
+                      }
+                    }
+                    else{
+                      $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe en nuestra Base de Datos.";
+                    }
+                  }
+              } else {
+                  $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
+              }
+
+
+              if (!is_numeric($precio)) {
+                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' debe ser un valor numérico válido.";
+                } else {
+                    $precio_float = floatval($precio);
                     
-    //                 /*------------ UPDATE ACTIVIDAD -------*/
-    //                 $update_act= array(
-    //                   'fun_id' => $this->fun_id,
-    //                   'estado' => 3
-    //                 );
-    //                 $this->db->where('act_id', $rowa['act_id']);
-    //                 $this->db->update('_actividades', $this->security->xss_clean($update_act));
-    //             }
-    //         }
+                    // Verificación matemática: Multiplicamos por 100 y evaluamos si queda un residuo decimal
+                    // Si multiplicamos 10.55 * 100 = 1055 (Entero, residuo 0) -> OK
+                    // Si multiplicamos 10.553 * 100 = 1055.3 (Flotante, tiene residuo) -> ERROR
+                    if (floor($precio_float * 100) != ($precio_float * 100)) {
+                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio) excede el límite permitido. Solo se aceptan hasta 2 decimales (Ej: 10.55).";
+                    }
+                }
 
-    //         $productos = $this->model_producto->list_prod($com_id);
-    //         if(count($productos)==0){
-    //             $update_com= array(
-    //                 'fun_id' => $this->fun_id,
-    //                 'estado' => 3
-    //             );
-    //             $this->db->where('com_id', $com_id);
-    //             $this->db->update('_componentes', $this->security->xss_clean($update_com));
+              // Validaciones básicas
+              if (empty($cod_act)) $errores[] = "Fila $i: 'COD ACT' es obligatorio.";
+              if (empty($partida)) $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
+              if (!is_numeric($total)) $errores[] = "Fila $i: El 'TOTAL' debe ser un número.";
 
-    //             $result = array(
-    //                 'respuesta' => 'correcto'
-    //             );
-    //         }
-    //         else{
-    //             $result = array(
-    //                 'respuesta' => 'error'
-    //             );
-    //         }
-           
-    //       echo json_encode($result);
-    //   } else {
-    //       echo 'DATOS ERRONEOS';
-    //   }
-    // }
+              // --- 3. VALIDACIÓN DE MESES (Columnas G a R) ---
+              $suma_meses = 0;
+              $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
+              
+              ///----------
+              foreach ($columnas_meses as $col) {
+                // Se evalúa la ecuación mensual directa en caliente
+                $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                
+                // Si la celda con fórmula o vacía no tiene valor, la homologamos a 0 puros
+                $val_mes = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
 
-   
- 
+                if (!is_numeric($val_mes)) {
+                    $errores[] = "Fila $i: Valor no numérico detectado en el mes de la columna '$col'.";
+                    break;
+                }
+                $suma_meses += floatval($val_mes);
+              }
+              ///----------
+
+              // Validación de integridad: ¿La suma de los meses coincide con el TOTAL?
+              if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
+                  $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con el TOTAL ($total).";
+              }
+
+              if (empty($errores)) {
+                  // Preparamos el array para PostgreSQL
+                  $data_insertar[] = array(
+                      'ins_codigo'   => $this->session->userdata("name").'/REQ/'.$this->gestion,
+                      'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
+                      'par_id'   => $get_partida[0]['par_id'],
+                      'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
+                      'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
+                      'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
+                      'ins_costo_unitario'      => round(floatval($precio), 2),
+                      //'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
+                      'ins_costo_total'     => $total,
+                      'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
+                      'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo modificacion
+                      'fun_id' => $this->fun_id, /// Funcionario
+                      'aper_id' => $cite[0]['aper_id'], /// aper id
+                      'com_id' => $cite[0]['com_id'], /// com id 
+                      'form4_cod' => $cod_act, /// cod act
+                      'ins_mod' => 2, /// mod
+                      'num_ip' => $this->input->ip_address(), 
+                      'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                  );
+
+                      // Creamos un vector temporal con los meses para esta fila
+                  $meses_vector = array(
+                      1  => $hoja->getCell('H' . $i)->getCalculatedValue(),
+                      2  => $hoja->getCell('I' . $i)->getCalculatedValue(),
+                      3  => $hoja->getCell('J' . $i)->getCalculatedValue(),
+                      4  => $hoja->getCell('K' . $i)->getCalculatedValue(),
+                      5  => $hoja->getCell('L' . $i)->getCalculatedValue(),
+                      6  => $hoja->getCell('M' . $i)->getCalculatedValue(),
+                      7  => $hoja->getCell('N' . $i)->getCalculatedValue(),
+                      8  => $hoja->getCell('O' . $i)->getCalculatedValue(),
+                      9  => $hoja->getCell('P' . $i)->getCalculatedValue(),
+                      10 => $hoja->getCell('Q' . $i)->getCalculatedValue(),
+                      11 => $hoja->getCell('R' . $i)->getCalculatedValue(),
+                      12 => $hoja->getCell('S' . $i)->getCalculatedValue()
+                  );
+              }
+              if (count($errores) > 15) break; // Límite de errores para no saturar
+          }
+          // --- 4. INSERCIÓN FINAL ---
+          if (ob_get_length()) ob_clean(); 
+          header('Content-Type: application/json');
+          ob_clean();
+          if (empty($errores) && !empty($data_insertar)) {
+              $this->db->trans_start(); // Iniciar transacción en Postgres
+              
+              foreach ($data_insertar as $fila) {
+                  // Cambia 'tu_tabla_requerimientos' por el nombre real de tu tabla
+                  $this->db->insert('insumos', $fila);
+                  $ins_id=$this->db->insert_id();
+                  /*-----------------------------------------------*/
+                  $data_to_store2 = array( ///// Tabla InsumoProducto
+                    'prod_id' => $prod_id, /// prod id 
+                    'ins_id' => $ins_id, /// ins_id
+                  );
+                  $this->db->insert('_insumoproducto', $data_to_store2);
+                  /*---------------------------------------------*/
+                    /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
+                      for ($i=1; $i <=12 ; $i++) {
+                        $pfin=$this->security->xss_clean($meses_vector[$i]);
+                        if($pfin!=0){
+                            $data_to_store4 = array( 
+                              'ins_id' => $ins_id, /// Id Insumo
+                              'mes_id' => $i, /// Mes 
+                              'ipm_fis' => $pfin, /// Valor mes
+                              'g_id' => $this->gestion, /// Gestion 
+                            );
+                            $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+                        }
+                      }
+                    /*------------------------------------------*/
+                    /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
+                    if($this->copia_insumo($cite_id,$ins_id,1)){ /// inserta historial reporte
+                      /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
+                        $this->update_activo_modificacion($cite_id);
+                      /*--------------------------------------*/
+                    }
+              }
+              $this->db->trans_complete();
+              if ($this->db->trans_status() === FALSE) {
+                  echo json_encode(array(
+                      'status' => 'error', 
+                      'errors' => array('Error al insertar en la base de datos (Transacción fallida).')
+                  ));
+              } else {
+                  echo json_encode(array(
+                      'status' => 'success', 
+                      'msj' => 'Importación finalizada con éxito.',
+                      'conteo' => count($data_insertar) 
+                  ));
+              }
+          } else {
+              // Si hay errores de validación o no hay datos
+              echo json_encode(array(
+                  'status' => 'error', 
+                  'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no tiene datos válidos.')
+              ));
+          }
+          exit; 
+      } catch (Exception $e) {
+          echo json_encode(array('status' => 'error', 'errors' => array('Excepción: ' . $e->getMessage())));
+      }
+    }
+
+
+
+    /*----------- VERIFICA LA ALINEACION DE OBJETIVO REGIONAL -----*/
+    public function verif_oregional($proy_id){
+        $list_oregional=$this->model_objetivoregion->list_proyecto_oregional($proy_id);
+        $tabla='';
+        $nro=0;
+        foreach($list_oregional as $row){
+            $nro++;
+            $tabla.='<h1> '.$nro.'.- OPERACI&Oacute;N REGIONAL : <small> '.$row['or_codigo'].' | '.$row['or_codigo'].' .- '.$row['or_objetivo'].'</small></h1>';
+        }
+
+        return $tabla;
+    }
+
+
 
     /*-------- VERIFICACION DE CODIGO COMPONENTE (PI) --------*/
     function verif_codigo_componente(){
@@ -126,6 +465,130 @@ class Componente extends CI_Controller {
         show_404();
       }
     }
+
+
+/*---- UNIDADES RESPONSABLES (2024) a optimizar ---------*/
+  function unidades_resp($proy_id){
+    $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
+    $componente=$this->model_componente->lista_UnidadesResponsables($proy_id);
+    $tabla='';
+    $tabla.='<table id="dt_basic4" class="table table table-bordered" width="100%">
+                <thead>
+                    <tr style="height:45px;">
+                        <th style="width:1%;">#</th>
+                        <th style="width:5%;">COD. UNIDAD</th>
+                        <th style="width:20%;">UNIDAD RESPONSABLE</th>
+                        <th style="width:5%;">PONDERACI&Oacute;N</th>
+                        <th style="width:5%;">NRO. ACT.</th>
+                        <th style="width:5%;">MIS ACTIVIDADES</th>
+                        <th style="width:5%;">FORM. POA N 4</th>
+                        <th style="width:5%;">FORM. POA N 5</th>
+                        <th style="width:5%;">EXCEL ACTIVIDADES</th>
+                        <th style="width:5%;">ELIMINAR ACTIVIDADES </th>
+                    </tr>
+                </thead>
+                <tbody>';
+                $num=0; $ponderacion=0; $sum=0;
+                foreach($componente as $row){
+                    $num++;
+                    $tabla.='
+                    <tr>';
+                        if(count($this->model_producto->lista_productos($row['com_id']))==0 & $this->tp_adm==1){
+                            $tabla.='<td><a href="#" data-toggle="modal" data-target="#modal_neg_ff" class="btn btn-default neg_ff" title="DESHABILITAR SUB-ACTIVIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/img/neg.jpg" WIDTH="35" HEIGHT="35"/></td>';
+                        }
+                        else{
+                            if($this->fun_id==399){
+                                $tabla.='<td>';
+                                $tp_sact = $this->model_componente->tp_subactividad(); // tp de subactividad
+                                  $tabla .='<select class="form-control" onchange="doSelectAlert(event,this.value,'.$row['com_id'].');">';
+                                    foreach($tp_sact as $pr){
+                                        if($pr['tp_sact']==$row['tp_sact']){
+                                          $tabla .="<option value=".$pr['tp_sact']." selected>".$pr['tipo_subactividad']."</option>";
+                                        }
+                                        else{
+                                          $tabla .="<option value=".$pr['tp_sact'].">".$pr['tipo_subactividad']."</option>"; 
+                                        }
+                                    }
+                                  $tabla.='</select>';
+                                $tabla.='</td>';
+                            }
+                            else{
+                                $tabla.='<td>'.$num.'</td>';
+                            }
+                        }
+                        $tabla.='
+                        <td bgcolor="#d4f1fb" align="center" title="'.$row["com_id"].'"><font color="blue" size=3><b>'.$row['serv_cod'].'</b></font></td>
+                        <td>'.$row['serv_descripcion'].'</td>
+                        <td>'.$row['com_ponderacion'].' %</td>
+                        <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>
+                        <td align="center">
+                            <a href="'.site_url("admin").'/prog/list_prod/'.$row['com_id'].'" title="MIS ACTIVIDADES" class="btn btn-default" target=_black><img src="'.base_url().'assets/ifinal/archivo.png" WIDTH="34" HEIGHT="34"/></a>
+                        </td>
+                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/rep_operacion_componente/'.$row['com_id'].'\');" title="REPORTE POA FORM 4" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/proy/orequerimiento_proceso/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td align="center"><a href="'.site_url("").'/prog/exportar_productos/'.$row['com_id'].'" title="EXPORTAR ACTIVIDADES" class="btn btn-default"><img src="' . base_url() . 'assets/ifinal/excel.jpg" WIDTH="38"/></a></td>
+                        <td align="center">';
+                        if(count($this->model_producto->lista_productos($row['com_id']))!=0 & $this->tp_adm==1){
+                            $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR TODAS LAS ACTIVIDADES DE LA UNIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
+                        }
+                        $tabla.='
+                        </td>
+                    </tr>';
+                    $sum=$sum+count($this->model_producto->lista_productos($row['com_id']));
+                    $ponderacion=$ponderacion+$row['com_ponderacion'];
+                }
+                $tabla.='    
+                </tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>'.$ponderacion.'%</td>
+                    <td align=center><b>'.$sum.'</b></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>';
+
+    return $tabla;
+    }
+
+ //    /*------- DESHABILITAR SUB ACTIVIDAD (SERVICIO) ------*/
+    function deshabilitar_sactividad(){
+      if ($this->input->is_ajax_request() && $this->input->post()) {
+          $post = $this->input->post();
+          $com_id = $this->security->xss_clean($post['com_id']);
+          $productos = $this->model_producto->list_prod($com_id);
+
+            $update_com= array(
+                'fun_id' => $this->fun_id,
+                'serv_id' => 0,
+                'estado' => 3
+            );
+            $this->db->where('com_id', $com_id);
+            $this->db->update('_componentes', $this->security->xss_clean($update_com));
+
+            $dato_comp = $this->model_componente->get_componente($com_id,$this->gestion);
+            if($dato_comp[0]['estado']==3){
+                $result = array(
+                'respuesta' => 'correcto'
+               );
+            }
+            else{
+                $result = array(
+                'respuesta' => 'error'
+               );
+            }
+           
+          echo json_encode($result);
+      } else {
+          echo 'DATOS ERRONEOS';
+      }
+    }
+
 
     /*---- CONSOLIDADO DE OPERACIONES POR SUB ACTIVIDADES, COMPONENTES (2019)----*/
     public function reporte_consolidado_operaciones_componentes($proy_id){
@@ -462,5 +925,41 @@ class Componente extends CI_Controller {
         }
     </style>';
         return $estilo_vertical;
+    }
+
+
+   //    /*--------------- GENERA MENU -------------*/
+    public function genera_menu($proy_id){
+        $id_f = $this->model_faseetapa->get_id_fase($proy_id);
+        $enlaces=$this->menu_modelo->get_Modulos_programacion(2);
+        $tabla='';
+        $tabla.='<nav>
+                <ul>
+                    <li>
+                        <a href='.site_url("admin").'/dashboard'.' title="MENU PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
+                    </li>
+                    <li class="text-center">
+                        <a href='.base_url().'index.php/admin/proy/mis_proyectos/1'.' title="PROGRAMACI&Oacute;N POA"> <span class="menu-item-parent">PROGRAMACI&Oacute;N POA</span></a>
+                    </li>';
+                    if(count($id_f)!=0){
+                        for($i=0;$i<count($enlaces);$i++){ 
+                            $tabla.='
+                            <li>
+                                <a href="#" >
+                                    <i class="'.$enlaces[$i]['o_image'].'"></i> <span class="menu-item-parent">'.$enlaces[$i]['o_titulo'].'</span></a>
+                                <ul >';
+                                $submenu= $this->menu_modelo->get_Modulos_sub($enlaces[$i]['o_child']);
+                                foreach($submenu as $row) {
+                                   $tabla.='<li><a href='.base_url($row['o_url'])."/".$id_f[0]['proy_id'].'>'.$row['o_titulo'].'</a></li>';
+                                }
+                            $tabla.='</ul>
+                            </li>';
+                        }
+                    }
+                $tabla.='
+                </ul>
+            </nav>';
+
+        return $tabla;
     }
 }

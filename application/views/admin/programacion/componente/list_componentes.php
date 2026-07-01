@@ -18,30 +18,6 @@
 		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/estilosh.css">
 		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.core.css" />
 		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
-		<script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
-		<script>
-			function abreVentana(PDF){             
-                var direccion;
-                direccion = '' + PDF;
-                window.open(direccion, "Reporte Actividades" , "width=1000,height=650,scrollbars=SI") ;                                                           
-            }                                          
-          	</script>
-		<style type="text/css">
-			aside{background: #05678B;}
-			table{font-size: 10px;
-            width: 100%;
-            max-width:1550px;;
-            overflow-x: scroll;
-            }
-            th{
-              padding: 1.4px;
-              text-align: center;
-              font-size: 10px;
-            }
-            #mdialTamanio{
-          		width: 55% !important;
-		     }
-		</style>
 	</head>
 	<body class="">
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
@@ -78,9 +54,9 @@
 			<div class="login-info">
 				<span> <!-- User image size is adjusted inside CSS, it should stay as is --> 
 					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
-                        <span>
-                            <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
-                        </span>
+            <span>
+                <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
+            </span>
 					</a> 
 				</span>
 			</div>
@@ -95,7 +71,7 @@
 			<div id="ribbon">
 				<!-- breadcrumb -->
 				<ol class="breadcrumb">
-					<li><a href="<?php echo base_url().'index.php/admin/proy/list_proy';?>" title="POA">Programaci&oacute;n POA</a></li><li>Programaci&oacute;n F&iacute;sica</a></li><li>Mis Unidades</li>
+					<li><a href="<?php echo base_url().'index.php/admin/proy/list_proy';?>" title="POA">Programaci&oacute;n POA</a></li><li>Programaci&oacute;n F&iacute;sica</a></li><li>Mis Unidades Responsables</li>
 				</ol>
 			</div>
 			<!-- END RIBBON -->
@@ -103,76 +79,17 @@
 			<!-- MAIN CONTENT -->
 			<div id="content">
 				<div class="row">
-					<article class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
+					<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 						<section id="widget-grid" class="well">
 							<ul class="nav nav-pills">
-							  <li class="active" title="<?php echo $proyecto[0]['act_id'];?>"><a href="#">MIS UNIDADES RESPONSABLES</a></li>
+							  <li class="active"><a href="#">MIS UNIDADES RESPONSABLES</a></li>
 							  <li><a href="#">MIS ACTIVIDADES</a></li>
 							</ul>
 						</section>
 					</article>
-					<article class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
-                      	<section id="widget-grid" class="well">
-                          <center>
-                          	<div class="dropdown">
-							  <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenu1" style="width:80%;" data-toggle="dropdown" aria-expanded="true">
-							    OPCIONES
-							    <span class="caret"></span>
-							  </button>
-							  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-							    <li role="presentation"><a role="menuitem" tabindex="-1" href="<?php echo base_url().'index.php/admin/dashboard' ?>">SALIR A MENU PRINCIPAL</a></li>
-							    <li role="presentation"><a role="menuitem" tabindex="-1" href="<?php echo base_url().'index.php/admin/proy/list_proy'?>">LISTA DE UNIDADES / ESTABLECIMIENTOS</a></li>
-							    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-toggle="modal" data-target="#modal_importar_ff" class="importar_ff" name="1" title="MODIFICAR REQUERIMIENTO" >SUBIR ACTIVIDAD.CSV</a></li>
-							    
-							  </ul>
-							</div>
-			                </center>
-                      	</section>
-					</article>
 				</div>
 				
-					<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                      <section id="widget-grid" class="well" title="aper : <?php echo $proyecto[0]['aper_id'];?>">
-                          <div class="">
-                            <h1> <?php echo $proyecto[0]['establecimiento'];?> : <small><?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev']?></small></h1>
-				            <p>
-			                    <button class="btn btn-default" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2">LISTA DE OBJETIVOS REGIONALES ALINEADOS</button>
-			                </p>
-			                <div class="collapse multi-collapse" id="multiCollapseExample1">
-			                    <div class="card card-body">
-			                      <?php echo $oregional;?>
-			                    </div>
-			                </div>
-                          </div>
-
-                      </section>
-					</article>
-
-					<section id="widget-grid" class="">
-						<div class="row">
-							<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-								<!-- Widget ID (each widget will need unique ID)-->
-								<div class="jarviswidget jarviswidget-color-darken" >
-									<header>
-										<span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-										<h2 class="font-md"><strong>MIS UNIDADES REPONSABLES</strong></h2>               
-									</header>
-									<div>
-										<div class="widget-body no-padding">
-												<?php echo $button;?>
-											<div class="table-responsive">
-												<?php echo $componente;?>
-											</div>
-										</div>
-										<!-- end widget content -->
-									</div>
-									<!-- end widget div -->
-								</div>
-								<!-- end widget -->
-							</article>
-						<!-- WIDGET END -->
-						</div>
-					</section>
+					<?php echo $listado; ?>
 
 			</div>
 			<!-- END MAIN CONTENT -->
@@ -180,57 +97,75 @@
 
 
 	<!-- SUBIR PLANTILLA DE MIGRACION -->
-	<div class="modal fade" id="modal_importar_ff" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-      <div class="modal-dialog" id="mdialTamanio">
-        <div class="modal-content">
-          <div class="modal-header">
-              <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-          </div>
-          <div class="modal-body">
-              <h2 class="row-seperator-header"><i class="glyphicon glyphicon-import"></i> <b>IMPORTAR ARCHIVO FORM 4.CSV</b></h2>
-              <section id="widget-grid" class="">
-                <div>
-                  <h1> <?php echo $proyecto[0]['establecimiento'];?> : <small><?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev']?></small></h1>
-                </div>
-              </section>
-              <div class="row">
-                <form action="<?php echo site_url().'/programacion/cservicios/importar_operaciones_global'?>" enctype="multipart/form-data" id="form_subir_sigep" name="form_subir_sigep" method="post">
-                    <input type="hidden" name="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
-                    <input type="hidden" name="pfec_id" value="<?php echo $proyecto[0]['pfec_id'];?>">
-                  <fieldset>
-                    <div class="form-group">
-                      <center>
-                      	<img src="<?php echo base_url(); ?>assets/img/img_migracion/migracion_form4_unidad.JPG" style="border-style:solid;border-width:5px;" style="width:10px;">
-                      </center>
-                      <hr>
-                        <p class="alert alert-info">
-                          <i class="fa fa-info"></i> Por favor guardar el archivo (Excel.xls) a extension (.csv) delimitado por (; "Punto y comas"). verificar el archivo .csv para su correcta importaci&oacute;n
-                        </p>
-                    </div>
-                  </fieldset>  
-                
-                  <div class="form-group">
-                    <b>SELECCIONAR ARCHIVO CSV</b>
-                    <div class="input-group">
-                      <span class="input-group-btn">
-                        <span class="btn btn-primary" onclick="$(this).parent().find('input[type=file]').click();">Browse</span>
-                        <input  id="archivo" accept=".csv" name="archivo" onchange="$(this).parent().parent().find('.form-control').html($(this).val().split(/[\\|/]/).pop());" style="display: none;" type="file">
-                        <input name="MAX_FILE_SIZE" type="hidden" value="20000" />
-                      </span>
-                      <span class="form-control"></span>
-                    </div>
-                </div>
-                  
-                  <div>
-                      <button type="button" name="subir_archivo" id="subir_archivo" class="btn btn-success" style="width:100%;">SUBIR ARCHIVO FORM 4.CSV</button><br>
-                      <center><img id="load" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="50" height="50"></center>
-                  </div>
-                </form> 
-              </div>
-            </div>
-        </div>
-      </div>
-    </div>
+	<!-- ================== MODAL SUBIR ARCHIVO ========================== -->
+		<style>
+        #dialog_subir{
+          width: 40% !important;
+        }
+    </style>
+		<div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true">
+		    <div class="modal-dialog" id="dialog_subir">
+		        <div class="modal-content" style="border-radius: 8px; border: none; overflow: hidden;">
+		            
+		            <!-- Cabecera más limpia -->
+		            <div class="modal-header" style="background: #f8f9fa; border-bottom: 1px solid #eee; padding: 15px 20px;">
+		                <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 24px;">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		                <h4 class="modal-title" style="font-weight: bold; color: #333;">
+		                    <i class="fa fa-upload text-primary"></i> Importar Consolidado Actividades
+		                </h4>
+		            </div>
+
+		            <div class="modal-body" style="padding: 25px;">
+		                <!-- Título e Instrucción -->
+		                <div class="text-center" style="margin-bottom: 20px;">
+		                    <h5 style="font-weight: bold; text-transform: uppercase; color: #555;">Subir archivo Excel (.xls, .xlsx)</h5>
+		                    <p  style="font-size:12px;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+		                </div>
+
+		                <!-- Vista previa de columnas (Imagen optimizada) -->
+		                <div class="thumbnail" style="border: 1px dashed #ddd; padding: 10px; background: #fafafa;">
+		                    <img src="<?= base_url('assets/img/img_migracion/migracion_form4_unidad.JPG'); ?>" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto;">
+		                </div>
+
+		                <form action="<?= site_url('modificaciones/cmod_insumo/valida_add_requerimientos'); ?>" method="post" enctype="multipart/form-data" id="form_subir_sigep">
+		               
+		                    
+		                    <div class="form-group" style="margin-top: 20px;">
+		                        <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #444;">SELECCIONAR ARCHIVO:</label>
+		                        <div class="input-group input-group-lg">
+		                            <span class="input-group-btn">
+		                                <button type="button" class="btn btn-primary" onclick="$(this).parent().find('input[type=file]').click();" style="border-radius: 4px 0 0 4px;">
+		                                    <i class="fa fa-folder-open"></i> Examinar...
+		                                </button>
+		                                <input id="archivo" accept=".xlsx, .xls" name="archivo" 
+		                                       onchange="$(this).parent().parent().find('.file-name-display').val($(this).val().split(/[\\|/]/).pop());" 
+		                                       style="display: none;" type="file" required>
+		                            </span>
+		                            <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #fff; cursor: default;">
+		                        </div>
+		                    </div>
+
+		                    <div id="mensaje" style="margin: 10px 0;"></div>
+
+		                    <!-- Botón de Acción -->
+		                    <div style="margin-top: 25px;">
+		                        <button type="button" id="btn_subir" class="btn btn-success btn-lg btn-block" style="font-weight: bold; border-radius: 4px; transition: all 0.3s;">
+		                            <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+		                        </button>
+		                    </div>
+
+		                    <!-- Loader -->
+		                    <div id="loads" class="text-center" style="display: none; margin-top: 15px;">
+		                        <i class="fa fa-spinner fa-spin fa-2x text-success"></i>
+		                        <p style="margin-top: 10px;"><b>Validando datos, por favor espere...</b></p>
+		                    </div>
+		                </form>
+		            </div>
+		        </div>
+		    </div>
+		</div>
 
 
 		<!-- END MAIN PANEL -->    
@@ -253,41 +188,42 @@
 			}
 		</script>
 		<!-- IMPORTANT: APP CONFIG -->
-		<script src="<?php echo base_url(); ?>assets/js/session_time/jquery-idletimer.js"></script>
-		<script src="<?php echo base_url();?>/assets/js/app.config.js"></script>
+						<script src="<?php echo base_url(); ?>assets/js/session_time/jquery-idletimer.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/app.config.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/mis_js/validacion_form.js"></script>
 		<!-- JS TOUCH : include this plugin for mobile drag / drop touch events-->
-		<script src="<?php echo base_url();?>/assets/js/plugin/jquery-touch/jquery.ui.touch-punch.min.js"></script> 
+		<script src="<?php echo base_url(); ?>assets/js/plugin/jquery-touch/jquery.ui.touch-punch.min.js"></script> 
 		<!-- BOOTSTRAP JS -->
-		<script src="<?php echo base_url();?>/assets/js/bootstrap/bootstrap.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/bootstrap/bootstrap.min.js"></script>
 		<!-- CUSTOM NOTIFICATION -->
-		<script src="<?php echo base_url();?>/assets/js/notification/SmartNotification.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/notification/SmartNotification.min.js"></script>
 		<!-- JARVIS WIDGETS -->
-		<script src="<?php echo base_url();?>/assets/js/smartwidgets/jarvis.widget.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/smartwidgets/jarvis.widget.min.js"></script>
 		<!-- EASY PIE CHARTS -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/easy-pie-chart/jquery.easy-pie-chart.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/easy-pie-chart/jquery.easy-pie-chart.min.js"></script>
 		<!-- SPARKLINES -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/sparkline/jquery.sparkline.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/sparkline/jquery.sparkline.min.js"></script>
 		<!-- JQUERY VALIDATE -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/jquery-validate/jquery.validate.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/jquery-validate/jquery.validate.min.js"></script>
 		<!-- JQUERY MASKED INPUT -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/masked-input/jquery.maskedinput.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/masked-input/jquery.maskedinput.min.js"></script>
 		<!-- JQUERY SELECT2 INPUT -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/select2/select2.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/select2/select2.min.js"></script>
 		<!-- JQUERY UI + Bootstrap Slider -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/bootstrap-slider/bootstrap-slider.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/bootstrap-slider/bootstrap-slider.min.js"></script>
 		<!-- browser msie issue fix -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/msie-fix/jquery.mb.browser.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/msie-fix/jquery.mb.browser.min.js"></script>
 		<!-- FastClick: For mobile devices -->
-		<script src="<?php echo base_url();?>/assets/js/plugin/fastclick/fastclick.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/plugin/fastclick/fastclick.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
 		<!-- Demo purpose only -->
-		<script src="<?php echo base_url();?>/assets/js/demo.min.js"></script>
+		<script src="<?php echo base_url(); ?>assets/js/demo.min.js"></script>
 		<!-- MAIN APP JS FILE -->
-		<script src="<?php echo base_url();?>/assets/js/app.min.js"></script>
-		<SCRIPT src="<?php echo base_url(); ?>assets/js/mis_js/validacion_form.js" type="text/javascript"></SCRIPT>
+		<script src="<?php echo base_url(); ?>assets/js/app.min.js"></script>
 		<!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
 		<!-- Voice command : plugin -->
 		<script src="<?php echo base_url(); ?>assets/js/speech/voicecommand.min.js"></script>
-		<!--alertas -->
+		
 		<!-- PAGE RELATED PLUGIN(S) -->
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/jquery.dataTables.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.colVis.min.js"></script>
@@ -295,6 +231,94 @@
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
 		<script>
+			////------------  PARA MIGRAR ARCHIVO EN EXCEL 2026 ==========2026
+$(document).ready(function() {
+    // Mostrar nombre del archivo al seleccionar
+    $('#archivo').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        if (fileName) {
+            $('.file-name-display').val(fileName); // Ajustado al input readonly del diseño anterior
+        }
+    });
+
+    $('#btn_subir').on('click', function(e) {
+        e.preventDefault();
+        $('#mensaje').html(''); 
+
+        if ($('#archivo').val() == '') {
+            $('#mensaje').html('<div class="alert alert-warning"><i class="fa fa-exclamation-triangle"></i> Por favor, seleccione un archivo Excel.</div>');
+            return false;
+        }
+
+        var form = $('#form_subir_sigep')[0];
+        var data = new FormData(form);
+
+        // Bloquear UI
+        $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> PROCESANDO...');
+        $('#loads').show();
+
+        $.ajax({
+            type: "POST",
+            url: $('#form_subir_sigep').attr('action'),
+            data: data,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                    var res;
+                    try {
+                        res = (typeof response === 'object') ? response : JSON.parse(response);
+                    } catch (e) {
+                        console.error("Error parseando JSON:", response);
+                        $('#mensaje').html('<div class="alert alert-danger">Error de respuesta del servidor (Posible tiempo de espera agotado).</div>');
+                        $('#btn_subir').prop('disabled', false).text('REINTENTAR');
+                        $('#loads').hide();
+                        return;
+                    }
+
+                if (res.status === 'success') {
+                    // Construimos un mensaje más visual
+                    var html = `
+                        <div class="alert alert-success text-center" style="border-left: 5px solid #2d8a39;">
+                            <i class="fa fa-check-circle fa-3x" style="margin-bottom:12px;"></i>
+                            <h4>¡PROCESO COMPLETADO!</h4>
+                            <p style="font-size: 16px;">${res.msj}</p>
+                            <div style="font-size: 24px; font-weight: bold;">
+                                <span class="label label-success">${res.conteo}</span>
+                            </div>
+                            <p><small>Requerimientos registrados en el sistema.</small></p>
+                        </div>`;
+
+                    $('#mensaje').html(html);
+                    $('#loads').hide();
+                    
+                    // Ocultar el botón para evitar doble clic
+                    $('#btn_subir').hide();
+
+                    // Recargar la página después de 3 segundos
+                    setTimeout(function() {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    // LÓGICA DE ERRORES
+                    var errorMsg = "<strong>SE ENCONTRARON ERRORES:</strong><ul style='margin-top:12px;'>";
+                    $.each(res.errors, function(index, value) {
+                        errorMsg += "<li>" + value + "</li>";
+                    });
+                    errorMsg += "</ul>";
+                    
+                    $('#mensaje').html('<div class="alert alert-danger">' + errorMsg + '</div>');
+                    $('#btn_subir').prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> VALIDAR Y SUBIR ARCHIVO EXCEL');
+                    $('#loads').hide();
+                }
+            },
+            error: function() {
+                $('#mensaje').html('<div class="alert alert-danger">Error crítico: No se pudo procesar el archivo en el servidor.</div>');
+                $('#btn_subir').prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR SUBIDA');
+                $('#loads').hide();
+            }
+        });
+    });
+});
 		function doSelectAlert(event,tp_id,com_id) {
 		    var option = event.srcElement.children[event.srcElement.selectedIndex];
 		    if (option.dataset.noAlert !== undefined) {

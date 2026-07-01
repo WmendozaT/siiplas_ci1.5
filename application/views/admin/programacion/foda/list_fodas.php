@@ -89,9 +89,9 @@
 			<div class="login-info">
 				<span> <!-- User image size is adjusted inside CSS, it should stay as is --> 
 					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
-                            <span>
-                                <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
-                            </span>
+              <span>
+                <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
+              </span>
 						<i class="fa fa-angle-down"></i>
 					</a>
 				</span>
@@ -99,11 +99,11 @@
 			<nav>
 				<ul>
 					<li class="">
-	                <a href="<?php echo site_url("admin") . '/dashboard'; ?>" title="MENÚ PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
-	            	</li>
-		            <li class="text-center">
-		                <a href="#" title="PROGRAMACION DEL POA"> <span class="menu-item-parent">PROGRAMACI&Oacute;N</span></a>
-		            </li>
+	          <a href="<?php echo site_url("admin") . '/dashboard'; ?>" title="MENÚ PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
+	        </li>
+		      <li class="text-center">
+		        <a href="#" title="PROGRAMACION DEL POA"> <span class="menu-item-parent">PROGRAMACI&Oacute;N</span></a>
+		      </li>
 					<?php echo $menu;?>
 				</ul>
 			</nav>
@@ -130,7 +130,7 @@
 				<!-- widget grid -->
 				<section id="widget-grid" class="">
 					<div class="row">
-                        <article class="col-xs-12 col-sm-12 col-md-10 col-lg-10">
+            <article class="col-xs-12 col-sm-12 col-md-10 col-lg-10">
 							<div class="well well-sm well-light">
 								<h2><b>ANALISIS DE PROBLEMAS Y SUS CAUSAS</b></h2>
 								<h3><b>UNIDAD ORG.</b></small><?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?></h3><hr>
@@ -143,10 +143,10 @@
 							</div>
 						</article>
 						<article class="col-xs-12 col-sm-12 col-md-2 col-lg-2">
-                            <section id="widget-grid" class="well">
-                                <a href="<?php echo base_url();?>index.php/admin/analisis_sit" title="SALIR" class="btn btn-default" style="width:100%;"><img src="<?php echo base_url(); ?>assets/Iconos/arrow_turn_left.png" WIDTH="20" HEIGHT="20"/>&nbsp;SALIR</a>
-                            </section>
-                        </article>
+              <section id="widget-grid" class="well">
+                <a href="<?php echo base_url();?>index.php/admin/proy/list_proy" title="SALIR" class="btn btn-default" style="width:100%;"><img src="<?php echo base_url(); ?>assets/Iconos/arrow_turn_left.png" WIDTH="20" HEIGHT="20"/>&nbsp;SALIR</a>
+              </section>
+            </article>
 					</div>
 					<div class="row">
 						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -180,32 +180,32 @@
                 <div class="modal-body">
                 	<h2 class="alert alert-info"><center>MODIFICAR CAUSAS - ACCIONES</center></h2>
                 		<form action="<?php echo site_url().'/analisis_situacion/canalisis_situacion/valida_causas'?>" method="post" id="form_mcausas" name="form_mcausas" class="smart-form">
-							<input type="hidden" name="ca_id" id="ca_id">
-							<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
-							<input type="hidden" name="tp" id="tp" value="2">
-							<header>
-								<b>UNIDAD / ESTABLECIMIENTO : </b><?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?><br>
-								<div id="mcprob"></div>
-							</header>
-							<fieldset>
-								<section>
-									<label class="label"><b>CAUSAS DE LOS PROBLEMAS</b></label>
-									<label class="textarea"> <i class="icon-append fa fa-comment"></i>
-										<textarea rows="4" name="mcausas" id="mcausas"></textarea>
-									</label>
-								</section>
-								<section>
-									<label class="label"><b>ACCIONES RECOMENDADAS</b></label>
-									<label class="textarea"> <i class="icon-append fa fa-comment"></i>
-										<textarea rows="4" name="macciones" id="macciones"></textarea>
-									</label>
-								</section>
-							</fieldset>
-							<footer>
-								<button type="button" name="subir_mcausas" id="subir_mcausas" class="btn btn-info">MODIFICAR</button>
-								<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
-							</footer>
-						</form>
+												<input type="hidden" name="ca_id" id="ca_id">
+												<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
+												<input type="hidden" name="tp" id="tp" value="2">
+												<header>
+													<b>UNIDAD ORGANIZACIONAL: </b><?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?><br>
+													<div id="mcprob"></div>
+												</header>
+												<fieldset>
+													<section>
+														<label class="label"><b>CAUSAS DE LOS PROBLEMAS</b></label>
+														<label class="textarea"> <i class="icon-append fa fa-comment"></i>
+															<textarea rows="4" name="mcausas" id="mcausas"></textarea>
+														</label>
+													</section>
+													<section>
+														<label class="label"><b>ACCIONES RECOMENDADAS</b></label>
+														<label class="textarea"> <i class="icon-append fa fa-comment"></i>
+															<textarea rows="4" name="macciones" id="macciones"></textarea>
+														</label>
+													</section>
+												</fieldset>
+												<footer>
+													<button type="button" name="subir_mcausas" id="subir_mcausas" class="btn btn-info">MODIFICAR</button>
+													<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
+												</footer>
+											</form>
                     </div>
                 </div>
             </div>
@@ -218,32 +218,32 @@
                 <div class="modal-body">
                 	<h2 class="alert alert-info"><center>REGISTRAR CAUSAS - ACCIONES</center></h2>
                 		<form action="<?php echo site_url().'/analisis_situacion/canalisis_situacion/valida_causas'?>" method="post" id="form_causas" name="form_causas" class="smart-form">
-							<input type="hidden" name="prob_cid" id="prob_cid">
-							<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
-							<input type="hidden" name="tp" id="tp" value="1">
-							<header>
-								<b>UNIDAD / ESTABLECIMIENTO : </b><?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?><br>
-								<div id="prob"></div>
-							</header>
-							<fieldset>
-								<section>
-									<label class="label"><b>CAUSAS DE LOS PROBLEMAS</b></label>
-									<label class="textarea"> <i class="icon-append fa fa-comment"></i>
-										<textarea rows="4" name="causas" id="causas"></textarea>
-									</label>
-								</section>
-								<section>
-									<label class="label"><b>ACCIONES RECOMENDADAS</b></label>
-									<label class="textarea"> <i class="icon-append fa fa-comment"></i>
-										<textarea rows="4" name="acciones" id="acciones"></textarea>
-									</label>
-								</section>
-							</fieldset>
-							<footer>
-								<button type="button" name="subir_causas" id="subir_causas" class="btn btn-info">REGISTRAR</button>
-								<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
-							</footer>
-						</form>
+												<input type="hidden" name="prob_cid" id="prob_cid">
+												<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
+												<input type="hidden" name="tp" id="tp" value="1">
+												<header>
+													<b>UNIDAD ORGANIZACIONAL: </b><?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?><br>
+													<div id="prob"></div>
+												</header>
+												<fieldset>
+													<section>
+														<label class="label"><b>CAUSAS DE LOS PROBLEMAS</b></label>
+														<label class="textarea"> <i class="icon-append fa fa-comment"></i>
+															<textarea rows="4" name="causas" id="causas"></textarea>
+														</label>
+													</section>
+													<section>
+														<label class="label"><b>ACCIONES RECOMENDADAS</b></label>
+														<label class="textarea"> <i class="icon-append fa fa-comment"></i>
+															<textarea rows="4" name="acciones" id="acciones"></textarea>
+														</label>
+													</section>
+												</fieldset>
+												<footer>
+													<button type="button" name="subir_causas" id="subir_causas" class="btn btn-info">REGISTRAR</button>
+													<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
+												</footer>
+											</form>
                     </div>
                 </div>
             </div>
@@ -257,24 +257,24 @@
                 <div class="modal-body">
                 	<h2 class="alert alert-info"><center>REGISTRO PROBLEMA</center></h2>
                 		<form action="<?php echo site_url().'/analisis_situacion/canalisis_situacion/valida_problema'?>" method="post" id="form_prob" name="form_prob" class="smart-form">
-							<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
-							<input type="hidden" name="tp" id="tp" value="1">
-							<header>
-								UNIDAD / ESTABLECIMIENTO : <?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?>
-							</header>
-							<fieldset>
-								<section>
-									<label class="label"><b>PROBLEMAS IDENTIFICADOS</b></label>
-									<label class="textarea"> <i class="icon-append fa fa-comment"></i>
-										<textarea rows="4" name="problema"></textarea>
-									</label>
-								</section>
-							</fieldset>
-							<footer>
-								<button type="button" name="subir_prob" id="subir_prob" class="btn btn-info" >GUARDAR</button>
-								<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
-							</footer>
-						</form>
+												<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
+												<input type="hidden" name="tp" id="tp" value="1">
+												<header>
+													UNIDAD / ESTABLECIMIENTO : <?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?>
+												</header>
+												<fieldset>
+													<section>
+														<label class="label"><b>PROBLEMAS IDENTIFICADOS</b></label>
+														<label class="textarea"> <i class="icon-append fa fa-comment"></i>
+															<textarea rows="4" name="problema"></textarea>
+														</label>
+													</section>
+												</fieldset>
+												<footer>
+													<button type="button" name="subir_prob" id="subir_prob" class="btn btn-info" >GUARDAR</button>
+													<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
+												</footer>
+											</form>
                     </div>
                 </div>
             </div>
@@ -287,25 +287,25 @@
                 <div class="modal-body">
                 	<h2 class="alert alert-info"><center>MODIFICAR PROBLEMA</center></h2>
                 		<form action="<?php echo site_url().'/analisis_situacion/canalisis_situacion/valida_problema'?>" method="post" id="form_mprob" name="form_mprob" class="smart-form">
-							<input type="hidden" name="prob_id" id="prob_id">
-							<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
-							<input type="hidden" name="tp" id="tp" value="2">
-							<header>
-								UNIDAD / ESTABLECIMIENTO : <?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?>
-							</header>
-							<fieldset>
-								<section>
-									<label class="label"><b>PROBLEMAS IDENTIFICADOS</b></label>
-									<label class="textarea"> <i class="icon-append fa fa-comment"></i>
-										<textarea rows="4" name="mproblema" id="mproblema"></textarea>
-									</label>
-								</section>
-							</fieldset>
-							<footer>
-								<button type="button" name="subir_mprob" id="subir_mprob" class="btn btn-info" >MODIFICAR</button>
-								<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
-							</footer>
-						</form>
+												<input type="hidden" name="prob_id" id="prob_id">
+												<input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
+												<input type="hidden" name="tp" id="tp" value="2">
+												<header>
+													UNIDAD / ESTABLECIMIENTO : <?php echo $proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'];?>
+												</header>
+												<fieldset>
+													<section>
+														<label class="label"><b>PROBLEMAS IDENTIFICADOS</b></label>
+														<label class="textarea"> <i class="icon-append fa fa-comment"></i>
+															<textarea rows="4" name="mproblema" id="mproblema"></textarea>
+														</label>
+													</section>
+												</fieldset>
+												<footer>
+													<button type="button" name="subir_mprob" id="subir_mprob" class="btn btn-info" >MODIFICAR</button>
+													<button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
+												</footer>
+											</form>
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@ class Proyecto extends CI_Controller {
       $this->load->model('programacion/model_proyecto');
       $this->load->model('programacion/model_componente');
       $this->load->model('programacion/model_producto');
-
+      $this->load->model('analisis_situacion/model_analisis_situacion');
       $this->load->model('mantenimiento/mapertura_programatica');
       $this->load->model('mantenimiento/munidad_organizacional');
       $this->load->model('mantenimiento/model_estructura_org');
@@ -31,14 +31,7 @@ class Proyecto extends CI_Controller {
       $this->conf_form4 = $this->session->userData('conf_form4');
       $this->conf_form5 = $this->session->userData('conf_form5');
       $this->conf_poa_estado = $this->session->userData('conf_poa_estado'); /// Ajuste POA 1: Inicial, 2 : Ajuste, 3 : aprobado
-      
       $this->load->library('programacionpoa');
-      $this->load->library('lib_foda');
-        // Si CI no creó la propiedad, la asignamos nosotros a mano
-        if (!isset($this->lib_foda)) {
-            $CI =& get_instance();
-            $this->lib_foda = $CI->lib_foda;
-        }
       }else{
           $this->session->sess_destroy();
           redirect('/','refresh');
@@ -89,7 +82,8 @@ class Proyecto extends CI_Controller {
                                   <th style="width:4%;" >VALIDAR POA</th>
                                   <th style="width:4%;" title="REPORTE POA - FORM. 4 Y 5">REPORTE POA</th>
                                   <th style="width:4%;" title="CONSOLIDADO POA">CONSOLIDADO POA</th>
-                                  <th style="width:4%;" title="PROGRAMACIÓN FISICA Y FINANCIERA">'.$titulo_btn_prog.'</th>
+                                  <th style="width:4%;" title="PROGRAMACIÓN FISICA Y FINANCIERA">FORM. N 3</th>
+                                  <th style="width:4%;" title="PROGRAMACIÓN FISICA Y FINANCIERA">PROG. POA.</th>
                                   <th style="width:4%;" title="MODIFICAR">MODIFICAR</th>
                                   <th style="width:4%;" title="ELIMINAR">ELIMINAR</th>
                                   <th style="width:10%;" title="APERTURA PROGRAM&Aacute;TICA">CATEGORIA PROGRAM&Aacute;TICA '.$this->gestion.'</th>
@@ -404,10 +398,11 @@ class Proyecto extends CI_Controller {
 
       if($proy_estado==1){ /// Inicial
         foreach($unidades as $row){
+          
           $nro++;
           $tabla.='<tr style="height:35px;">';
             $tabla.= '<td align=center title="'.$row['aper_id'].'"><b>'.$nro.'</b></td>';
-            $tabla.='<td bgcolor="#5B9360">';
+            $tabla.='<td bgcolor="#fafafa">';
               if($this->conf_form5==1){
                 $tabla.='
                   <center>
@@ -415,24 +410,29 @@ class Proyecto extends CI_Controller {
                   </center>';
               }
             $tabla.='</td>';
-            $tabla .='<td bgcolor="#5B9360">';
+            $tabla .='<td bgcolor="#fafafa">';
               if($this->conf_form4==1){
                 $tabla.='<center><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default enlace" name="'.$row['proy_id'].'" id="'.strtoupper($row['tipo']).' '.strtoupper($row['proy_nombre']).' - '.strtoupper($row['abrev']).'"><img src="'.base_url().'assets/ifinal/doc.jpg" WIDTH="38" HEIGHT="38" title="VER POA '.$this->gestion.'"/></a></center>';
               }
             $tabla.='</td>';
-            $tabla .='<td bgcolor="#5B9360">';
+            $tabla .='<td bgcolor="#fafafa">';
               if($this->conf_form4==1){
                 $tabla.='<center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" class="btn btn-default" title="CONSOLIDADO POA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="38" HEIGHT="38" title="VER POA '.$this->gestion.'"/></a></center>';
               }
             $tabla.='
             </td>
-            <td bgcolor="#5B9360">';
+            <td bgcolor="#fafafa">';
                 if($this->conf_form3==1){ //// foda
-                  $tabla.='<center><a href="'.site_url("").'/as/list_foda/'.$row['proy_id'].'" title="FORMULARIO FODA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/foda.png" WIDTH="35" HEIGHT="35"/></center></a><br>
-                  <center><a href="javascript:abreVentana(\''.site_url("").'/as/rep_list_foda/'.$row['proy_id'].'\');" title="IMPRIMIR FORMULARIO FODA" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="35" HEIGHT="35"/></center></a>';
+                  $tabla.='<center><a href="'.site_url("").'/as/list_foda/'.$row['proy_id'].'" title="FORMULARIO FODA" class="btn btn-default" target=_blank><img src="'.base_url().'assets/ifinal/mod.png" WIDTH="35" HEIGHT="35"/></center></a>';
+                  if(count($this->model_analisis_situacion->list_analisis_problemas_reporte($row['proy_id']))!=0){
+                    $tabla.='<center><a href="javascript:abreVentana(\''.site_url("").'/as/rep_list_foda/'.$row['proy_id'].'\');" title="IMPRIMIR FORMULARIO FODA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/rep_pdf.png" WIDTH="35" HEIGHT="35"/></center></a>';
+                  }
                 }
-                elseif($this->conf_form4==1 || $this->conf_form5==1){
-                  $tabla.='<center><a href="'.site_url("").'/prog/list_serv/'.$row['proy_id'].'" title="PROGRAMACION F&Iacute;SICA - FINANCIERA" class="btn btn-default"><img src="'.base_url().'assets/ifinal/bien.png" WIDTH="38" HEIGHT="38"/></a></center>';
+            $tabla.='
+            </td>
+            <td bgcolor="#fafafa">';
+                if($this->conf_form4==1 || $this->conf_form5==1){
+                  $tabla.='<center><a href="'.site_url("").'/prog/list_serv/'.$row['proy_id'].'" title="PROGRAMACION F&Iacute;SICA - FINANCIERA" target=_blank class="btn btn-default"><img src="'.base_url().'assets/ifinal/bien.png" WIDTH="38" HEIGHT="38"/></a></center>';
                 }
             $tabla.='
             </td>';
@@ -448,7 +448,7 @@ class Proyecto extends CI_Controller {
               }                 
             $tabla .= '</td>';
             $tabla .= '<td style="font-size: 14px;"><center><b>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</b></center></td>';
-            $tabla.='<td style="font-size: 11px;"><b>'.$row['tipo'].' '.$row['unidad_organizacional'].' - '.$row['abrev'].'</b></td>';
+            $tabla.='<td style="font-size: 11px;"><b>'.$row['tipo'].' '.$row['act_descripcion'].' - '.$row['abrev'].'</b></td>';
             $tabla.='<td>'.strtoupper($row['dist_distrital']).'</td>';
             $tabla.='<td>'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>';
             $tabla.='<td>'.number_format($row['ppto_poa'], 2, ',', '.').'</td>';

@@ -171,10 +171,10 @@ $route['rep/print_certificaciones_poa/(:any)'] = 'reportes_cns/rep_operaciones/r
 
 ///////// PROGRAMACION FISICA FINANCIERA
 /*-----------------------------  PROGRAMACION FISICA DEL PROYECTO - COMPONENTES (2020) -------------------------------*/
-$route['prog/list_serv/(:any)'] = 'programacion/cservicios/verif_tipo_ope/$1';  //// Listado de Servicios (2020)
-$route['admin/prog/subir_archivo_producto'] = 'programacion/cservicios/archivo_productos'; //// Migracion de Operaciones por servicio
-$route['prog/delete_operaciones_componente'] = 'programacion/cservicios/elimina_operaciones_componente';	//// Delete servicio y operaciones
-$route['prog/des_sactividad'] = 'programacion/cservicios/deshabilitar_sactividad';	//// Deshabilitar servicio
+$route['prog/list_serv/(:any)'] = 'programacion/componente/verif_tipo_gasto/$1';  //// Listado de Servicios (2020)
+// $route['admin/prog/subir_archivo_producto'] = 'programacion/cservicios/archivo_productos'; //// Migracion de Operaciones por servicio
+// $route['prog/delete_operaciones_componente'] = 'programacion/cservicios/elimina_operaciones_componente';	//// Delete servicio y operaciones
+$route['prog/des_sactividad'] = 'programacion/componente/deshabilitar_sactividad';	//// Deshabilitar servicio
 
 
 $route['prog/valida_comp'] = 'programacion/cservicios/valida_componente';  //// Valida Componente (PROY INVERSION)

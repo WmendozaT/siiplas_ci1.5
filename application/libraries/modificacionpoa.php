@@ -129,7 +129,7 @@ class Modificacionpoa extends CI_Controller{
                   $tabla.='
                   <td><center>'.$row['aper_programa'].''.$row['aper_proyecto'].''.$row['aper_actividad'].'</center></td>
                   <td><b>'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].'</b></td>
-                  <td>'.$row['escalon'].'</td>
+                  <td></td>
                   <td>'.$row['nivel'].'</td>
                   <td>'.$row['tipo_adm'].'</td>
                   <td>'.strtoupper($row['dep_departamento']).'</td>

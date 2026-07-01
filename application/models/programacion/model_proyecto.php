@@ -673,7 +673,13 @@ class Model_proyecto extends CI_Model{
 
     /*----- GET DATOS PROYECTO - UNIDAD REGISTRADO (2020) -----*/
     public function get_datos_proyecto_unidad($proy_id){
-        $sql = 'select p.*,dist.*,dep.*,ua.*,te.*,apg.*,pfe.*
+        $sql = 'select *
+                from fn_lista_poa_nacional('.$this->gestion.')
+                where proy_id='.$proy_id.'';
+
+
+
+        /*$sql = 'select p.*,dist.*,dep.*,ua.*,te.*,apg.*,pfe.*
                 from _proyectos p
                 Inner Join _distritales as dist On dist.dist_id=p.dist_id
                 Inner Join _departamentos as dep On dep.dep_id=p.dep_id
@@ -681,7 +687,7 @@ class Model_proyecto extends CI_Model{
                 Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
                 Inner Join unidad_actividad as ua On ua.act_id=p.act_id
                 Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                where p.proy_id='.$proy_id.' and apg.aper_estado!=\'3\' and p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and pfe.pfec_estado=\'1\'';
+                where p.proy_id='.$proy_id.' and apg.aper_estado!=\'3\' and p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.' and pfe.pfec_estado=\'1\'';*/
 
         $query = $this->db->query($sql);
         return $query->result_array();
