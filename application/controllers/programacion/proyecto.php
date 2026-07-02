@@ -495,7 +495,7 @@ class Proyecto extends CI_Controller {
             $tabla.='
             </td>
             <td><center>'.$row['aper_programa'].''.$row['aper_proyecto'].''.$row['aper_actividad'].'</center></td>
-            <td>'.$row['tipo'].' '.$row['unidad_organizacional'].' - '.$row['abrev'].'</td>
+            <td>'.$row['tipo'].' '.$row['act_descripcion'].' - '.$row['abrev'].'</td>
             <td>'.strtoupper($row['dist_distrital']).'</td>
             <td>'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>
             <td>'.number_format($row['ppto_poa'], 2, ',', '.').'</td>

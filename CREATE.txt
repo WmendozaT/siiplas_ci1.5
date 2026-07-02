@@ -141,6 +141,7 @@ CREATE OR REPLACE VIEW public.vista_lista_UnidadesResponsables AS
     sa.serv_id,
     sa.serv_cod,
     sa.serv_descripcion,
+    tpsa.tp_sact,
     tpsa.tipo_subactividad,
     apg.aper_id,
     apg.aper_programa,

@@ -141,6 +141,28 @@ class Model_componente extends CI_Model{
     }
 
 
+    /*====== GET UNIDAD RESPONSABLE 2026 ======*/
+    public function get_UnidadesResponsables($proy_id, $cod_unidad) {
+        // 1. Query con marcadores de posición (?) para desinfectar los parámetros
+        $sql = "SELECT *
+                FROM vista_lista_unidadesresponsables
+                WHERE proy_id = ? 
+                  AND aper_gestion = ? 
+                  AND serv_cod = ?
+                ORDER BY com_id ASC;"; 
+
+        // 2. Ejecución segura pasando el vector ordenado de variables (Inmunización SQL)
+        $query = $this->db->query($sql, array(
+            intval($proy_id), 
+            intval($this->gestion), 
+            trim($cod_unidad)
+        ));
+        
+        // Retorna la matriz de registros en un array asociativo bidimensional
+        return $query->result_array();
+    }
+
+
 
 
     /*====== GET COMPONENTE PARA SEGUIMIENTO POA (NUEVA GESTION) ======*/
@@ -175,7 +197,7 @@ class Model_componente extends CI_Model{
     /*======================================================================================*/
 
     /*================================= FASE-COMPONENTE NRO ======================================*/
-    public function get_fase_componente_nro($pfec_id,$cod,$tp_id){
+/*    public function get_fase_componente_nro($pfec_id,$cod,$tp_id){
         if($tp_id==1){
             $sql = 'select *
                 from _componentes c
@@ -190,7 +212,7 @@ class Model_componente extends CI_Model{
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
     /*======================================================================================*/
 
 /*    public function list_componentes_total($proy_id){

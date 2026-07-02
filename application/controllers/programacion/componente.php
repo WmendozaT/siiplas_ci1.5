@@ -78,8 +78,6 @@ class Componente extends CI_Controller {
     /*--------- LISTA DE UNIDADES RESPONSABLES ------*/
     public function lista_uresponsables($proy_id){
         $unidad_responsable = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
-        
-
         if(count($unidad_responsable)!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $button='';
@@ -93,30 +91,31 @@ class Componente extends CI_Controller {
             }
             $listado='';
             $listado.='
+            <input type="hidden" name="base" value="'.base_url().'">
             <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
               <section id="widget-grid" class="well" style="background: #ffffff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                   <div class="row" style="margin: 0; display: flex; flex-direction: column; gap: 12px;">
                       
-                      <!-- Tu etiqueta h1 con un espaciado regular y tipografÌa color plomo oscuro -->
+                      <!-- Tu etiqueta h1 con un espaciado regular y tipograf√≠a color plomo oscuro -->
                       <h1 style="margin: 0; line-height: 1.4;">
                           <small>
                               ' . $unidad_responsable[0]['aper_programa'] . ' ' . $unidad_responsable[0]['aper_proyecto'] . ' ' . $unidad_responsable[0]['aper_actividad'] . ' - ' . $unidad_responsable[0]['tipo'] . ' ' . $unidad_responsable[0]['act_descripcion'] . ' - ' . $unidad_responsable[0]['abrev'] . '
                           </small>
                       </h1>
                       
-                      <!-- Contenedor flex din·mico para alinear tus botones en la misma fila horizontal -->
+                      <!-- Contenedor flex din√°mico para alinear tus botones en la misma fila horizontal -->
                       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
                           
-                          <!-- Tu p·rrafo original con el botÛn de colapso estilizado al formato SmartAdmin -->
+                          <!-- Tu p√°rrafo original con el bot√≥n de colapso estilizado al formato SmartAdmin -->
                           <p style="margin: 0;">
                               <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2" style="font-weight: bold; color: #334155; border-color: #cbd5e1; background: #ffffff; padding: 6px 12px;">
                                   <i class="fa fa-arrows-v"></i> LISTA DE OBJETIVOS REGIONALES ALINEADOS
                               </button>
                           </p>
-                          
-                          <!-- Tu enlace original "VOLVER" adaptado estÈticamente a la botonera formal -->
+                          '.$button.'
+                          <!-- Tu enlace original "VOLVER" adaptado est√©ticamente a la botonera formal -->
                           <a href="' . site_url("admin/proy/list_proy") . '" 
-                             title="VOLVER AL MEN⁄ ANTERIOR" 
+                             title="VOLVER AL MEN√ö ANTERIOR" 
                              class="btn btn-default btn-sm" 
                              style="font-weight: bold; color: #475569; border-color: #cbd5e1; background: #ffffff; padding: 6px 12px; display: inline-block;">
                               <i class="fa fa-arrow-left"></i> VOLVER
@@ -147,7 +146,7 @@ class Componente extends CI_Controller {
                   </header>
                   <div>
                     <div class="widget-body no-padding">
-                        '.$button.'
+                        
                       <div class="table-responsive">
                         '.$this->unidades_resp($proy_id).'
                       </div>
@@ -171,262 +170,6 @@ class Componente extends CI_Controller {
         }
     }
 
-
-
-
-
-    //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2026
-    public function valida_add_requerimientos() {
-      ini_set('max_execution_time', 300); // 5 minutos
-      ini_set('memory_limit', '512M');    // Aumentar memoria
-
-      $this->load->library('excel'); // Carga el archivo que creamos arriba
-     // $path = $_FILES['archivo']['tmp_name'];
-      $cite_id = $this->input->post('cite_id');
-      $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
-
-      // Validar que el CITE exista antes de seguir
-      if (empty($cite)) {
-        echo json_encode(array('status' => 'error', 'errors' => array('No se encontrÛ informaciÛn del CITE. Verifique su sesiÛn.')));
-        return;
-      }
-
-      $archivo = $_FILES['archivo']['tmp_name'];
-      $errores = array();
-      $data_insertar = array();
-
-      try {
-          $archivoTipo = PHPExcel_IOFactory::identify($archivo);
-          $lector = PHPExcel_IOFactory::createReader($archivoTipo);
-          $phpExcel = $lector->load($archivo);
-          $hoja = $phpExcel->getSheet(0);
-          $filasMax = $hoja->getHighestRow();
-          // --- 1. VALIDACI”N DE ESTRUCTURA (Columnas) ---
-          // Obtener la ˙ltima columna con datos (ej: 'S') y convertirla a n˙mero (19)
-          $columnaMaxLetra = $hoja->getHighestDataColumn(); 
-          $totalColumnas = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
-          $limitePermitido = 20; // Columna T es la 20
-
-          if (($totalColumnas > $limitePermitido) || ($totalColumnas < $limitePermitido)) {
-              echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. Solo se permiten $limitePermitido (hasta la 'T'). Por favor, elimine columnas sobrantes.")));
-              return;
-          }
-
-          // --- 1. VALIDACI”N DE ENCABEZADOS (Columnas A a la T) ---
-          // Verificamos las primeras columnas crÌticas para asegurar que sea el formato correcto
-          if (trim($hoja->getCell('A1')->getValue()) != 'COD ACT' || 
-              trim($hoja->getCell('B1')->getValue()) != 'PARTIDA' || 
-              trim($hoja->getCell('G1')->getValue()) != 'TOTAL') {
-              echo json_encode(array('status' => 'error', 'errors' => array('El formato del Excel no es v·lido. Verifique los encabezados.')));
-              return;
-          }
-
-          // --- 2. VALIDACI”N FILA POR FILA ---
-          for ($i = 2; $i <= $filasMax; $i++) {
-              // Extraer valores b·sicos
-              $cod_act = $hoja->getCell('A' . $i)->getValue();
-              $partida = $hoja->getCell('B' . $i)->getValue();
-              $cantidad = $hoja->getCell('E' . $i)->getValue();
-              //$precio = $hoja->getCell('F' . $i)->getValue();
-              //$total   = $hoja->getCell('G' . $i)->getOldCalculatedValue() ? $hoja->getCell('G' . $i)->getCalculatedValue() : $hoja->getCell('G' . $i)->getValue();
-              $precio_crudo = $hoja->getCell('F' . $i)->getCalculatedValue();
-              $precio = ($precio_crudo !== NULL && trim($precio_crudo) !== '') ? trim($precio_crudo) : 0;
-
-              // AJUSTE: ExtracciÛn calculada del TOTAL resolviendo fÛrmulas en caliente
-            $celda_total = $hoja->getCell('G' . $i)->getCalculatedValue();
-            $total = (!empty($celda_total) && is_numeric($celda_total)) ? floatval($celda_total) : 0.00;
-
-
-
-              if($total!=($cantidad*$precio)){
-                $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
-              }
-
-
-              // --- VALIDACION CODIGO DE ACTIVIDAD---
-              if (!empty($cod_act)) {
-                  $get_form4=$this->model_producto->verif_form4_vigente_para_alineacion($cite[0]['com_id'],$cod_act);
-                  if(count($get_form4)==1){
-                    $prod_id=$get_form4[0]['prod_id'];
-                  }
-                  else{
-                    $errores[] = "Fila $i: sin Actividad disponible para su alineacion, revisar el codigo de Actividad.";
-                  }
-              } else {
-                  $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
-              }
-
-              // --- NUEVA VALIDACI”N: TAMA—O DE PARTIDA ---
-              if (!empty($partida)) {
-                  // strlen cuenta cu·ntos caracteres tiene la cadena
-
-                  if (strlen($partida) != 5) {
-                      $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres (tiene " . strlen($partida) . ").";
-                  }
-                  else{
-                    $get_partida=$this->model_partidas->dato_par_codigo($partida);
-                    if(count($get_partida)==1){
-                      if(count($this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],$get_partida[0]['par_id']))==0){
-                        $errores[] = "Fila $i: Error !! la 'PARTIDA' ($partida) Nose encuentra asignado al programa, verifique la asignacion de partida..";
-                      }
-                    }
-                    else{
-                      $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe en nuestra Base de Datos.";
-                    }
-                  }
-              } else {
-                  $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
-              }
-
-
-              if (!is_numeric($precio)) {
-                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' debe ser un valor numÈrico v·lido.";
-                } else {
-                    $precio_float = floatval($precio);
-                    
-                    // VerificaciÛn matem·tica: Multiplicamos por 100 y evaluamos si queda un residuo decimal
-                    // Si multiplicamos 10.55 * 100 = 1055 (Entero, residuo 0) -> OK
-                    // Si multiplicamos 10.553 * 100 = 1055.3 (Flotante, tiene residuo) -> ERROR
-                    if (floor($precio_float * 100) != ($precio_float * 100)) {
-                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio) excede el lÌmite permitido. Solo se aceptan hasta 2 decimales (Ej: 10.55).";
-                    }
-                }
-
-              // Validaciones b·sicas
-              if (empty($cod_act)) $errores[] = "Fila $i: 'COD ACT' es obligatorio.";
-              if (empty($partida)) $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
-              if (!is_numeric($total)) $errores[] = "Fila $i: El 'TOTAL' debe ser un n˙mero.";
-
-              // --- 3. VALIDACI”N DE MESES (Columnas G a R) ---
-              $suma_meses = 0;
-              $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
-              
-              ///----------
-              foreach ($columnas_meses as $col) {
-                // Se eval˙a la ecuaciÛn mensual directa en caliente
-                $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
-                
-                // Si la celda con fÛrmula o vacÌa no tiene valor, la homologamos a 0 puros
-                $val_mes = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
-
-                if (!is_numeric($val_mes)) {
-                    $errores[] = "Fila $i: Valor no numÈrico detectado en el mes de la columna '$col'.";
-                    break;
-                }
-                $suma_meses += floatval($val_mes);
-              }
-              ///----------
-
-              // ValidaciÛn de integridad: øLa suma de los meses coincide con el TOTAL?
-              if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
-                  $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con el TOTAL ($total).";
-              }
-
-              if (empty($errores)) {
-                  // Preparamos el array para PostgreSQL
-                  $data_insertar[] = array(
-                      'ins_codigo'   => $this->session->userdata("name").'/REQ/'.$this->gestion,
-                      'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-                      'par_id'   => $get_partida[0]['par_id'],
-                      'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
-                      'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
-                      'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
-                      'ins_costo_unitario'      => round(floatval($precio), 2),
-                      //'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
-                      'ins_costo_total'     => $total,
-                      'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
-                      'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo modificacion
-                      'fun_id' => $this->fun_id, /// Funcionario
-                      'aper_id' => $cite[0]['aper_id'], /// aper id
-                      'com_id' => $cite[0]['com_id'], /// com id 
-                      'form4_cod' => $cod_act, /// cod act
-                      'ins_mod' => 2, /// mod
-                      'num_ip' => $this->input->ip_address(), 
-                      'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
-                  );
-
-                      // Creamos un vector temporal con los meses para esta fila
-                  $meses_vector = array(
-                      1  => $hoja->getCell('H' . $i)->getCalculatedValue(),
-                      2  => $hoja->getCell('I' . $i)->getCalculatedValue(),
-                      3  => $hoja->getCell('J' . $i)->getCalculatedValue(),
-                      4  => $hoja->getCell('K' . $i)->getCalculatedValue(),
-                      5  => $hoja->getCell('L' . $i)->getCalculatedValue(),
-                      6  => $hoja->getCell('M' . $i)->getCalculatedValue(),
-                      7  => $hoja->getCell('N' . $i)->getCalculatedValue(),
-                      8  => $hoja->getCell('O' . $i)->getCalculatedValue(),
-                      9  => $hoja->getCell('P' . $i)->getCalculatedValue(),
-                      10 => $hoja->getCell('Q' . $i)->getCalculatedValue(),
-                      11 => $hoja->getCell('R' . $i)->getCalculatedValue(),
-                      12 => $hoja->getCell('S' . $i)->getCalculatedValue()
-                  );
-              }
-              if (count($errores) > 15) break; // LÌmite de errores para no saturar
-          }
-          // --- 4. INSERCI”N FINAL ---
-          if (ob_get_length()) ob_clean(); 
-          header('Content-Type: application/json');
-          ob_clean();
-          if (empty($errores) && !empty($data_insertar)) {
-              $this->db->trans_start(); // Iniciar transacciÛn en Postgres
-              
-              foreach ($data_insertar as $fila) {
-                  // Cambia 'tu_tabla_requerimientos' por el nombre real de tu tabla
-                  $this->db->insert('insumos', $fila);
-                  $ins_id=$this->db->insert_id();
-                  /*-----------------------------------------------*/
-                  $data_to_store2 = array( ///// Tabla InsumoProducto
-                    'prod_id' => $prod_id, /// prod id 
-                    'ins_id' => $ins_id, /// ins_id
-                  );
-                  $this->db->insert('_insumoproducto', $data_to_store2);
-                  /*---------------------------------------------*/
-                    /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
-                      for ($i=1; $i <=12 ; $i++) {
-                        $pfin=$this->security->xss_clean($meses_vector[$i]);
-                        if($pfin!=0){
-                            $data_to_store4 = array( 
-                              'ins_id' => $ins_id, /// Id Insumo
-                              'mes_id' => $i, /// Mes 
-                              'ipm_fis' => $pfin, /// Valor mes
-                              'g_id' => $this->gestion, /// Gestion 
-                            );
-                            $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
-                        }
-                      }
-                    /*------------------------------------------*/
-                    /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
-                    if($this->copia_insumo($cite_id,$ins_id,1)){ /// inserta historial reporte
-                      /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
-                        $this->update_activo_modificacion($cite_id);
-                      /*--------------------------------------*/
-                    }
-              }
-              $this->db->trans_complete();
-              if ($this->db->trans_status() === FALSE) {
-                  echo json_encode(array(
-                      'status' => 'error', 
-                      'errors' => array('Error al insertar en la base de datos (TransacciÛn fallida).')
-                  ));
-              } else {
-                  echo json_encode(array(
-                      'status' => 'success', 
-                      'msj' => 'ImportaciÛn finalizada con Èxito.',
-                      'conteo' => count($data_insertar) 
-                  ));
-              }
-          } else {
-              // Si hay errores de validaciÛn o no hay datos
-              echo json_encode(array(
-                  'status' => 'error', 
-                  'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacÌo o no tiene datos v·lidos.')
-              ));
-          }
-          exit; 
-      } catch (Exception $e) {
-          echo json_encode(array('status' => 'error', 'errors' => array('ExcepciÛn: ' . $e->getMessage())));
-      }
-    }
 
 
 
@@ -475,16 +218,15 @@ class Componente extends CI_Controller {
     $tabla.='<table id="dt_basic4" class="table table table-bordered" width="100%">
                 <thead>
                     <tr style="height:45px;">
-                        <th style="width:1%;">#</th>
-                        <th style="width:5%;">COD. UNIDAD</th>
-                        <th style="width:20%;">UNIDAD RESPONSABLE</th>
-                        <th style="width:5%;">PONDERACI&Oacute;N</th>
-                        <th style="width:5%;">NRO. ACT.</th>
-                        <th style="width:5%;">MIS ACTIVIDADES</th>
-                        <th style="width:5%;">FORM. POA N 4</th>
-                        <th style="width:5%;">FORM. POA N 5</th>
-                        <th style="width:5%;">EXCEL ACTIVIDADES</th>
-                        <th style="width:5%;">ELIMINAR ACTIVIDADES </th>
+                        <th style="width:1%; text-align:center;">#</th>
+                        <th style="width:5%; text-align:center;">CODIGO UNIDAD RESPONSABLE</th>
+                        <th style="width:20%; text-align:center;">UNIDAD RESPONSABLE</th>
+                        <th style="width:5%; text-align:center;">NRO. ACT.</th>
+                        <th style="width:5%; text-align:center;">MIS ACTIVIDADES</th>
+                        <th style="width:5%; text-align:center;">FORM. POA N 4</th>
+                        <th style="width:5%; text-align:center;">FORM. POA N 5</th>
+                        <th style="width:5%; text-align:center;">EXCEL ACTIVIDADES</th>
+                        <th style="width:5%; text-align:center;">ELIMINAR ACTIVIDADES </th>
                     </tr>
                 </thead>
                 <tbody>';
@@ -517,15 +259,14 @@ class Componente extends CI_Controller {
                             }
                         }
                         $tabla.='
-                        <td bgcolor="#d4f1fb" align="center" title="'.$row["com_id"].'"><font color="blue" size=3><b>'.$row['serv_cod'].'</b></font></td>
+                        <td bgcolor="#FAF9AC" align="center" title="'.$row["com_id"].'"><font color="blue" size=3><b>'.$row['serv_cod'].'</b></font></td>
                         <td>'.$row['serv_descripcion'].'</td>
-                        <td>'.$row['com_ponderacion'].' %</td>
                         <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>
                         <td align="center">
                             <a href="'.site_url("admin").'/prog/list_prod/'.$row['com_id'].'" title="MIS ACTIVIDADES" class="btn btn-default" target=_black><img src="'.base_url().'assets/ifinal/archivo.png" WIDTH="34" HEIGHT="34"/></a>
                         </td>
-                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/rep_operacion_componente/'.$row['com_id'].'\');" title="REPORTE POA FORM 4" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
-                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/proy/orequerimiento_proceso/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 4" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
                         <td align="center"><a href="'.site_url("").'/prog/exportar_productos/'.$row['com_id'].'" title="EXPORTAR ACTIVIDADES" class="btn btn-default"><img src="' . base_url() . 'assets/ifinal/excel.jpg" WIDTH="38"/></a></td>
                         <td align="center">';
                         if(count($this->model_producto->lista_productos($row['com_id']))!=0 & $this->tp_adm==1){
@@ -543,9 +284,8 @@ class Componente extends CI_Controller {
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td></td>
-                    <td>'.$ponderacion.'%</td>
                     <td align=center><b>'.$sum.'</b></td>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -553,10 +293,461 @@ class Componente extends CI_Controller {
                 </tr>
             </table>';
 
+            $tabla .= '
+            <style>
+                /* Estilizaci√≥n formal e inmunizada para la rejilla del cargador masivo */
+                #dialog_subir { width: 45%;}
+            </style>
+
+            <div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
+                <div class="modal-dialog" id="dialog_subir">
+                    <div class="modal-content" style="border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+                        
+                        <!-- CABECERA DEL COMPONENTE -->
+                        <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                            <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                                <i class="fa fa-upload text-primary"></i> Importar Consolidado Actividades
+                            </h4>
+                        </div>
+
+                        <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
+                        <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                            
+                            <!-- T√≠tulo e Instrucci√≥n -->
+                            <div class="text-center" style="margin-bottom: 20px;">
+                                <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Excel (.xls, .xlsx)</h5>
+                                <p style="font-size:11.5px; margin:0;" class="text-muted">Aseg√∫rese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                            </div>
+
+                            <!-- Vista previa de columnas (Corregido: Concatenaci√≥n nativa base_url) -->
+                            <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                                <img src="' . base_url('assets/img/img_migracion/migracion_form4_unidad.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
+                            </div>
+
+                            <!-- Formulario de persistencia binaria (Corregido: Concatenaci√≥n nativa site_url) -->
+                            <form action="' . site_url('programacion/componente/valida_migracion_form4_consolidado') . '" method="post" enctype="multipart/form-data" id="form_subir_sigep" autocomplete="off" style="padding:0; background:transparent;">
+                                <input name="proy_id" value="'.$proy_id.'" type="hidden" > 
+                                <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                    
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                                <i class="fa fa-folder-open"></i> Examinar...
+                                            </button>
+                                            
+                                            <input id="archivo" accept=".xlsx, .xls" name="archivo" 
+                                                   onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                                   style="display: none;" type="file" required>
+                                        </span>
+                                        <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                    </div>
+                                </div>
+
+                                <div id="mensaje" style="margin: 10px 0; font-size: 11px;"></div>
+
+                                <!-- Bot√≥n de Env√≠o y Validaci√≥n Masiva -->
+                                <div style="margin-top: 25px;">
+                                    <button type="button" id="btn_subir" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                        <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                    </button>
+                                </div>
+
+                                <!-- Animaci√≥n Pre-Loader de la Planilla -->
+                                <div id="loads" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                    <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                    <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>';
+
+$tabla .= '
+        <script type="text/javascript">
+            // REVISI√ìN DE INTEGRIDAD SIIPLAS: Espera nativamente la disponibilidad de JQuery en el DOM
+            window.addEventListener("load", function() {
+                if (typeof $ !== "undefined") {
+
+                    // Mostrar nombre del archivo al seleccionar en el input simulado de SmartAdmin
+                    $(document).on(\'change\', \'#archivo\', function() {
+                        var fileName = $(this).val().split(\'\\\\\').pop();
+                        if (fileName) {
+                            $(\'.file-name-display\').val(fileName);
+                        }
+                    });
+
+                    // ==========================================================================
+                    // ESCUCHA SUBMIT AS√çNCRONA: MIGRACI√ìN Y CONSOLIDACI√ìN DE FILAS DEL EXCEL
+                    // ==========================================================================
+                    $(document).on(\'click\', \'#btn_subir\', function(e) {
+                        e.preventDefault();
+                        $(\'#mensaje\').html(\'\'); 
+
+                        if ($(\'#archivo\').val() == \'\') {
+                            $(\'#mensaje\').html(\'<div class="alert alert-warning" style="margin-bottom:0;"><i class="fa fa-exclamation-triangle"></i> Por favor, seleccione un archivo Excel v√°lido.</div>\');
+                            if (typeof alertify !== "undefined") {
+                                alertify.error("‚ö†Ô∏è Restricci√≥n: No se seleccion√≥ ninguna plantilla .CSV o .XLSX");
+                            }
+                            return false;
+                        }
+
+                        var form = $(\'#form_subir_sigep\')[0];
+                        var data_multipart = new FormData(form);
+                        var $btn = $(this);
+
+                        // Bloquear UI e Inyectar Loader
+                        $btn.prop(\'disabled\', true).html(\'<i class="fa fa-refresh fa-spin"></i> PROCESANDO MATRIZ POA...\');
+                        $(\'#loads\').show();
+
+                        $.ajax({
+                            type: "POST",
+                            url: $(\'#form_subir_sigep\').attr(\'action\'),
+                            data: data_multipart,
+                            processData: false,
+                            contentType: false,
+                            success: function(response) {
+                                var res;
+                                try {
+                                    res = (typeof response === \'object\') ? response : JSON.parse(response);
+                                } catch (err) {
+                                    console.error("Error parseando JSON:", response);
+                                    $(\'#mensaje\').html(\'<div class="alert alert-danger"><b>‚ùå Error del Servidor:</b> La respuesta de la base de datos PostgreSQL devolvi√≥ un buffer corrupto o se agot√≥ el tiempo de espera.</div>\');
+                                    $btn.prop(\'disabled\', false).text(\'REINTENTAR ACCI√ìN\');
+                                    $(\'#loads\').hide();
+                                    return;
+                                }
+
+                                // Eval√∫a el √©xito transaccional unificado en la CNS
+                                if (res.respuesta === \'correcto\' || res.status === \'success\') {
+                                    var mensaje_exito = res.mensaje || res.msj || "Registros migrados exitosamente.";
+                                    var conteo_filas = res.filas_procesadas || res.conteo || "0";
+
+                                    // Construcci√≥n de plantilla visual de √©xito en auditor√≠a
+                                    var html_success = `
+                                        <div class="alert alert-success text-center" style="border-left: 5px solid #2e7d32; background:#f0fdf4; color:#16a34a; padding:15px; margin-bottom:0;">
+                                            <i class="fa fa-check-circle fa-3x" style="margin-bottom:10px;"></i>
+                                            <h4 style="font-weight:bold; margin:0 0 5px 0; color:#15803d;">¬°MIGRACI√ìN COMPLETADA CON √âXITO!</h4>
+                                            <p style="font-size: 12.5px; color:#166534; font-weight:500;">${mensaje_exito}</p>
+                                            <div style="margin: 10px 0;">
+                                                <span class="label label-success" style="font-size: 16px; padding: 4px 12px; font-weight:bold; background:#16a34a;">${conteo_filas}</span>
+                                            </div>
+                                            <p style="margin:0;"><small class="text-muted">Registros validados e insertados en las aperturas program√°ticas.</small></p>
+                                        </div>`;
+
+                                    $(\'#mensaje\').html(html_success);
+                                    $(\'#loads\').hide();
+                                    $btn.hide(); 
+
+                                    // Temporizador inteligente multi-rol CNS para refrescar grilla
+                                    setTimeout(function() {
+                                        $(\'#modal_importar\').modal("hide");
+                                        $(\'.modal-backdrop\').remove();
+                                        $(\'body\').removeClass(\'modal-open\').css(\'padding-right\', \'\');
+
+                                        var combo_admin = $(\'#dist_id\').val();
+                                        if (combo_admin !== undefined && combo_admin !== "" && combo_admin !== "0") {
+                                            $("#dist_id").trigger("change");
+                                        } else {
+                                            if (typeof forzar_refresco_grilla_siiplas_directo === "function") {
+                                                var dist_id_oculto = $(\'input[name="dist_id"]\').val() || 0;
+                                                forzar_refresco_grilla_siiplas_directo(dist_id_oculto);
+                                            } else {
+                                                location.reload(); 
+                                            }
+                                        }
+                                    }, 2500);
+
+                                } else {
+                                    // L√ìGICA COHERENTE DE EXTRACCI√ìN DE ALERTAS Y ERRORES DE CONSISTENCIA
+                                    var mensaje_error = res.mensaje || res.msj || "El archivo contiene celdas inv√°lidas.";
+                                    var errorMsg = `<strong style="font-size:12px; color:#b91c1c;"><i class="fa fa-times-circle"></i> SE DETECTARON INCONSISTENCIAS EN LA PLANILLA:</strong><br><small class="text-muted">${mensaje_error}</small>`;
+                                    
+                                    if (res.errors || res.errores) {
+                                        var coleccion_errores = res.errors || res.errores;
+                                        errorMsg += "<ul style=\'margin-top:8px; padding-left:15px; text-align:left; font-size:11px;\'>";
+                                        $.each(coleccion_errores, function(index, value) {
+                                            errorMsg += "<li>" + value + "</li>";
+                                        });
+                                        errorMsg += "</ul>";
+                                    }
+                                    
+                                    $(\'#mensaje\').html(\'<div class="alert alert-danger" style="margin-bottom:0; background:#fef2f2; border-color:#fee2e2; color:#991b1b;">\' + errorMsg + \'</div>\');
+                                    $btn.prop(\'disabled\', false).html(\'<i class="fa fa-file-excel-o"></i> REINTENTAR VALIDACI√ìN Y SUBIDA\');
+                                    $(\'#loads\').hide();
+                                }
+                            },
+                            error: function(xhr, textStatus, errorThrown) {
+                                // üåü DETECTOR FORENSE INTEGRADO: Intercepta el colapso 500 y expone el Fatal Error en caliente
+                                $(\'#loads\').hide();
+                                $btn.prop(\'disabled\', false).html(\'<i class="fa fa-file-excel-o"></i> REINTENTAR SUBIDA\');
+
+                                var errorDetallado = xhr.responseText;
+                                var mensajeVisible = "<strong>üö® FALLA CR√çTICA EN EL SERVIDOR (HTTP 500):</strong><br>";
+                                mensajeVisible += "<small class=\'text-muted\'>Apache local abort√≥ el hilo de procesamiento PHPExcel. Detalle del volcado:</small><hr>";
+                                
+                                if (errorDetallado) {
+                                    mensajeVisible += "<div style=\'max-height: 200px; overflow-y: auto; background: #fff5f5; padding: 10px; border: 1px solid #fee2e2; font-family: monospace; font-size: 11px; text-align: left; color: #991b1b;\'>";
+                                    mensajeVisible += errorDetallado;
+                                    mensajeVisible += "</div>";
+                                } else {
+                                    mensajeVisible += "El backend no retorn√≥ ninguna cadena de caracteres. Verifique directivas max_input_vars en su php.ini.";
+                                }
+
+                                $(\'#mensaje\').html(\'<div class="alert alert-danger" style="margin-bottom:0; background:#fef2f2;">\' + mensajeVisible + \'</div>\');
+                            }
+                        });
+                    });
+
+                }
+            });
+        </script>';
+
     return $tabla;
     }
 
- //    /*------- DESHABILITAR SUB ACTIVIDAD (SERVICIO) ------*/
+
+        //// PARA MIGRACION DE ACTIVIDADES POR ARCHIVO EXCEL 2026
+      public function valida_migracion_form4_consolidado() {
+        ini_set('max_execution_time', 300); // 5 minutos
+        ini_set('memory_limit', '512M');    // Aumentar memoria
+
+        $this->load->library('excel'); 
+        $proy_id = $this->input->post('proy_id');
+        
+        // Carga de cat√°logo relacional de validaci√≥n de los Objetivos Regionales
+        $list_oregional = $this->model_objetivoregion->list_proyecto_oregional($proy_id);
+
+        if (empty($proy_id)) {
+            echo json_encode(array('status' => 'error', 'errors' => array('No se encontr√≥ informaci√≥n de la Unidad Organizacional. Verifique su sesi√≥n.')));
+            return;
+        }
+
+        if (!isset($_FILES['archivo']) || empty($_FILES['archivo']['tmp_name'])) {
+            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel v√°lido.')));
+            return;
+        }
+
+        $archivo = $_FILES['archivo']['tmp_name'];
+        $errores = array();
+        $data_insertar = array();
+
+        try {
+            $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+            $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
+            
+            // OPTIMIZACI√ìN DE MEMORIA: Ignoramos estilos gr√°ficos pesados para no colapsar la RAM
+            $lector->setReadDataOnly(true);
+            
+            $phpExcel    = $lector->load($archivo);
+            $hoja        = $phpExcel->getSheet(0);
+            $filasMax    = $hoja->getHighestRow();
+            
+            // --- 1. VALIDACI√ìN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
+            $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+            $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+            $limitePermitido = 22; 
+
+            if ($totalColumnas != $limitePermitido) {
+                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'V').")));
+                return;
+            }
+
+            // --- 2. VALIDACI√ìN FILA POR FILA ---
+            for ($i = 2; $i <= $filasMax; $i++) {
+                
+                $com_id = 0;
+                $or_id  = 0;
+
+                // Extraer valores b√°sicos de la fila activa
+                $cod_uresp          = trim($hoja->getCell('A' . $i)->getValue());
+                $cod_acp            = trim($hoja->getCell('B' . $i)->getValue());
+                $cod_ope            = trim($hoja->getCell('C' . $i)->getValue());
+                $cod_act            = trim($hoja->getCell('D' . $i)->getValue());
+
+                $actividad          = trim($hoja->getCell('E' . $i)->getValue());
+                $resultado          = trim($hoja->getCell('F' . $i)->getValue());
+                $unidad_responsable = trim($hoja->getCell('G' . $i)->getValue());
+                $indicador          = trim($hoja->getCell('H' . $i)->getValue());
+                $meta               = $hoja->getCell('I' . $i)->getValue();
+                $medioverificacion  = trim($hoja->getCell('V' . $i)->getValue());
+
+                // üåü BLINDAJE ANTIFALLA: Filtra y salta las filas vac√≠as inferiores del Excel
+                if (empty($cod_uresp) && empty($actividad) && (empty($meta) || floatval($meta) == 0)) {
+                    continue;
+                }
+
+                if (!empty($cod_uresp)) {
+                    if (strlen($cod_uresp) != 4) {
+                        $errores[] = "Fila $i: El c√≥digo de 'UNIDAD RESPONSABLE' ($cod_uresp) debe tener exactamente 4 caracteres.";
+                    } else {
+                        $get_unidad = $this->model_componente->get_UnidadesResponsables($proy_id, $cod_uresp);
+                        if (count($get_unidad) == 1) {
+                            $com_id = $get_unidad[0]['com_id'];
+                        } else {
+                            $errores[] = "Fila $i: Error en la 'UNIDAD RESPONSABLE' ($cod_uresp). No existe en nuestra Base de Datos.";
+                        }
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO DE UNIDAD RESPONSABLE' es obligatoria.";
+                }
+
+                // Verificando c√≥digos ACP y Operaci√≥n
+                if (!empty($cod_acp) && is_numeric($cod_acp) && !empty($cod_ope) && is_numeric($cod_ope)) {
+                    if (count($list_oregional) != 0) {
+                        $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
+                        if (count($get_acc) != 0) {
+                            $or_id = $get_acc[0]['or_id'];
+                        } else {
+                            $errores[] = "Fila $i: La combinaci√≥n ACP ($cod_acp) y OPERACI√ìN ($cod_ope) no guarda relaci√≥n con los Objetivos Regionales.";
+                        }
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO ACP Y OPERACION' son obligatorios y deben ser num√©ricos.";
+                }
+
+                if (!is_numeric($meta) || floatval($meta) <= 0) {
+                    $errores[] = "Fila $i: La 'META' debe ser un n√∫mero v√°lido mayor a cero.";
+                }
+
+                // Validaci√≥n C: Cronograma Mensualizado Saneado (J al U)
+                $suma_meses = 0;
+                $columnas_meses = array('J','K','L','M','N','O','P','Q','R','S','T','U');
+                $meses_valores = array();
+                $m_index = 1;
+                
+                foreach ($columnas_meses as $col) {
+                    $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                    $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+
+                    if (!is_numeric($val_mes)) {
+                        $errores[] = "Fila $i: Valor no num√©rico detectado en el mes de la columna '$col'.";
+                        break;
+                    }
+                    $monto_mes = floatval($val_mes);
+                    $suma_meses += $monto_mes;
+                    $meses_valores[$m_index] = $monto_mes; // Guardamos en el array indexado temporal de la fila
+                    $m_index++;
+                }
+
+                // Validaci√≥n de Coincidencia F√≠sica Matem√°tica
+                if (abs($suma_meses - floatval($meta)) > 0.01) {
+                    $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con la meta ($meta).";
+                }
+
+                if (empty($errores)) {
+                    // üåü SOLUCI√ìN RA√çZ: Agrupamos el Maestro y su Detalle mensual correspondiente en paralelo
+                    $data_insertar[] = array(
+                        'maestro' => array(
+                            'com_id'                   => $com_id,
+                            'prod_cod'                 => intval($cod_act),
+                            'prod_producto'            => strtoupper($actividad),
+                            'prod_resultado'           => strtoupper($resultado),
+                            'indi_id'                  => 1,
+                            'prod_indicador'           => strtoupper($indicador),
+                            'prod_fuente_verificacion' => strtoupper($medioverificacion), 
+                            'prod_linea_base'          => 0,
+                            'prod_meta'                => floatval($meta),
+                            'uni_resp'                 => 0, 
+                            'prod_unidades'            => strtoupper($unidad_responsable),
+                            'acc_id'                   => 0,
+                            'prod_ppto'                => 1,
+                            'fecha'                    => date("d/m/Y H:i:s"),
+                            'or_id'                    => $or_id,
+                            'fun_id'                   => intval($this->session->userdata('fun_id')),
+                            'num_ip'                   => $this->input->ip_address(), 
+                            'nom_ip'                   => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                        ),
+                        'meses_lote' => $meses_valores // Queda amarrado en paralelo
+                    );
+                }
+                
+                if (count($errores) > 15) break; 
+            } // Fin del bucle general FOR por fila
+
+            // ==========================================================================
+            // --- 3. CONSOLIDACI√ìN FINAL TRANSACCIONAL (POSTGRESQL) --------------------
+            // ==========================================================================
+            if (ob_get_length()) ob_clean(); 
+            header('Content-Type: application/json');
+
+            if (empty($errores) && !empty($data_insertar)) {
+                $this->db->trans_start(); // Iniciar transacci√≥n at√≥mica en Postgres
+                
+                foreach ($data_insertar as $fila) {
+                    // Inserci√≥n A: Registro maestro del Producto en tu tabla '_productos'
+                    $this->db->insert('_productos', $fila['maestro']);
+                    $prod_id = $this->db->insert_id(); // Capturamos el ID de la base de datos
+                    
+                    /*------------ REGISTRO DE LA TEMPORALIDAD EN TU TABLA REAL ---------*/
+                    for ($m = 1; $m <= 12; $m++) {
+                        $pfin = $this->security->xss_clean($fila['meses_lote'][$m]);
+                        
+                        if ($pfin != 0) {
+                            $data_to_store4 = array( 
+                                'prod_id' => $prod_id,
+                                'm_id'    => $m, 
+                                'pg_fis'  => $pfin, 
+                                'g_id'    => intval($this->gestion), 
+                            );
+                            $this->db->insert('prod_programado_mensual', $data_to_store4);
+                        }
+                    }
+                    /*-------------------------------------------------------------------*/
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos (Transacci√≥n fallida en Postgres).')));
+                } else {
+                    echo json_encode(array(
+                        'status' => 'success', 
+                        'msj'    => 'Importaci√≥n finalizada con √©xito.',
+                        'conteo' => count($data_insertar) 
+                    ));
+                }
+            } else {
+                echo json_encode(array(
+                    'status' => 'error', 
+                    'errors' => !empty($errores) ? $errores : array('El archivo parece estar vac√≠o o no tiene datos v√°lidos para procesar.')
+                ));
+            }
+            exit; 
+
+        } catch (Exception $e) {
+            if (ob_get_length()) ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'errors' => array('Excepci√≥n cr√≠tica de PHPExcel: ' . $e->getMessage())));
+        }
+    }
+
+    function cambia_tp_sact(){
+      if($this->input->is_ajax_request() && $this->input->post()){
+          $this->form_validation->set_rules('com_id', 'omponente id', 'required|trim');
+          $this->form_validation->set_message('required', 'La selecci√≥n del campo es obligatorio');
+        
+          $post = $this->input->post();
+          $com_id= $this->security->xss_clean($post['com_id']);
+          $tp_id= $this->security->xss_clean($post['tp_id']);
+           
+          $update_comp = array(
+            'tp_sact' => $tp_id,
+          );
+          $this->db->where('com_id', $com_id);
+          $this->db->update('_componentes', $update_comp);
+              
+      }else{
+          show_404();
+      }
+    }
+
+ // /*------- DESHABILITAR SUB ACTIVIDAD (SERVICIO) ------*/
     function deshabilitar_sactividad(){
       if ($this->input->is_ajax_request() && $this->input->post()) {
           $post = $this->input->post();
