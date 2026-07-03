@@ -19,39 +19,7 @@
 		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/estilosh.css"> 
 		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.core.css" />
 		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
-	    <meta name="viewport" content="width=device-width">
-		<!--fin de stiloh-->
-          <script>
-		  	function abreVentana(PDF){
-				var direccion;
-				direccion = '' + PDF;
-				window.open(direccion, "Reporte Foda" , "width=800,height=650,scrollbars=SI") ;
-			}
-			function confirmar(){
-		        if(confirm('¿Estas seguro de Eliminar el proyecto?'))
-		          return true;
-		        else
-		          return false;
-		    }                                                    
-          </script>
-			<style>
-			table{font-size: 10px;
-            width: 100%;
-            max-width:1550px;;
-			overflow-x: scroll;
-            }
-            th{
-              padding: 1.4px;
-              text-align: center;
-              font-size: 10px;
-            }
-            #mdialTamanio{
-		      width: 40% !important;
-		    }
-		    #mdialTamanio2{
-		      width: 40% !important;
-		    }
-			</style>
+
 	</head>
 	<body class="">
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
@@ -138,7 +106,7 @@
 									<img src="<?php echo base_url(); ?>assets/Iconos/add.png" WIDTH="25" HEIGHT="25"/>&nbsp;NUEVO REGISTRO
 								</a>
 								<a href="javascript:abreVentana('<?php echo site_url("").'/as/rep_list_foda/'.$proyecto[0]['proy_id'].''?>');" title="IMPRIMIR" class="btn btn-default">
-									<img src="<?php echo base_url(); ?>assets/Iconos/printer_empty.png" WIDTH="25" HEIGHT="25"/>&nbsp;IMPRIMIR FORM. SPO 3
+									<img src="<?php echo base_url(); ?>assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/>&nbsp;IMPRIMIR FORM. SPO 3
 								</a>
 							</div>
 						</article>

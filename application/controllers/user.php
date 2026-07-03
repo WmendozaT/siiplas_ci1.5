@@ -68,6 +68,7 @@ class User extends CI_Controller{
                 'tr_id' => ($conf[0]['conf_mes_otro']+$conf[0]['conf_mes_otro']*2), /// Trimestre 3,6,9,12
                 'desc_mes' => $this->mes_texto($conf[0]['conf_mes']),
                 'verif_ppto' => $conf[0]['ppto_poa'], /// Ppto poa : 0 (Vigente), 1: (Aprobado)
+                'conf_form3' => $conf[0]['conf_form3'], /// Estado de Registro del formulario N3, 0 (Inactivo), 1 (Activo)
                 'conf_form4' => $conf[0]['conf_form4'], /// Estado de Registro del formulario N4, 0 (Inactivo), 1 (Activo)
                 'conf_form5' => $conf[0]['conf_form5'], /// Estado de Registro del formulario N5, 0 (Inactivo), 1 (Activo)
                 'conf_mod_ope' => $conf[0]['conf_mod_ope'], /// Estado de Modificacion del formulario N4, 0 (Inactivo), 1 (Activo)

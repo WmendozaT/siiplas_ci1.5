@@ -59,6 +59,7 @@ class Cseguimiento extends CI_Controller {
       
       $data['titulo']=$this->seguimientopoa->aviso_seguimiento_evaluacion_poa();
       $this->load->view('admin/evaluacion/seguimiento_poa/list_poas_aprobados', $data);
+
     }
 
 
@@ -129,7 +130,7 @@ class Cseguimiento extends CI_Controller {
                 </td>
                 <td align="center" style="font-size:13px"><center><b>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</b></center></td>
                 <td>'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].'</td>
-                <td>'.$row['escalon'].'</td>
+                <td></td>
                 <td>'.$row['nivel'].'</td>
                 <td>'.$row['tipo_adm'].'</td>
                 <td>'.strtoupper($row['dep_departamento']).'</td>
@@ -148,7 +149,7 @@ class Cseguimiento extends CI_Controller {
 
     /*---- Lista de Proyectos de Inversion (2020) -----*/
     public function list_pinversion($proy_estado){
-      $proyectos=$this->model_proyecto->list_pinversion(1,$proy_estado);
+      $proyectos=$this->model_proyecto->list_unidades(1,$proy_estado);
       $tabla='';
       $tabla.='
       <input name="base" type="hidden" value="'.base_url().'">
@@ -221,7 +222,7 @@ class Cseguimiento extends CI_Controller {
         $evaluacion='
           <a href="'.site_url("").'/eval/eval_unidad/'.$proy_id.'" title="REPORTE DE EVALUACION POA" target="_blank" class="btn btn-default"><img src="'.base_url().'assets/img/impresora.png" WIDTH="50" HEIGHT="50"/><br>VER EVALUACIÓN</a>';
 
-        $tabla=$this->mis_unidadesresponsables($proy_id);
+        $tabla=$this->mis_unidadesresponsables($proy_id); /// lista unidades responsables para evaluacion poa
         $result = array(
           'respuesta' => 'correcto',
           'tabla'=>$tabla,
@@ -257,9 +258,9 @@ class Cseguimiento extends CI_Controller {
           </thead>
           <tbody>';
           $nro_c=0;
-            $componentes=$this->model_componente->lista_subactividad($proy_id);
+            $componentes=$this->model_componente->lista_UnidadesResponsables($proy_id);
             foreach($componentes as $rowc){
-              if(count($this->model_producto->list_prod($rowc['com_id']))!=0){
+              if(count($this->model_producto->lista_productos($rowc['com_id']))!=0){
                 $verif=$this->model_seguimientopoa->get_seguimiento_poa_mes_subactividad($rowc['com_id'],$this->verif_mes[1]);
                 $nro_c++;
                 $tabla.='

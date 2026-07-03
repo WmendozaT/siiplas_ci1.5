@@ -94,7 +94,7 @@ $route['me/rep_form2/(:any)'] = 'mestrategico/cobjetivo_regional/reporte_form2/$
 /* ANALISIS DE SITUACION (A BORRAR)*/
 //$route['admin/analisis_sit'] = 'analisis_situacion/canalisis_situacion/lista_unidades';	//// Lista Unidades, Establecimientos
 $route['as/list_foda/(:any)'] = 'analisis_situacion/canalisis_situacion/lista_foda/$1';	//// Lista de formularios
-$route['as/rep_list_foda/(:any)'] = 'analisis_situacion/canalisis_situacion/reporte_lista_foda/$1';	//// Imprimir lisat Foda
+$route['as/rep_list_foda/(:any)'] = 'analisis_situacion/canalisis_situacion/reporte_form3_Unidad_organizacional/$1';	//// Imprimir lisat Foda
 
 /*----------------------------------- Resultados de Corto plazo -----------------------------------------*/
 $route['prog/resultado_cplazo/(:any)'] = 'analisis_situacion/cresultado_cplazo/lista_resultados_corto_plazo/$1/$2';//Lista de Resultados de Corto Plazo

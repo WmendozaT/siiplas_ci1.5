@@ -26,12 +26,9 @@ class Programacionpoa extends CI_Controller{
    
       $this->gestion = $this->session->userData('gestion');
       $this->adm = $this->session->userData('adm');
-      //$this->rol = $this->session->userData('rol_id');
       $this->dist = $this->session->userData('dist');
-      //$this->dist_tp = $this->session->userData('dist_tp');
       $this->tmes = $this->session->userData('trimestre');
       $this->fun_id = $this->session->userData('fun_id');
-     // $this->tp_adm = $this->session->userData('tp_adm');
       $this->verif_mes=$this->session->userData('mes_actual');
       $this->resolucion=$this->session->userdata('rd_poa');
       $this->tp_adm = $this->session->userData('tp_adm');
@@ -40,22 +37,6 @@ class Programacionpoa extends CI_Controller{
       $this->conf_form5 = $this->session->userData('conf_form5');
       $this->conf_poa_estado = $this->session->userData('conf_poa_estado'); /// Ajuste POA 1: Inicial, 2 : Ajuste, 3 : aprobado
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   /// ----- APERTURAR NUEVO POA (UNIDAD)
   /*------------ FORMULACIÓN - ADICION - POA (2020) ----------*/
@@ -859,201 +840,168 @@ class Programacionpoa extends CI_Controller{
 
 
 
-
   //// ======== CABECERA Y PIE PARA LOS REPORTES POA 2024
   //// Cabecera Reporte form 3, 4 y 5
-  public function cabecera($datos_poa,$tp_rep){
+  public function cabecera($datos_poa, $tp_rep) {
     /// datos_poa: informacion desde componente -> proy -> apertura
     /// tp_rep : 3 (Foda), 4 (Actividades), 5 (requerimientos), 0 (consolidado ppto)
-    $comp='';
-    if($tp_rep==0){
-      if($datos_poa[0]['aper_proy_estado']==1){
-        $titulo_rep='CONSOLIDADO POA PRESUPUESTO';
-        $titulo_form='PPTO. ANTEPROYECTO';
-      } 
-      else{
-        $titulo_rep='CONSOLIDADO POA PRESUPUESTO - APROBADO';
-        $titulo_form='PPTO. APROBADO - POA';
-      }
-      
-      
-
-    }
-    elseif($tp_rep==3){
-      $titulo_rep='ANALISIS DE PROBLEMAS Y CAUSAS';
-      $titulo_form='FORMULARIO SPO N° 3';
-      $comp='';
-    }
-    else{
-      
-      $estado='';
-      if($datos_poa[0]['aper_proy_estado']==1){
-        $estado='<b>(ANTEPROYECTO)</b>';
-      } 
-
-      if($tp_rep==4){
-        $titulo_rep='ACTIVIDADES '.$estado;
-        $titulo_form='FORMULARIO SPO N° 4';
-      }
-      elseif($tp_rep==5){
-        $titulo_rep='REQUERIMIENTOS '.$estado;
-        $titulo_form='FORMULARIO SPO N° 5';
-      }
-
-      $comp='
-      <tr>
-                    <td style="width:20%;">
-                      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                        <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;UNIDAD RESPONSABLE</b></td><td style="width:5%;"></td></tr>
-                      </table>
-                    </td>
-                    <td style="width:80%;">
-                      <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                        <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$datos_poa[0]['serv_cod'].' '.$datos_poa[0]['tipo_subactividad'].' '.$datos_poa[0]['serv_descripcion'].'</td></tr>
-                      </table>
-                    </td>
-                </tr>';
-    }
-
+    $comp = '';
+    $titulo_rep = '';
+    $titulo_form = '';
     
+    if ($tp_rep == 0) {
+        if ($datos_poa[0]['aper_proy_estado'] == 1) {
+            $titulo_rep  = 'CONSOLIDADO POA PRESUPUESTO';
+            $titulo_form = 'PPTO. ANTEPROYECTO';
+        } else {
+            $titulo_rep  = 'CONSOLIDADO POA PRESUPUESTO - APROBADO';
+            $titulo_form = 'PPTO. APROBADO - POA';
+        }
+    } 
+    elseif ($tp_rep == 3) {
+        $titulo_rep  = 'ANALISIS DE PROBLEMAS Y CAUSAS';
+        $titulo_form = 'FORMULARIO SPO N° 3';
+        $comp        = '';
+    } 
+    else {
+        $estado = '';
+        if ($datos_poa[0]['aper_proy_estado'] == 1) {
+            $estado = '(ANTEPROYECTO)';
+        } 
 
-    $tabla='';
-    $tabla.='
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px;">              
-            <td style="width:70%;height: 2%">
-                <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 13px;font-family: Arial;">
-                        <td style="width:40%;height: 20%;">&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
-                    </tr>
-                    <tr>
-                        <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-              '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </td>
-        </tr>
-      </table>
-      <hr>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px black; text-align: center;">
-          <td style="width:12%; text-align:center;">';
-          if($datos_poa[0]['proy_estado']==4 && $this->gestion>2021){
-            $tabla.='<qrcode value="'.$this->session->userdata('rd_poa').'" style="border: none; width: 14mm; color: #1c7368"></qrcode><br><b>POA APROBADO</b>';
-          }
-          $tabla.='
-          </td>
-          <td style="width:80%; height: 5%">
-            <table align="center" border="0" style="width:100%;">
-              <tr style="font-size: 23px;font-family: Arial;">
-                  <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
-              </tr>
-              <tr style="font-size: 20px;font-family: Arial;">
-                <td style="height: 5%;">'.$titulo_rep.'</td>
-              </tr>
-            </table>
-          </td>
-          <td style="width:10%; text-align:center;">
-          </td>
-        </tr>
-      </table>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-          <tr style="border: solid 0px;">              
-              <td style="width:70%;">
-              </td>
-              <td style="width:30%; height: 3%">
-                  <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 15px;font-family: Arial;">
-                      <td align=center style="width:100%;height: 40%;"><b>'.$titulo_form.'</b></td>
-                    </tr>
-                </table>
-              </td>
-          </tr>
-      </table>
-      
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-         <tr>
-            <td style="width:1.5%;"></td>
-            <td style="width:97%;height: 1%;">
-              <hr style="border:1px;">
-            </td>
-            <td style="width:1.5%;"></td>
-        </tr>
+        if ($tp_rep == 4) {
+            $titulo_rep  = 'ACTIVIDADES ' . $estado;
+            $titulo_form = 'FORMULARIO SPO N° 4';
+        } elseif ($tp_rep == 5) {
+            $titulo_rep  = 'REQUERIMIENTOS ' . $estado;
+            $titulo_form = 'FORMULARIO SPO N° 5';
+        }
+
+        $comp = '
         <tr>
-            <td style="width:1.5%;"></td>
-            <td style="width:97%;height: 3%;">
-             
-              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                <tr>
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;REGIONAL / DEPARTAMENTO</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$datos_poa[0]['dep_cod'].' '.strtoupper ($datos_poa[0]['dep_departamento']).'</td></tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;UNIDAD EJECUTORA</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$datos_poa[0]['dist_cod'].' '.strtoupper ($datos_poa[0]['dist_distrital']).'</td></tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>';
-                  if($datos_poa[0]['tp_id']==4){
-                    $tabla.='
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;CAT. PROGRAMATICA '.$this->gestion.'</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$datos_poa[0]['aper_programa'].''.$datos_poa[0]['aper_proyecto'].''.$datos_poa[0]['aper_actividad'].' - '.$datos_poa[0]['tipo'].' '.strtoupper ($datos_poa[0]['proy_nombre']).' '.$datos_poa[0]['abrev'].'</td></tr>
-                        </table>
-                    </td>';
-                  }
-                  else{
-                    $tabla.='
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;PROYECTO</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$datos_poa[0]['aper_programa'].''.$datos_poa[0]['proy_sisin'].''.$datos_poa[0]['aper_actividad'].' - '.strtoupper ($datos_poa[0]['proy_nombre']).'</td></tr>
-                        </table>
-                    </td>';
-                  }
-                $tabla.='
-                </tr>
-                '.$comp.'
-              
-            </table>
-          </td>
-          <td style="width:1.5%;"></td>
-        </tr>
-        <tr>
-          <td style="width:1.5%;"></td>
-          <td style="width:97%;height: 1%;">
-            <hr style="border:1px;">
-            <br><b style="font-size: 8px;font-family: Arial;">DETALLE : </b>
-          </td>
-          <td style="width:1.5%;"></td>
-        </tr>
-      </table>';
+            <td class="cns-lbl">UNIDAD RESPONSABLE</td>
+            <td class="cns-val">' . $datos_poa[0]['serv_cod'] . ' ' . $datos_poa[0]['tipo_subactividad'] . ' ' . strtoupper($datos_poa[0]['serv_descripcion']) . '</td>
+        </tr>';
+    }
+
+    $tabla = '';
+    $tabla .= '
+    <style>
+        /* 🌟 MAQUETACIÓN RAÍZ DE CONTROL DE MÁRGENES (Sincronizado al 100% con tu imagen) */
+        .cns-contenedor-ajuste-pagina {
+            padding-left: 3mm;
+            padding-right: 3mm;
+            width: 97%;
+        }
+        
+        .cns-cabecera-master { 
+            font-family: helvetica, arial, sans-serif; 
+            color: #1e293b; 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: fixed; /* Forzado geométrico de celdas */
+        }
+        
+        .cns-txt-title { font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase; }
+        .cns-txt-sub { font-size: 7.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px; }
+        
+        /* Línea Verde Institucional Sincronizada */
+        .cns-linea-verde { 
+            height: 2px; 
+            background: #1c7368; 
+            width: 100%; 
+            margin-top: 3px;
+            margin-bottom: 5px; 
+        }
+        
+        /* Bloque Maestro de Datos POA */
+        .cns-tbl-ident { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 10px 0 5px 0; 
+            table-layout: fixed; 
+        }
+        .cns-tbl-ident td { padding: 4px 6px; font-size: 7.5px; border: 0.7px solid #cbd5e1; vertical-align: middle; color: #334155; }
+        .cns-tbl-ident td.cns-lbl { background: #E3F0FA; font-weight: bold; color: #475569; width: 22%; text-transform: uppercase; }
+        .cns-tbl-ident td.cns-val { background: #ffffff; font-weight: 600; width: 78%; }
+    </style>
+
+    <!-- 🌟 ENCAPSULAMIENTO PERIMETRAL HORIZONTAL -->
+    <div class="cns-contenedor-ajuste-pagina">
+
+        <!-- 1. CINTILLO INICIAL INSTITUCIONAL -->
+        <table class="cns-cabecera-master">
+            <tr>
+                <td style="width: 65%; text-align: left; vertical-align: bottom; padding-bottom: 2px; font-size:8px;">
+                    <span class="cns-txt-title">&nbsp;&nbsp;' . strtoupper($this->session->userdata('entidad')) . '</span><br>
+                    <span class="cns-txt-sub">DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</span>
+                </td>
+                <td style="width: 35%; text-align: right; vertical-align: bottom; font-size: 8px; color: #475569; font-family: courier; font-weight: bold; padding-bottom: 2px;">
+                    ' . date("d") . ' de ' . $this->mes[ltrim(date("m"), "0")] . ' de ' . date("Y") . '
+                </td>
+            </tr>
+        </table>
+
+        <!-- 🌟 REPARADO: La línea verde ahora se confina de forma exacta a los 3mm laterales -->
+        <div class="cns-linea-verde"></div>
+
+        <!-- 2. NÚCLEO DE TÍTULOS Y CÓDIGO QR -->
+        <table class="cns-cabecera-master" style="margin-top: 5px;">
+            <tr>
+                <td style="width: 15%; text-align: center; vertical-align: middle;">';
+                if ($datos_poa[0]['proy_estado'] == 4 && $this->gestion > 2025) {
+                    $tabla .= '<qrcode value="' . $this->session->userdata('rd_poa') . '" style="border: none; width: 11mm; color: #475569;"></qrcode><br>
+                               <span style="font-size: 5.5px; font-weight: bold; color: #475569; display: block; margin-top: 2px;">POA APROBADO</span>';
+                }
+                $tabla .= '
+                </td>
+                <td style="width: 70%; text-align: center; vertical-align: middle; padding: 0 5px;">
+                    <span style="font-size: 17px; font-weight: bold; color: #0f172a; display: block; text-transform: uppercase; letter-spacing: 0.3px;">PLAN OPERATIVO ANUAL GESTIÓN - ' . $this->gestion . '</span><br>
+                    <span style="font-size: 13px; font-weight: 500; color: #475569; display: block; margin-top: 3px; letter-spacing: 0.2px;">' . strtoupper($titulo_rep) . '</span>
+                </td>
+                <td style="width: 15%; text-align: right; vertical-align: middle;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 4px 5px; background: #475569; color: #ffffff; font-weight: bold; font-size: 8px; text-align: center; border: 0.5px solid #475569; text-transform: uppercase;">
+                                ' . strtoupper($titulo_form) . '
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- 3. CUADRO FORMAL DE IDENTIFICACIÓN RELACIONAL POA -->
+        <table class="cns-tbl-ident">
+            <tr>
+                <td class="cns-lbl">REGIONAL / DEPARTAMENTO</td>
+                <td class="cns-val">' . $datos_poa[0]['dep_cod'] . ' ' . strtoupper($datos_poa[0]['dep_departamento']) . '</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">UNIDAD EJECUTORA</td>
+                <td class="cns-val">' . $datos_poa[0]['dist_cod'] . ' ' . strtoupper($datos_poa[0]['dist_distrital']) . '</td>
+            </tr>
+            <tr>';
+            if ($datos_poa[0]['tp_id'] == 4) {
+                $tabla .= '
+                <td class="cns-lbl">CAT. PROGRAMÁTICA ' . $this->gestion . '</td>
+                <td class="cns-val">' . $datos_poa[0]['aper_programa'] . ' ' . $datos_poa[0]['aper_proyecto'] . ' ' . $datos_poa[0]['aper_actividad'] . ' - ' . $datos_poa[0]['tipo'] . ' ' . strtoupper($datos_poa[0]['proy_nombre']) . ' [' . strtoupper($datos_poa[0]['abrev']) . ']</td>';
+            } else {
+                $tabla .= '
+                <td class="cns-lbl">PROYECTO</td>
+                <td class="cns-val">' . $datos_poa[0]['aper_programa'] . ' ' . $datos_poa[0]['proy_sisin'] . ' ' . $datos_poa[0]['aper_actividad'] . ' - ' . strtoupper($datos_poa[0]['proy_nombre']) . '</td>';
+            }
+            $tabla .= '
+            </tr>
+            ' . $comp . '
+        </table>
+
+        <!-- 4. APERTURA COMPACTA DEL ÁREA DE REGISTROS -->
+        <div class="cns-linea-verde"></div>
+        <div style="font-size: 8px; font-weight: bold; color: #1e293b; text-transform: uppercase; font-family: helvetica;">DETALLE :</div>
+
+    </div>';
+    
     return $tabla;
   }
 
@@ -1200,48 +1148,79 @@ class Programacionpoa extends CI_Controller{
     return $tabla;
   }
   /*------ PIE FODA - REPORTE -----*/
-  public function pie_foda(){
-    $tabla='';
-    $tabla.='    
-      <hr>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:96%;" align="center">
+public function pie_foda(){
+    $tabla = '';
+    $tabla .= '    
+      <style>
+      .cns-linea-verde { 
+            height: 2px; 
+            background: #1c7368; 
+            width: 100%; 
+            margin-top: 3px;
+            margin-bottom: 5px; 
+        }
+      </style>
+
+      <div class="cns-linea-verde"></div>
+      
+      <!-- 🌟 SE CONSERVA TU LÓGICA DE DISTRIBUCIÓN: Estructura original al 97% de ancho horizontal -->
+      <table border="0" cellpadding="0" cellspacing="0" style="width: 97%; border-collapse: collapse; font-family: helvetica, arial, sans-serif;" align="center">
         <tr>
-          <td style="width: 50%;">
-              <table border="0.3" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
-                  <tr style="font-size: 10px;font-family: Arial;">
-                      <td style="width:100%;height:13px;"><b>ELABORADO POR<br></b></td>
+          <!-- 1. BLOQUE ELABORADO POR (50% DEL ANCHO DE LA HOJA) -->
+          <td style="width: 50%; padding-right: 8px; vertical-align: top;">
+              <!-- Réplica exacta del esqueleto de la tabla maestra .cns-tbl-ident -->
+              <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
+                  <tr>
+                      <!-- Cabecera de caja formal idéntica a .cns-lbl (Fondo plomo claro, letra plomo oscuro) -->
+                      <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
+                          ELABORADO POR:
+                      </td>
                   </tr>
-                 
-                  <tr style="font-size: 8.5px;font-family: Arial; height:65px;" align="center">
-                      <td><b><br><br><br><br>FIRMA</b></td>
+                  <tr>
+                      <!-- Espacio de rúbrica idéntico a .cns-val (Despejado con línea de guía fina) -->
+                      <td align="center" style="height: 40px; vertical-align: bottom; padding-bottom: 6px; background: #ffffff;">
+                          <span style="font-size: 6.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
+                      </td>
                   </tr>
               </table>
           </td>
-          <td style="width: 50%;">
-              <table border="0.3" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
-                  <tr style="font-size: 10px;font-family: Arial;">
-                      <td style="width:100%;height:13px;"><b>APROBADO POR<br></b></td>
+          
+          <!-- 2. BLOQUE APROBADO POR (50% DEL ANCHO DE LA HOJA) -->
+          <td style="width: 50%; padding-left: 8px; vertical-align: top;">
+              <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
+                  <tr>
+                      <!-- Cabecera de caja formal idéntica a .cns-lbl -->
+                      <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
+                          APROBADO POR:
+                      </td>
                   </tr>
-                 
-                  <tr style="font-size: 8.5px;font-family: Arial; height:65px;" align="center">
-                      <td><b><br><br><br><br>FIRMA</b></td>
+                  <tr>
+                      <!-- Espacio de rúbrica idéntico a .cns-val (Despejado con línea de guía fina) -->
+                      <td align="center" style="height: 40px; vertical-align: bottom; padding-bottom: 6px; background: #ffffff;">
+                          <span style="font-size: 6.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
+                      </td>
                   </tr>
               </table>
           </td>
         </tr>
+        
         <tr>
-          <td colspan="2"><br></td>
+          <td colspan="2" style="height: 9px;"></td>
         </tr>
-        <tr style="font-size: 7px;font-family: Arial;">
-          <td style="text-align: left" >
-            '.$this->session->userdata('sistema').'
+        
+        <!-- FILA DE METADATOS DE SEGURIDAD IDÉNTICA Y SINCRO AL RAS DE LA CABECERA -->
+        <tr style="font-size: 7.5px; color: #475569; font-weight: bold;">
+          <td style="text-align: left; vertical-align: middle; text-transform: uppercase; color: #64748b; font-family: courier; font-size: 7px; letter-spacing: 0.2px;">
+            ' . $this->security->xss_clean($this->session->userdata('sistema')) . '
           </td>
-          <td style="width: 20%; text-align: right">
-                pag. [[page_cu]]/[[page_nb]]
+          <!-- Inmunización tipográfica obligatoria a Courier para evitar quiebres en TCPDF -->
+          <td style="width: 20%; text-align: right; vertical-align: middle; font-family: courier; font-size: 7.5px; color: #334155;">
+                pág. [[page_cu]]/[[page_nb]]
           </td>
         </tr>
+        
         <tr>
-            <td colspan="2"><br><br></td>
+            <td colspan="2" style="height: 5px;"></td>
         </tr>
       </table>';
 

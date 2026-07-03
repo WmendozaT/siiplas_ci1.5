@@ -273,19 +273,45 @@ class Creporte extends CI_Controller {
             $data['cabecera']=$this->programacionpoa->cabecera($componente,4);
             $data['pie']=$this->programacionpoa->pie_form($componente);
             
-            $data['reporte']='
-            <page backtop="75mm" backbottom="30mm" backleft="5mm" backright="5mm" pagegroup="new">
+            $data['informacion'] = '
+              <page orientation="portrait" backtop="57mm" backbottom="50mm" backleft="4mm" backright="4mm" pagegroup="new">
+                <!-- Cabecera Institucional Inalterada -->
                 <page_header>
                     <br><div class="verde"></div>
-                    '.$data['cabecera'].'
+                    ' . $data['cabecera'] . '
                 </page_header>
+                
+                <!-- Pie de Página Fijo en la Base de la Hoja -->
                 <page_footer>
-                  '.$data['pie'].'
+                    <div style="width: 100%; display: block;">
+                        ' . $data['pie'] . '
+                    </div>
                 </page_footer>
-                '.$data['cuerpo_reporte'].'
+                ' . $data['cuerpo_reporte'] . '
+              </page>';
 
-            </page>';
-            $this->load->view('admin/programacion/reportes/reporte_form4', $data);
+              // 1. Capturamos el HTML estructurado de la vista en una variable
+          $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4', $data, true); 
+
+          // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+          if (ob_get_length()) ob_clean();
+
+          // 3. Importación segura del motor conversor usando la ruta física del servidor
+          require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+          
+          try {
+              // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+              $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+              $html2pdf->pdf->SetDisplayMode('fullpage');
+              $html2pdf->writeHTML($html_reporte);
+              
+              // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+              $html2pdf->Output($data['pie_rep'] . '.pdf', 'I');
+          }
+          catch(HTML2PDF_exception $e) {
+              echo "Error al compilar el reporte: " . $e;
+          }
+          exit;
         }
         else{
             echo "Error !!!";
