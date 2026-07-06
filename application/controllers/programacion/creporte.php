@@ -70,7 +70,7 @@ class Creporte extends CI_Controller {
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $data['oregional']=$this->verif_oregional($proy_id);
-            $data['titulo']='Programación Física';
+            $data['titulo']='ProgramaciÃ³n FÃ­sica';
             $data['contenido']=$this->mis_servicios_componentes($proy_id);
             
             $this->load->view('admin/programacion/reportes/reporte_poa', $data);
@@ -190,7 +190,7 @@ class Creporte extends CI_Controller {
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $data['oregional']=$this->verif_oregional($proy_id);
-            $data['titulo']='Programación Financiera';
+            $data['titulo']='ProgramaciÃ³n Financiera';
             $data['contenido']='Contenido 2';
             $this->load->view('admin/programacion/reportes/reporte_poa', $data);
         }
@@ -211,7 +211,7 @@ class Creporte extends CI_Controller {
         $nro=0;
         foreach($list_oregional as $row){
             $nro++;
-            $tabla.='<h1> '.$nro.'.- OPERACIÓN REGIONAL : <small> '.$row['or_codigo'].'.- '.$row['or_objetivo'].'</small></h1>';
+            $tabla.='<h1> '.$nro.'.- OPERACIÃ“N REGIONAL : <small> '.$row['or_codigo'].'.- '.$row['or_objetivo'].'</small></h1>';
         }
 
         return $tabla;
@@ -228,7 +228,7 @@ class Creporte extends CI_Controller {
             <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:70%;" align=center>
                 <thead>
                     <tr style="font-size: 7px;height:12px;" bgcolor="#eceaea" align=center>
-                        <th style="width:3%;"style="height:11px;">N°</th>
+                        <th style="width:3%;"style="height:11px;">NÂ°</th>
                         <th style="width:10%;">C&Oacute;DIGO</th>
                         <th style="width:50%;">DETALLE PARTIDA</th>
                         <th style="width:12%;">MONTO PROGRAMADO</th>
@@ -263,50 +263,50 @@ class Creporte extends CI_Controller {
         $componente=$this->model_componente->get_componente($com_id,$this->gestion); /// GET COMP -> PROY -> APER
         if(count($componente)!=0){
             if($componente[0]['tp_id']==1){
-                $data['pie_rep']=$componente[0]['proy_nombre'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+                $pie_report='FORM_SPO_N4_'.$componente[0]['proy_nombre'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
             }
             else{
-                $data['pie_rep']=$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+                $pie_report='FORM_SPO_N4_'.$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
             }
             
-            $data['cuerpo_reporte']=$this->programacionpoa->rep_formulario_N4_Uresponsable($componente); /// 2026
-            $data['cabecera']=$this->programacionpoa->cabecera($componente,4);
-            $data['pie']=$this->programacionpoa->pie_form($componente);
+            $listado=$this->programacionpoa->rep_formulario_N4_Uresponsable($componente); /// 2026
+            $cabecera=$this->programacionpoa->cabecera($componente,4);
+            $pie=$this->programacionpoa->pie_form($componente);
             
             $data['informacion'] = '
-              <page orientation="portrait" backtop="57mm" backbottom="50mm" backleft="4mm" backright="4mm" pagegroup="new">
+              <page orientation="landscape" backtop="62.5mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
                 <!-- Cabecera Institucional Inalterada -->
                 <page_header>
                     <br><div class="verde"></div>
-                    ' . $data['cabecera'] . '
+                    '.$cabecera.'
                 </page_header>
                 
-                <!-- Pie de Página Fijo en la Base de la Hoja -->
+                <!-- Pie de PÃ¡gina Fijo en la Base de la Hoja -->
                 <page_footer>
                     <div style="width: 100%; display: block;">
-                        ' . $data['pie'] . '
+                    '.$pie.'
                     </div>
                 </page_footer>
-                ' . $data['cuerpo_reporte'] . '
+                    '.$listado.'
               </page>';
 
               // 1. Capturamos el HTML estructurado de la vista en una variable
           $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4', $data, true); 
 
-          // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+          // 2. Limpieza radical del bÃºfer de CodeIgniter para que Chrome no rechace el PDF
           if (ob_get_length()) ob_clean();
 
-          // 3. Importación segura del motor conversor usando la ruta física del servidor
+          // 3. ImportaciÃ³n segura del motor conversor usando la ruta fÃ­sica del servidor
           require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
           
           try {
-              // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+              // Inicializamos en orientaciÃ³n horizontal ('L' de Landscape / Paysage) para que coincida con tu diseÃ±o
               $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
               $html2pdf->pdf->SetDisplayMode('fullpage');
               $html2pdf->writeHTML($html_reporte);
               
               // 4. Enviamos el flujo binario limpio directo al visor de Chrome
-              $html2pdf->Output($data['pie_rep'] . '.pdf', 'I');
+              $html2pdf->Output($pie_report. '.pdf', 'I');
           }
           catch(HTML2PDF_exception $e) {
               echo "Error al compilar el reporte: " . $e;
@@ -320,11 +320,11 @@ class Creporte extends CI_Controller {
 
 
     public function reporte_formulario4_consolidado($proy_id){
-        // 1. Ampliación y control de recursos de hardware en el servidor
+        // 1. AmpliaciÃ³n y control de recursos de hardware en el servidor
         ini_set('memory_limit', '2048M'); 
-        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        set_time_limit(1800); // 30 minutos de procesamiento mÃ¡ximo institucional
         
-        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        // Limpieza preliminar del bÃºfer de salida para proteger el binario del PDF
         if (ob_get_length()) ob_clean();
 
         $tabla = '';
@@ -394,7 +394,7 @@ class Creporte extends CI_Controller {
                         </page>';
                     }
 
-                    // Inyección y acople del módulo de programas bolsas distritales
+                    // InyecciÃ³n y acople del mÃ³dulo de programas bolsas distritales
                     $programas_bolsas = $this->model_proyecto->lista_programas_bolsas_distrital($proyecto[0]['dist_id']);
              
                     if (count($programas_bolsas) != 0) {
@@ -437,13 +437,13 @@ class Creporte extends CI_Controller {
 
             $data['lista'] = $tabla;
 
-            // 2. CAPTURA ASÍNCRONA: Guardamos la estructuración HTML en una variable
+            // 2. CAPTURA ASÃNCRONA: Guardamos la estructuraciÃ³n HTML en una variable
             $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
 
             // 3. Vaciamos buffers internos remanentes de CodeIgniter para blindar el binario
             if (ob_get_length()) ob_clean();
 
-            // 4. INSTANCIACIÓN DE COMPILACIÓN DESDE LA RUTA FÍSICA CORPORATIVA FCPATH
+            // 4. INSTANCIACIÃ“N DE COMPILACIÃ“N DESDE LA RUTA FÃSICA CORPORATIVA FCPATH
             require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
             
             try {
@@ -456,11 +456,11 @@ class Creporte extends CI_Controller {
                 $html2pdf->Output('FORM_POA_' . $data['pie_rep'] . '.pdf', 'I');
             }
             catch(HTML2PDF_exception $e) {
-                echo "Error crítico al compilar el reporte maestro consolidado: " . $e;
+                echo "Error crÃ­tico al compilar el reporte maestro consolidado: " . $e;
             }
             exit;
         } else {
-            echo "Error !!! El código de unidad o proyecto especificado no registra datos activos.";
+            echo "Error !!! El cÃ³digo de unidad o proyecto especificado no registra datos activos.";
         }
     }
 

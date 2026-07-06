@@ -940,6 +940,8 @@ class Cseguimiento extends CI_Controller {
       </div>';
      
       $this->load->view('admin/evaluacion/seguimiento_poa/formulario_seguimiento', $data);
+/*      $tabla=$this->seguimientopoa->obtiene_datos_evaluacíon($com_id,2,1);
+      echo $tabla[1].'-'.$tabla[2].'-'.$tabla[1].'-'.$tabla[2];*/
     }
     else{
       redirect(site_url("").'/admin/dashboard');;
@@ -1135,7 +1137,7 @@ class Cseguimiento extends CI_Controller {
         /// ACTUALIZANDO CUADROS DE EVALUACION
          $matriz_regresion=$this->seguimientopoa->tabla_regresion_lineal_servicio($producto[0]['com_id'],$this->tmes); /// matriz regresion
         $matriz_gestion=$this->seguimientopoa->tabla_regresion_lineal_servicio_total($producto[0]['com_id']); /// Matriz para el grafico Total Gestion
-        $this->seguimientopoa->update_evaluacion_operaciones($producto[0]['com_id']);
+        $this->seguimientopoa->update_evaluacion_operaciones($producto[0]['com_id']); //// insert/update a tabla _productos_trimestral
        
 
 

@@ -908,7 +908,7 @@ class Programacionpoa extends CI_Controller{
         /* Línea Verde Institucional Sincronizada */
         .cns-linea-verde { 
             height: 2px; 
-            background: #1c7368; 
+            background: #475569; 
             width: 100%; 
             margin-top: 3px;
             margin-bottom: 5px; 
@@ -1230,56 +1230,82 @@ public function pie_foda(){
 
   /*------ PIE FORM - REPORTE -----*/
   public function pie_form($proyecto){
+    $firma1='REPRESENTANTE DE AREA REGIONAL';$firma2='SERVICIOS GENERALES / JEFATURA MEDICA';$firma3='ADMINISTRADOR REGIONAL';
+    if($proyecto[0]['dist_id']==22){ /// Oficina Nacional
+      $firma1='JEFATURA DE UNIDAD O AREA';$firma2='JEFATURA DE DEPARTAMENTO';$firma3='GERENCIA DE AREA';
+    }
+
     $tabla='';
-    $tabla.='
-     
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:98%;" align="center">
+    $tabla .= '
+      <!-- 🌟 SE CONSERVA TU LÓGICA ORIGINAL: Estructura al 98% centrada con 3 columnas simétricas -->
+      <table border="0" cellpadding="0" cellspacing="0" style="width:98%; border-collapse: collapse; font-family: helvetica, arial, sans-serif;" align="center">
           <tr>
-            <td style="width: 33%;">
-                <table border="0.3" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+            <!-- 1. BLOQUE JEFATURA DE UNIDAD O ÁREA (33%) -->
+            <td style="width: 33%; padding-right: 5px; vertical-align: top;">
+                <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
-                        <td style="width:100%;height:12px;"><b>JEFATURA DE UNIDAD O AREA / REP. DE AREA REGIONALES</b></td>
+                        <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
+                            <b>'.$firma1.'</b>
+                        </td>
                     </tr>
                     <tr>
-                      <td align=center><br><br><br><br><b>FIRMA</b></td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width: 33%;">
-                <table border="0.3" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
-                    <tr>
-                      <td style="width:100%;height:12px;"><b>JEFATURA DE DEPARTAMENTOS / SERV. GENERALES REGIONAL / JEFATURA MEDICA </b></td>
-                    </tr>
-                    <tr>
-                      <td align=center><br><br><br><br><b>FIRMA</b></td>
+                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #64748b;">
+                          <b>FIRMA y SELLO</b>
+                      </td>
                     </tr>
                 </table>
             </td>
-            <td style="width: 33%;">
-                <table border="0.3" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+            
+            <!-- 2. BLOQUE JEFATURA DE DEPARTAMENTOS (34% Ajustado por simetría de margen) -->
+            <td style="width: 34%; padding-right: 5px; vertical-align: top;">
+                <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
-                      <td style="width:100%;height:12px;"><b>GERENCIA GENERAL / GERENCIAS DE AREA / ADMINISTRADOR REGIONAL </b></td>
+                      <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
+                          <b>'.$firma2.'</b>
+                      </td>
                     </tr>
                     <tr>
-                      <td align=center><br><br><br><br><b>FIRMA</b></td>
+                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #64748b;">
+                          <b>FIRMA y SELLO</b>
+                      </td>
+                    </tr>
+                </table>
+            </td>
+            
+            <!-- 3. BLOQUE GERENCIA GENERAL (33%) -->
+            <td style="width: 33%; vertical-align: top;">
+                <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
+                    <tr>
+                      <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
+                          <b>'.$firma3.'</b>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #64748b;">
+                          <b>FIRMA y SELLO</b>
+                      </td>
                     </tr>
                 </table>
             </td>
           </tr>
-          <tr>
-            <td style="width: 33%; text-align: left; height:20px;">';
+
+
+          <!-- 🌟 SE CONSERVA TU LÓGICA DE CONDICIONALES DE SESIÓN Y METADATOS -->
+          <tr style="font-size: 6.5px; color: #475569; font-weight: bold;">
+            <td style="width: 33%; text-align: left; height:20px; vertical-align: middle; text-transform: uppercase;font-family: courier;">';
               if($proyecto[0]['aper_proy_estado']==1){
                 $tabla.='POA - '.$this->session->userdata('gestion');
               }
               else{
-                $tabla.='<b>POA - '.$this->session->userdata('gestion').' '.strtoupper($this->session->userdata('rd_poa')).'</b>';
+                $tabla.='<span style="color: #1e293b;">POA - '.$this->session->userdata('gestion').' '.strtoupper($this->session->userdata('rd_poa')).'</span>';
               } 
             $tabla.='
             </td>
-            <td style="width: 33%; text-align: center">
+            <td style="width: 34%; text-align: center; vertical-align: middle; text-transform: uppercase; color: #64748b; font-family: courier;">
               '.$this->session->userdata('sistema').'
             </td>
-            <td style="width: 33%; text-align: right">
+            <!-- 🛠️ INMUNIZADO: Se fuerza el uso de Courier para evitar quiebres en TCPDF -->
+            <td style="width: 33%; text-align: right; vertical-align: middle; font-family: courier;">
                 pag. [[page_cu]]/[[page_nb]]
             </td>
           </tr>
@@ -1479,84 +1505,144 @@ public function pie_foda(){
     }
     
     $tabla='';
-    $tabla.='<table cellpadding="0" cellspacing="0" class="tabla" border=0.09 style="width:100%;" align=center>
-              <thead>
-                <tr style="font-size: 6.5px;" bgcolor=#eceaea align=center>
-                  <th style="width:2%;height:15px;">PROG.</th>
-                  <th style="width:2%;">COD.<br>ACP.</th>
-                  <th style="width:2%;">COD.<br>OPE.</th>
-                  <th style="width:2%;">COD.<br>ACT.</th> 
-                  <th style="width:15%;">ACTIVIDAD</th>
-                  <th style="width:13.5%;">RESULTADO</th>
-                  <th style="width:9%;">UNIDAD RESPONSABLE</th>
-                  <th style="width:13%;">INDICADOR</th>
-                  <th style="width:2.5%;">META</th>
-                  <th style="width:2.5%;">ENE.</th>
-                  <th style="width:2.5%;">FEB.</th>
-                  <th style="width:2.5%;">MAR.</th>
-                  <th style="width:2.5%;">ABR.</th>
-                  <th style="width:2.5%;">MAY.</th>
-                  <th style="width:2.5%;">JUN.</th>
-                  <th style="width:2.5%;">JUL.</th>
-                  <th style="width:2.5%;">AGO.</th>
-                  <th style="width:2.5%;">SEPT.</th>
-                  <th style="width:2.5%;">OCT.</th>
-                  <th style="width:2.5%;">NOV.</th>
-                  <th style="width:2.5%;">DIC.</th>
-                  <th style="width:9%;">VERIFICACI&Oacute;N</th> 
-                </tr>
-              </thead>
-              <tbody>';
-              $nro=0;
+    $tabla .= '
+      <style>
+          /* Replicación de Gobernanza Visual de la Cabecera en el Formulario N° 4 */
+          .cns-tbl-form4-report { 
+              width: 100%; 
+              border-collapse: collapse; 
+              table-layout: fixed; /* Forzado absoluto para no desbordar los 3mm del <page> */
+              font-family: helvetica, arial, sans-serif;
+              margin-top: 5px;
+          }
+          
+          /* Encabezados compactos de alta densidad alineados al ras de la cabecera */
+          .cns-tbl-form4-report th { 
+              background: #475569; 
+              color: #ffffff; 
+              font-weight: bold; 
+              font-size: 6.5px; /* Tamaño micro-contable comprimido para 22 columnas */
+              text-align: center; 
+              vertical-align: middle; 
+              border: 0.7px solid #ffffff; 
+              padding: 4px 1px;
+              text-transform: uppercase;
+          }
+          
+          /* Celdas de datos con filetes plomo claro ultra finos (.cns-tbl-ident) */
+          .cns-tbl-form4-report td { 
+              font-size: 6px; 
+              vertical-align: middle; 
+              border: 0.5px solid #cbd5e1; 
+              padding: 3px 2px; 
+              color: #334155;
+              line-height: 1.2;
+          }
+          
+          /* Estilos semánticos para columnas de códigos (Estilo .cns-lbl) */
+          .cns-td-bold-code { font-weight: bold; font-size: 7px !important; text-align: center; color: #475569; }
+          .cns-td-bold-meta { font-weight: bold; font-size: 7.5px !important; text-align: center; color: #1e3a8a; }
+      </style>
 
-              foreach($lista_form4_uresp as $rowp){
-                $color=''; $tp=''; $color_uni='';
-                if($rowp['indi_id']==1){
-                  if($rowp['total_anual']!=$rowp['prod_meta']){
-                    $color='#fbd5d5';
-                  }
-                }
-                elseif ($rowp['indi_id']==2) {
-                  $tp='%';
-                  if($rowp['mt_id']==3){
-                    if($rowp['total_anual']!=$rowp['prod_meta']){
-                      $color='#fbd5d5';
+      <!-- 🌟 ENCAPSULAMIENTO HORIZONTAL EN CUADRÍCULA ESTRICTA AL 100% -->
+      <table class="cns-tbl-form4-report" align="center">
+        <thead>
+          <tr>
+            <th style="width: 2.5%; height: 12px;">PROG.</th>
+            <th style="width: 2.5%;">COD.<br>ACP.</th>
+            <th style="width: 2.5%;">COD.<br>OPE.</th>
+            <th style="width: 2.5%;">COD.<br>ACT.</th> 
+            <th style="width: 15%;">ACTIVIDAD</th>
+            <th style="width: 12.5%;">RESULTADO</th>
+            <th style="width: 10%;">UNIDAD RESPONSABLE</th>
+            <th style="width: 12%;">INDICADOR</th>
+            <th style="width: 3.5%;">META</th>
+            <th style="width: 2.3%;">ENE.</th>
+            <th style="width: 2.3%;">FEB.</th>
+            <th style="width: 2.3%;">MAR.</th>
+            <th style="width: 2.3%;">ABR.</th>
+            <th style="width: 2.3%;">MAY.</th>
+            <th style="width: 2.3%;">JUN.</th>
+            <th style="width: 2.3%;">JUL.</th>
+            <th style="width: 2.3%;">AGO.</th>
+            <th style="width: 2.3%;">SEPT.</th>
+            <th style="width: 2.3%;">OCT.</th>
+            <th style="width: 2.3%;">NOV.</th>
+            <th style="width: 2.3%;">DIC.</th>
+            <th style="width: 9%;">MEDIO DE VERIFICACIÓN</th> 
+          </tr>
+        </thead>
+        <tbody>';
+
+        $nro = 0;
+        if (!empty($lista_form4_uresp)) {
+            foreach ($lista_form4_uresp as $rowp) {
+                
+                $color = ''; 
+                $tp = ''; 
+                $color_uni = '';
+                
+                if ($rowp['indi_id'] == 1) {
+                    if ($rowp['total_anual'] != $rowp['prod_meta']) {
+                        $color = 'background-color: #fef2f2;'; 
                     }
-                  }
+                } elseif ($rowp['indi_id'] == 2) {
+                    $tp = '%';
+                    if ($rowp['mt_id'] == 3) {
+                        if ($rowp['total_anual'] != $rowp['prod_meta']) {
+                            $color = 'background-color: #fef2f2;';
+                        }
+                    }
                 }
 
-                $color_or='';
-                if($rowp['or_id']==0){
-                  $color_or='#fbd5d5';
+                $color_or = '';
+                if ($rowp['or_id'] == 0) {
+                    $color_or = 'background-color: #ffeeec;'; 
                 }
 
-                if($rowp['uni_resp']!=0){
-                  $color_uni='#f7f2dd';
+                if ($rowp['uni_resp'] != 0) {
+                    $color_uni = 'background-color: #fefce8;'; 
                 }
+
+                $estilo_fila = !empty($color) ? $color : '';
 
                 $nro++;
-                $tabla.=
-                '<tr style="font-size: 6.5px;height:12px;" bgcolor="'.$color.'">
-                  <td style="width: 2%; height:12px;text-align: center;font-size: 9px;" bgcolor='.$color_or.'><b>'.$rowp['aper_programa'].'</b></td>
-                  <td style="width: 2%; text-align: center; font-size: 9px;" bgcolor='.$color_or.'><b>'.$rowp['og_codigo'].'</b></td>
-                  <td style="width: 2%; text-align: center; font-size: 9px;" bgcolor='.$color_or.'><b>'.$rowp['or_codigo'].'</b></td>
-                  <td style="width: 2%; text-align: center; font-size: 9px;" bgcolor='.$color_uni.'>'.$rowp['prod_cod'].'</td>
-                  <td style="width: 15%; text-align: justify;font-size: 7px;" bgcolor='.$color_uni.'>'.$rowp['prod_producto'].'</td>
-                  <td style="width: 13.5%; text-align: justify;" bgcolor='.$color_uni.'>'.$rowp['prod_resultado'].'</td>
-                  <td style="width: 9%; text-align: justify;" bgcolor='.$color_uni.'><b>'.$rowp['prod_unidades'].'</b></td>
-                  <td style="width: 13%; text-align: justify;" bgcolor='.$color_uni.'>'.$rowp['prod_indicador'].'</td>
-                  <td style="width: 2.5%; text-align: center;font-size: 10px;" bgcolor='.$color_uni.'><b>'.round($rowp['prod_meta'],2).''.$tp.'</b></td>';
-                  for ($i=1; $i <=12 ; $i++) { 
-                    $tabla.='<td style="width:2.5%;" align=center bgcolor='.$color_uni.'>'.round($rowp['m'.$i],2).''.$tp.'</td>';
+                $tabla .= '
+                <tr style="' . $estilo_fila . ' height: 15px;">
+                  <!-- 🔄 AJUSTADO: Celdas del cuerpo ahora con porcentajes idénticos a la cabecera (2.5%) -->
+                  <td class="cns-td-bold-code" style="width: 2.5%; font-size: 9px; ' . $color_or . ' height: 14px;">' . $rowp['aper_programa'] . '</td>
+                  <td class="cns-td-bold-code" style="width: 2.5%; font-size: 9px;' . $color_or . '">' . $rowp['og_codigo'] . '</td>
+                  <td class="cns-td-bold-code" style="width: 2.5%; font-size: 9px;' . $color_or . '">' . $rowp['or_codigo'] . '</td>
+                  <td style="width: 2.5%; text-align: center; font-size: 9px; font-weight: 600;' . $color_uni . '">' . $rowp['prod_cod'] . '</td>
+                  
+                  <td style="width: 15%; text-align: justify; font-size: 6.5px; !important;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_producto']))) . '</td>
+                  <td style="width: 12.5%; text-align: justify;font-size: 6.5px;  ' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_resultado']))) . '</td>
+                  <td style="width: 10%; text-align: left; font-weight: bold; font-size: 6.5px; !important;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_unidades']))) . '</td>
+                  <td style="width: 12%; font-size: 6.5px; text-align: justify;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_indicador']))) . '</td>
+                  
+                  <td class="cns-td-bold-meta" style="width: 3.5%;font-size: 7.5px; ' . $color_uni . '">' . round($rowp['prod_meta'], 2) . $tp . '</td>';
+                  
+                  // 🔄 AJUSTADO: Columnas mensuales con porcentajes idénticos a la cabecera (2.3%)
+                  for ($i = 1; $i <= 12; $i++) { 
+                      $tabla .= '<td style="width: 2.3%; font-size: 7.5px; text-align: center;' . $color_uni . '">' . round($rowp['m' . $i], 2) . $tp . '</td>';
                   }
 
-                  $tabla.='
-                  <td style="width: 9%; text-align: justify;" bgcolor='.$color_uni.'>'.$rowp['prod_fuente_verificacion'].'</td>
+                  $tabla .= '
+                  <td style="width: 9%; font-size: 6.5px; text-align: left;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_fuente_verificacion']))) . '</td>
                 </tr>';
-              }
-              $tabla.='
-              </tbody>
-            </table>';
+            }
+        } else {
+            $tabla .= '
+            <tr>
+                <td colspan="22" style="text-align: center; color: #94a3b8; font-style: italic; padding: 15px 0; font-size: 7.5px;">
+                    📋 Ninguna actividad operativa o requerimiento físico programado para esta unidad organizativa en la gestión 2027.
+                </td>
+            </tr>';
+        }
+
+        $tabla .= '
+        </tbody>
+      </table>';
     return $tabla;
   }
 
@@ -1603,7 +1689,7 @@ public function pie_foda(){
                   <td style="width: 1%; font-size: 4.5px; text-align: center;height:13px;">'.$cont.'</td>
                   <td style="width: 2%; text-align: center; font-size: 8px;"><b>'.$row['prod_cod'].'</b></td>
                   <td style="width: 4%; text-align: center;font-size: 8px;"><b>'.$row['par_codigo'].'</b></td>
-                  <td style="width: 15%; text-align: left;font-size: 7.5px;">'.strtoupper($row['ins_detalle']).'</td>
+                  <td style="width: 15%; text-align: left;font-size: 5px;">'.strtoupper($row['ins_detalle']).'</td>
                   <td style="width: 5%; text-align: left">'.strtoupper($row['ins_unidad_medida']).'</td>
                   <td style="width: 2%; text-align: right">'.round($row['ins_cant_requerida'],2).'</td>
                   <td style="width: 5%; text-align: right;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
