@@ -12,12 +12,12 @@ class Model_componente extends CI_Model{
     //lista de organismo financiador
 
     /*--  Lista de Unidades --*/
-    function lista_unidades($dist_id){
+/*    function lista_unidades($dist_id){
         $sql = 'select * 
                 from lista_poa_gastocorriente_distrital('.$dist_id.','.$this->gestion.')'; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*------------ Relacion Proyecto Componente -------*/
@@ -31,13 +31,13 @@ class Model_componente extends CI_Model{
     }
 
     /*------------ suma Ponderacion -------*/
-    function suma_ponderacion($pfec_id){
+/*    function suma_ponderacion($pfec_id){
         $sql = 'select SUM(com_ponderacion) as suma
                 from _componentes
                 where pfec_id='.$pfec_id.' and estado!=\'3\''; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*------ LISTA DE SERVICIOS Y COMPONENTES PARA LA EVALUACIÓN -------*/
@@ -100,7 +100,7 @@ class Model_componente extends CI_Model{
     /*====== GET COMPONENTE -> PROY - APER 2026 ========*/
     public function get_componente($com_id,$gestion){
         $sql = ' SELECT 
-                    c.com_id, c.com_componente, 
+                    c.com_id, c.com_componente, c.estado,
                     sa.serv_id, sa.serv_cod, sa.serv_descripcion, 
                     tpsa.tipo_subactividad, 
                     pfe.pfec_id, 
@@ -195,43 +195,6 @@ class Model_componente extends CI_Model{
         $this->db->delete('_componentes');
     }
     /*======================================================================================*/
-
-    /*================================= FASE-COMPONENTE NRO ======================================*/
-/*    public function get_fase_componente_nro($pfec_id,$cod,$tp_id){
-        if($tp_id==1){
-            $sql = 'select *
-                from _componentes c
-                where c.pfec_id='.$pfec_id.' and c.com_nro=\''.$cod.'\' and c.estado!=\'3\'';
-        }
-        else{
-            $sql = 'select *
-                from _componentes c
-                Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
-                where c.pfec_id='.$pfec_id.' and sa.serv_cod =\''.$cod.'\' and c.estado!=\'3\'';
-        }
-        
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-    /*======================================================================================*/
-
-/*    public function list_componentes_total($proy_id){
-        $sql = 'select c.proy_id,c.pfec_id,c.com_id,c.com_componente,nc.prod, t.total
-                from vista_componentes_dictamen c
-                Inner Join (select com_id,count(com_id) as prod
-                from vista_producto
-                group by com_id) as nc On nc.com_id=c.com_id
-                Inner Join (select proy_id,count(*) as total
-                from vista_producto
-                group by proy_id) as t On t.proy_id=c.proy_id
-                where c.proy_id='.$proy_id.'';
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
-
-
 
 
     /*PROYECTO DE INVERSION*/

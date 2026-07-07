@@ -78,19 +78,7 @@
 
 			<!-- MAIN CONTENT -->
 			<div id="content">
-				<div class="row">
-					<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-						<section id="widget-grid" class="well">
-							<ul class="nav nav-pills">
-							  <li class="active"><a href="#">MIS UNIDADES RESPONSABLES</a></li>
-							  <li><a href="#">MIS ACTIVIDADES</a></li>
-							</ul>
-						</section>
-					</article>
-				</div>
-				
-					<?php echo $listado; ?>
-
+				<?php echo $listado; ?>
 			</div>
 			<!-- END MAIN CONTENT -->
 		</div>

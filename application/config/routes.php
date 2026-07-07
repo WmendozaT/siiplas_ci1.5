@@ -177,9 +177,9 @@ $route['prog/list_serv/(:any)'] = 'programacion/componente/verif_tipo_gasto/$1';
 $route['prog/des_sactividad'] = 'programacion/componente/deshabilitar_sactividad';	//// Deshabilitar servicio
 
 
-$route['prog/valida_comp'] = 'programacion/cservicios/valida_componente';  //// Valida Componente (PROY INVERSION)
-$route['prog/valida_update_comp'] = 'programacion/cservicios/valida_update_componente';  //// Valida update Componente (PROY INVERSION)
-$route['prog/delete_operaciones_componente_pi'] = 'programacion/componente/elimina_operaciones_componente_pi';	//// Delete componente y operaciones Actividades PI
+$route['prog/valida_comp'] = 'programacion/componente/valida_componente';  //// Valida Componente (PROY INVERSION)
+$route['prog/valida_update_comp'] = 'programacion/componente/valida_update_componente';  //// Valida update Componente (PROY INVERSION)
+//$route['prog/delete_operaciones_componente_pi'] = 'programacion/componente/elimina_operaciones_componente_pi';	//// Delete componente y operaciones Actividades PI
 
 
 /*-------------------  REPORTE DEL POA Programacion - Fisica y Financiera (2020) ------------------*/
@@ -287,7 +287,7 @@ $route['prog/mod_ins_p/(:any)'] = 'insumos/cprog_insumo/mod_insumo/$1/$2/$3/$4/$
 $route['prog/rep_partidas_ope/(:any)'] = 'insumos/cprog_insumo/reporte_partida/$1';//Consolidado partidas pdf
 $route['prog/xcel_partidas_ope/(:any)'] = 'insumos/cprog_insumo/xcel_reporte_partida/$1';//Consolidado partidas Excel
 
-$route['proy/proceso_productos_consolidado/(:any)'] = 'programacion/componente/reporte_consolidado_operaciones_componentes/$1';  //// Reporte Procesos-Operaciones Consolidado TOTAL
+//$route['proy/proceso_productos_consolidado/(:any)'] = 'programacion/componente/reporte_consolidado_operaciones_componentes/$1';  //// Reporte Procesos-Operaciones Consolidado TOTAL
 
 /*---- REGISTRO PROGRAMACION UNIDAD ORGANIZACIONAL (2020) -----*/
 $route['prog/unidad'] = 'programacion/cunidad_organizacional/list_unidad'; //// lista Unidad Organizacional

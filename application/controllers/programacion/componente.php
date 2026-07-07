@@ -34,10 +34,10 @@ class Componente extends CI_Controller {
 
     /*----- VERIFICA EL TIPO DE GASTO ------*/
     public function verif_tipo_gasto($proy_id){
-        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id); // Proy
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id); // Proy
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
-            if($data['proyecto'][0]['tp_id']==1){ //// Proyecto
+            if($data['proyecto'][0]['tp_id']==1){ //// Proyecto de Inversion
                 $this->lista_componentes($proy_id);
             }
             else{ /// Gasto Corriente
@@ -55,24 +55,8 @@ class Componente extends CI_Controller {
             $this->session->set_flashdata('danger','ERROR !!!');
             redirect('admin/proy/list_proy');
         }
-
     }
 
-    /*--------- LISTA DE COMPONENTES------*/
-    public function lista_componentes($proy_id){
-        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id); // Proy
-        $data['fase'] = $this->model_faseetapa->get_id_fase($proy_id); //// recupera datos de la tabla fase activa
-        if(count($data['fase'])!=0){
-            $data['menu']=$this->genera_menu($proy_id);
-            $data['unidad']=$this->model_componente->list_subactividades_pi();
-            $data['componente']=$this->list_componentes_pi($proy_id); 
-            $this->load->view('admin/programacion/componente/list_componentes_pi', $data);
-        }
-        else{
-            redirect('admin/proy/fase_etapa/'.$proy_id); ///// fase sin habilitar
-        }
-        
-    }
 
     /*------- GASTO CORRIENTE-----------*/
     /*--------- LISTA DE UNIDADES RESPONSABLES ------*/
@@ -91,6 +75,17 @@ class Componente extends CI_Controller {
             }
             $listado='';
             $listado.='
+                <div class="row">
+                    <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <section id="widget-grid" class="well">
+                            <ul class="nav nav-pills">
+                              <li class="active"><a href="#">MIS UNIDADES RESPONSABLES</a></li>
+                              <li><a href="#">MIS ACTIVIDADES</a></li>
+                            </ul>
+                        </section>
+                    </article>
+                </div>
+
             <input type="hidden" name="base" value="'.base_url().'">
             <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
               <section id="widget-grid" class="well" style="background: #ffffff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -148,7 +143,7 @@ class Componente extends CI_Controller {
                     <div class="widget-body no-padding">
                         
                       <div class="table-responsive">
-                        '.$this->unidades_resp($proy_id).'
+                        '.$this->unidades_resp($unidad_responsable).'
                       </div>
                     </div>
                     <!-- end widget content -->
@@ -170,6 +165,88 @@ class Componente extends CI_Controller {
         }
     }
 
+    //// Lista de Componentes - Proyectos de Inversion
+    public function lista_componentes($proy_id){
+        $unidad_responsable = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        
+        if(count($unidad_responsable)!=0){
+            $data['menu']=$this->genera_menu($proy_id);
+            $listado='';
+            $listado.='
+            <div class="row">
+                    <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <section id="widget-grid" class="well">
+                            <ul class="nav nav-pills">
+                              <li class="active"><a href="#">MIS COMPONENTES</a></li>
+                              <li><a href="#">MIS ACTIVIDADES</a></li>
+                            </ul>
+                        </section>
+                    </article>
+                </div>
+            <input type="hidden" name="base" value="'.base_url().'">
+            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+              <section id="widget-grid" class="well" style="background: #ffffff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                  <div class="row" style="margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                      
+                      <!-- Tu etiqueta h1 con un espaciado regular y tipografía color plomo oscuro -->
+                      <h1 style="margin: 0; line-height: 1.4;">
+                          <small>
+                              ' . $unidad_responsable[0]['proy_sisin'] . ' - ' . $unidad_responsable[0]['proy_nombre'] . '
+                          </small>
+                      </h1>
+                      
+                      <!-- Contenedor flex dinámico para alinear tus botones en la misma fila horizontal -->
+                      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+                          
+                          <!-- Tu párrafo original con el botón de colapso estilizado al formato SmartAdmin -->
+                          <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-success nuevo_ff" title="NUEVO REGISTRO - COMPONENTE" class="btn btn-success" style="width:15.5%;">NUEVA UNIDAD RESPONSABLE</a>
+                          <!-- Tu enlace original "VOLVER" adaptado estéticamente a la botonera formal -->
+                          <a href="' . site_url("admin/proy/list_proy") . '" 
+                             title="VOLVER AL MENÚ ANTERIOR" 
+                             class="btn btn-default btn-sm" 
+                             style="font-weight: bold; color: #475569; border-color: #cbd5e1; background: #ffffff; padding: 6px 12px; display: inline-block;">
+                              <i class="fa fa-arrow-left"></i> VOLVER
+                          </a>
+                          
+                      </div>
+                  </div>
+              </section>
+          </article>
+
+          <section id="widget-grid" class="">
+            <div class="row">
+              <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <!-- Widget ID (each widget will need unique ID)-->
+                <div class="jarviswidget jarviswidget-color-darken" >
+                  <header>
+                    <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+                    <h2 class="font-md"><strong>COMPONENTES DEL PROYECTO</strong></h2>               
+                  </header>
+                  <div>
+                    <div class="widget-body no-padding">
+                        
+                      <div class="table-responsive">
+                        '.$this->unidades_resp($unidad_responsable).'
+                      </div>
+                    </div>
+                    <!-- end widget content -->
+                  </div>
+                  <!-- end widget div -->
+                </div>
+                <!-- end widget -->
+              </article>
+            <!-- WIDGET END -->
+            </div>
+          </section>';
+
+          $data['listado']=$listado;
+          $this->load->view('admin/programacion/componente/list_componentes', $data);
+        }
+        else{
+            $this->session->set_flashdata('danger','ERROR !!!');
+            redirect('admin/proy/list_proy');
+        }
+    }
 
 
 
@@ -210,12 +287,69 @@ class Componente extends CI_Controller {
     }
 
 
-/*---- UNIDADES RESPONSABLES (2024) a optimizar ---------*/
-  function unidades_resp($proy_id){
-    $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
-    $componente=$this->model_componente->lista_UnidadesResponsables($proy_id);
+/*---- UNIDADES RESPONSABLES / COMPONENTES ---------*/
+  function unidades_resp($proyecto){
+    //$proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
+    $componente=$this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
+    $unidad=$this->model_componente->list_subactividades_pi(); /// lista de unidades
     $tabla='';
-    $tabla.='<table id="dt_basic4" class="table table table-bordered" width="100%">
+    if($proyecto[0]['tp_id']==1){ /// Inversion
+        $tabla.='
+            <table id="dt_basic4" class="table table table-bordered" width="100%">
+                <thead>
+                    <tr style="height:45px;">
+                        <th style="width:1%; text-align:center;">#</th>
+                        <th style="width:1%; text-align:center;">MODIFICAR</th>
+                        <th style="width:15%; text-align:center;">UNIDAD RESPONSABLE</th>
+                        <th style="width:15%; text-align:center;">DESCRIPCI&Oacute;N COMPONENTE</th>
+                        <th style="width:5%; text-align:center;">NRO. ACT.</th>
+                        <th style="width:5%; text-align:center;">MIS ACTIVIDADES</th>
+                        <th style="width:5%; text-align:center;">FORM. POA N 4</th>
+                        <th style="width:5%; text-align:center;">FORM. POA N 5</th>
+                        <th style="width:5%; text-align:center;">EXCEL ACTIVIDADES</th>
+                        <th style="width:5%; text-align:center;">ELIMINAR ACTIVIDADES </th>
+                    </tr>
+                </thead>
+                <tbody>';
+                $num=0; $ponderacion=0; $sum=0;
+                foreach($componente as $row){
+                    $num++;
+                    $tabla.='
+                    <tr>';
+                        if(count($this->model_producto->lista_productos($row['com_id']))==0){
+                            $tabla.='<td title="'.$row['com_id'].'"><a href="#" data-toggle="modal" data-target="#modal_neg_ff" class="btn btn-default neg_ff" title="DESHABILITAR COMPONENTE"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/img/neg.jpg" WIDTH="35" HEIGHT="35"/></td>';
+                        }
+                        else{
+                            $tabla.='<td title="'.$row['com_id'].'">'.$num.'</td>';
+                        }
+                        $tabla.='
+                        <td><a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$row['com_id'].'" title="MODIFICAR COMPONENTE" ><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td bgcolor="#d4f1fb" align="center" ><font color="blue" size=2><b>'.$row['serv_cod'].' .- '.$row['serv_descripcion'].'</b></font></td>
+                        <td>'.$row['com_componente'].'</td>
+                        <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>
+                        <td align="center">
+                            <a href="'.site_url("admin").'/prog/list_prod/'.$row['com_id'].'" title="MIS ACTIVIDADES" class="btn btn-default" target=_black><img src="'.base_url().'assets/ifinal/archivo.png" WIDTH="34" HEIGHT="34"/></a>
+                        </td>
+                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 4" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td align="center"></td>
+                        <td align="center">';
+                        if(count($this->model_producto->lista_productos($row['com_id']))!=0 & $this->tp_adm==1){
+                            $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR TODAS LAS ACTIVIDADES DE LA UNIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
+                        }
+                        $tabla.='
+                        </td>
+                    </tr>';
+                    $sum=$sum+count($this->model_producto->lista_productos($row['com_id']));
+                    $ponderacion=$ponderacion+$row['com_ponderacion'];
+                }
+                $tabla.='    
+                </tbody>
+            </table>';
+    }
+    else{ /// Gasto Corriente
+        $tabla.='
+            <table id="dt_basic4" class="table table table-bordered" width="100%">
                 <thead>
                     <tr style="height:45px;">
                         <th style="width:1%; text-align:center;">#</th>
@@ -267,7 +401,7 @@ class Componente extends CI_Controller {
                         </td>
                         <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 4" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
                         <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
-                        <td align="center"><a href="'.site_url("").'/prog/exportar_productos/'.$row['com_id'].'" title="EXPORTAR ACTIVIDADES" class="btn btn-default"><img src="' . base_url() . 'assets/ifinal/excel.jpg" WIDTH="38"/></a></td>
+                        <td align="center"></td>
                         <td align="center">';
                         if(count($this->model_producto->lista_productos($row['com_id']))!=0 & $this->tp_adm==1){
                             $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR TODAS LAS ACTIVIDADES DE LA UNIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
@@ -280,18 +414,115 @@ class Componente extends CI_Controller {
                 }
                 $tabla.='    
                 </tbody>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td align=center><b>'.$sum.'</b></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
             </table>';
+    }
+   
+            $tabla.='
+            <div class="modal fade" id="modal_nuevo_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+
+                    <div class="modal-body">
+                        <form action="'.site_url().'/prog/valida_comp" id="form_nuevo" name="form_nuevo" class="form-horizontal" method="post">
+                            <input  type="hidden" name="pfec_id" id="pfec" value="'.$proyecto[0]['pfec_id'].'">
+                            <h2 class="alert alert-info"><center>UNIDAD RESPONSABLE (Agregar)</center></h2>                           
+                            <fieldset>
+                                <div id="tit"></div>
+                                <div class="form-group">
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">UNIDAD RESPONSABLE</label>
+                                        <div class="col-md-10">
+                                            <select class="form-control" id="serv_id" name="serv_id" title="SELECCIONE UNIDAD RESPONSABLE">
+                                              <option value="">Seleccione Unidad</option>';
+                                                foreach($unidad as $row){
+                                                    $tabla.='<option value="'.$row['serv_id'].'">'.$row['serv_cod'].' - '.$row['serv_descripcion'].'</option>';
+                                                  }
+                                                $tabla.='
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">COMPONENTE DE PROYECTO</label>
+                                        <div class="col-md-10">
+                                            <textarea class="form-control" name="descripcion" id="descripcion" maxlength="200" rows="3" ></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </fieldset>                    
+                            <div class="form-actions">
+                                <div class="row">
+                                    <div id="but">
+                                        <div class="col-md-12">
+                                           <button class="btn btn-default" data-dismiss="modal" id="cl" title="CANCELAR">CANCELAR</button>
+                                           <button type="button" name="subir_form" id="subir_form" class="btn btn-info" >GUARDAR UNIDAD</button>
+                                            <center><img id="load" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="50" height="50"></center>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+
+            $tabla.='
+            <div class="modal fade" id="modal_mod_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+
+                      <div class="modal-body">
+                        <form action="'.site_url().'/prog/valida_update_comp" id="form_mod" name="form_mod" class="form-horizontal" method="post">
+                        <input type="hidden" name="com_id" id="com_id">
+
+                            <h2 class="alert alert-info"><center>COMPONENTE (Modificar)</center></h2>                           
+                            <fieldset>
+                                <div class="form-group">
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">UNIDAD RESPONSABLE</label>
+                                        <div class="col-md-10">
+                                            <select class="form-control" id="mserv_id" name="mserv_id" title="SELECCIONE UNIDAD RESPONSABLE">
+                                              <option value="">Seleccione Unidad</option>';
+                                                foreach($unidad as $row){
+                                                $tabla.='<option value="'.$row['serv_id'].'">'.$row['serv_cod'].' - '.$row['serv_descripcion'].'</option>';
+                                                }
+                                            $tabla.='
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">DESCRIPCI&Oacute;N COMPONENTE</label>
+                                        <div class="col-md-10">
+                                            <textarea class="form-control" name="mcomponente" id="mcomponente" maxlength="200" rows="3" ></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                             
+                            </fieldset>                    
+                            <div class="form-actions">
+                                <div class="row">
+                                    <div id="mbut">
+                                        <div class="col-md-12">
+                                           <button class="btn btn-default" data-dismiss="modal" id="mcl" title="CANCELAR">CANCELAR</button>
+                                           <button type="button" name="mod_ffenviar" id="mod_ffenviar" class="btn btn-info" >MODIFICAR UNIDAD</button>
+                                            <center><img id="loadd" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="50" height="50"></center>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                  </div>
+                </div>
+            </div>';
+            ////----------------------- modal para registrar unidad responsable - Componente
 
             $tabla .= '
             <style>
@@ -329,7 +560,7 @@ class Componente extends CI_Controller {
 
                             <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
                             <form action="' . site_url('programacion/componente/valida_migracion_form4_consolidado') . '" method="post" enctype="multipart/form-data" id="form_subir_sigep" autocomplete="off" style="padding:0; background:transparent;">
-                                <input name="proy_id" value="'.$proy_id.'" type="hidden" > 
+                                <input name="proy_id" value="'.$proyecto[0]['proy_id'].'" type="hidden" > 
                                 <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
                                     <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
                                     
@@ -752,7 +983,7 @@ $tabla .= '
       if ($this->input->is_ajax_request() && $this->input->post()) {
           $post = $this->input->post();
           $com_id = $this->security->xss_clean($post['com_id']);
-          $productos = $this->model_producto->list_prod($com_id);
+          
 
             $update_com= array(
                 'fun_id' => $this->fun_id,
@@ -781,8 +1012,134 @@ $tabla .= '
     }
 
 
+    public function get_componente(){
+        if($this->input->is_ajax_request() && $this->input->post()){
+            $post = $this->input->post();
+            $com_id = $post['com_id'];
+            $com_id = $this->security->xss_clean($com_id);
+            $dato_comp = $this->model_componente->get_componente($com_id,$this->gestion);
+            //caso para modificar el codigo de proyecto y actividades
+            
+            if(count($dato_comp)!=0){
+              $result = array(
+                  'respuesta' => 'correcto',
+                  'componente' => $dato_comp,
+              );
+            }
+            else{
+              $result = array(
+                  'respuesta' => 'error',
+              );
+            }
+
+            echo json_encode($result);
+        }else{
+            show_404();
+        }
+    }
+
+
+    /// Valida componente 
+    public function valida_componente(){
+      if ($this->input->post()) {
+          $post = $this->input->post();
+          $pfec_id = $this->security->xss_clean($post['pfec_id']); /// pfec id
+          $descripcion = $this->security->xss_clean($post['descripcion']); /// Descripcion Componente 
+          $serv_id = $this->security->xss_clean($post['serv_id']); //// serv id
+
+          if(isset($pfec_id) & isset($descripcion) & isset($serv_id)){
+                $fase = $this->model_faseetapa->get_fase($pfec_id);
+                $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
+                $reponsable=$this->model_proyecto->responsable_proy($fase[0]['proy_id'],2);
+                /*--------- COMPONENTE ----------*/
+                $data = array(
+                    'pfec_id' => $pfec_id,
+                    'serv_id' => $serv_id,
+                    'com_componente' => strtoupper($descripcion), 
+                    'resp_id' => $reponsable[0]['fun_id'], 
+                    'fun_id' => $this->fun_id,
+                );
+                $this->db->insert('_componentes',$data);
+                $com_id=$this->db->insert_id();
+                /*------------------------------------*/
+
+                if(count($this->model_componente->get_componente($com_id,$this->gestion))!=0){
+                    $this->session->set_flashdata('success','EL COMPONENTE SE REGISTRO CORRECTAMENTE');
+                    redirect(site_url("").'/prog/list_serv/'.$fase[0]['proy_id']);
+                }
+                else{
+                    $this->session->set_flashdata('danger','ERROR EN EL REGISTRO DEL COMPONENTE');
+                    redirect(site_url("").'/prog/list_serv/'.$fase[0]['proy_id']);
+                }           
+          }
+          else{
+            $this->session->set_flashdata('danger','NO INGRESAN LOS DATOS ');
+            redirect(site_url("").'/prog/list_serv/'.$fase[0]['proy_id']);
+          }
+
+      } else {
+          show_404();
+      }
+    }
+
+    /*------ Valida Update Componente (2026) optimizar -----*/
+    public function valida_update_componente(){
+      if ($this->input->post()) {
+          $post = $this->input->post();
+          $com_id = $this->security->xss_clean($post['com_id']); /// com id
+          $serv_id = $this->security->xss_clean($post['mserv_id']); /// Descripcion Componente 
+          $comp = $this->security->xss_clean($post['mcomponente']); //// Codigo
+          $componente=$this->model_componente->get_componente($com_id,$this->gestion);
+            $fase = $this->model_faseetapa->get_fase($componente[0]['pfec_id']);
+            $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
+
+          if(isset($com_id) & isset($serv_id) & isset($componente)){
+              
+              /*--------- COMPONENTE ----------*/
+              $update_comp = array(
+                'serv_id' => $serv_id,
+                'com_componente' => strtoupper($comp), 
+                'estado' => 2,
+                'fun_id' => $this->fun_id
+                );
+                $this->db->where('com_id', $com_id);
+                $this->db->update('_componentes', $update_comp);
+
+                $this->session->set_flashdata('success','EL REGISTRO SE MODIFICO CORRECTAMENTE');
+                redirect(site_url("").'/prog/list_serv/'.$fase[0]['proy_id']);
+
+          }
+          else{
+            $this->session->set_flashdata('danger','ERROR EN EL REGISTRO DEL COMPONENTE');
+            redirect(site_url("").'/prog/list_serv/'.$fase[0]['proy_id']);
+          }
+
+      } else {
+          show_404();
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /*---- CONSOLIDADO DE OPERACIONES POR SUB ACTIVIDADES, COMPONENTES (2019)----*/
-    public function reporte_consolidado_operaciones_componentes($proy_id){
+/*    public function reporte_consolidado_operaciones_componentes($proy_id){
         $data['proyecto']=$this->model_proyecto->get_id_proyecto($proy_id);
         if(count($data['proyecto'])!=0){
             $data['mes'] = $this->mes_nombre();
@@ -792,182 +1149,158 @@ $tabla .= '
         else{
             echo "<center><b>ERROR!!!! AL GENERAR REPORTE</b></center>";
         }
-    }
+    }*/
 
     /*------- LISTA DE OPERACIONES POR SUB ACTIVIDADES (2019) ------*/
-    public function get_proceso_consolidado($proy_id){
-      $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); //// DATOS DEL PROYECTO
-      $fase = $this->model_faseetapa->get_id_fase($proy_id); //// DATOS FASE ACTIVA
-      $componentes=$this->model_componente->componentes_id($fase[0]['id'],$proyecto[0]['tp_id']); /// COMPONENTES/PROCESOS  
+    // public function get_proceso_consolidado($proy_id){
+    //   $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); //// DATOS DEL PROYECTO
+    //   $fase = $this->model_faseetapa->get_id_fase($proy_id); //// DATOS FASE ACTIVA
+    //   $componentes=$this->model_componente->componentes_id($fase[0]['id'],$proyecto[0]['tp_id']); /// COMPONENTES/PROCESOS  
         
-        $tabla ='';
-        if(count($componentes)!=0){
-            foreach ($componentes as $rowc){
-                $productos = $this->model_producto->list_prod($rowc['com_id']);
-                if(count($productos)!=0){
-                    $tabla .='
-                    <table>
-                        <tr><td><font size="1"> '.$rowc['serv_cod'].'.- '.$rowc['com_componente'].'</font></td></tr>
-                    </table>';
-                    $nro_p=0;
-                    $tabla .='<table border="0" cellpadding="0" cellspacing="0" class="tabla">';
-                        $tabla.='<thead>
-                                <tr class="modo1" style="height:45px;">
-                                <th style="width:1%;" bgcolor="#1c7368"><font color="#ffffff">#</font></th>';
-                                if($this->gestion==2018){
-                                  $tabla.='<th style="width:7%;" bgcolor="#1c7368"><font color="#ffffff">PRODUCTO</font></th>';
-                                }
-                                else{
-                                  $tabla.='
-                                      <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">OBJETIVO ESTRATEGICO</font></th>
-                                      <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">ACCI&Oacute;N ESTRATEGICA</font></th>
-                                      <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">OPERACI&Oacute;N</font></th>
-                                      <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">RESULTADO</font></th>';
-                                }
-                                $tabla.='
-                                <th style="width:2%;" bgcolor="#1c7368"><font color="#ffffff">TIP.</font></th>
-                                <th style="width:8%;" bgcolor="#1c7368"><font color="#ffffff">INDICADOR</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">LINEA BASE</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">META</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">ENE.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">FEB.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">MAR.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">ABR.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">MAY.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">JUN.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">JUL.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">AGO.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">SEP.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">OCT.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">NOV.</font></th>
-                                <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">DIC.</font></th>
-                                <th style="width:8%;" bgcolor="#1c7368"><font color="#ffffff">VERIFICACI&Oacute;N</font></th>
-                            </tr>
-                            </thead>
-                        <tbody>';
-                        $nro=0;
-                        foreach($productos as $rowp){
-                          $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-                          $color='';
-                            if(($sum[0]['meta_gest']+$rowp['prod_linea_base'])!=$rowp['prod_meta']){
-                              $color='#fbd5d5';
-                            }
-                            $nro++;
-                            $tabla.='<tr class="modo1" bgcolor="'.$color.'" style="height:45px;">';
-                            $tabla.='<td style="width: 1%; text-align: center" style="height:14px;">'.$nro.'</td>';
-                              if($this->gestion==2018){
-                               $tabla.='<td style="width: 7%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_producto'].'', 'cp1252', 'UTF-8').'</td>'; 
-                              }
-                              else{
-                                if($rowp['acc_id']!=null){
-                                  $alineacion=$this->model_producto->operacion_accion($rowp['acc_id']);
-                                  if(count($alineacion)!=0){
-                                    $tabla.=' <td style="width: 9%; text-align: left">'.$alineacion[0]['obj_codigo'].'-'.$alineacion[0]['obj_descripcion'].'</td>
-                                              <td style="width: 9%; text-align: left">'.$alineacion[0]['acc_codigo'].'-'.$alineacion[0]['acc_descripcion'].'</td>';
-                                  }
-                                  else{
-                                    $tabla.=' <td style="width: 9%; text-align: left"></td>
-                                              <td style="width: 9%; text-align: left"><font color="red">'.$rowp['acc_id'].'</font></td>';
-                                  }
-                                }
-                                else{
-                                  $tabla.=' <td style="width: 9%; text-align: left"></td>
-                                            <td style="width: 9%; text-align: left"><font color="red"></font></td>';
-                                }
-                                $tabla.='<td style="width: 9%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_producto'].'', 'cp1252', 'UTF-8').'</td>
-                                         <td style="width: 9%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_resultado'].'', 'cp1252', 'UTF-8').'</td>';
-                              }
+    //     $tabla ='';
+    //     if(count($componentes)!=0){
+    //         foreach ($componentes as $rowc){
+    //             $productos = $this->model_producto->list_prod($rowc['com_id']);
+    //             if(count($productos)!=0){
+    //                 $tabla .='
+    //                 <table>
+    //                     <tr><td><font size="1"> '.$rowc['serv_cod'].'.- '.$rowc['com_componente'].'</font></td></tr>
+    //                 </table>';
+    //                 $nro_p=0;
+    //                 $tabla .='<table border="0" cellpadding="0" cellspacing="0" class="tabla">';
+    //                     $tabla.='<thead>
+    //                             <tr class="modo1" style="height:45px;">
+    //                             <th style="width:1%;" bgcolor="#1c7368"><font color="#ffffff">#</font></th>';
+    //                             if($this->gestion==2018){
+    //                               $tabla.='<th style="width:7%;" bgcolor="#1c7368"><font color="#ffffff">PRODUCTO</font></th>';
+    //                             }
+    //                             else{
+    //                               $tabla.='
+    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">OBJETIVO ESTRATEGICO</font></th>
+    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">ACCI&Oacute;N ESTRATEGICA</font></th>
+    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">OPERACI&Oacute;N</font></th>
+    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">RESULTADO</font></th>';
+    //                             }
+    //                             $tabla.='
+    //                             <th style="width:2%;" bgcolor="#1c7368"><font color="#ffffff">TIP.</font></th>
+    //                             <th style="width:8%;" bgcolor="#1c7368"><font color="#ffffff">INDICADOR</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">LINEA BASE</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">META</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">ENE.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">FEB.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">MAR.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">ABR.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">MAY.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">JUN.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">JUL.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">AGO.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">SEP.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">OCT.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">NOV.</font></th>
+    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">DIC.</font></th>
+    //                             <th style="width:8%;" bgcolor="#1c7368"><font color="#ffffff">VERIFICACI&Oacute;N</font></th>
+    //                         </tr>
+    //                         </thead>
+    //                     <tbody>';
+    //                     $nro=0;
+    //                     foreach($productos as $rowp){
+    //                       $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
+    //                       $color='';
+    //                         if(($sum[0]['meta_gest']+$rowp['prod_linea_base'])!=$rowp['prod_meta']){
+    //                           $color='#fbd5d5';
+    //                         }
+    //                         $nro++;
+    //                         $tabla.='<tr class="modo1" bgcolor="'.$color.'" style="height:45px;">';
+    //                         $tabla.='<td style="width: 1%; text-align: center" style="height:14px;">'.$nro.'</td>';
+    //                           if($this->gestion==2018){
+    //                            $tabla.='<td style="width: 7%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_producto'].'', 'cp1252', 'UTF-8').'</td>'; 
+    //                           }
+    //                           else{
+    //                             if($rowp['acc_id']!=null){
+    //                               $alineacion=$this->model_producto->operacion_accion($rowp['acc_id']);
+    //                               if(count($alineacion)!=0){
+    //                                 $tabla.=' <td style="width: 9%; text-align: left">'.$alineacion[0]['obj_codigo'].'-'.$alineacion[0]['obj_descripcion'].'</td>
+    //                                           <td style="width: 9%; text-align: left">'.$alineacion[0]['acc_codigo'].'-'.$alineacion[0]['acc_descripcion'].'</td>';
+    //                               }
+    //                               else{
+    //                                 $tabla.=' <td style="width: 9%; text-align: left"></td>
+    //                                           <td style="width: 9%; text-align: left"><font color="red">'.$rowp['acc_id'].'</font></td>';
+    //                               }
+    //                             }
+    //                             else{
+    //                               $tabla.=' <td style="width: 9%; text-align: left"></td>
+    //                                         <td style="width: 9%; text-align: left"><font color="red"></font></td>';
+    //                             }
+    //                             $tabla.='<td style="width: 9%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_producto'].'', 'cp1252', 'UTF-8').'</td>
+    //                                      <td style="width: 9%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_resultado'].'', 'cp1252', 'UTF-8').'</td>';
+    //                           }
                               
                               
-                              $tabla.='
-                                       <td style="width: 2%; text-align: left">'.mb_convert_encoding(''.$rowp['indi_abreviacion'].'', 'cp1252', 'UTF-8').'</td>
-                                       <td style="width: 8%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_indicador'].'', 'cp1252', 'UTF-8').'</td>
-                                       <td style="width: 3%; text-align: left">'.$rowp['prod_linea_base'].'</td>
-                                       <td style="width: 3%; text-align: left">'.$rowp['prod_meta'].'</td>';
-                                       $tabla.=''.$this->temporalizacion_prod($rowp['prod_id'],$this->gestion).'';
-                              $tabla .='<td style="width: 8%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_fuente_verificacion'].'', 'cp1252', 'UTF-8').'</td>';         
-                            $tabla.='</tr>';
-                        }
-                        $tabla.='
-                        </tbody>
-                    </table>'; 
-                }
-            }
-        }
+    //                           $tabla.='
+    //                                    <td style="width: 2%; text-align: left">'.mb_convert_encoding(''.$rowp['indi_abreviacion'].'', 'cp1252', 'UTF-8').'</td>
+    //                                    <td style="width: 8%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_indicador'].'', 'cp1252', 'UTF-8').'</td>
+    //                                    <td style="width: 3%; text-align: left">'.$rowp['prod_linea_base'].'</td>
+    //                                    <td style="width: 3%; text-align: left">'.$rowp['prod_meta'].'</td>';
+    //                                    $tabla.=''.$this->temporalizacion_prod($rowp['prod_id'],$this->gestion).'';
+    //                           $tabla .='<td style="width: 8%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_fuente_verificacion'].'', 'cp1252', 'UTF-8').'</td>';         
+    //                         $tabla.='</tr>';
+    //                     }
+    //                     $tabla.='
+    //                     </tbody>
+    //                 </table>'; 
+    //             }
+    //         }
+    //     }
 
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
      /*--------- TEMPORALIDAD PROGRAMACION FISICA (2019)---------*/
-    public function temporalizacion_prod($prod_id,$gestion){
-        $prod=$this->model_producto->get_producto_id($prod_id); /// Producto Id
-        $programado=$this->model_producto->producto_programado($prod_id,$gestion); /// Producto Programado
-        $tp='';
-        if($prod[0]['indi_id']==2){$tp='%';};
-        $m[0]='g_id';
-        $m[1]='enero';
-        $m[2]='febrero';
-        $m[3]='marzo';
-        $m[4]='abril';
-        $m[5]='mayo';
-        $m[6]='junio';
-        $m[7]='julio';
-        $m[8]='agosto';
-        $m[9]='septiembre';
-        $m[10]='octubre';
-        $m[11]='noviembre';
-        $m[12]='diciembre';
+// /*    public function temporalizacion_prod($prod_id,$gestion){
+//         $prod=$this->model_producto->get_producto_id($prod_id); /// Producto Id
+//         $programado=$this->model_producto->producto_programado($prod_id,$gestion); /// Producto Programado
+//         $tp='';
+//         if($prod[0]['indi_id']==2){$tp='%';};
+//         $m[0]='g_id';
+//         $m[1]='enero';
+//         $m[2]='febrero';
+//         $m[3]='marzo';
+//         $m[4]='abril';
+//         $m[5]='mayo';
+//         $m[6]='junio';
+//         $m[7]='julio';
+//         $m[8]='agosto';
+//         $m[9]='septiembre';
+//         $m[10]='octubre';
+//         $m[11]='noviembre';
+//         $m[12]='diciembre';
 
-        for ($i=1; $i <=12 ; $i++) { 
-            $prog[1][$i]=0;
-            $prog[2][$i]=0;
-            $prog[3][$i]=0;
-        }
+//         for ($i=1; $i <=12 ; $i++) { 
+//             $prog[1][$i]=0;
+//             $prog[2][$i]=0;
+//             $prog[3][$i]=0;
+//         }
 
-        $pa=0;
-        if(count($programado)!=0){
-            for ($i=1; $i <=12 ; $i++) { 
-                $prog[1][$i]=$programado[0][$m[$i]];
-/*                $pa=$pa+$prog[1][$i];
-                $prog[2][$i]=$pa+$prod[0]['prod_linea_base'];
+//         $pa=0;
+//         if(count($programado)!=0){
+//             for ($i=1; $i <=12 ; $i++) { 
+//                 $prog[1][$i]=$programado[0][$m[$i]];
+// /*                $pa=$pa+$prog[1][$i];
+//                 $prog[2][$i]=$pa+$prod[0]['prod_linea_base'];
 
-              if($prod[0]['prod_meta']!=0){
-                $prog[3][$i]=round(((($pa+$prod[0]['prod_linea_base'])/$prod[0]['prod_meta'])*100),1);
-              } */ 
-            } 
-        }
-        $tr_return = '';
-          for($i = 1 ;$i<=12 ;$i++){
-            $tr_return .= '<td bgcolor="#d2f5d2" style="width: 3%; text-align: right" title="'.$m[$i].'"><b>'.$prog[1][$i].''.$tp.'</b></td>';
-          }
+//               if($prod[0]['prod_meta']!=0){
+//                 $prog[3][$i]=round(((($pa+$prod[0]['prod_linea_base'])/$prod[0]['prod_meta'])*100),1);
+//               } */ 
+//             } 
+//         }
+//         $tr_return = '';
+//           for($i = 1 ;$i<=12 ;$i++){
+//             $tr_return .= '<td bgcolor="#d2f5d2" style="width: 3%; text-align: right" title="'.$m[$i].'"><b>'.$prog[1][$i].''.$tp.'</b></td>';
+//           }
                                  
-        return $tr_return;
-    }
+//         return $tr_return;
+//     }*/
 
-    // public function actividades($prod_id){
-    //    $actividad=$this->model_actividad->list_act_anual($prod_id); /// Actividad
-    //    $tabla='';
-    //    $nro_a=0;
-    //    if(count($actividad)!=0){
-    //         foreach ($actividad as $row){
-    //             $nro_a++;
-    //             $tabla.='<tr class="modo1" bgcolor="#e5f3f1">';
-    //                 $tabla.='<td>'.$nro_a.'</td>';
-    //                 $tabla.='<td></td>';
-    //                 $tabla.='<td>'.$row['act_actividad'].'</td>';
-    //                 $tabla.='<td>'.$row['indi_abreviacion'].'</td>';
-    //                 $tabla.='<td>'.$row['act_indicador'].'</td>';
-    //                 $tabla.='<td>'.round($row['act_linea_base'],2).'</td>';
-    //                 $tabla.='<td>'.round($row['act_meta'],2).'</td>';
-    //                 $tabla.='<td>'.$row['act_ponderacion'].' %</td>';
-    //                 $tabla.='<td>'.$row['act_fuente_verificacion'].'</td>';
-    //                 $tabla.='<td>'.$this->temporalizacion_act($row['act_id'],$this->session->userdata('gestion')).'</td>';
-    //             $tabla.='</tr>';
-    //         }
-    //    }
-
-    //    return $tabla;
-    // }
 
     function mes_nombre(){
         $mes[1] = 'ENE.';
@@ -984,76 +1317,6 @@ $tabla .= '
         $mes[12] = 'DIC.';
         return $mes;
     }
-    /*----------------------------------- ACTIVIDADES ----------------------------*/
-    // public function temporalizacion_act($act_id,$gestion){
-    //     $act=$this->model_actividad->get_actividad_id($act_id); /// programado
-    //     $programado=$this->model_actividad->actividad_programado($act_id,$gestion); /// Actividad Programado
-
-    //     $m[0]='g_id';
-    //     $m[1]='enero';
-    //     $m[2]='febrero';
-    //     $m[3]='marzo';
-    //     $m[4]='abril';
-    //     $m[5]='mayo';
-    //     $m[6]='junio';
-    //     $m[7]='julio';
-    //     $m[8]='agosto';
-    //     $m[9]='septiembre';
-    //     $m[10]='octubre';
-    //     $m[11]='noviembre';
-    //     $m[12]='diciembre';
-
-    //     for ($i=1; $i <=12 ; $i++) { 
-    //         $prog[1][$i]=0;
-    //         $prog[2][$i]=0;
-    //         $prog[3][$i]=0;
-    //     }
-
-    //     $pa=0;
-    //     if(count($programado)!=0){
-    //         for ($i=1; $i <=12 ; $i++) { 
-    //             $prog[1][$i]=$programado[0][$m[$i]];
-    //            /* $pa=$pa+$prog[1][$i];
-    //             $prog[2][$i]=$pa+$act[0]['act_linea_base'];
-
-    //           if($act[0]['act_meta']!=0){
-    //             $prog[3][$i]=round(((($pa+$act[0]['act_linea_base'])/$act[0]['act_meta'])*100),2);
-    //           }  */
-    //         } 
-    //     }
-        
-    //     $tr_return = '';
-    //     $tr_return .= '<table>
-    //                     <thead>
-    //                     <tr>
-    //                           <th style="width:6%;"></th>
-    //                           <th style="width:7%;">Ene.</th>
-    //                           <th style="width:7%;">Feb.</th>
-    //                           <th style="width:7%;">Mar.</th>
-    //                           <th style="width:7%;">Abr.</th>
-    //                           <th style="width:7%;">May.</th>
-    //                           <th style="width:7%;">Jun.</th>
-    //                           <th style="width:7%;">Jul.</th>
-    //                           <th style="width:7%;">Agos.</th>
-    //                           <th style="width:7%;">Sept.</th>
-    //                           <th style="width:7%;">Oct.</th>
-    //                           <th style="width:7%;">Nov.</th>
-    //                           <th style="width:7%;">Dic.</th>
-    //                     </tr>
-    //                     </thead>
-    //                     <tbody>
-    //                       <tr>
-    //                       <td>P.</td>';
-    //                       for($i = 1 ;$i<=12 ;$i++)
-    //                       {
-    //                         $tr_return .= '<td>'.$prog[1][$i].'</td>';
-    //                       }
-    //                       $tr_return .= '
-    //                       </tr>
-    //                     </tbody>
-    //                 </table>';
-    //     return $tr_return;
-    // }
 
     function estilo_vertical(){
         $estilo_vertical = '<style>
