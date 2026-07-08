@@ -92,10 +92,8 @@
                                             <table id="datatable_fixed_column" class="table table-bordered" style="width: 130%; table-layout: fixed;">
                                                 <thead>
                                                     <tr>
-                                                        <th class="hasinput" style="width:4%; text-align: center;">
-                                                        </th>
-                                                        <th class="hasinput" style="width:4%; text-align: center;">
-                                                        </th>
+                                                        <th class="hasinput" style="width:4%; text-align: center;"></th>
+                                                        <th class="hasinput" style="width:4%; text-align: center;"></th>
                                                         <th class="hasinput" style="width:5%; text-align: center;">
                                                             <input type="text" class="form-control" placeholder="COD. ACT."/>
                                                         </th>
@@ -409,7 +407,7 @@
 
 
     <!---- MODAL MIGRAR PLANTILLA ---->
-    <div class="modal fade" id="modal_importar_ff" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <!-- <div class="modal fade" id="modal_importar_ff" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog" id="mdialTamanio2">
         <div class="modal-content">
           <div class="modal-header">
@@ -458,7 +456,7 @@
             </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
 
 

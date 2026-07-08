@@ -643,6 +643,7 @@ class Programacionpoa extends CI_Controller{
         #mdialTamanio3{
             width: 95% !important;
         }
+        #dialog_subirr { width: 45%;}
         table{font-size: 10px;
               width: 100%;
               max-width:1550px;;

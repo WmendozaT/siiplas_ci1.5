@@ -219,11 +219,11 @@ $route['prog/combo_acciones'] = 'programacion/producto/combo_acciones_estrategic
 $route['prog/update_codigo/(:any)'] = 'programacion/producto/update_codigo/$1';  //// Actualizar Codigos de Operacion
 
 /*-----------------------------  PROGRAMACION DEL PROYECTO - ACTIVIDADES  -------------------------------*/
-$route['prog/list_act/(:any)'] = 'programacion/actividades/lista_actividades/$1';  //// lista de actividades
+/*$route['prog/list_act/(:any)'] = 'programacion/actividades/lista_actividades/$1';  //// lista de actividades
 $route['prog/get_actividad'] = 'programacion/actividades/get_actividad';  //// get actividad
 $route['prog/valida_act'] = 'programacion/actividades/valida_actividad';  ///// valida Requerimiento
 $route['prog/valida_update_act'] = 'programacion/actividades/valida_update_actividad';  ///// valida update Actividad
-$route['prog/delete_act'] = 'programacion/actividades/delete_actividad';	//// Elimina Actividad
+$route['prog/delete_act'] = 'programacion/actividades/delete_actividad';	//// Elimina Actividad*/
 
 //// Reportes POA
 $route['prog/reporte_form4_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario4_unidadResponsable/$1';  //// Reporte Form 4 Unidad Responsable 2026
