@@ -89,7 +89,8 @@ class model_producto extends CI_Model {
         $sql = "
             SELECT 
             poa.aper_id, 
-            poa.proy_id, 
+            poa.proy_id,
+            poa.tipo,  
             poa.aper_programa, 
             poa.proy_nombre, 
             poa.abrev, 

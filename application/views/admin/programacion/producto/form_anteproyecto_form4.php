@@ -159,8 +159,8 @@
                                                     <tr>
                                                         <th style="width:4%; text-align: center;">FORM N 5</th>
                                                         <th style="width:4%; text-align: center;">ELIMINAR</th>
-                                                        <th style="width:5%; text-align: center;">COD. ACT.</th>
-                                                        <th style="width:10%; text-align: center;">COD.<br>OPE.</th>
+                                                        <th style="width:5%; text-align: center;">CÓDIGO<br> ACTIVIDAD</th>
+                                                        <th style="width:10%; text-align: center;">CÓDIGO<br>OPERACIÓN</th>
                                                         <th style="width:12%; text-align: center;">ACTIVIDAD</th>
                                                         <th style="width:12%; text-align: center;">RESULTADO</th>
                                                         <th style="width:10%; text-align: center;">UNIDAD RESPONSABLE</th>
