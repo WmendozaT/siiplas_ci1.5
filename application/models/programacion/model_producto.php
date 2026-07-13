@@ -368,13 +368,26 @@ class model_producto extends CI_Model {
             tp.indi_descripcion,
             p.mt_id,
             mr.mt_tipo, mr.mt_descripcion,
-            prog.*, 
-            poa.* -- Recomendación: Listar solo las columnas necesarias de la función
+            COALESCE(prog.mes1, 0.00) AS m1, 
+            COALESCE(prog.mes2, 0.00) AS m2, 
+            COALESCE(prog.mes3, 0.00) AS m3, 
+            COALESCE(prog.mes4, 0.00) AS m4, 
+            COALESCE(prog.mes5, 0.00) AS m5, 
+            COALESCE(prog.mes6, 0.00) AS m6, 
+            COALESCE(prog.mes7, 0.00) AS m7, 
+            COALESCE(prog.mes8, 0.00) AS m8, 
+            COALESCE(prog.mes9, 0.00) AS m9, 
+            COALESCE(prog.mes10, 0.00) AS m10, 
+            COALESCE(prog.mes11, 0.00) AS m11, 
+            COALESCE(prog.mes12, 0.00) AS m12,
+            prog.g_id,
+            COALESCE(prog.total_anual, 0.00) AS total_anual, 
+            poa.*
         FROM _productos p
         INNER JOIN indicador tp ON p.indi_id = tp.indi_id
         INNER JOIN meta_relativo mr ON p.mt_id = mr.mt_id
         INNER JOIN _componentes c ON p.com_id = c.com_id
-        INNER JOIN vista_temporalidad_form4_programado_uresp prog ON p.prod_id = prog.prod_id
+        LEFT JOIN vista_temporalidad_form4_programado_uresp prog ON p.prod_id = prog.prod_id
         INNER JOIN fnlista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
         WHERE p.prod_id = '.$id_prod.' 
           AND p.estado != 3;'; 
@@ -389,29 +402,66 @@ class model_producto extends CI_Model {
     /*=== LISTA DE ACTIVIDADES (NORMAL) + TEMPORALIDAD ===*/
     function lista_form4_x_unidadresponsable($com_id){
         $sql = '
-            SELECT  p.prod_id, p.com_id, p.prod_priori, p.prod_producto, p.prod_ppto, 
-                p.indi_id, p.prod_indicador, p.prod_linea_base, p.prod_meta, p.prod_fuente_verificacion,p.prod_unidades,
+            SELECT  p.prod_id, 
+                    p.com_id, 
+                    p.prod_priori, 
+                    p.prod_producto, 
+                    p.prod_ppto, 
+                    p.indi_id, 
+                    p.prod_indicador, 
+                    p.prod_linea_base, 
+                    
+                    -- 🌟 REPARADO: Si p.prod_meta es NULL en la tabla base, fuerza un 0.00
+                    COALESCE(p.prod_meta, 0.00) AS prod_meta, 
+                    
+                    p.prod_fuente_verificacion,
+                    p.prod_unidades,
+                    p.estado, 
+                    p.prod_mod, 
+                    p.prod_resultado, 
+                    p.prod_cod, 
+                    p.uni_resp, 
+                    p.prod_observacion, 
+                    p.mt_id,
+                    p.or_id, 
+                    i.indi_descripcion, 
+                    i.indi_abreviacion,
+                    ore.or_codigo, 
+                    og.og_id, 
+                    og.og_codigo, 
+                    
+                    -- 🌟 REPARADO: Control de nulos perimetral para los 12 meses de la subvista
+                    COALESCE(prog.mes1, 0.00) AS m1, 
+                    COALESCE(prog.mes2, 0.00) AS m2, 
+                    COALESCE(prog.mes3, 0.00) AS m3, 
+                    COALESCE(prog.mes4, 0.00) AS m4, 
+                    COALESCE(prog.mes5, 0.00) AS m5, 
+                    COALESCE(prog.mes6, 0.00) AS m6, 
+                    COALESCE(prog.mes7, 0.00) AS m7, 
+                    COALESCE(prog.mes8, 0.00) AS m8, 
+                    COALESCE(prog.mes9, 0.00) AS m9, 
+                    COALESCE(prog.mes10, 0.00) AS m10, 
+                    COALESCE(prog.mes11, 0.00) AS m11, 
+                    COALESCE(prog.mes12, 0.00) AS m12, 
+                    
+                    prog.g_id,
+                    
+                    -- 🌟 REPARADO: Si el total acumulado anual viene vacío, lo fuerza a 0.00
+                    COALESCE(prog.total_anual, 0.00) AS total_anual
+                    
+            FROM public._productos p
+            INNER JOIN public.indicador i ON i.indi_id = p.indi_id
+            INNER JOIN public.objetivos_regionales ore ON ore.or_id = p.or_id
+            INNER JOIN (
+                SELECT DISTINCT pog_id, og_id FROM public.objetivo_programado_mensual
+            ) opm ON ore.pog_id = opm.pog_id
+            INNER JOIN public.objetivo_gestion og ON og.og_id = opm.og_id
+            LEFT JOIN public.vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
-                p.estado, p.prod_mod, p.prod_resultado, 
-                p.prod_cod, p.uni_resp, p.prod_observacion, p.mt_id,p.or_id, 
-                
-                i.indi_descripcion, i.indi_abreviacion,
-                ore.or_codigo, 
-                og.og_id, og.og_codigo, 
-                prog.mes1 AS m1, prog.mes2 AS m2, prog.mes3 AS m3, prog.mes4 AS m4, 
-                prog.mes5 AS m5, prog.mes6 AS m6, prog.mes7 AS m7, prog.mes8 AS m8, 
-                prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
-                prog.g_id,prog.total_anual
-                FROM _productos p
-                INNER JOIN indicador i ON i.indi_id = p.indi_id
-                INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-                INNER JOIN (
-                    SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
-                ) opm ON ore.pog_id = opm.pog_id
-                INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-                INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
-                where p.com_id='.$com_id.' and p.estado!=3
-                ORDER BY p.prod_cod ASC'; 
+            WHERE p.com_id = '.$com_id.' 
+              AND p.estado != 3
+              
+            ORDER BY p.prod_cod ASC;'; 
 
         $query = $this->db->query($sql);
         return $query->result_array();

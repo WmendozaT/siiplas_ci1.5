@@ -1,14 +1,5 @@
 <?php
 class Producto extends CI_Controller { 
-  public $temp = array( '1' => 'enero','2' => 'febrero','3' => 'marzo','4' => 'abril','5' => 'mayo','6' => 'junio',
-                        '7' => 'julio','8' => 'agosto','9' => 'septiembre','10' => 'octubre','11' => 'noviembre','12' => 'diciembre'); 
-
-  public $prog_mes = array( '1' => 0,'2' => 0,'3' => 0,'4' => 0,'5' => 0,'6' => 0,
-                        '7' => 0,'8' => 0,'9' => 0,'10' => 0,'11' => 0,'12' => 0); 
-
-  public $prog_mes_eval = array( '1' => 0,'2' => 0,'3' => 0,'4' => 0,'5' => 0,'6' => 0,
-                        '7' => 0,'8' => 0,'9' => 0,'10' => 0,'11' => 0,'12' => 0); 
-  
   public function __construct (){ 
       parent::__construct();
       if($this->session->userdata('fun_id')!=null){
@@ -145,21 +136,26 @@ class Producto extends CI_Controller {
             $cont = 0;
 
             foreach($form4 as $rowp){
-                $disabled = 'disabled';
-                $cont++;
-                if($rowp['indi_id'] == 2){
-                    $disabled = '';
-                }
+                $disabled = '';
+                  $style = 'none';
+                  $bg_meta = '#f1f5f9'; // Gris inactivo por defecto para Absolutos y Relativos tipo 3
 
-                $style = 'none';
-                if($rowp['indi_id'] == 2){
-                    $style = 'block';
-                }
+                  // 📋 REGLA SERVIDOR: Si el indicador es Relativo (2), evaluamos los subtipos de metas
+                  if($rowp['indi_id'] == 2){
+                      $style = 'block'; // Despliega el contenedor del combo de metas (#tp_met)
+                      
+                      // 🛠️ AJUSTADO: El campo meta global se habilita UNICAMENTE si el tipo de meta es Mensualizado Manual (3)
+                      if($rowp['mt_id'] == 3) {
+                          $disabled = 'disabled'; 
+                          $bg_meta = '#ffffff'; // Blanco activo para digitación libre
+                      }
+                      // Si el tipo de meta es Recurrente (1) o Trimestral (5), se queda 'disabled' y gris en $bg_meta
+                  }
                 
                 $tabla .= '
                 <tr id="fila_prod_'.$rowp['prod_id'].'">
                     <!-- Botón Requerimientos -->
-                    <td style="width: 4%; text-align: center;">
+                    <td style="width: 4%; text-align: center;" title="'.$rowp['prod_id'].'">
                         <center><a href="'.site_url("prog/requerimiento/".$rowp['prod_id']).'" target="_blank" title="REQUERIMIENTOS DE LA ACTIVIDAD" class="btn btn-default"><img src="'.base_url().'assets/ifinal/insumo.png" WIDTH="30" HEIGHT="30"/></a></center>
                     </td>
                     <!-- Botón Eliminar -->
@@ -257,15 +253,27 @@ class Producto extends CI_Controller {
                     // 🌟 BUCLE DINÁMICO DE TEMPORALIDAD OPTIMIZADO (Meses 1 al 12)
                     for ($m = 1; $m <= 12; $m++) {
                         $valor_mes = isset($rowp['m'.$m]) ? round($rowp['m'.$m], 2) : 0;
+                        
+                        // 📋 REGLA SERVIDOR: Evaluamos de forma elástica el bloqueo inicial del cronograma
+                        $mes_disabled = '';
+                        $bg_celda = '#e5fde5'; // Verde agua libre por defecto
+
+                        // Si es Relativo (2) y el modo es Recurrente (1) o Trimestral (5), los meses nacen bloqueados en gris
+                        if ($rowp['indi_id'] == 2 && ($rowp['mt_id'] == 1 || $rowp['mt_id'] == 5)) {
+                            $mes_disabled = 'disabled';
+                            $bg_celda = '#f1f5f9'; // Gris protegido institucional
+                        }
+
                         $tabla .= '
-                        <td style="width:5%;" bgcolor="#e5fde5">
+                        <td style="width:5%; background-color: '.$bg_celda.';" align="center">
                             <input name="m'.$m.$rowp['prod_id'].'" 
                                    id="m'.$m.$rowp['prod_id'].'" 
                                    class="form-control auto-save-month" 
                                    data-prod="'.$rowp['prod_id'].'" 
                                    data-mes="'.$m.'" 
                                    type="text" 
-                                   style="width:100%; font-size:10px; color:blue; text-align:center; font-weight:bold;" 
+                                   '.$mes_disabled.'
+                                   style="width:100%; font-size:10px; color:blue; text-align:center; font-weight:bold; background-color: '.$bg_celda.';" 
                                    value="'.$valor_mes.'" 
                                    onkeypress="if (this.value.length < 6) { return numerosDecimales(event); } else { return false; }" 
                                    onpaste="return false">
@@ -275,165 +283,6 @@ class Producto extends CI_Controller {
                 $tabla .= '</tr>';
             }
 
-
-
-
-           /* foreach($form4  as $rowp){
-              $disabled='disabled';
-              $cont++;
-              if($rowp['indi_id']==2){
-                $disabled='';
-              }
-
-              $style='none';
-              if($rowp['indi_id']==2){
-                $style='block';
-              }
-              $tabla.='
-              <tr>
-                <td style="width: 4%; text-align: center;">';
-                $tabla.='<center><a href="'.site_url("").'/prog/requerimiento/'.$rowp['prod_id'].'" target="_blank" title="REQUERIMIENTOS DE LA ACTIVIDAD" class="btn btn-default"><img src="'.base_url().'assets/ifinal/insumo.png" WIDTH="30" HEIGHT="30"/></a></center>';
-                $tabla.='
-                </td>
-                <td style="width: 4%; text-align: center; " >';
-                      if(count($this->model_producto->insumo_producto($rowp['prod_id']))==0){
-                        if($this->tp_adm==1 || $this->conf_form4==1){
-                          //$tabla.='<center><a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR OPERACI&Oacute;N"  name="'.$rowp['prod_id'].'"><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="30" HEIGHT="30"/></a></center>';
-                          $tabla.='<center><a name="del_prod'.$rowp['prod_id'].'" id="del_prod'.$rowp['prod_id'].'" onclick="delete_form4('.$rowp['prod_id'].');" class="btn btn-default" title="ELIMINAR ACTIVIDAD"><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="30" HEIGHT="30"/></a></center>';
-                        }
-                      }
-                $tabla.='
-                </td>
-                <td style="width: 5%; text-align: center; " bgcolor="#eceaea" title='.$rowp['prod_id'].'>
-                  <input name="prod_cod'.$rowp['prod_id'].'" id="prod_cod'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(0,1,'.$rowp['prod_id'].',\'prod_cod\');"  style="width:100%; font-size:12px; color:blue; background-color: #d7fcfa; text-align:center;" value="'.round($rowp['prod_cod'],2).'" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                </td>
-                <td style="width: 10%; text-align: center; " title='.$rowp['prod_id'].'>
-                  <section class="col col-2">
-                    <label class="label"><b>ALINEACI&Oacute;N OPERACI&Oacute;N '.$this->gestion.'</b></label>
-                      <select class="form-control" id="or_id'.$rowp['prod_id'].'" name="or_id'.$rowp['prod_id'].'" onchange="select_uresp_acp_indi(1,this.value,'.$rowp['prod_id'].');" style="width:100%; font-size:12px; color:blue; background-color: #fafcd7;" title="SELECCIONE ALINEACION">
-                        <option value="">SELECCIONE OPERACI&Oacute;N </option>';
-                        foreach($list_oregional as $row){
-                          if($rowp['or_id']==$row['or_id']){
-                            $tabla.='<option value="'.$row['or_id'].'" selected>'.$row['og_codigo'].'.|'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';    
-                          }
-                          else{
-                            $tabla.='<option value="'.$row['or_id'].'">'.$row['og_codigo'].'.|'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';    
-                          }
-                        }
-                      $tabla.='
-                    </select>
-                  </section>
-                </td>
-                
-                <td style="width: 12%; text-align: left;">
-                  <textarea rows="5" class="form-control" onkeyup="datos_form4(0,2,'.$rowp['prod_id'].',\'prod_form4\');" name="prod_form4'.$rowp['prod_id'].'" id="prod_form4'.$rowp['prod_id'].'" style="width:100%; font-size:10px; color:blue;background-color: #d7fcfa;" title="DETALLE ACTIVIDAD">'.$rowp['prod_producto'].'</textarea>
-                </td>
-                <td style="width: 12%; text-align: left;">
-                  <textarea rows="5" class="form-control" onkeyup="datos_form4(0,3,'.$rowp['prod_id'].',\'prod_res\');"  style="width:100%; font-size:10px; color:blue;background-color: #d7fcfa;" name="prod_res'.$rowp['prod_id'].'" id="prod_res'.$rowp['prod_id'].'" title="DETALLE RESULTADO">'.$rowp['prod_resultado'].'</textarea>
-                </td>';
-                if($data['proyecto'][0]['por_id']==1){ /// programas bolsas / Unidad Responable
-                  $tabla.='
-                  <td style="width: 7%; text-align: left;">
-                    <select class="form-control" id="u_resp'.$rowp['prod_id'].'" name="u_resp'.$rowp['prod_id'].'" onchange="select_uresp_acp_indi(2,this.value,'.$rowp['prod_id'].');" title="SELECCIONE UNIDAD RESPONSABLE" style="width:100%; font-size:10px; color:blue; background-color: #d7fcfa;">
-                      <option value="">Selec. Uni. Resp.</option>';
-                      foreach($data['unidades'] as $row){
-                        if($rowp['uni_resp']==$row['com_id']){
-                          $tabla.='<option value="'.$row['com_id'].'" selected>'.$row['tipo'].' '.$row['actividad'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</option>';
-                        }
-                        else{
-                          $tabla.='<option value="'.$row['com_id'].'">'.$row['tipo'].' '.$row['actividad'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</option>';
-                        }
-                      }       
-                      $tabla.='
-                    </select>
-                  </td>';
-                }
-                else{ /// programas normales / Unidad Responable
-                  $tabla.='
-                  <td style="width: 7%; text-align: left;">
-                    <textarea rows="5" class="form-control" onkeyup="datos_form4(0,4,'.$rowp['prod_id'].',\'prod_uni\');"  style="width:100%; font-size:10px; color:blue; background-color: #d7fcfa;" name="prod_uni'.$rowp['prod_id'].'" id="prod_uni'.$rowp['prod_id'].'" title="UNIDAD RESPONSABLE">'.$rowp['prod_unidades'].'</textarea>
-                  </td>';
-                }
-                $tabla.='
-                <td style="width: 5%; text-align: left;">
-                    <select class="form-control" id="indi_id'.$rowp['prod_id'].'" name="indi_id'.$rowp['prod_id'].'" onchange="select_uresp_acp_indi(3,this.value,'.$rowp['prod_id'].');" style="width:100%; font-size:10px; color:blue; background-color: #d7fcfa;" title="SELECCIONE INDICADOR">
-                      <option value="">SELECCIONE INDICADOR</option>';
-                      foreach($data['indi'] as $row){
-                        if($rowp['indi_id']==$row['indi_id']){
-                          $tabla.='<option value="'.$row['indi_id'].'" selected>'.$row['indi_descripcion'].'</option>';    
-                        }
-                        else{
-                          $tabla.='<option value="'.$row['indi_id'].'">'.$row['indi_descripcion'].'</option>';    
-                        }
-                      }
-                    $tabla.='
-                  </select>
-
-                  <div id="tp_met'.$rowp['prod_id'].'" style="display:'.$style.';" >
-                    <select class="form-control" id="tp_met" name="tp_met" style="width:100%; font-size:11px; color:blue; background-color: #e3fcf8;" title="SELECCIONE TIPO DE META" onchange="select_tp_meta(this.value,'.$rowp['prod_id'].');">
-                      <option value="">Seleccione Tipo de Meta</option>';
-                      foreach($data['metas'] as $row){ 
-                        if($row['mt_id']==$rowp['mt_id']){
-                          $tabla.='<option value="'.$row['mt_id'].'" selected>'.$row['mt_tipo'].'</option>';
-                        }
-                        else{
-                          $tabla.='<option value="'.$row['mt_id'].'" >'.$row['mt_tipo'].'</option>';
-                        }
-                      }
-                      $tabla.='
-                    </select>
-                  </div>
-
-                </td>
-                <td style="width: 8%; text-align: left;">
-                  <textarea rows="5" class="form-control" onkeyup="datos_form4(0,5,'.$rowp['prod_id'].',\'prod_indi\');"  style="width:100%; font-size:10px; color:blue; background-color: #d7fcfa;" name="prod_indi'.$rowp['prod_id'].'" id="prod_indi'.$rowp['prod_id'].'" title="DETALLE INDICADOR">'.$rowp['prod_indicador'].'</textarea>
-                </td>
-                <td style="width: 8%; text-align: left;">
-                  <textarea rows="5" class="form-control" onkeyup="datos_form4(0,6,'.$rowp['prod_id'].',\'prod_mverif\');"  style="width:100%; font-size:10px; color:blue;background-color: #d7fcfa;" name="prod_mverif'.$rowp['prod_id'].'" id="prod_mverif'.$rowp['prod_id'].'" title="DETALLE MEDIO DE VERIFICACION">'.$rowp['prod_fuente_verificacion'].'</textarea>
-                </td>
-                <td style="width: 5%; text-align: center;" >
-                  <input name="meta'.$rowp['prod_id'].'" id="meta'.$rowp['prod_id'].'" onkeyup="datos_form4(0,7,'.$rowp['prod_id'].',\'meta\');"  class="form-control" type="text" '.$disabled.' style="width:100%; font-size:11.5px; text-align:center" value="'.round($rowp['prod_meta'],2).'" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                </td>';
-              
-                  $tabla.=' <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m1'.$rowp['prod_id'].'" id="m1'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,8,'.$rowp['prod_id'].',1);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m1'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m2'.$rowp['prod_id'].'" id="m2'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,9,'.$rowp['prod_id'].',2);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m2'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m3'.$rowp['prod_id'].'" id="m3'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,10,'.$rowp['prod_id'].',3);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m3'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m4'.$rowp['prod_id'].'" id="m4'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,11,'.$rowp['prod_id'].',4);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m4'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m5'.$rowp['prod_id'].'" id="m5'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,12,'.$rowp['prod_id'].',5);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m5'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m6'.$rowp['prod_id'].'" id="m6'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,13,'.$rowp['prod_id'].',6);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m6'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m7'.$rowp['prod_id'].'" id="m7'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,14,'.$rowp['prod_id'].',7);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m7'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m8'.$rowp['prod_id'].'" id="m8'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,15,'.$rowp['prod_id'].',8);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m8'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m9'.$rowp['prod_id'].'" id="m9'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,16,'.$rowp['prod_id'].',9);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m9'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m10'.$rowp['prod_id'].'" id="m10'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,17,'.$rowp['prod_id'].',10);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m10'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m11'.$rowp['prod_id'].'" id="m11'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,18,'.$rowp['prod_id'].',11);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m11'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>
-                            <td style="width:5%;" bgcolor="#e5fde5" >
-                              <input name="m12'.$rowp['prod_id'].'" id="m12'.$rowp['prod_id'].'" class="form-control" type="text" onkeyup="datos_form4(1,19,'.$rowp['prod_id'].',12);"  style="width:100%; font-size:10px; color:blue;" value="'.round($rowp['m12'],2).'" onkeypress="if (this.value.length < 6) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
-                            </td>';
-                $tabla.='
-              </tr>';
-            }*/
 
             $tabla .= '
             <div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
@@ -507,7 +356,7 @@ class Producto extends CI_Controller {
 
             $data['tabla']=$tabla;
             $this->load->view('admin/programacion/producto/form_anteproyecto_form4', $data); /// Gasto Corriente
-
+ 
       }
       else{
         redirect('prog/list_serv/'.$com_id);
@@ -516,8 +365,200 @@ class Producto extends CI_Controller {
     }
 
 
-      //// guardar informacion
-       public function guardar_campo_form4_en_caliente() {
+      //// guardar informacion de la Actividad
+     public function guardar_campo_form4_en_caliente() {
+        if ($this->input->is_ajax_request() && $this->input->post()) {
+            
+            // 1. Captura y sanitización perimetral de variables del SIIPLAS
+            $prod_id    = intval($this->input->post('prod_id'));
+            $campo_raw  = trim($this->input->post('campo'));
+            $valor_raw  = trim($this->input->post('valor'));
+            $g_id       = intval($this->gestion); // Gestión activa (ej: 2026 / 2027)
+
+            if ($prod_id <= 0 || empty($campo_raw)) {
+                echo json_encode(array('status' => 'error', 'message' => 'Parámetros inconsistentes o ID de producto inválido.'));
+                return;
+            }
+
+            // 2. DEDUCCIÓN DE CONTEXTO: ¿Es un campo maestro de texto o una celda mensual?
+            $tp = 0; 
+            $mes_id = 0;
+            if (preg_match('/^m([1-9]|1[0-2])$/', $campo_raw, $coincidencias)) {
+                $tp = 1;          
+                $mes_id = intval($coincidencias[1]); 
+            }
+
+            $informacion = 0;
+            $sum_meta = 0;
+
+            // Recuperamos el estado del producto antes de operar
+            $producto = $this->model_producto->get_producto_id($prod_id);
+            if (empty($producto)) {
+                echo json_encode(array('status' => 'error', 'message' => 'El producto/actividad no existe en PostgreSQL.'));
+                return;
+            }
+
+            // ==========================================================================
+            // RAMA A: ACTUALIZACIÓN DE CAMPOS MAESTROS DE LA ACTIVIDAD (_productos)
+            // ==========================================================================
+            if ($tp == 0) {
+                
+                // Mapeamos el nombre virtual que viene del JS al nombre físico real de tu tabla DDL
+                $campo = $campo_raw;
+                if ($campo_raw == 'prod_form4')  $campo = 'prod_producto';
+                if ($campo_raw == 'prod_res')    $campo = 'prod_resultado';
+                if ($campo_raw == 'prod_uni')    $campo = 'prod_unidades';
+                if ($campo_raw == 'prod_indi')   $campo = 'prod_indicador';
+                if ($campo_raw == 'prod_mverif') $campo = 'prod_fuente_verificacion';
+                if ($campo_raw == 'meta')        $campo = 'prod_meta';
+
+                $columnas_autorizadas = array('prod_cod', 'or_id', 'prod_producto', 'prod_resultado', 'uni_resp', 'prod_unidades', 'indi_id', 'prod_indicador', 'prod_fuente_verificacion', 'prod_meta', 'mt_id');
+                if (!in_array($campo, $columnas_autorizadas)) {
+                    echo json_encode(array('status' => 'error', 'message' => 'Columna no autorizada para persistencia.'));
+                    return;
+                }
+
+                if ($campo == 'prod_cod' || $campo == 'or_id' || $campo == 'indi_id' || $campo == 'mt_id') {
+                    $detalle = ($valor_raw === '') ? 0 : intval($valor_raw);
+                } elseif ($campo == 'prod_meta' || $campo == 'uni_resp') {
+                    $detalle = ($valor_raw === '') ? 0.00 : floatval($valor_raw);
+                } else {
+                    $detalle = strtoupper($this->security->xss_clean($valor_raw));
+                }
+
+                // 🌟 INICIO DE TRANSACCIÓN CONTROLADA PARA REPLICACIÓN EN CASCADA
+                $this->db->trans_start();
+
+                $update_form4 = array(
+                    $campo   => $detalle,
+                    'fecha'  => date('Y-m-d H:i:s'),
+                    'num_ip' => $this->input->ip_address(),
+                    'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                );
+                
+                $this->db->where('prod_id', $prod_id);
+                $this->db->update('_productos', $update_form4);
+
+                // 🌟 LÓGICA DE REPLICACIÓN AUTOMÁTICA EN CASILLAS MENSUALES
+                if ($campo == 'prod_meta' && $producto[0]['indi_id'] == 2) {
+                    $mt_id_actual = intval($producto[0]['mt_id']);
+                    
+                    if ($mt_id_actual == 1 || $mt_id_actual == 5) {
+                        // Limpiamos el cronograma físico anterior para evitar duplicidad relacional
+                        $this->db->where('prod_id', $prod_id);
+                        $this->db->where('g_id', $g_id);
+                        $this->db->delete('prod_programado_mensual');
+
+                        // Recorremos los 12 meses para poblar según el mt_id
+                        for ($m = 1; $m <= 12; $m++) {
+                            $monto_mes = 0.00;
+                            
+                            if ($mt_id_actual == 1) {
+                                $monto_mes = $detalle; // Recurrente: replica en los 12 meses
+                            } elseif ($mt_id_actual == 5) {
+                                // Trimestral: replica exclusivamente en Marzo(3), Junio(6), Septiembre(9) y Diciembre(12)
+                                $monto_mes = ($m == 3 || $m == 6 || $m == 9 || $m == 12) ? $detalle : 0.00;
+                            }
+
+                            if ($monto_mes != 0) {
+                                $this->db->insert('prod_programado_mensual', array(
+                                    'prod_id' => $prod_id,
+                                    'm_id'    => $m,
+                                    'pg_fis'  => $monto_mes,
+                                    'pg_fin'  => 0.00,
+                                    'g_id'    => $g_id
+                                ));
+                            }
+                        }
+                    }
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'message' => 'PostgreSQL rechazó la consistencia de replicación de metas.'));
+                    return;
+                }
+
+                $producto_actualizado = $this->model_producto->get_producto_id($prod_id);
+                $informacion = $producto_actualizado[0][$campo];
+
+                if ($producto_actualizado[0]['indi_id'] == 1) {
+                    $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $g_id);
+                    if (!empty($suma_temp)) {
+                        $sum_meta = round($suma_temp[0]['prog'], 2);
+                    }
+                } else {
+                    $sum_meta = round($producto_actualizado[0]['prod_meta'], 2);
+                }
+            }
+            // ==========================================================================
+            // RAMA B: ACTUALIZACIÓN DE CRONOGRAMA MENSUAL (prod_programado_mensual)
+            // ==========================================================================
+            else { 
+                $detalle = floatval($valor_raw);
+
+                $this->db->trans_start();
+
+                $this->db->where('m_id', $mes_id);
+                $this->db->where('prod_id', $prod_id);
+                $this->db->where('g_id', $g_id);
+                $this->db->delete('prod_programado_mensual');
+
+                if ($detalle != 0) {
+                    $data_to_store = array( 
+                        'prod_id' => $prod_id, 
+                        'm_id'    => $mes_id, 
+                        'pg_fis'  => $detalle,
+                        'pg_fin'  => 0.00, 
+                        'g_id'    => $g_id, 
+                    );
+                    $this->db->insert('prod_programado_mensual', $data_to_store);
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'message' => 'Error de consistencia mensual.'));
+                    return;
+                }
+
+                $temp_prod = $this->model_producto->get_mes_programado_form4($prod_id, $mes_id);
+                if (!empty($temp_prod)) {
+                    $informacion = $temp_prod[0]['pg_fis'];
+                }
+
+                $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $g_id);
+                if (!empty($suma_temp)) {
+                    $sum_meta = round($suma_temp[0]['prog'], 2);
+                }
+                
+                // Si el indicador es absoluto (1) o relativo mensualizado manual (3), se auto-actualiza la cabecera
+                if ($producto[0]['indi_id'] == 1 || ($producto[0]['indi_id'] == 2 && $producto[0]['mt_id'] == 3)) {
+                    $this->db->where('prod_id', $prod_id);
+                    $this->db->update('_productos', array('prod_meta' => $sum_meta, 'fecha' => date('Y-m-d H:i:s')));
+                } else {
+                    $sum_meta = round($producto[0]['prod_meta'], 2);
+                }
+            }
+
+            // 3. RESPUESTA UNIFICADA
+            $result = array(
+                'status'             => 'success',
+                'respuesta'          => 'correcto',
+                'update_informacion' => $informacion,
+                'update_meta'        => $sum_meta
+            );
+
+            echo json_encode($result);
+
+        } else {
+            show_404();
+        }
+    }
+
+
+      /* public function guardar_campo_form4_en_caliente() {
         // Validamos que sea una petición asíncrona legítima de JQuery
         if ($this->input->is_ajax_request() && $this->input->post()) {
             
@@ -637,7 +678,7 @@ class Producto extends CI_Controller {
                 }
 
                 // 🌟 LÓGICA CORE RESTABLECIDA: Re-cálculo instantáneo de Meta Anual si indi_id == 1
-                if ($producto[0]['indi_id'] == 1) {
+               // if ($producto[0]['indi_id'] == 1) {
                     $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $this->gestion);
                     if (!empty($suma_temp)) {
                         $sum_meta = round($suma_temp[0]['prog'], 2);
@@ -649,9 +690,9 @@ class Producto extends CI_Controller {
                     );
                     $this->db->where('prod_id', $prod_id);
                     $this->db->update('_productos', $update_tempform4);
-                } else {
-                    $sum_meta = round($producto[0]['prod_meta'], 2);
-                }
+                //} else {
+                  //  $sum_meta = round($producto[0]['prod_meta'], 2);
+               // }
             }
 
             // 3. RESPUESTA UNIFICADA: Mantiene tus índices originales 'respuesta', 'update_informacion' y 'update_meta'
@@ -667,7 +708,7 @@ class Producto extends CI_Controller {
         } else {
             show_404();
         }
-    }
+    }*/
 
 
     //// Valida Guardar Temporalidad form 4
@@ -725,23 +766,21 @@ class Producto extends CI_Controller {
                 }
 
                 // 🌟 LÓGICA DE SUMATORIA CORE: Si el indicador es Absoluto (1), recalculamos la meta anual en caliente
-                if ($producto[0]['indi_id'] == 1) {
+                if ($producto[0]['indi_id'] == 1 || ($producto[0]['indi_id'] == 2 && $producto[0]['mt_id'] == 3)) {
+                    
                     $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $this->gestion);
                     if (!empty($suma_temp) && count($suma_temp) > 0) {
-                        // 🛠️ REPARADO: Mapeo del índice cero para CodeIgniter clásico
                         $sum_meta = round($suma_temp[0]['prog'], 2);
                     }
 
-                    // Actualizamos de forma automática la meta global del maestro en la tabla public._productos
-                    $update_tempform4 = array(
-                        'prod_meta' => $sum_meta
-                    );
+                    // Sincronizamos la meta calculada de inmediato en public._productos
                     $this->db->where('prod_id', $prod_id);
-                    $this->db->update('_productos', $update_tempform4);
+                    $this->db->update('_productos', array('prod_meta' => $sum_meta));
                 } else {
-                    // Si es relativo (2), la meta se mantiene fija e independiente de la suma mensual
+                    // Si es relativo tipo 1 o 5, la meta global se mantiene fija e independiente
                     $sum_meta = round($producto[0]['prod_meta'], 2);
                 }
+
 
                 // Despachamos el JSON unificado con los índices esperados por tu JS para repintar la pantalla
                 echo json_encode(array(
@@ -791,9 +830,8 @@ public function update_datos_form4_uresp(){
             'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
         );
 
-        if($tp == 3){ // Si estamos alterando el Tipo de Indicador
-            if($id == 1){ /// --- CASO ABSOLUTO ---
-                $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $this->gestion);
+        if($tp == 3){ // Si estamos alterando el Tipo de Indicador abolsuto, relativo->acumulado (defecto)
+              $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $this->gestion);
                 if(!empty($suma_temp) && count($suma_temp) > 0){
                     $sum_meta = round($suma_temp[0]['prog'], 2);
                 }
@@ -801,10 +839,6 @@ public function update_datos_form4_uresp(){
                 // Unificamos las variables dentro del mismo arreglo para evitar dobles updates destructivos
                 $update_prod['prod_meta'] = $sum_meta;
                 $update_prod['mt_id']     = 3; // Resetea a mensualizado por norma CNS
-            }
-            else{ /// --- CASO RELATIVO ---
-                $update_prod['prod_meta'] = 0; // Resetea a cero para digitación libre
-            }
         }
 
         // Impactamos de forma robusta la tabla física relacional en un solo viaje de base de datos
@@ -835,33 +869,118 @@ public function update_datos_form4_uresp(){
     /*==========================================================================*/
     /*--- MIGRACIÓN CNS: UPDATE TIPO DE META OPERATIVA (RECURRENTE / TRIM) ----*/
     /*==========================================================================*/
-    public function update_datos_tpmeta(){
+ public function update_datos_tpmeta(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
-        $prod_id = intval($this->security->xss_clean($post['prod_id']));
-        $id      = intval($this->security->xss_clean($post['id']));
+        
+        // 🌟 REPARACIÓN: Se casstea como FLOATVAL debido al DDL numeric(18,0) de tu Postgres
+        $prod_id = floatval($this->security->xss_clean($post['prod_id']));
+        $id      = intval($this->security->xss_clean($post['id'])); // mt_id (1, 3, 5)
         
         $producto = $this->model_producto->get_producto_id($prod_id); 
         $sum_meta = 0;
 
-        if(!empty($producto) && $producto[0]['indi_id'] == 2){
-            $update_prod = array(
+        if(!empty($producto)) {
+            // Iniciamos bloque de transacción atómica para proteger PostgreSQL
+            $this->db->trans_start();
+
+            // 1. Actualizamos el tipo de meta en la tabla maestra
+            $this->db->where('prod_id', $prod_id);
+            $this->db->update('_productos', array(
                 'mt_id'  => $id,
+                'fecha'  => date('Y-m-d H:i:s'),
                 'num_ip' => $this->input->ip_address(),
                 'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
-            );
-            $this->db->where('prod_id', $prod_id);
-            $this->db->update('_productos', $update_prod);
-        }
-          
-        if(!empty($producto)){
-            $sum_meta = round($producto[0]['prod_meta'], 2);
-        }
+            ));
 
-        $result = array(
-          'respuesta'   => 'correcto',
-          'update_meta' => $sum_meta
-        );
+            // 2. DISTRIBUCIÓN AUTOMÁTICA DE REGISTROS EN LA BASE DE DATOS
+            if ($id == 1 || $id == 5) {
+                $sum_meta = 100; // Valor por defecto solicitado
+
+                // Sincronizamos la meta del producto maestro
+                $this->db->where('prod_id', $prod_id);
+                $this->db->update('_productos', array('prod_meta' => $sum_meta));
+
+                // Limpiamos el cronograma físico anual anterior de este producto
+                $this->db->where('prod_id', $prod_id);
+                $this->db->where('g_id', $this->gestion);
+                $this->db->delete('prod_programado_mensual');
+
+                // 🛠️ REPARADO: Se corrige la variable del iterador ($mes++) para evitar bucles infinitos
+                for ($mes = 1; $mes <= 12; $mes++) {
+                    $valor_fisico_mes = 0;
+                    
+                    if ($id == 1) {
+                        $valor_fisico_mes = 100.00; // Recurrente clona en todos
+                    } elseif ($id == 5) {
+                        // Trimestral inyecta en Marzo(3), Junio(6), Septiembre(9) y Diciembre(12)
+                        $valor_fisico_mes = ($mes == 3 || $mes == 6 || $mes == 9 || $mes == 12) ? 100.00 : 0.00;
+                    }
+
+                    if ($valor_fisico_mes > 0) {
+                        $this->db->insert('prod_programado_mensual', array(
+                            'prod_id' => $prod_id,
+                            'm_id'    => $mes,
+                            'pg_fis'  => $valor_fisico_mes,
+                            'pg_fin'  => 0,
+                            'g_id'    => $this->gestion
+                        ));
+                    }
+                }
+            } 
+            elseif ($id == 3) {
+                // Caso mensualizado manual: Resetea meta a cero para nueva digitación libre
+                $this->db->where('prod_id', $prod_id);
+                $this->db->update('_productos', array('prod_meta' => 0));
+                $sum_meta = 0.;
+
+                $this->db->where('prod_id', $prod_id);
+                $this->db->where('g_id', $this->gestion);
+                $this->db->delete('prod_programado_mensual');
+            }
+
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === FALSE) {
+                echo json_encode(array('respuesta' => 'error', 'message' => 'PostgreSQL rechazó la consistencia en lote.'));
+                return;
+            }
+            
+            // ==========================================================================
+            // 🌟 NUEVO AJUSTE: POBLADO EN CALIENTE DEL SUB-OBJETO 'producto' REQUERIDO POR TU JS
+            // ==========================================================================
+            $data_producto = array(
+                'mt_id'     => $id,
+                'prod_meta' => number_format($sum_meta, 2, '.', '')
+            );
+
+            // Estructuramos de forma matemática las claves m1 a m12 según las reglas POA
+            for ($m = 1; $m <= 12; $m++) {
+                $valor_mes_calculado = 0;
+                if ($id == 1) {
+                    $valor_mes_calculado = 100;
+                } elseif ($id == 5) {
+                    $valor_mes_calculado = ($m == 3 || $m == 6 || $m == 9 || $m == 12) ? 100 : 0;
+                }
+                
+                // Formateamos con dos decimales limpios anti-Notice
+                $data_producto['m' . $m] = number_format($valor_mes_calculado, 2, '.', '');
+            }
+
+            // Consolidamos la respuesta unificada final esperada por tu ajax.success
+            $result = array(
+              'respuesta'   => 'correcto',
+              'update_meta' => number_format($sum_meta, 2, '.', ''),
+              'producto'    => $data_producto // Enlazado de forma directa a response.producto
+            );
+
+        } else {
+            // Mensaje de resguardo forense por si el ID numérico sigue rebotando en el modelo
+            $result = array(
+              'respuesta' => 'error',
+              'message'   => 'Producto/Actividad inexistente. ID capturado: ' . $prod_id
+            );
+        }
 
         echo json_encode($result);
       } else {
@@ -892,216 +1011,10 @@ public function update_datos_form4_uresp(){
 
 
 
-
-
-/////
-    /*---- UPDATE DATOS FORM 4 2025----*/
-/*    public function update_datos_form4(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $prod_id = $this->security->xss_clean($post['prod_id']);
-        $tp = $this->security->xss_clean($post['tp']);
-        $nro = $this->security->xss_clean($post['nro']);
-        $name_input = $this->security->xss_clean($post['name_input']);
-        $detalle = $this->security->xss_clean($post['detalle']);
-        $producto=$this->model_producto->get_producto_id($prod_id); /// Get producto
-
-        if($tp==0){
-          if($nro==1){ // cod act
-            $campo='prod_cod';
-          }
-          elseif($nro==2){
-            $campo='prod_producto';
-          }
-          elseif($nro==3){
-            $campo='prod_resultado';
-          }
-          elseif($nro==4){
-            $campo='prod_unidades';
-          }
-          elseif($nro==5){
-            $campo='prod_indicador';
-          }
-          elseif($nro==6){
-            $campo='prod_fuente_verificacion';
-          }
-          elseif($nro==7){
-            $campo='prod_meta';
-          }
-
-          /////
-          $update_form4 = array(
-            $campo => $detalle,
-          );
-          $this->db->where('prod_id', $prod_id);
-          $this->db->update('_productos', $update_form4);
-          ////
-
-          $producto=$this->model_producto->get_producto_id($prod_id); /// Get producto
-          $informacion=$producto[0][$campo];
-
-          if($producto[0]['indi_id']==1){
-            $suma_temp=$this->model_producto->suma_programado_producto($prod_id,$this->gestion);
-            $sum_meta=0;
-            if(count($suma_temp)!=0){
-              $sum_meta=round($suma_temp[0]['prog'],2);
-            }
-          }
-          
-        }
-        else{ /// Temporalidad
-          /// --- eliminando el item del mes
-          $this->db->where('m_id', $name_input);
-          $this->db->where('prod_id', $prod_id);
-          $this->db->delete('prod_programado_mensual');
-          /// ------------------------------
-
-          if($detalle!=0){
-            /// --- Add insert temp
-              $data_to_store = array( 
-                'prod_id' => $prod_id, /// prod id
-                'm_id' => $name_input, /// mes id 
-                'pg_fis' => $detalle,
-                'g_id' => $this->gestion, /// Gestion
-              );
-              $this->db->insert('prod_programado_mensual', $data_to_store);
-              $pg_id=$this->db->insert_id();
-            /// -------------------
-          }
-
-          $temp_prod=$this->model_producto->get_mes_programado_form4($prod_id,$name_input);
-          $informacion=0;
-          if(count($temp_prod)!=0){
-            $informacion=$temp_prod[0]['pg_fis'];
-          }
-          
-
-          ////
-          if($producto[0]['indi_id']==1){
-            $suma_temp=$this->model_producto->suma_programado_producto($prod_id,$this->gestion);
-            $sum_meta=0;
-            if(count($suma_temp)!=0){
-              $sum_meta=round($suma_temp[0]['prog'],2);
-            }
-          }
-
-          //// update meta
-          $update_tempform4 = array(
-            'prod_meta' => $sum_meta,
-          );
-          $this->db->where('prod_id', $prod_id);
-          $this->db->update('_productos', $update_tempform4);
-
-        }
-
-
-
-        $result = array(
-          'respuesta' => 'correcto',
-          'update_informacion'=>$informacion,
-          'update_meta'=>$sum_meta,
-        );
-
-        echo json_encode($result);
-      }else{
-        show_404();
-      }
-    }*/
-
-    /*---- UPDATE DATOS FORM 4 - UNIDAD RESPONSABLE 2025----*/
-/*    public function update_datos_form4_uresp(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $prod_id = $this->security->xss_clean($post['prod_id']);
-        $id = $this->security->xss_clean($post['id']);
-        $tp = $this->security->xss_clean($post['tp']);
-        $producto=$this->model_producto->get_producto_id($prod_id); /// Get producto
-
-          if($tp==1){
-            $campo='or_id';
-          }
-          elseif($tp==2){
-            $campo='uni_resp';
-          }
-          elseif($tp==3){
-            $campo='indi_id';
-           
-            if($id==1){ /// absoluto
-              $suma_temp=$this->model_producto->suma_programado_producto($prod_id,$this->gestion);
-              
-              if(count($suma_temp)!=0){
-                $sum_meta=round($suma_temp[0]['prog'],2);
-              }
-
-              $update_prod = array(
-                'prod_meta' => $sum_meta,
-                'mt_id' => 3,
-              );
-              $this->db->where('prod_id', $prod_id);
-              $this->db->update('_productos', $update_prod);
-
-            }
-            else{ /// relativo
-              $update_prod = array(
-                'prod_meta' => 0,
-              );
-              $this->db->where('prod_id', $prod_id);
-              $this->db->update('_productos', $update_prod);
-            }
-
-          }
-
-          $update_prod = array(
-            $campo => $id,
-          );
-          $this->db->where('prod_id', $prod_id);
-          $this->db->update('_productos', $update_prod);
-
-
-        $result = array(
-          'respuesta' => 'correcto',
-        );
-
-        echo json_encode($result);
-      }else{
-        show_404();
-      }
-    }*/
-
-
-
-    /*---- UPDATE DATOS FORM 4 TIPO DE META----*/
-/*    public function update_datos_tpmeta(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $prod_id = $this->security->xss_clean($post['prod_id']);
-        $id = $this->security->xss_clean($post['id']);
-        $producto=$this->model_producto->get_producto_id($prod_id); /// Get producto
-
-        if($producto[0]['indi_id']==2){
-          $update_prod = array(
-            'mt_id' => $id,
-          );
-          $this->db->where('prod_id', $prod_id);
-          $this->db->update('_productos', $update_prod);
-        }
-          
-        $result = array(
-          'respuesta' => 'correcto',
-        );
-
-        echo json_encode($result);
-      }else{
-        show_404();
-      }
-    }
-*/
-
-
 //////
 
     /*---- GET DATOS PRODUCTO FORM 4 ----*/
-    public function get_producto(){
+/*    public function get_producto(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $prod_id = $this->security->xss_clean($post['prod_id']);
@@ -1197,11 +1110,11 @@ public function update_datos_form4_uresp(){
       }else{
           show_404();
       }
-    }
+    }*/
 
 
 
-  /*--------- VALIDA FORM 4 (2025) -----------*/
+  /*--------- VALIDA FORM 4 (REGISTRO nuevo) -----------*/
   public function valida_producto(){
     if ($this->input->server('REQUEST_METHOD') === 'POST'){
         $this->form_validation->set_rules('prod', 'Producto', 'required|trim');
@@ -1209,7 +1122,7 @@ public function update_datos_form4_uresp(){
         $componente = $this->model_componente->get_componente($this->input->post('com_id'),$this->gestion);
         $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
         $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
-        $form4 = $this->model_producto->list_prod($this->input->post('com_id'));
+        $form4 = $this->model_producto->lista_productos($this->input->post('com_id'));
         $cod_nuv=0;
         if(count($form4)!=0){
           $cod_nuv=(count($form4)+1);
@@ -1300,498 +1213,6 @@ public function update_datos_form4_uresp(){
   }
 
 
-    /*----- VALIDAR UPDATE MOD FORM4 ----*/
-    // public function valida_update_form4(){
-    //   if($this->input->post()) {
-    //     $post = $this->input->post();
-    //     $prod_id = $this->security->xss_clean($post['prod_id']); /// prod id
-    //     $prod = $this->security->xss_clean($post['mprod']); /// detalle producto
-    //     $resultado = $this->security->xss_clean($post['mresultado']); /// Resultado
-    //     $indi_id = $this->security->xss_clean($post['mtipo_i']); /// Tipo de Indicador
-    //     $indicador = $this->security->xss_clean($post['mindicador']); /// Indicador
-    //     $mverificacion = $this->security->xss_clean($post['mverificacion']); /// Medio de Verificacion
-    //     $unidad = $this->security->xss_clean($post['munidad']); /// Unidad Responsable
-    //     $linea_base = $this->security->xss_clean($post['mlbase']); /// Linea Base
-    //     $meta = $this->security->xss_clean($post['mmeta']); /// Meta
-    //     $presupuesto = $this->security->xss_clean($post['mppto']); /// Presupuesto
-    //     $or_id = $this->security->xss_clean($post['mor_id']); /// Objetivo Regional
-    //     $tp_meta = $this->security->xss_clean($post['mtp_met']); /// Tipo de Meta
-    //     $prioridad = $this->security->xss_clean($post['priori']); /// prioridad
-    //     $uni_resp = $this->security->xss_clean($post['um_resp']); /// unidad responsable
-
-    //     $relacion_operacion_obj_estrategico=$this->model_objetivoregion->get_objetivosregional($or_id);
-
-    //     $ae=0;
-    //     /*----- UPDATE FORMULARIO N4 ----*/
-    //       $update_prod = array(
-    //         'prod_producto' => strtoupper($prod),
-    //         'prod_resultado' => strtoupper($resultado),
-    //         'indi_id' => $indi_id,
-    //         'prod_indicador' => strtoupper($indicador),
-    //         'prod_linea_base' => $linea_base,
-    //         'prod_meta' => $meta,
-    //         'prod_unidades' => $unidad,
-    //         'prod_fuente_verificacion' => strtoupper($mverificacion),
-    //         'estado' => 2,
-    //         'or_id' => $or_id,
-    //         'uni_resp' => $uni_resp,
-    //         'obj_id' => $relacion_operacion_obj_estrategico[0]['obj_id'],
-    //         'acc_id' => $ae,
-    //         'fecha' => date("d/m/Y H:i:s"),
-    //         'mt_id' => $tp_meta,
-    //         'fun_id' => $this->fun_id,
-    //         'prod_ppto' => $presupuesto,
-    //         'prod_priori' => $prioridad,
-    //         'num_ip' => $this->input->ip_address(), 
-    //         'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-    //         );
-    //       $this->db->where('prod_id', $prod_id);
-    //       $this->db->update('_productos', $update_prod);  
-    //     /*----------------------------------------------*/
-
-    //       /*------------ ANULAR TEMPORALIDAD -----------*/
-    //       $this->model_producto->delete_prod_gest($prod_id);
-
-    //       if($indi_id==1){
-    //         for ($i=1; $i <=12 ; $i++) {
-    //           if($this->security->xss_clean($post['mm'.$i])!=0){
-    //             $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$this->security->xss_clean($post['mm'.$i]));
-    //           }
-    //         }
-    //       }
-
-    //       if($indi_id==2){
-    //         if($tp_meta==3){
-    //           for ($i=1; $i <=12 ; $i++) {
-    //             if($this->security->xss_clean($post['mm'.$i])!=0){
-    //               $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$this->security->xss_clean($post['mm'.$i]));
-    //             }
-    //           }
-    //         }
-    //         elseif($tp_meta==1){ /// recurrente
-    //           for ($i=1; $i <=12 ; $i++) {
-    //             $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
-    //           }
-    //         }
-    //         elseif($tp_meta==5){ /// trimestre recurrente
-    //           for ($i=1; $i <=4 ; $i++) {
-    //             $this->model_producto->add_prod_gest($prod_id,$this->gestion,($i*3),$meta);
-    //           }
-    //         }
-    //       }  
-            
-    //         $producto=$this->model_producto->get_producto_id($this->input->post('prod_id'));
-    //         $this->session->set_flashdata('success','SE MODIFICO CORRECTAMENTE DATOS DE LA ACTIVIDAD :)');
-    //         redirect('admin/prog/list_prod/'.$producto[0]['com_id'].'');
-
-
-    //   } else {
-    //       show_404();
-    //   }
-    // }
-
-
-
-  /*-------- VALIDAR MODIFICACION OPERACIÓN-PRODUCTO (2020) --------*/
-  // public function modificar_producto(){
-  //   if ($this->input->server('REQUEST_METHOD') === 'POST'){
-  //       $this->form_validation->set_rules('prod', 'Producto', 'required|trim');
-  //       $this->form_validation->set_rules('indicador', 'Indicador', 'required|trim');
-  //       $this->form_validation->set_rules('met', 'Meta', 'required|trim');
-
-  //       $producto=$this->model_producto->get_producto_id($this->input->post('prod_id'));
-  //       $componente = $this->model_componente->get_componente($producto[0]['com_id'],$this->gestion);
-  //       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-  //       $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
-        
-  //       $ae=0;
-  //       $get_acc=$this->model_objetivoregion->get_objetivosregional($this->input->post('or_id'));
-  //       if(count($get_acc)!=0){
-  //         $ae=$get_acc[0]['ae'];
-  //       }
-
-  //       if($this->input->post('tipo_i')==1){
-  //         $tp_met=3;
-  //       }
-  //       else{
-  //         $tp_met=$this->input->post('tp_met');
-  //       }
-
-  //       if ($this->form_validation->run()){
-  //         /*-------------- UPDATE OPERACION --------------*/
-  //         $update_prod = array(
-  //           'prod_producto' => strtoupper($this->input->post('prod')),
-  //           'prod_resultado' => strtoupper($this->input->post('resultado')),
-  //           'indi_id' => $this->input->post('tipo_i'),
-  //           'prod_indicador' => strtoupper($this->input->post('indicador')),
-  //           'prod_linea_base' => $this->input->post('lb'),
-  //           'indi_pei' => $this->input->post('indi_pei'),
-  //           'prod_meta' => $this->input->post('met'),
-  //           'prod_unidades' => $this->input->post('unidad'),
-  //           'prod_fuente_verificacion' => strtoupper($this->input->post('verificacion')),
-  //           'estado' => 2,
-  //           'or_id' => $this->input->post('or_id'),
-  //           'acc_id' => $ae,
-  //           'fecha' => date("d/m/Y H:i:s"),
-  //           'mt_id' => $tp_met,
-  //           'fun_id' => $this->fun_id,
-  //           'prod_ppto' => $this->input->post('ppto'),
-  //           'num_ip' => $this->input->ip_address(), 
-  //           'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-  //           );
-  //         $this->db->where('prod_id', $this->input->post('prod_id'));
-  //         $this->db->update('_productos', $update_prod);
-  //         /*----------------------------------------------*/
-
-  //         $this->model_producto->delete_prod_gest($this->input->post('prod_id'));
-
-  //         if($this->input->post('tipo_i')==1){
-  //           for ($i=1; $i <=12 ; $i++) {
-  //             if($this->input->post('m'.$i)!=0){
-  //               $this->model_producto->add_prod_gest($this->input->post('prod_id'),$this->gestion,$i,$this->input->post('m'.$i));
-  //             }
-  //           }
-  //         }
-
-  //         if($this->input->post('tipo_i')==2){
-  //           if($tp_met==3){
-  //             for ($i=1; $i <=12 ; $i++) {
-  //               if($this->input->post('m'.$i)!=0){
-  //                 $this->model_producto->add_prod_gest($this->input->post('prod_id'),$this->gestion,$i,$this->input->post('m'.$i));
-  //               }
-  //             }
-  //           }
-  //           elseif($tp_met==1){
-  //             for ($i=1; $i <=12 ; $i++) {
-  //               $this->model_producto->add_prod_gest($this->input->post('prod_id'),$this->gestion,$i,$this->input->post('met'));
-  //             }
-  //           }
-  //         }  
-            
-  //           $producto=$this->model_producto->get_producto_id($this->input->post('prod_id'));
-  //           $this->session->set_flashdata('success','SE MODIFICO CORRECTAMENTE DATOS DE LA ACTIVIDAD :)');
-  //           redirect('admin/prog/list_prod/'.$producto[0]['com_id'].'');
-  //         }
-  //         else {
-  //           $this->session->set_flashdata('danger','ERROR AL MODIFICAR DATOS DE LA ACTIVIDAD :(');
-  //           redirect('admin/prog/mod_prod/'.$this->input->post('prod_id').'/false');
-  //         }
-  //     }
-  //  }
-
-
-
-    /*------ LISTA FORMULARIO N° 4 (2020-2021-2022) ------*/
-    // public function form4($proy_id,$com_id){
-    //   //$proyecto = $this->model_proyecto->get_id_proyecto($proy_id); 
-    //   $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
-
-    //   $fase = $this->model_faseetapa->get_id_fase($proy_id); //// recupera datos de la tabla fase activa
-    //   $productos = $this->model_producto->lista_form4_x_unidadresponsable($com_id,$this->gestion); // Lista de productos
-      
-    //   $tabla ='';
-    //   $tabla .='
-    //     <input type="hidden" name="com_id" id="com_id" value="'.$com_id.'">
-    //     <input type="hidden" name="base" value="'.base_url().'">
-    //     <div class="table-responsive">
-    //       <table id="dt_basic" class="table table-bordered">
-    //         <thead>
-    //               <tr class="modo1">
-    //                 <th style="width:2%; text-align=center">#</th>
-    //                 <th style="width:1%; text-align=center"><b>E/B</b></th>
-    //                 <th style="width:2%; text-align=center"><b>COD. ACP.</b></th>
-    //                 <th style="width:2%; text-align=center"><b>COD. OPE.</b></th>
-    //                 <th style="width:2%; text-align=center"><b>COD. ACT.</b></th>
-    //                 <th style="width:15%; text-align=center"><b>ACTIVIDAD</b></th>
-    //                 <th style="width:15%; text-align=center"><b>RESULTADO</b></th>
-    //                 <th style="width:10%; text-align=center"><b>UNIDAD RESPONSABLE</b></th>
-    //                 <th style="width:5%; text-align=center"><b>TIP. IND.</b></th>
-    //                 <th style="width:10%; text-align=center"><b>INDICADOR</b></th>
-    //                 <th style="width:1%; text-align=center"><b>L.B. '.($this->gestion-1).'</b></th>
-    //                 <th style="width:1%; text-align=center"><b>META</b></th>
-    //                 <th style="width:4%; text-align=center"><b>ENE.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>FEB.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>MAR.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>ABR.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>MAY.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>JUN.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>JUL.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>AGO.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>SEP.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>OCT.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>NOV.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>DIC.</b></th>
-    //                 <th style="width:10%; text-align=center"><b>MEDIO DE VERIFICACI&Oacute;N</b></th>
-    //                 <th style="width:7%; text-align=center"><b>ELIMINAR ACTIVIDAD</b></th>
-                   
-    //                 <th style="width:7%; text-align=center"><b>NRO. REQ.</b></th>
-    //               </tr>
-    //             </thead>
-    //             <tbody>';
-    //             $cont = 0;
-    //             foreach($productos as $rowp){
-    //               $cont++;
-    //               $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-    //               //$monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
-    //               $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
-
-    //               if($proyecto[0]['por_id']==0){
-    //                 $uresp=strtoupper($rowp['prod_unidades']);
-    //               }
-    //               else{
-    //                 $unidad=$this->model_componente->get_componente($rowp['uni_resp'],$this->gestion);
-    //                 $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
-    //                 $uresp='';
-    //                 if(count($unidad)!=0){
-    //                   $uresp='<font color=blue size=1.5><b>'.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</b></font>';
-    //                 }
-    //               }
-
-                  
-    //               /*$ptto=0;
-    //               if(count($monto)!=0){
-    //                 $ptto=$monto[0]['total'];
-    //               }*/
-
-    //               $color='#f1fdf1'; $titulo=''; $por=''; 
-    //               if($proyecto[0]['tp_id']==1){
-    //                 if($rowp['prod_meta']!=($sum[0]['meta_gest']+$rowp['prod_linea_base'])){
-    //                   $color='#fbd5d5';
-    //                 }
-    //               }
-    //               else{
-    //                 if($rowp['indi_id']==2){ // Relativo
-    //                   $por='%';
-    //                   if($rowp['mt_id']==3){
-    //                     if($sum[0]['meta_gest']!=$rowp['prod_meta'] || $rowp['or_id']==0){
-    //                       $color='#fbd5d5';
-    //                       $titulo='ERROR EN LA DISTRIBUCION O FALTA DE ALINEACION';
-    //                     }
-    //                   }
-    //                 }
-    //                 else{ // Absoluto
-    //                   if($sum[0]['meta_gest']!=$rowp['prod_meta'] || $rowp['or_id']==0){
-    //                     $color='#fbd5d5';
-    //                     $titulo='ERROR EN LA DISTRIBUCION O FALTA DE ALINEACION';
-    //                   }
-    //                 }
-    //               }
-                  
-                  
-    //               $tabla .='<tr bgcolor="'.$color.'" class="modo1" title='.$titulo.'>';
-    //                 $tabla.='<td align="center" title="'.$rowp['prod_id'].'">';
-    //                   if($rowp['prod_priori']==1){
-    //                     $tabla.='<br><img src="'.base_url().'assets/ifinal/ok.png" WIDTH="40" HEIGHT="33"/><br><font size=1 color=green><b>PRIORITARIO</b></font>';
-    //                   }
-    //                 $tabla.='</td>';
-    //                 $tabla.='<td align="center" title='.$rowp['prod_id'].'>';
-    //                 if($this->tp_adm==1 || $this->conf_form4==1){
-    //                   $tabla.='<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$rowp['prod_id'].'" title="MODIFICAR ACTIVIDAD"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="33" HEIGHT="34"/></a>';
-    //                 }
-
-    //                 if($rowp['prod_ppto']==1){
-    //                   $tabla.='<a href="'.site_url("").'/prog/requerimiento/'.$rowp['prod_id'].'" target="_blank" title="REQUERIMIENTOS DE LA ACTIVIDAD" class="btn btn-default"><img src="'.base_url().'assets/ifinal/insumo.png" WIDTH="33" HEIGHT="33"/></a>';
-    //                 }
-    //                 $tabla.='</td>';
-    //                 $tabla.='<td style="width:2%;text-align=center" bgcolor="#d6eef7"><b><font size=5 color=blue>'.$rowp['og_codigo'].'</font></b></td>';
-    //                 $tabla.='<td style="width:2%;text-align=center" bgcolor="#d6eef7"><b><font size=5 color=blue>'.$rowp['or_codigo'].'</font></b></td>';
-    //                 $tabla.='<td style="width:2%;text-align=center" bgcolor="#f1fdf1"><b><font size=5>'.$rowp['prod_cod'].'</font></b></td>';
-    //                 $tabla.='<td style="width:15%;" bgcolor="'.$color.'">'.strtoupper($rowp['prod_producto']).'</td>';
-    //                 $tabla.='<td style="width:15%;" bgcolor="'.$color.'">'.strtoupper($rowp['prod_resultado']).'</td>';
-    //                 $tabla.='<td style="width:15%;" bgcolor="'.$color.'">'.$uresp.'</td>';
-    //                 $tabla.='<td style="width:5%;" bgcolor="'.$color.'"><b>'.strtoupper($rowp['indi_abreviacion']).'</b></td>';
-    //                 $tabla.='<td style="width:10%;" bgcolor="'.$color.'">'.$rowp['prod_indicador'].'</td>';
-    //                 $tabla.='<td style="width:5%;" bgcolor="'.$color.'">'.round($rowp['prod_linea_base'],2).'</td>';
-    //                 $tabla.='<td style="width:5%;" bgcolor="'.$color.'" align=center><b><font size=3>'.round($rowp['prod_meta'],2).'</font></b></td>';
-    //                 if(count($programado)!=0){
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['enero'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['febrero'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['marzo'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['abril'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['mayo'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['junio'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['julio'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['agosto'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['septiembre'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['octubre'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['noviembre'],2).' '.$por.'</td>';
-    //                   $tabla.='<td style="width:4%;" bgcolor="'.$color.'">'.round($programado[0]['diciembre'],2).' '.$por.'</td>';
-    //                 }
-    //                 else{
-    //                   for ($i=1; $i <=12 ; $i++) { 
-    //                     $tabla.='<td style="width:4%;" bgcolor="#f1bac6">0</td>';
-    //                   }
-    //                 }
-    //                 $tabla.='<td style="width:10%;" bgcolor="#e5fde5">'.$rowp['prod_fuente_verificacion'].'</td>';
-    //                 $tabla.='<td style="width:7%;">';
-    //                   if(count($this->model_producto->insumo_producto($rowp['prod_id']))==0){
-    //                     if($this->tp_adm==1 || $this->conf_form4==1){
-    //                       $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR OPERACI&Oacute;N"  name="'.$rowp['prod_id'].'"><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a><br><br>';
-    //                       $tabla.=' <center>
-    //                                   <input type="checkbox" name="req[]" value="'.$rowp['prod_id'].'" onclick="scheck'.$cont.'(this.checked);"/>
-    //                                 </center>';
-    //                     }
-    //                   }
-    //                 $tabla.='</td>';
-    //                 $tabla.='<td style="width:7%;" align="center"><font color="blue" size="2"><b>'.count($this->model_producto->insumo_producto($rowp['prod_id'])).'</b></font></td>';
-    //               $tabla .='</tr>';
-    //               
-    //             }
-    //             $tabla.='</tbody>
-    //           </table>
-    //         </div>';
-
-    //   return $tabla;
-    // }
-
-
-    /*------ LISTA FORMULARIO N° 4 para Programas GLOBALES ------*/
-    // public function form4_prog_globales($proy_id,$com_id){
-    //   //$proyecto = $this->model_proyecto->get_id_proyecto($proy_id); 
-    //   $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
-
-    //   $fase = $this->model_faseetapa->get_id_fase($proy_id); //// recupera datos de la tabla fase activa
-    //   $productos = $this->model_producto->lista_form4_x_unidadresponsable($com_id,$this->gestion); // Lista de productos
-      
-    //   $tabla ='';
-    //   $tabla .='
-    //     <input type="hidden" name="com_id" id="com_id" value="'.$com_id.'">
-    //     <input type="hidden" name="base" value="'.base_url().'">
-    //     <div class="table-responsive">
-    //       <table id="dt_basic" class="table table-bordered">
-    //         <thead>
-    //               <tr class="modo1">
-    //                 <th style="width:2%; text-align=center">#</th>
-    //                 <th style="width:1%; text-align=center"><b>E/B</b></th>
-    //                 <th style="width:2%; text-align=center"><b>COD. ACP.</b></th>
-    //                 <th style="width:2%; text-align=center"><b>COD. OPE.</b></th>
-    //                 <th style="width:2%; text-align=center"><b>COD. ACT.</b></th>
-    //                 <th style="width:15%; text-align=center"><b>ACTIVIDAD</b></th>
-    //                 <th style="width:15%; text-align=center"><b>RESULTADO</b></th>
-    //                 <th style="width:10%; text-align=center"><b>UNIDAD RESPONSABLE</b></th>
-    //                 <th style="width:5%; text-align=center"><b>TIP. IND.</b></th>
-    //                 <th style="width:10%; text-align=center"><b>INDICADOR</b></th>
-    //                 <th style="width:1%; text-align=center"><b>L.B. '.($this->gestion-1).'</b></th>
-    //                 <th style="width:1%; text-align=center"><b>META</b></th>
-    //                 <th style="width:4%; text-align=center"><b>ENE.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>FEB.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>MAR.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>ABR.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>MAY.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>JUN.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>JUL.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>AGO.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>SEP.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>OCT.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>NOV.</b></th>
-    //                 <th style="width:4%; text-align=center"><b>DIC.</b></th>
-    //                 <th style="width:10%; text-align=center"><b>MEDIO DE VERIFICACI&Oacute;N</b></th>
-    //                 <th style="width:7%; text-align=center"><b>ELIMINAR ACTIVIDAD</b></th>
-    //                 <th style="width:7%; text-align=center"><b>PTTO.</b></th>
-    //                 <th style="width:7%; text-align=center"><b>NRO. REQ.</b></th>
-    //               </tr>
-    //             </thead>
-    //             <tbody>';
-    //             $cont = 0;
-    //             foreach($productos as $rowp){
-    //               $cont++;
-    //               $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-    //               //$monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
-    //               //$programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
-
-    //               if($proyecto[0]['por_id']==0){
-    //                 $uresp=strtoupper($rowp['prod_unidades']);
-    //               }
-    //               else{
-    //                 $unidad=$this->model_componente->get_componente($rowp['uni_resp'],$this->gestion);
-                    
-    //                 $uresp='';
-    //                 if(count($unidad)!=0){
-    //                   $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
-    //                   $uresp='<font color=blue size=1.5><b>'.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</b></font>';
-    //                 }
-    //               }
-
-                  
-    //               /*$ptto=0;
-    //               if(count($monto)!=0){
-    //                 $ptto=$monto[0]['total'];
-    //               }*/
-
-    //               $color='#f1fdf1'; $titulo=''; $por=''; 
-    //               if($proyecto[0]['tp_id']==1){
-    //                 if($rowp['prod_meta']!=($sum[0]['meta_gest']+$rowp['prod_linea_base'])){
-    //                   $color='#fbd5d5';
-    //                 }
-    //               }
-    //               else{
-    //                 if($rowp['indi_id']==2){ // Relativo
-    //                   $por='%';
-    //                   if($rowp['mt_id']==3){
-    //                     if($sum[0]['meta_gest']!=$rowp['prod_meta'] || $rowp['or_id']==0){
-    //                       $color='#fbd5d5';
-    //                       $titulo='ERROR EN LA DISTRIBUCION O FALTA DE ALINEACION';
-    //                     }
-    //                   }
-    //                 }
-    //                 else{ // Absoluto
-    //                   if($sum[0]['meta_gest']!=$rowp['prod_meta'] || $rowp['or_id']==0){
-    //                     $color='#fbd5d5';
-    //                     $titulo='ERROR EN LA DISTRIBUCION O FALTA DE ALINEACION';
-    //                   }
-    //                 }
-    //               }
-                  
-                  
-    //               $tabla .='<tr bgcolor="'.$color.'" class="modo1" title='.$titulo.'>';
-    //                 $tabla.='<td align="center">';
-    //                   if($rowp['prod_priori']==1){
-    //                     $tabla.='<br><img src="'.base_url().'assets/ifinal/ok.png" WIDTH="40" HEIGHT="33"/><br><font size=1 color=green><b>PRIORITARIO</b></font>';
-    //                   }
-    //                 $tabla.='</td>';
-    //                 $tabla.='<td align="center" title='.$rowp['prod_id'].'>';
-    //                 if($this->tp_adm==1 || $this->conf_form4==1){
-    //                   $tabla.='<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$rowp['prod_id'].'" title="MODIFICAR ACTIVIDAD"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="33" HEIGHT="34"/></a>';
-    //                 }
-
-    //                 if($rowp['prod_ppto']==1){
-    //                   $tabla.='<a href="'.site_url("").'/prog/requerimiento/'.$rowp['prod_id'].'" target="_blank" title="REQUERIMIENTOS DE LA ACTIVIDAD" class="btn btn-default"><img src="'.base_url().'assets/ifinal/insumo.png" WIDTH="33" HEIGHT="33"/></a>';
-    //                 }
-    //                 $tabla.='</td>';
-    //                 $tabla.='<td style="width:2%;text-align=center" bgcolor="#d6eef7"><b><font size=5 color=blue>'.$rowp['og_codigo'].'</font></b></td>';
-    //                 $tabla.='<td style="width:2%;text-align=center" bgcolor="#d6eef7"><b><font size=5 color=blue>'.$rowp['or_codigo'].'</font></b></td>';
-    //                 $tabla.='<td style="width:2%;text-align=center" bgcolor="#f1fdf1"><b><font size=5>'.$rowp['prod_cod'].'</font></b></td>';
-    //                 $tabla.='<td style="width:15%;" bgcolor="'.$color.'">'.strtoupper($rowp['prod_producto']).'</td>';
-    //                 $tabla.='<td style="width:15%;" bgcolor="'.$color.'">'.strtoupper($rowp['prod_resultado']).'</td>';
-    //                 $tabla.='<td style="width:15%;" bgcolor="'.$color.'">'.$uresp.'</td>';
-    //                 $tabla.='<td style="width:5%;" bgcolor="'.$color.'"><b>'.strtoupper($rowp['indi_abreviacion']).'</b></td>';
-    //                 $tabla.='<td style="width:10%;" bgcolor="'.$color.'">'.$rowp['prod_indicador'].'</td>';
-    //                 $tabla.='<td style="width:5%;" bgcolor="'.$color.'">'.round($rowp['prod_linea_base'],2).'</td>';
-    //                 $tabla.='<td style="width:5%;" bgcolor="'.$color.'" align=center><b><font size=3>'.round($rowp['prod_meta'],2).'</font></b></td>';
-    //                 for ($i=1; $i <=12 ; $i++) { 
-    //                   $tabla.='<td style="width:4%;">0</td>';
-    //                 }
-
-    //                 $tabla.='<td style="width:10%;" bgcolor="#e5fde5">'.$rowp['prod_fuente_verificacion'].'</td>';
-    //                 $tabla.='<td style="width:7%;">';
-    //                   if($this->tp_adm==1 || $this->conf_form4==1){
-    //                     $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR OPERACI&Oacute;N"  name="'.$rowp['prod_id'].'"><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a><br><br>';
-    //                     $tabla.=' <center>
-    //                                 <input type="checkbox" name="req[]" value="'.$rowp['prod_id'].'" onclick="scheck'.$cont.'(this.checked);"/>
-    //                               </center>';
-    //                   }
-    //                 $tabla.='</td>';
-    //                 $tabla.='<td></td>';
-    //                 $tabla.='<td style="width:7%;" align="center"><font color="blue" size="2"><b>'.count($this->model_producto->insumo_producto($rowp['prod_id'])).'</b></font></td>';
-    //               $tabla .='</tr>';
-  
-    //             }
-    //             $tabla.='</tbody>
-    //           </table>
-    //         </div>';
-
-    //   return $tabla;
-    // }
 
     /*------ CAMBIA PRIORIDAD DE LA ACTIVIDAD---------*/
     function asignar_prioridad(){
@@ -2541,236 +1962,236 @@ public function update_datos_form4_uresp(){
 
 
     /*--- MIGRACION DEL FORMULARIO N 4 (2020-2022) Y REQUERIMIENTOS (2025) ---*/
-    function importar_operaciones_requerimientos(){
-      if ($this->input->post()) {
-          $post = $this->input->post();
-          $com_id = $this->security->xss_clean($post['com_id']); /// com id
-          $componente = $this->model_componente->get_componente_pi($com_id);
-          $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-          $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
-          $list_oregional=$this->model_objetivoregion->list_proyecto_oregional($fase[0]['proy_id']); /// Lista de Objetivos Regionales
-          $tp = $this->security->xss_clean($post['tp']); /// tipo de migracion
+    // function importar_operaciones_requerimientos(){
+    //   if ($this->input->post()) {
+    //       $post = $this->input->post();
+    //       $com_id = $this->security->xss_clean($post['com_id']); /// com id
+    //       $componente = $this->model_componente->get_componente_pi($com_id);
+    //       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
+    //       $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
+    //       $list_oregional=$this->model_objetivoregion->list_proyecto_oregional($fase[0]['proy_id']); /// Lista de Objetivos Regionales
+    //       $tp = $this->security->xss_clean($post['tp']); /// tipo de migracion
 
-          $tipo = $_FILES['archivo']['type'];
-          $tamanio = $_FILES['archivo']['size'];
-          $archivotmp = $_FILES['archivo']['tmp_name'];
+    //       $tipo = $_FILES['archivo']['type'];
+    //       $tamanio = $_FILES['archivo']['size'];
+    //       $archivotmp = $_FILES['archivo']['tmp_name'];
 
-          $filename = $_FILES["archivo"]["name"];
-          $file_basename = substr($filename, 0, strripos($filename, '.'));
-          $file_ext = substr($filename, strripos($filename, '.'));
-          $allowed_file_types = array('.csv');
+    //       $filename = $_FILES["archivo"]["name"];
+    //       $file_basename = substr($filename, 0, strripos($filename, '.'));
+    //       $file_ext = substr($filename, strripos($filename, '.'));
+    //       $allowed_file_types = array('.csv');
 
-          if (in_array($file_ext, $allowed_file_types) && ($tamanio < 90000000)) {
-            /*------------------- Migrando ---------------*/
-            $lineas = file($archivotmp);
-            $i=0;
-            $nro=0;
-            $guardado=0;
-            $no_guardado=0;
+    //       if (in_array($file_ext, $allowed_file_types) && ($tamanio < 90000000)) {
+    //         /*------------------- Migrando ---------------*/
+    //         $lineas = file($archivotmp);
+    //         $i=0;
+    //         $nro=0;
+    //         $guardado=0;
+    //         $no_guardado=0;
   
-            if($tp==1){  /// Formulario N 4
-              foreach ($lineas as $linea_num => $linea){ 
-                if($i != 0){
-                  $datos = explode(";",$linea);
-                  if(count($datos)==22){
+    //         if($tp==1){  /// Formulario N 4
+    //           foreach ($lineas as $linea_num => $linea){ 
+    //             if($i != 0){
+    //               $datos = explode(";",$linea);
+    //               if(count($datos)==22){
 
-                    $cod_og = intval(trim($datos[0])); // Codigo ACP
-                    $cod_or = intval(trim($datos[1])); // Codigo Operacion
-                    $cod_form4 = intval(trim($datos[2])); // Codigo Form 4
-                    $descripcion = strval(utf8_encode(trim($datos[3]))); //// descripcion form4
-                    $resultado = strval(utf8_encode(trim($datos[4]))); //// descripcion Resultado
-                    $unidad = strval(utf8_encode(trim($datos[5]))); //// Unidad responsable
-                    //$unidad = intval(trim($datos[5])); //// id Unidad responsable PRG Bolsas
-                    $indicador = strval(utf8_encode(trim($datos[6]))); //// descripcion Indicador
-                    $lbase = intval(trim($datos[7])); //// Linea Base
-                    $meta = intval(trim($datos[8])); //// Meta
-                    $mverificacion = strval(utf8_encode(trim($datos[21]))); //// Medio de verificacion
+    //                 $cod_og = intval(trim($datos[0])); // Codigo ACP
+    //                 $cod_or = intval(trim($datos[1])); // Codigo Operacion
+    //                 $cod_form4 = intval(trim($datos[2])); // Codigo Form 4
+    //                 $descripcion = strval(utf8_encode(trim($datos[3]))); //// descripcion form4
+    //                 $resultado = strval(utf8_encode(trim($datos[4]))); //// descripcion Resultado
+    //                 $unidad = strval(utf8_encode(trim($datos[5]))); //// Unidad responsable
+    //                 //$unidad = intval(trim($datos[5])); //// id Unidad responsable PRG Bolsas
+    //                 $indicador = strval(utf8_encode(trim($datos[6]))); //// descripcion Indicador
+    //                 $lbase = intval(trim($datos[7])); //// Linea Base
+    //                 $meta = intval(trim($datos[8])); //// Meta
+    //                 $mverificacion = strval(utf8_encode(trim($datos[21]))); //// Medio de verificacion
 
-                    $or_id=0;
-                    if(count($list_oregional)!=0){
-                      $get_acc=$this->model_objetivoregion->get_alineacion_proyecto_oregional($fase[0]['proy_id'],$cod_og,$cod_or);
-                      if(count($get_acc)!=0){
-                        $or_id=$get_acc[0]['or_id'];
-                      }
-                    }
+    //                 $or_id=0;
+    //                 if(count($list_oregional)!=0){
+    //                   $get_acc=$this->model_objetivoregion->get_alineacion_proyecto_oregional($fase[0]['proy_id'],$cod_og,$cod_or);
+    //                   if(count($get_acc)!=0){
+    //                     $or_id=$get_acc[0]['or_id'];
+    //                   }
+    //                 }
 
-                    if(strlen($descripcion)!=0 & strlen($resultado)!=0){
-                        $query=$this->db->query('set datestyle to DMY');
-                        $data_to_store = array(
-                          'com_id' => $com_id,
-                          'prod_cod'=>$cod_form4,
-                          'prod_producto' => strtoupper($descripcion),
-                          'prod_resultado' => strtoupper($resultado),
-                          'indi_id' => 1,
-                          'prod_indicador' => strtoupper($indicador),
-                          'prod_fuente_verificacion' => strtoupper($mverificacion), 
-                          'prod_linea_base' => $lbase,
-                          'prod_meta' => $meta,
-                          'uni_resp' => 0, //// para prog bolsas
-                          'prod_unidades' => $unidad,
-                          'acc_id' => 0,
-                          'prod_ppto' => 1,
-                          'fecha' => date("d/m/Y H:i:s"),
-                          'or_id'=>$or_id,
-                          'fun_id' => $this->fun_id,
-                          'num_ip' => $this->input->ip_address(), 
-                          'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                        );
-                        $this->db->insert('_productos', $data_to_store);
-                        $prod_id=$this->db->insert_id(); 
+    //                 if(strlen($descripcion)!=0 & strlen($resultado)!=0){
+    //                     $query=$this->db->query('set datestyle to DMY');
+    //                     $data_to_store = array(
+    //                       'com_id' => $com_id,
+    //                       'prod_cod'=>$cod_form4,
+    //                       'prod_producto' => strtoupper($descripcion),
+    //                       'prod_resultado' => strtoupper($resultado),
+    //                       'indi_id' => 1,
+    //                       'prod_indicador' => strtoupper($indicador),
+    //                       'prod_fuente_verificacion' => strtoupper($mverificacion), 
+    //                       'prod_linea_base' => $lbase,
+    //                       'prod_meta' => $meta,
+    //                       'uni_resp' => 0, //// para prog bolsas
+    //                       'prod_unidades' => $unidad,
+    //                       'acc_id' => 0,
+    //                       'prod_ppto' => 1,
+    //                       'fecha' => date("d/m/Y H:i:s"),
+    //                       'or_id'=>$or_id,
+    //                       'fun_id' => $this->fun_id,
+    //                       'num_ip' => $this->input->ip_address(), 
+    //                       'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //                     );
+    //                     $this->db->insert('_productos', $data_to_store);
+    //                     $prod_id=$this->db->insert_id(); 
 
 
-                        $var=9;
-                        for ($i=1; $i <=12 ; $i++) {
-                          $m[$i]=floatval(trim($datos[$var])); //// Mes i
-                          if($m[$i]!=0){
-                            if(strlen($m[$i])<=4){
-                              $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$m[$i]);
-                            }
-                          }
+    //                     $var=9;
+    //                     for ($i=1; $i <=12 ; $i++) {
+    //                       $m[$i]=floatval(trim($datos[$var])); //// Mes i
+    //                       if($m[$i]!=0){
+    //                         if(strlen($m[$i])<=4){
+    //                           $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$m[$i]);
+    //                         }
+    //                       }
                           
-                          $var++;
-                        }
+    //                       $var++;
+    //                     }
 
-                        $producto=$this->model_producto->get_producto_id($prod_id);
-                        if(count($producto)!=0){
-                          $guardado++;
-                        }
-                        else{
-                          $no_guardado++;
-                        }
-                    }
+    //                     $producto=$this->model_producto->get_producto_id($prod_id);
+    //                     if(count($producto)!=0){
+    //                       $guardado++;
+    //                     }
+    //                     else{
+    //                       $no_guardado++;
+    //                     }
+    //                 }
 
-                  }
-                }
-                $i++;
-              }
+    //               }
+    //             }
+    //             $i++;
+    //           }
               
-              //// Actualizando Codigos
-              $this->programacionpoa->update_codigo_actividad($com_id);
-              $this->session->set_flashdata('success','SE REGISTRARON '.$guardado.' ACTIVIDADES');
-            }
-            else{ /// Requerimientos
+    //           //// Actualizando Codigos
+    //           $this->programacionpoa->update_codigo_actividad($com_id);
+    //           $this->session->set_flashdata('success','SE REGISTRARON '.$guardado.' ACTIVIDADES');
+    //         }
+    //         else{ /// Requerimientos
 
-            foreach ($lineas as $linea_num => $linea){
-              if($i != 0){
-                $datos = explode(";",$linea);
+    //         foreach ($lineas as $linea_num => $linea){
+    //           if($i != 0){
+    //             $datos = explode(";",$linea);
              
-                if(count($datos)==20){
-                    //echo count($datos).'<br>';
-                    $prod_cod = intval(trim($datos[0])); //// Codigo Actividad
-                    $cod_partida = intval(trim($datos[1])); //// Codigo partida
-                    $par_id = $this->model_insumo->get_partida_codigo($cod_partida); //// DATOS DE LA FASE ACTIVA
+    //             if(count($datos)==20){
+    //                 //echo count($datos).'<br>';
+    //                 $prod_cod = intval(trim($datos[0])); //// Codigo Actividad
+    //                 $cod_partida = intval(trim($datos[1])); //// Codigo partida
+    //                 $par_id = $this->model_insumo->get_partida_codigo($cod_partida); //// DATOS DE LA FASE ACTIVA
 
-                    $detalle = strval(utf8_encode(trim($datos[2]))); //// descripcion form5
-                    $unidad = strval(utf8_encode(trim($datos[3]))); //// Unidad
-                    $cantidad = intval(trim($datos[4])); //// Cantidad
-                    $unitario = floatval(trim($datos[5])); //// Costo Unitario
+    //                 $detalle = strval(utf8_encode(trim($datos[2]))); //// descripcion form5
+    //                 $unidad = strval(utf8_encode(trim($datos[3]))); //// Unidad
+    //                 $cantidad = intval(trim($datos[4])); //// Cantidad
+    //                 $unitario = floatval(trim($datos[5])); //// Costo Unitario
                     
-                    $p_total=($cantidad*$unitario);
-                    $total = floatval(trim($datos[6])); //// Costo Total
+    //                 $p_total=($cantidad*$unitario);
+    //                 $total = floatval(trim($datos[6])); //// Costo Total
 
-                    $var=7; $sum_temp=0;
-                    for ($i=1; $i <=12 ; $i++) {
-                      $m[$i]=floatval(trim($datos[$var])); //// Mes i
-                      if($m[$i]==''){
-                        $m[$i]=0;
-                      }
-                      $var++;
-                      $sum_temp=$sum_temp+$m[$i];
-                    }
+    //                 $var=7; $sum_temp=0;
+    //                 for ($i=1; $i <=12 ; $i++) {
+    //                   $m[$i]=floatval(trim($datos[$var])); //// Mes i
+    //                   if($m[$i]==''){
+    //                     $m[$i]=0;
+    //                   }
+    //                   $var++;
+    //                   $sum_temp=$sum_temp+$m[$i];
+    //                 }
 
-                    $observacion = strval(utf8_encode(trim($datos[19]))); //// Observacion
-                    $verif_cod=$this->model_producto->verif_componente_operacion($com_id,$prod_cod);
-                   // echo count($verif_cod).'--'.count($par_id).'--'.$cod_partida.'--'.round($sum_temp,2).'=='.round($total,2)."<br>";
+    //                 $observacion = strval(utf8_encode(trim($datos[19]))); //// Observacion
+    //                 $verif_cod=$this->model_producto->verif_componente_operacion($com_id,$prod_cod);
+    //                // echo count($verif_cod).'--'.count($par_id).'--'.$cod_partida.'--'.round($sum_temp,2).'=='.round($total,2)."<br>";
 
-                    if(count($verif_cod)!=0 & count($par_id)!=0 & $cod_partida!=0 & round($sum_temp,2)==round($total,2) & round($p_total,2)==round($total,2)){ /// Verificando si existe Codigo de Actividad, par id, Codigo producto
-                        $producto=$this->model_producto->get_producto_id($verif_cod[0]['prod_id']); /// Get producto
-                        $guardado++;
-                        //echo $guardado.'---'.$detalle.'<br>';
-                        /*-------- INSERTAR DATOS REQUERIMIENTO ---------*/
-                        $query=$this->db->query('set datestyle to DMY');
-                        $data_to_store = array( 
-                        'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
-                        'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-                        'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
-                        'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
-                        'ins_costo_unitario' => $unitario, /// Costo Unitario
-                        'ins_costo_total' => $total, /// Costo Total
-                        'ins_unidad_medida' => $unidad, /// Unidad de Medida
-                        'ins_gestion' => $this->gestion, /// Insumo gestion
-                        'par_id' => $par_id[0]['par_id'], /// Partidas
-                        'ins_tipo' => 1, /// Ins Tipo
-                        'ins_observacion' => strtoupper($observacion), /// Observacion
-                        'fun_id' => $this->fun_id, /// Funcionario
-                        'aper_id' => $proyecto[0]['aper_id'], /// aper id
-                        'com_id' => $producto[0]['com_id'], /// com id 
-                        'form4_cod' => $producto[0]['prod_cod'], /// aper id
-                        'num_ip' => $this->input->ip_address(), 
-                        'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                        );
-                        $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
-                        $ins_id=$this->db->insert_id();
+    //                 if(count($verif_cod)!=0 & count($par_id)!=0 & $cod_partida!=0 & round($sum_temp,2)==round($total,2) & round($p_total,2)==round($total,2)){ /// Verificando si existe Codigo de Actividad, par id, Codigo producto
+    //                     $producto=$this->model_producto->get_producto_id($verif_cod[0]['prod_id']); /// Get producto
+    //                     $guardado++;
+    //                     //echo $guardado.'---'.$detalle.'<br>';
+    //                     /*-------- INSERTAR DATOS REQUERIMIENTO ---------*/
+    //                     $query=$this->db->query('set datestyle to DMY');
+    //                     $data_to_store = array( 
+    //                     'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
+    //                     'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
+    //                     'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
+    //                     'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
+    //                     'ins_costo_unitario' => $unitario, /// Costo Unitario
+    //                     'ins_costo_total' => $total, /// Costo Total
+    //                     'ins_unidad_medida' => $unidad, /// Unidad de Medida
+    //                     'ins_gestion' => $this->gestion, /// Insumo gestion
+    //                     'par_id' => $par_id[0]['par_id'], /// Partidas
+    //                     'ins_tipo' => 1, /// Ins Tipo
+    //                     'ins_observacion' => strtoupper($observacion), /// Observacion
+    //                     'fun_id' => $this->fun_id, /// Funcionario
+    //                     'aper_id' => $proyecto[0]['aper_id'], /// aper id
+    //                     'com_id' => $producto[0]['com_id'], /// com id 
+    //                     'form4_cod' => $producto[0]['prod_cod'], /// aper id
+    //                     'num_ip' => $this->input->ip_address(), 
+    //                     'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //                     );
+    //                     $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
+    //                     $ins_id=$this->db->insert_id();
 
-                        /*--------------------------------------------------------*/
-                          $data_to_store2 = array( ///// Tabla InsumoProducto
-                            'prod_id' => $verif_cod[0]['prod_id'], /// prod id
-                            'ins_id' => $ins_id, /// ins_id
-                          );
-                          $this->db->insert('_insumoproducto', $data_to_store2);
-                        /*----------------------------------------------------------*/
+    //                     /*--------------------------------------------------------*/
+    //                       $data_to_store2 = array( ///// Tabla InsumoProducto
+    //                         'prod_id' => $verif_cod[0]['prod_id'], /// prod id
+    //                         'ins_id' => $ins_id, /// ins_id
+    //                       );
+    //                       $this->db->insert('_insumoproducto', $data_to_store2);
+    //                     /*----------------------------------------------------------*/
 
-                        for ($p=1; $p <=12 ; $p++) { 
-                          if($m[$p]!=0 & is_numeric($unitario)){
-                            $data_to_store4 = array(
-                              'ins_id' => $ins_id, /// Id Insumo
-                              'mes_id' => $p, /// Mes 
-                              'ipm_fis' => $m[$p], /// Valor mes
-                              'g_id' => $this->gestion, /// Gestion
-                            );
-                            $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
-                          }
-                        }
-                    }
+    //                     for ($p=1; $p <=12 ; $p++) { 
+    //                       if($m[$p]!=0 & is_numeric($unitario)){
+    //                         $data_to_store4 = array(
+    //                           'ins_id' => $ins_id, /// Id Insumo
+    //                           'mes_id' => $p, /// Mes 
+    //                           'ipm_fis' => $m[$p], /// Valor mes
+    //                           'g_id' => $this->gestion, /// Gestion
+    //                         );
+    //                         $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+    //                       }
+    //                     }
+    //                 }
                
-                } /// end dimension (20)
-              } /// i!=0
+    //             } /// end dimension (20)
+    //           } /// i!=0
 
-              $i++;
+    //           $i++;
 
-            }
+    //         }
 
-              $this->session->set_flashdata('success','SE REGISTRARON '.$guardado.' REQUERIMIENTOS');
-            } /// end else
+    //           $this->session->set_flashdata('success','SE REGISTRARON '.$guardado.' REQUERIMIENTOS');
+    //         } /// end else
 
-            redirect('admin/prog/list_prod/'.$com_id.'');
-          }
-          else{
-            $this->session->set_flashdata('danger','SELECCIONE ARCHIVO ');
-            redirect('admin/prog/list_prod/'.$com_id.'');
-          }
-      }
-      else{
-        echo "Error !!";
-      }
-    }
+    //         redirect('admin/prog/list_prod/'.$com_id.'');
+    //       }
+    //       else{
+    //         $this->session->set_flashdata('danger','SELECCIONE ARCHIVO ');
+    //         redirect('admin/prog/list_prod/'.$com_id.'');
+    //       }
+    //   }
+    //   else{
+    //     echo "Error !!";
+    //   }
+    // }
 
     /*------ ACTUALIZA PRESUPUESTO EXISTENTE DE LAS OPERACIONES -------*/
-    public function update_ptto_operaciones($com_id){
-      //$operaciones=$this->model_producto->list_producto_programado($com_id,$this->gestion);
-      $operaciones=$this->model_producto->lista_form4_x_unidadresponsable($com_id);
-      foreach($operaciones as $rowp){
-        $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
-        if(count($monto)==0){
-          $update_act= array(
-            'prod_ppto' => 0,
-            'fun_id' => $this->fun_id
-          );
-          $this->db->where('prod_id', $rowp['prod_id']);
-          $this->db->update('_productos', $update_act);
-        }
-      }
-    }    
+    // public function update_ptto_operaciones($com_id){
+    //   //$operaciones=$this->model_producto->list_producto_programado($com_id,$this->gestion);
+    //   $operaciones=$this->model_producto->lista_form4_x_unidadresponsable($com_id);
+    //   foreach($operaciones as $rowp){
+    //     $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
+    //     if(count($monto)==0){
+    //       $update_act= array(
+    //         'prod_ppto' => 0,
+    //         'fun_id' => $this->fun_id
+    //       );
+    //       $this->db->where('prod_id', $rowp['prod_id']);
+    //       $this->db->update('_productos', $update_act);
+    //     }
+    //   }
+    // }    
 
     /*------ NOMBRE MES -------*/
     function mes_nombre(){
