@@ -743,7 +743,8 @@ $tabla .= '
     }
 
 
-        //// PARA MIGRACION DE ACTIVIDADES POR ARCHIVO EXCEL 2026
+      //// PARA MIGRACION CONSOLIDADO DE ACTIVIDADES POR ARCHIVO EXCEL 2026 
+      //// PARA TODAS LAS UNIDADES DE LA UNIDAD ORGANIZACIONAL
       public function valida_migracion_form4_consolidado() {
         ini_set('max_execution_time', 300); // 5 minutos
         ini_set('memory_limit', '512M');    // Aumentar memoria
@@ -957,6 +958,23 @@ $tabla .= '
             echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function cambia_tp_sact(){
       if($this->input->is_ajax_request() && $this->input->post()){

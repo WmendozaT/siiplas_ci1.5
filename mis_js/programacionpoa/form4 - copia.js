@@ -103,69 +103,77 @@ $(document).ready(function() {
         var prod_id = $combo_indi.data('id');
         var val_id  = $combo_indi.val(); // 1 = Absoluto, 2 = Relativo
 
+        // Captura de token CSRF por seguridad perimetral de CodeIgniter
         var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
         var csrf_hash = $('[name="csrf_test_name"]').val() || '';
         var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
 
+        // Retroalimentación visual en amarillo (Procesando celda)
         $combo_indi.css({'border-color': '#eab308', 'background-color': '#fef9c3'});
 
-        if (val_id == 1) { /// Absoluto
-            $('#tp_met' + prod_id).slideUp(150);
-            $('#tp_met' + prod_id).find('select').val('3'); 
-        } 
-        else if (val_id == 2) { /// Relativo
-            $('#tp_met' + prod_id).slideDown(150);
-            var tipo_meta_actual = $('#tp_met' + prod_id).find('select').val();
-        }
-
-         // 2. Bloquea input meta global (Suma automática de meses)
-            $('#meta' + prod_id).attr('disabled', 'disabled').css('background-color', '#f1f5f9');
-            
-            // 3. Libera de forma obligatoria los 12 meses para registro manual libre
-            for (var i = 1; i <= 12; i++) {
-                $('#m' + i + '_' + prod_id).removeAttr('disabled').css({'border-color': '#cbd5e1', 'background-color': '#e5fde5'});
-            }
-
-            calcular_sumatoria_meses_a_meta(prod_id)
-
-        // Envío seguro mediante query string compatible con CI 1.5
         $.ajax({
             url: base + "index.php/programacion/producto/update_datos_form4_uresp",
             type: "POST",
             dataType: 'json',
+            // 🛠️ AJUSTADO: Envío por Query String crudo para compatibilidad estricta con CI 1.5
             data: "prod_id=" + prod_id + "&id=" + val_id + "&tp=3" + token_seguridad,
             success: function(response) {
-               // alert(response.respuesta+'----'+response.update_meta)
                 if (response.respuesta == 'correcto') {
-                    $combo_indi.css({'border-color': '#cbd5e1', 'background-color': '#ffffff'});
-                    
-                    if (response.update_meta !== undefined) {
-                        $("#meta" + prod_id).val(response.update_meta);
+                    // Éxito: Retorna el color celeste original del SIIPLAS
+                    $combo_indi.css({'border-color': '#cbd5e1', 'background-color': '#d7fcfa'});
+
+                    if (val_id == 1) { 
+                        /// --- COMPORTAMIENTO CASO ABSOLUTO ---
+                        // Oculta bloque de metas y deshabilita el input de la meta global
+                        $('#tp_met' + prod_id).slideUp(150);
+                        document.getElementById("meta" + prod_id).disabled = true;
+                        
+                        // 🌟 ACTUALIZACIÓN AUTOMÁTICA: Inyectamos inmediatamente la sumatoria calculada por Postgres
+                        if (response.update_meta !== undefined) {
+                            $("#meta" + prod_id).val(response.update_meta);
+                        }
+                    } 
+                    else { 
+                        /// --- COMPORTAMIENTO CASO RELATIVO ---
+                        // Despliega bloque de metas y libera la meta global para digitación libre
+                        $('#tp_met' + prod_id).slideDown(150);
+                        document.getElementById("meta" + prod_id).disabled = false;
+
+                        if (response.update_meta !== undefined) {
+                            $("#meta" + prod_id).val(response.update_meta);
+                        }
                     }
-                    validar_coincidencia_meta_total(prod_id);
-                    if (typeof alertify !== "undefined") alertify.success("✔ Tipo de indicador guardado.");
+
+                    // Revalida de forma reactiva los colores de consistencia matemática de la fila
+                    if (typeof validar_coincidencia_meta_total === "function") {
+                        validar_coincidencia_meta_total(prod_id);
+                    }
+
+                    if (typeof alertify !== "undefined") alertify.success("✔ Tipo de indicador sincronizado.");
+                } else {
+                    $combo_indi.css({'border-color': '#ef4444', 'background-color': '#fef2f2'});
+                    if (typeof alertify !== "undefined") alertify.error("ERROR AL RECUPERAR INFORMACIÓN");
                 }
+            },
+            error: function() {
+                $combo_indi.css({'border-color': '#ef4444', 'background-color': '#fef2f2'});
+                if (typeof alertify !== "undefined") alertify.error("❌ Error crítico de red en indicador.");
             }
         });
     });
 
     /**
-     * REGLA MÁSTER B: CAMBIO EN EL TIPO DE META OPERATIVA (RECURRENTE 1, MENSUAL 3, TRIMESTRAL 5)
+     * INTERCEPTOR COHERENTE: Cambio asíncrono en el selector dinámico "TIPO DE META"
      */
-    $(document).on('change', 'select[name^="tp_met"], select[id^="tp_met"]', function() {
+    $(document).on('change', 'select[id^="tp_met"]', function() {
         var $combo_meta = $(this);
-        var id_completo = $combo_meta.attr('id');
-        var prod_id     = id_completo.replace('tp_met', '');
-        var mt_id       = $combo_meta.val();
+        var prod_id = $combo_meta.data('id');
+        var val_meta = $combo_meta.val();
+        alert(val_meta)
 
-        // Captura perimetral de token de seguridad CSRF
         var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
         var csrf_hash = $('[name="csrf_test_name"]').val() || '';
         var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
-
-        // Alerta de diagnóstico 1: Comprobar qué datos envía el navegador
-        console.log("CNS DIAGNÓSTICO -> URL armada:", base + "index.php/programacion/producto/update_datos_tpmeta");
-        console.log("CNS DIAGNÓSTICO -> Datos a enviar: prod_id=" + prod_id + "&id=" + mt_id);
 
         $combo_meta.css({'border-color': '#eab308', 'background-color': '#fef9c3'});
 
@@ -173,153 +181,40 @@ $(document).ready(function() {
             url: base + "index.php/programacion/producto/update_datos_tpmeta",
             type: "POST",
             dataType: 'json',
-            data: "prod_id=" + prod_id + "&id=" + mt_id + token_seguridad,
+            // 🛠️ AJUSTADO: Envío por Query String crudo serializado
+            data: "prod_id=" + prod_id + "&id=" + val_meta + token_seguridad,
             success: function(response) {
-                // Alerta de diagnóstico 2: Imprimir en consola todo lo que responde el servidor si tiene éxito
-                console.log("CNS DIAGNÓSTICO -> Servidor respondió éxito. JSON recibido:", response);
-
                 if (response.respuesta == 'correcto') {
-                    $combo_meta.css({'border-color': '#cbd5e1', 'background-color': '#ffffff'});
-                    $('#meta' + prod_id).val(response.producto['prod_meta']);
-                    
-                    if (response.producto['mt_id'] == 1 || response.producto['mt_id'] == 5) { 
-                        $('#meta' + prod_id).prop('disabled', false).css('background-color', '#ffffff');
-                        if (typeof alertify !== "undefined") {
-                            var tipo_txt = (response.producto['mt_id'] == 1) ? "Meta Recurrente" : "Trimestre Recurrente";
-                            alertify.log(tipo_txt + ": Meses bloqueados a 100.00");
-                        }
+                    // Éxito: Retorna al color verde agua del SIIPLAS
+                    $combo_meta.css({'border-color': '#cbd5e1', 'background-color': '#e3fcf8'});
 
-                        for (var i = 1; i <= 12; i++) {
-                            var $m_input = $('#m' + i + prod_id);
-                            if ($m_input.length) {
-                                $m_input.val(response.producto['m' + i])
-                                        .prop('disabled', true)
-                                        .css('background-color', '#f1f5f9');
-                            }
-                        }
-                    }
-                    else {
-                        if (typeof alertify !== "undefined") {
-                            alertify.log("Mensualizado Manual: Digitación libre habilitada.");
-                        }
-
-                        $('#meta' + prod_id).prop('disabled', true).css('background-color', '#ffffff');
-
-                        for (var i = 1; i <= 12; i++) {
-                            var $m_input = $('#m' + i + prod_id);
-                            if ($m_input.length) {
-                                $m_input.val(response.producto['m' + i])
-                                        .prop('disabled', false)
-                                        .css('background-color', '#e5fde5');
-                            }
-                        }
+                    // Si tu backend recalculó la meta global, la refresca en pantalla
+                    if (response.update_meta !== undefined) {
+                        $("#meta" + prod_id).val(response.update_meta);
                     }
 
+                    // Revalida de forma inmediata la ecuación mensual de la fila
                     if (typeof validar_coincidencia_meta_total === "function") {
                         validar_coincidencia_meta_total(prod_id);
                     }
 
-                    if (typeof alertify !== "undefined") alertify.success("✔ Distribución física asentada en Postgres.");
+                    if (typeof alertify !== "undefined") alertify.success("✔ Distribución de meta procesada.");
                 } else {
-                    // 🌟 ALERTA DE ERROR DE NEGOCIO: Si el controlador responde pero con un mensaje de error controlado
-                    alert("🚨 RESPUESTA DEL CONTROLADOR PHP:\n\n" + response.message);
-                    $combo_meta.css({'border-color': '#ef4444', 'background-color': '#ffeeec'});
+                    $combo_meta.css({'border-color': '#ef4444', 'background-color': '#fef2f2'});
+                    if (typeof alertify !== "undefined") alertify.error("ERROR AL GUARDAR TIPO DE META");
                 }
             },
-            // 🛠️ REPARADO: Se inyectan parámetros forenses (xhr, status, error) para capturar el desplome de red
-            error: function(xhr, textStatus, errorThrown) {
-                $combo_meta.css({'border-color': '#ef4444', 'background-color': '#ffeeec'});
-                
-                // 🌟 ALERTA FORENSE MÁSTER: Captura el error crudo de Apache (Ej: Error 500, Error 404)
-                var mensaje_alerta = "❌ FALLA CRÍTICA DE COMUNICACIÓN (APACHE / PHP)\n\n" +
-                                     "• Estado HTTP: " + xhr.status + " (" + errorThrown + ")\n" +
-                                     "• Estado Técnico: " + textStatus + "\n\n" +
-                                     "Presiona F12 -> pestaña 'Console' para ver el volcado de error completo del servidor.";
-                
-                alert(mensaje_alerta);
-
-                // Volcado forense en la consola del navegador para inspeccionar la línea de PHP rota
-                console.error("CNS DETALLE CRUDO DEL ERROR ->", errorThrown);
-                console.error("CNS TEXTO DEVUELTO POR EL SERVIDOR (HTML de error de CodeIgniter) ->\n", xhr.responseText);
-
-                if (typeof alertify !== "undefined") {
-                    alertify.error("❌ Error crítico de comunicación de red.");
-                }
+            error: function() {
+                $combo_meta.css({'border-color': '#ef4444', 'background-color': '#fef2f2'});
+                if (typeof alertify !== "undefined") alertify.error("❌ Error de comunicación en tipo de meta.");
             }
         });
     });
-
-
-
-    //// sumatoria de meses a la meta (Absoluto)
-    function calcular_sumatoria_meses_a_meta(prod_id) {
-        var suma = 0;
-        for (var i = 1; i <= 12; i++) {
-            var val = parseFloat($('#m' + i + '_' + prod_id).val());
-            if (!isNaN(val)) suma += val;
-        }
-        $('#meta' + prod_id).val(suma.toFixed(2));
-    }
-
-
-    function validar_coincidencia_meta_total(prod_id) {
-        // 1. Recuperamos el valor de la meta global definida en la pantalla
-        var meta_definida = parseFloat($('#meta' + prod_id).val());
-        if (isNaN(meta_definida)) meta_definida = 0;
-
-        // 2. Ejecutamos el bucle matemático acumulador de Enero a Diciembre
-        var suma_total_meses = 0;
-        for (var i = 1; i <= 12; i++) {
-            // 🛠️ COMPATIBILIDAD ESTRICTA: Mapea directamente a id="m145", id="m245"... sin guiones intermedios
-            var $m_celda = $('#m' + i + prod_id);
-            
-            var v_mes = parseFloat($m_celda.val());
-            if (!isNaN(v_mes)) {
-                suma_total_meses += v_mes;
-            }
-        }
-
-        // 3. COMPARACIÓN CON TOLERANCIA DECIMAL CONTABLE
-        // Usamos Math.abs para mitigar variaciones ínfimas de centavos en coma flotante
-        if (Math.abs(suma_total_meses - meta_definida) < 0.02) {
-            // --- 🌟 CUADRE PERFECTO ---
-            // Saca la alerta visual de peligro y restablece el fondo normal limpio
-            $('#fila_prod_' + prod_id).css('background-color', 'transparent');
-            $('#meta' + prod_id).css({
-                'border-color': '#cbd5e1', 
-                'background-color': '#ffffff',
-                'color': 'blue'
-            });
-        } else {
-            // --- 🚨 DESCUADRE OPERATIVO ---
-            // Alerta al analista pintando la caja de la meta en un rosa suave de advertencia
-            $('#meta' + prod_id).css({
-                'border-color': '#ef4444', 
-                'background-color': '#fef2f2',
-                'color': '#b91c1c'
-            });
-        }
-    }
-
-
-    $(document).on('input', '.auto-save-field', function() {
-        var $el = $(this);
-        clearTimeout(timeout_maestro);
-        timeout_maestro = setTimeout(function() {
-            enviar_datos_maestro_caliente($el);
-        }, 400); 
-    });
-
-    $(document).on('change', '.auto-save-field', function() {
-        enviar_datos_maestro_caliente($(this));
-    });
-
 
     /**
      * INTERCEPTOR EXTRA: Auto-guardado asíncrono para las casillas de los 12 meses (Enero a Diciembre)
      */
     $(document).on('input', '.auto-save-month', function() {
-
         var $input = $(this);
         clearTimeout(timeout_mensual);
         
@@ -345,7 +240,6 @@ $(document).ready(function() {
                 dataType: 'json',
                 data: "prod_id=" + prod_id + "&m_id=" + mes_id + "&pg_fis=" + pg_fis + token_seguridad,
                 success: function(res) {
-                   
                     if (res.status === 'success' || res.respuesta === 'correcto') {
                         $input.css({'border-color': '#cbd5e1', 'background-color': '#e5fde5'});
                         
@@ -390,9 +284,7 @@ $(document).ready(function() {
 
 });
 
-
 function validar_coincidencia_meta_total(prod_id) {
- //   alert('hola')
     var meta_definida = parseFloat($('#meta' + prod_id).val());
     if (isNaN(meta_definida)) meta_definida = 0;
 
@@ -432,51 +324,14 @@ function enviar_datos_maestro_caliente($elemento) {
     // Feedback visual preventivo (Amarillo de procesamiento)
     $elemento.css({'border-color': '#eab308', 'background-color': '#fef9c3'});
 
-    var campo_db = campo;
-    if (campo == 'prod_form4')  campo_db = 'prod_producto';
-    if (campo == 'prod_res')    campo_db = 'prod_resultado';
-    if (campo == 'prod_uni')    campo_db = 'prod_unidades';
-
     $.ajax({
         type: "POST",
-        url: base + "index.php/programacion/producto/guardar_campo_form4_en_caliente",
-        data: "prod_id=" + prod_id + "&campo=" + campo_db + "&valor=" + encodeURIComponent(valor) + token_seguridad,
+        url: base + "index.php/prog/componente/guardar_campo_form4_en_caliente",
+        data: "prod_id=" + prod_id + "&campo=" + campo + "&valor=" + encodeURIComponent(valor) + token_seguridad,
         dataType: "json",
         success: function(res) {
-            if (res.status === 'success' || res.respuesta === 'correcto') {
+            if (res.status === 'success') {
                 $elemento.css({'border-color': '#cbd5e1', 'background-color': '#ffffff'});
-
-                // 🌟 REPARACIÓN MAESTRA EN VIVO: Si alteraron la meta global, repinta el cronograma
-                if (campo === "prod_meta" || campo === "meta") {
-                    var valor_meta = parseFloat(valor);
-                    if (isNaN(valor_meta)) valor_meta = 0;
-
-                    // Recuperamos el tipo de indicador y meta de la fila actual para aplicar la regla
-                    var indi_id = $('#indi_id' + prod_id).val();
-                    var mt_id   = $('#tp_met' + prod_id).find('select').val();
-
-                    if (indi_id == 2) { // Solo si es indicador Relativo (%)
-                        if (mt_id == 1) {
-                            // --- 🌟 REPINTADO RECURRENTE: Clona el valor en los 12 meses en vivo ---
-                            for (var i = 1; i <= 12; i++) {
-                                $('#m' + i + prod_id).val(valor_meta.toFixed(2));
-                            }
-                        } 
-                        else if (mt_id == 5) {
-                            // --- 🌟 REPINTADO TRIMESTRAL: Clona solo en Marzo, Junio, Septiembre y Diciembre ---
-                            for (var i = 1; i <= 12; i++) {
-                                var monto_trim = (i == 3 || i == 6 || i == 9 || i == 12) ? valor_meta : 0;
-                                $('#m' + i + prod_id).val(monto_trim.toFixed(2));
-                            }
-                        }
-                    }
-                }
-
-                // Revalida de forma reactiva los colores de consistencia contable
-                if (typeof validar_coincidencia_meta_total === "function") {
-                    validar_coincidencia_meta_total(prod_id);
-                }
-
             } else {
                 $elemento.css({'border-color': '#ef4444', 'background-color': '#fef2f2'});
                 if (typeof alertify !== "undefined") alertify.error("🚨 Error: " + res.message);
@@ -488,7 +343,21 @@ function enviar_datos_maestro_caliente($elemento) {
     });
 }
 
+/**
+ * Inserción unitaria directa de lotes automatizados (Recurrentes/Trimestrales)
+ */
+function sincronizar_mes_directo(prod_id, mes_id, valor) {
+    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+    var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
 
+    $.ajax({
+        type: "POST",
+        url: base + "index.php/programacion/producto/guardar_temporalidad_mes_en_caliente",
+        data: "prod_id=" + prod_id + "&m_id=" + mes_id + "&pg_fis=" + valor + token_seguridad,
+        dataType: "json"
+    });
+}
 
 /**
  * Validación nativa por Expresión Regular: Solo números enteros o decimales con punto
@@ -519,270 +388,23 @@ function numerosDecimales(evt) {
     return true;
 }
 
-    /// =============== Modal Subir Archivo Actividades form 4
-    $(document).on('change', '#archivo', function() {
-        // 🛠️ REPARADO: Se remueven las dobles barras inversas fijas de escape de PHP
-        var fileName = $(this).val().split('\\').pop(); 
-        if (fileName) {
-            $('.file-name-display').val(fileName);
-        }
-    });
-
-    /// Actividades
-    $(document).on('click', '#btn_subir', function(e) {
-        e.preventDefault();
-        $('#mensaje').html(''); 
-
-        // Validación preventiva en el cliente antes de consumir canal de red
-        if ($('#archivo').val() == '') {
-            $('#mensaje').html('<div class="alert alert-warning" style="margin-bottom:0;"><i class="fa fa-exclamation-triangle"></i> Por favor, seleccione un archivo Excel válido.</div>');
-            if (typeof alertify !== "undefined") {
-                alertify.error("⚠️ Restricción: No se seleccionó ninguna plantilla .XLSX");
-            }
-            return false;
-        }
-
-        var form = $('#form_subir_actividades')[0];
-        var data_multipart = new FormData(form);
-        var $btn = $(this);
-
-        // Bloquear interfaz de usuario (UI) e inyectar cargador animado institucional (Loader)
-        $btn.prop('disabled', true).html('<i class="fa fa-refresh fa-spin"></i> PROCESANDO MATRIZ POA EN POSTGRES...');
-        $('#loads').show();
-
-        // Captura perimetral automática del Token CSRF por si está activo en la CNS
-        var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
-        var csrf_hash = $('[name="csrf_test_name"]').val() || '';
-        if (csrf_name !== '') {
-            data_multipart.append(csrf_name, csrf_hash);
-        }
-
-        $.ajax({
-            type: "POST",
-            url: $('#form_subir_actividades').attr('action'),
-            data: data_multipart,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                var res;
-                try {
-                    res = (typeof response === 'object') ? response : JSON.parse(response);
-                } catch (err) {
-                    console.error("Error parseando JSON:", response);
-                    $('#mensaje').html('<div class="alert alert-danger" style="margin-bottom:0;"><b>❌ Error de Transacción:</b> La respuesta de CodeIgniter devolvió un buffer de texto corrupto o PHP agotó su memoria.</div>');
-                    $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR ACCIÓN');
-                    $('#loads').hide();
-                    return;
-                }
-
-                // Evalúa el éxito transaccional unificado para el SIIPLAS v2.0
-                if (res.respuesta === 'correcto' || res.status === 'success') {
-                    var mensaje_exito = res.mensaje || res.msj || "Registros de actividades migrados exitosamente.";
-                    var conteo_filas  = res.filas_procesadas || res.conteo || "0";
-
-                    // Construcción geométrica limpia del banner de auditoría aprobada
-                    var html_success = `
-                        <div class="alert alert-success text-center" style="border-left: 5px solid #2e7d32; background:#f0fdf4; color:#16a34a; padding:15px; margin-bottom:0;">
-                            <i class="fa fa-check-circle fa-3x" style="margin-bottom:10px;"></i>
-                            <h4 style="font-weight:bold; margin:0 0 5px 0; color:#15803d;">¡MIGRACIÓN COMPLETADA CON ÉXITO!</h4>
-                            <p style="font-size: 12.5px; color:#166534; font-weight:500;">${mensaje_exito}</p>
-                            <div style="margin: 10px 0;">
-                                <span class="label label-success" style="font-size: 16px; padding: 4px 12px; font-weight:bold; background:#16a34a;">${conteo_filas}</span>
-                            </div>
-                            <p style="margin:0;"><small class="text-muted">Actividades y metas distribuidas en la base de datos de productos.</small></p>
-                        </div>`;
-
-                    $('#mensaje').html(html_success);
-                    $('#loads').hide();
-                    $btn.hide(); 
-
-                    if (typeof alertify !== "undefined") {
-                        alertify.success("✔ Plantilla procesada correctamente.");
-                    }
-
-                    // Temporizador inteligente multi-rol para recargar la grilla activa de la CNS
-                    setTimeout(function() {
-                        $('#modal_importar').modal("hide");
-                        $('.modal-backdrop').remove();
-                        $('body').removeClass('modal-open').css('padding-right', '');
-
-                        var combo_admin = $('#dist_id').val();
-                        if (combo_admin !== undefined && combo_admin !== "" && combo_admin !== "0") {
-                            // Si es Administrador Nacional, fuerza el change para recargar la regional consultada
-                            $("#dist_id").trigger("change");
-                        } else {
-                            // Si es un Operador de Unidad Regional, usa la función reactiva o recarga
-                            if (typeof forzar_refresco_grilla_siiplas_directo === "function") {
-                                var dist_id_oculto = $('input[name="dist_id"]').val() || 0;
-                                forzar_refresco_grilla_siiplas_directo(dist_id_oculto);
-                            } else {
-                                location.reload(); 
-                            }
-                        }
-                    }, 2500);
-
-                } else {
-                    // MÓDULO DE EXTRACTOS DE ERRORES DE CONSISTENCIA DE CELDAS
-                    var mensaje_error = res.mensaje || res.msj || "El archivo contiene celdas o tipados inválidos.";
-                    var errorMsg = '<strong style="font-size:12px; color:#b91c1c;"><i class="fa fa-times-circle"></i> SE DETECTARON INCONSISTENCIAS EN LA PLANILLA EXCEL:</strong><br><small class="text-muted">' + mensaje_error + '</small>';
-                    
-                    if (res.errors || res.errores) {
-                        var coleccion_errores = res.errors || res.errores;
-                        errorMsg += "<ul style='margin-top:8px; padding-left:15px; text-align:left; font-size:11px;'>";
-                        $.each(coleccion_errores, function(index, value) {
-                            errorMsg += "<li>" + value + "</li>";
-                        });
-                        errorMsg += "</ul>";
-                    }
-                    
-                    $('#mensaje').html('<div class="alert alert-danger" style="margin-bottom:0; background:#fef2f2; border-color:#fee2e2; color:#991b1b;">' + errorMsg + '</div>');
-                    $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR VALIDACIÓN Y SUBIDA');
-                    $('#loads').hide();
-                }
-            },
-            error: function(xhr, textStatus, errorThrown) {
-                console.error("Falla Crítica en canal de carga masiva de Excel. Detalle:", xhr.responseText);
-                $('#loads').hide();
-                $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR MIGRACIÓN');
-                
-                var txt_err = "❌ Error crítico de red (" + xhr.status + "): Imposible comunicar con el cargador de productos.";
-                $('#mensaje').html('<div class="alert alert-danger" style="margin-bottom:0;">' + txt_err + '</div>');
-                
-                if (typeof alertify !== "undefined") {
-                    alertify.error("Falla de red en Apache.");
-                }
-            }
-        });
-    });
 
 
-    /// Requerimientos
-    $(document).on('click', '#btn_subir_f5', function(e) {
-        e.preventDefault();
-        $('#mensaje_f5').html(''); 
 
-        // Validación preventiva en el cliente antes de consumir canal de red
-        if ($('#archivo_f5').val() == '') {
-            $('#mensaje_f5').html('<div class="alert alert-warning" style="margin-bottom:0;"><i class="fa fa-exclamation-triangle"></i> Por favor, seleccione un archivo Excel válido.</div>');
-            if (typeof alertify !== "undefined") {
-                alertify.error("⚠️ Restricción: No se seleccionó ninguna plantilla .XLSX");
-            }
-            return false;
-        }
 
-        var form = $('#form_subir_requerimientos')[0];
-        var data_multipart = new FormData(form);
-        var $btn = $(this);
 
-        // Bloquear interfaz de usuario (UI) e inyectar cargador animado institucional (Loader)
-        $btn.prop('disabled', true).html('<i class="fa fa-refresh fa-spin"></i> PROCESANDO MATRIZ POA EN POSTGRES...');
-        $('#loads_f5').show();
 
-        // Captura perimetral automática del Token CSRF por si está activo en la CNS
-        var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
-        var csrf_hash = $('[name="csrf_test_name"]').val() || '';
-        if (csrf_name !== '') {
-            data_multipart.append(csrf_name, csrf_hash);
-        }
 
-        $.ajax({
-            type: "POST",
-            url: $('#form_subir_requerimientos').attr('action'),
-            data: data_multipart,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                var res;
-                try {
-                    res = (typeof response === 'object') ? response : JSON.parse(response);
-                } catch (err) {
-                    console.error("Error parseando JSON:", response);
-                    $('#mensaje').html('<div class="alert alert-danger" style="margin-bottom:0;"><b>❌ Error de Transacción:</b> La respuesta de CodeIgniter devolvió un buffer de texto corrupto o PHP agotó su memoria.</div>');
-                    $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR ACCIÓN');
-                    $('#loads_f5').hide();
-                    return;
-                }
 
-                // Evalúa el éxito transaccional unificado para el SIIPLAS v2.0
-                if (res.respuesta === 'correcto' || res.status === 'success') {
-                    var mensaje_exito = res.mensaje || res.msj || "Registros de actividades migrados exitosamente.";
-                    var conteo_filas  = res.filas_procesadas || res.conteo || "0";
 
-                    // Construcción geométrica limpia del banner de auditoría aprobada
-                    var html_success = `
-                        <div class="alert alert-success text-center" style="border-left: 5px solid #2e7d32; background:#f0fdf4; color:#16a34a; padding:15px; margin-bottom:0;">
-                            <i class="fa fa-check-circle fa-3x" style="margin-bottom:10px;"></i>
-                            <h4 style="font-weight:bold; margin:0 0 5px 0; color:#15803d;">¡MIGRACIÓN COMPLETADA CON ÉXITO!</h4>
-                            <p style="font-size: 12.5px; color:#166534; font-weight:500;">${mensaje_exito}</p>
-                            <div style="margin: 10px 0;">
-                                <span class="label label-success" style="font-size: 16px; padding: 4px 12px; font-weight:bold; background:#16a34a;">${conteo_filas}</span>
-                            </div>
-                            <p style="margin:0;"><small class="text-muted">Actividades y metas distribuidas en la base de datos de productos.</small></p>
-                        </div>`;
 
-                    $('#mensaje_f5').html(html_success);
-                    $('#loads_f5').hide();
-                    $btn.hide(); 
 
-                    if (typeof alertify !== "undefined") {
-                        alertify.success("✔ Plantilla procesada correctamente.");
-                    }
 
-                    // Temporizador inteligente multi-rol para recargar la grilla activa de la CNS
-                    setTimeout(function() {
-                        $('#modal_importar').modal("hide");
-                        $('.modal-backdrop').remove();
-                        $('body').removeClass('modal-open').css('padding-right', '');
 
-                        var combo_admin = $('#dist_id').val();
-                        if (combo_admin !== undefined && combo_admin !== "" && combo_admin !== "0") {
-                            // Si es Administrador Nacional, fuerza el change para recargar la regional consultada
-                            $("#dist_id").trigger("change");
-                        } else {
-                            // Si es un Operador de Unidad Regional, usa la función reactiva o recarga
-                            if (typeof forzar_refresco_grilla_siiplas_directo === "function") {
-                                var dist_id_oculto = $('input[name="dist_id"]').val() || 0;
-                                forzar_refresco_grilla_siiplas_directo(dist_id_oculto);
-                            } else {
-                                location.reload(); 
-                            }
-                        }
-                    }, 2500);
 
-                } else {
-                    // MÓDULO DE EXTRACTOS DE ERRORES DE CONSISTENCIA DE CELDAS
-                    var mensaje_error = res.mensaje || res.msj || "El archivo contiene celdas o tipados inválidos.";
-                    var errorMsg = '<strong style="font-size:12px; color:#b91c1c;"><i class="fa fa-times-circle"></i> SE DETECTARON INCONSISTENCIAS EN LA PLANILLA EXCEL:</strong><br><small class="text-muted">' + mensaje_error + '</small>';
-                    
-                    if (res.errors || res.errores) {
-                        var coleccion_errores = res.errors || res.errores;
-                        errorMsg += "<ul style='margin-top:8px; padding-left:15px; text-align:left; font-size:11px;'>";
-                        $.each(coleccion_errores, function(index, value) {
-                            errorMsg += "<li>" + value + "</li>";
-                        });
-                        errorMsg += "</ul>";
-                    }
-                    
-                    $('#mensaje_f5').html('<div class="alert alert-danger" style="margin-bottom:0; background:#fef2f2; border-color:#fee2e2; color:#991b1b;">' + errorMsg + '</div>');
-                    $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR VALIDACIÓN Y SUBIDA');
-                    $('#loads_f5').hide();
-                }
-            },
-            error: function(xhr, textStatus, errorThrown) {
-                console.error("Falla Crítica en canal de carga masiva de Excel. Detalle:", xhr.responseText);
-                $('#loads_f5').hide();
-                $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR MIGRACIÓN');
-                
-                var txt_err = "❌ Error crítico de red (" + xhr.status + "): Imposible comunicar con el cargador de productos.";
-                $('#mensaje_f5').html('<div class="alert alert-danger" style="margin-bottom:0;">' + txt_err + '</div>');
-                
-                if (typeof alertify !== "undefined") {
-                    alertify.error("Falla de red en Apache.");
-                }
-            }
-        });
-    });
-/// -------------------------------------------
+
+
+
 
 
 
@@ -800,6 +422,211 @@ function numerosDecimales(evt) {
 
 
 ////============================================================
+
+
+    //// ACTUALIZAR DATOS PARA LLENADOS DEL FORM 4
+    function datos_form4(tp,nro,prod_id,name_input){ /// 
+      //alert(tp+'--'+nro+'--'+prod_id+'--'+name_input)
+      // tp: 0 (datos), 1 (temporalidad)
+      // nro: 1 (cod act)
+      // nro: 2 (actividad)
+      // nro: 3 (resultado)
+      // nro: 4 (unidad res)
+      // nro: 5 (índicador)
+      // nro: 6 (medio de verificacion)
+      // nro: 7 (meta)
+      //alert(tp+'--'+nro+'--'+prod_id+'--'+name_input)
+     if(tp==0){
+      informacion = document.getElementById(name_input+prod_id).value;
+     }
+     else{
+      informacion = document.getElementById('m'+name_input+prod_id).value;
+     }
+      
+//alert(informacion)
+      var url = base+"index.php/programacion/producto/update_datos_form4";
+      var request;
+      if (request) {
+          request.abort();
+      }
+      request = $.ajax({
+          url: url,
+          type: "POST",
+          dataType: 'json',
+          data: "prod_id="+prod_id+"&nro="+nro+"&detalle="+informacion+"&name_input="+name_input+"&tp="+tp
+      });
+
+      request.done(function (response, textStatus, jqXHR) {
+
+      if (response.respuesta == 'correcto') {
+          //document.getElementById(name_input+prod_id).value = response.update_informacion;
+          document.getElementById('meta'+prod_id).value = response.update_meta;
+      }
+      else{
+          alertify.error("ERROR AL RECUPERAR INFORMACION");
+      }
+
+      });
+    }
+
+
+
+/*function select_uresp_acp_indi(tp, id, prod_id){ 
+        var url = base + "index.php/programacion/producto/update_datos_form4_uresp";
+        
+        // Bloque visual de procesamiento sutil (Color amarillo temporal)
+        var selector_elemento = "";
+        if(tp == 1) selector_elemento = "#or_id" + prod_id;
+        if(tp == 2) selector_elemento = "#u_resp" + prod_id;
+        if(tp == 3) selector_elemento = "#indi_id" + prod_id;
+        if(selector_elemento !== "") $(selector_elemento).css({'border-color': '#eab308', 'background-color': '#fef9c3'});
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: 'json',
+            data: { prod_id: prod_id, id: id, tp: tp },
+            success: function (response) {
+                if (response.respuesta == 'correcto') {
+                    
+                    // Retornamos colores base del SIIPLAS
+                    if(selector_elemento !== "") $(selector_elemento).css({'border-color': '#cbd5e1', 'background-color': '#ffffff'});
+
+                    if(tp == 3){ // Si alteramos el tipo de indicador
+                        if(id == 1){ /// --- REACCION AUTOMATICA CASO ABSOLUTO ---
+                            document.getElementById("meta" + prod_id).disabled = true;
+                            document.getElementById("tp_met" + prod_id).style.display = 'none';
+                            
+                            // 🌟 SOLUCIÓN AL PROBLEMA: Inyectamos la sumatoria de meses calculada en Postgres directo en pantalla
+                            if (response.update_meta !== undefined) {
+                                $("#meta" + prod_id).val(response.update_meta);
+                            }
+                        }
+                        else{ /// --- CASO RELATIVO ---
+                            document.getElementById("meta" + prod_id).disabled = false;
+                            document.getElementById("tp_met" + prod_id).style.display = 'block';
+                            
+                            if (response.update_meta !== undefined) {
+                                $("#meta" + prod_id).val(response.update_meta);
+                            }
+                        }
+                        
+                        // Sincronizamos dinámicamente los estilos y colores de coincidencia física de la hilera entera
+                        if (typeof validar_coincidencia_meta_total === "function") {
+                            validar_coincidencia_meta_total(prod_id);
+                        }
+                    }
+
+                    if (typeof alertify !== "undefined") alertify.success("Selección procesada correctamente ...");
+                }
+                else {
+                    if (typeof alertify !== "undefined") alertify.error("ERROR AL RECUPERAR INFORMACION");
+                }
+            },
+            error: function() {
+                if (typeof alertify !== "undefined") alertify.error("❌ Error crítico de comunicación con Apache.");
+            }
+        });
+    }
+
+    /**
+     * LÓGICA DE SELECCIÓN DE TIPO DE META (RECURRENTE / TRIMESTRAL)
+     */
+    // function select_tp_meta(id, prod_id){ 
+    //     var url = base + "index.php/programacion/producto/update_datos_tpmeta";
+    //     $("#tp_met" + prod_id).css({'border-color': '#eab308', 'background-color': '#fef9c3'});
+
+    //     $.ajax({
+    //         url: url,
+    //         type: "POST",
+    //         dataType: 'json',
+    //         data: { prod_id: prod_id, id: id },
+    //         success: function (response) {
+    //             if (response.respuesta == 'correcto') {
+    //                 $("#tp_met" + prod_id).css({'border-color': '#cbd5e1', 'background-color': '#ffffff'});
+                    
+    //                 if (typeof validar_coincidencia_meta_total === "function") {
+    //                     validar_coincidencia_meta_total(prod_id);
+    //                 }
+    //                 if (typeof alertify !== "undefined") alertify.success("Selección procesada correctamente ...");
+    //             }
+    //             else {
+    //                 if (typeof alertify !== "undefined") alertify.error("ERROR AL RECUPERAR INFORMACION");
+    //             }
+    //         },
+    //         error: function() {
+    //             if (typeof alertify !== "undefined") alertify.error("❌ Error de comunicación de temporalidad.");
+    //         }
+    //     });
+    // }
+
+    //// ACTUALIZAR UNIDAD RESPONSABLE (PROGRAMAS BOLSAS)
+    // function select_uresp_acp_indi(tp,id,prod_id){ /// 
+    //   /// tp 1 (acp), 2 (uni resp), 3 (indi id)
+    //  // document.getElementById("meta"+prod_id).disabled = true;
+    //   var url = base+"index.php/programacion/producto/update_datos_form4_uresp";
+    //   var request;
+    //   if (request) {
+    //       request.abort();
+    //   }
+    //   request = $.ajax({
+    //       url: url,
+    //       type: "POST",
+    //       dataType: 'json',
+    //       data: "prod_id="+prod_id+"&id="+id+"&tp="+tp
+    //   });
+
+    //   request.done(function (response, textStatus, jqXHR) {
+
+    //   if (response.respuesta == 'correcto') {
+    //       if(tp==3){ // indi id (tipo de indicador)
+    //         if(id==1){ /// Absoluto
+    //           document.getElementById("meta"+prod_id).disabled = true;
+    //           document.getElementById("tp_met"+prod_id).style.display = 'none';
+    //         }
+    //         else{ /// relativo
+    //           //alert('relativo')
+
+    //           document.getElementById("meta"+prod_id).disabled = false;
+    //           document.getElementById("tp_met"+prod_id).style.display = 'block';
+    //         }
+    //       }
+
+    //       alertify.success("Seleccion procesada correctamente ...");
+    //   }
+    //   else{
+    //       alertify.error("ERROR AL RECUPERAR INFORMACION");
+    //   }
+
+    //   });
+    // }
+
+
+    // /// selecciona tipo de meta
+    // function select_tp_meta(id,prod_id){ /// 
+    //   var url = base+"index.php/programacion/producto/update_datos_tpmeta";
+    //   var request;
+    //   if (request) {
+    //       request.abort();
+    //   }
+    //   request = $.ajax({
+    //       url: url,
+    //       type: "POST",
+    //       dataType: 'json',
+    //       data: "prod_id="+prod_id+"&id="+id
+    //   });
+
+    //   request.done(function (response, textStatus, jqXHR) {
+
+    //   if (response.respuesta == 'correcto') {
+    //       alertify.success("Seleccion procesada correctamente ...");
+    //   }
+    //   else{
+    //       alertify.error("ERROR AL RECUPERAR INFORMACION");
+    //   }
+
+    //   });
+    // }
 
     //// ELIMINAR ACTIVIDAD 2025
   function delete_form4(prod_id){
@@ -844,25 +671,23 @@ function numerosDecimales(evt) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  //// Subir Archivo de Migracionform 4 y form5
+  $(function () {
+    $(".importar_ff").on("click", function (e) {
+      tipo = $(this).attr('name');
+      document.getElementById("tp").value=tipo;
+      if(tipo==1){
+          $('#titulo').html('<h2 class="row-seperator-header"><i class="glyphicon glyphicon-import"></i> <b>IMPORTAR ARCHIVO FORM 4.CSV</b></h2>');
+          $('#img').html('<img src="'+base+'/assets/img/img_migracion/migracion_f4.JPG" style="border-style:solid;border-width:5px;" style="width:10px;">');
+          $('#buton').html('SUBIR ARCHIVO ACTIVIDADES.SCV');
+        }
+        else{
+          $('#titulo').html('<h2 class="row-seperator-header"><i class="glyphicon glyphicon-import"></i> <font color=blue><b> IMPORTAR ARCHIVO DE FORM 5.SCV (GLOBAL)</b></font></h2>');
+          $('#img').html('<img src="'+base+'/assets/img/img_migracion/migracion_form5.JPG" style="border-style:solid;border-width:5px;" style="width:10px;">');
+          $('#buton').html('SUBIR ARCHIVO DE REQUERIMIENTOS.SCV');
+        }
+    });
+  });
 
     /// ---- TIPO DE INDICADOR
     $(document).ready(function () {
@@ -943,7 +768,7 @@ function numerosDecimales(evt) {
 
 
   //// Subir archivo de migracion form4 y 5
-/*  $(function () {
+  $(function () {
     //SUBIR ARCHIVO
     $("#subir_archivo").on("click", function () {
       var $valid = $("#form_subir_sigep").valid();
@@ -966,10 +791,10 @@ function numerosDecimales(evt) {
         });
       }
     });
-  });*/
+  });
 
 
-/*      $(document).ready(function() {
+      $(document).ready(function() {
         pageSetUp();
         $("#obj_id").change(function () {
             $("#obj_id option:selected").each(function () {
@@ -987,11 +812,11 @@ function numerosDecimales(evt) {
               $("#indi_pei").html(data);
             });     
           });
-      })*/;
+      });
 
 
 
-/*      function verif_codigo(){ 
+      function verif_codigo(){ 
         codigo = parseFloat($('[name="cod"]').val()); //// codigo
         com_id=com_id;
         if(!isNaN(codigo) & codigo!=0){
@@ -1016,7 +841,7 @@ function numerosDecimales(evt) {
           alertify.error("REGISTRE CÓDIGO DE ACTIVIDAD");
           $('#but').slideUp();
         }
-      }*/
+      }
 
       //// VERIF META PROGRAMADO
       function verif_suma_programado(){ /// meta
@@ -1081,43 +906,42 @@ function numerosDecimales(evt) {
         }
       }
 
-      // /*------- ELIMINAR SOLO REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
-      // function eliminar_requerimientos_servicio(){
-      //   alertify.confirm("DESEA ELIMINAR TODOS LOS REQUERIMIENTOS DE LA UNIDAD ?", function (a) {
-      //     if (a) {
-      //       window.location=base+"index.php/prog/delete_insumos_servicio/"+com_id;
-      //     } else {
-      //         alertify.error("OPCI\u00D3N CANCELADA");
-      //     }
-      //   });
-      // }
+      /*------- ELIMINAR SOLO REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
+      function eliminar_requerimientos_servicio(){
+        alertify.confirm("DESEA ELIMINAR TODOS LOS REQUERIMIENTOS DE LA UNIDAD ?", function (a) {
+          if (a) {
+            window.location=base+"index.php/prog/delete_insumos_servicio/"+com_id;
+          } else {
+              alertify.error("OPCI\u00D3N CANCELADA");
+          }
+        });
+      }
 
 
-      // /*------- ELIMINAR SOLO ACTIVIDADES Y REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
-      // function eliminar_form4_todos(){
-      //   alertify.confirm("DESEA ELIMINAR ACTIVIDADES ?", function (a) {
-      //     if (a) {
-      //       window.location=base+"index.php/prog/delete_form4/"+com_id;
-      //     } else {
-      //         alertify.error("OPCI\u00D3N CANCELADA");
-      //     }
-      //   });
-      // }
+      /*------- ELIMINAR SOLO ACTIVIDADES Y REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
+      function eliminar_form4_todos(){
+        alertify.confirm("DESEA ELIMINAR ACTIVIDADES ?", function (a) {
+          if (a) {
+            window.location=base+"index.php/prog/delete_form4/"+com_id;
+          } else {
+              alertify.error("OPCI\u00D3N CANCELADA");
+          }
+        });
+      }
 
 
-      // /*------- UPDATE CÓDIGO --------*/
-      // function update_codigo(){
-      //   alertify.confirm("DESEA ACTUALIZAR LOS CÓDIGOS DE ACTIVIDAD ?", function (a) {
-      //     if (a) {
-      //       window.location=base+"index.php/prog/update_codigo/"+com_id;
-      //     } else {
-      //         alertify.error("OPCI\u00D3N CANCELADA");
-      //     }
-      //   });
-      // }
+      /*------- UPDATE CÓDIGO --------*/
+      function update_codigo(){
+        alertify.confirm("DESEA ACTUALIZAR LOS CÓDIGOS DE ACTIVIDAD ?", function (a) {
+          if (a) {
+            window.location=base+"index.php/prog/update_codigo/"+com_id;
+          } else {
+              alertify.error("OPCI\u00D3N CANCELADA");
+          }
+        });
+      }
 
 
-    ///// vigente para asignar prioridad
     function doSelectAlert(event,priori,prod_id) {
      //  alert(event+'--'+priori+'--'+prod_id)
         var option = event.srcElement.children[event.srcElement.selectedIndex];
@@ -1152,7 +976,7 @@ function numerosDecimales(evt) {
 
 ////--------------
 
-/*$(function () {
+$(function () {
     const $form = $("#form_nuevo");
     const $btnSubir = $("#subir_ope");
 
@@ -1232,12 +1056,12 @@ function numerosDecimales(evt) {
             }
         });
     });
-});*/
+});
 
 
 ////--------------
   /*---- MODIFICAR FORMULARIO N 4 ---*/
-/*    $(function () {
+    $(function () {
 
         $(".mod_ff").on("click", function (e) {
        
@@ -1404,7 +1228,7 @@ function numerosDecimales(evt) {
                 }
             });
         });
-    });*/
+    });
 
 
 

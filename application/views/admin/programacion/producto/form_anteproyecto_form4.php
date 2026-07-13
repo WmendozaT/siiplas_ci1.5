@@ -21,13 +21,6 @@
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
         <script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
         <meta name="viewport" content="width=device-width">
-        <script type="text/javascript">
-          function abreVentana(PDF){             
-            var direccion;
-            direccion = '' + PDF;  
-            window.open(direccion, "Ver Alineacion POA" , "width=700,height=600,scrollbars=NO") ; 
-          }
-        </script>
         <?php echo $stylo;?>
     </head>
     <body class="">
@@ -405,61 +398,6 @@
         </div>
     </div>
 
-
-    <!---- MODAL MIGRAR PLANTILLA ---->
-    <!-- <div class="modal fade" id="modal_importar_ff" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-      <div class="modal-dialog" id="mdialTamanio2">
-        <div class="modal-content">
-          <div class="modal-header">
-              <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-          </div>
-          <div class="modal-body">
-              <h2><div id="titulo"></div></h2>
-              <section id="widget-grid" class="">
-                <div>
-                  <?php echo $datos_proyecto;?>
-                  <h1> UNIDAD RESPONSABLE : <small><?php echo $componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion']; ?></small></h1>
-                </div>
-              </section>
-              <div class="row">
-                <form action="<?php echo site_url().'/programacion/producto/importar_operaciones_requerimientos'?>" enctype="multipart/form-data" id="form_subir_sigep" name="form_subir_sigep" class="form-horizontal" method="post">
-                  <input type="hidden" name="com_id" value="<?php echo $componente[0]['com_id'];?>">
-                  <input type="hidden" name="tp" id="tp">
-                  <fieldset>
-                    <div class="form-group">
-                      <center><div id="img"></div></center>
-                      <hr>
-                        <p class="alert alert-info">
-                          <i class="fa fa-info"></i> Por favor guardar el archivo (Excel.xls) a extension (.csv) delimitado por (; "Punto y comas"). verificar el archivo .csv para su correcta importaci&oacute;n
-                        </p>
-                    </div>
-                  </fieldset>  
-                
-                  <div class="form-group">
-                    <b>SELECCIONAR ARCHIVO CSV</b>
-                    <div class="input-group">
-                      <span class="input-group-btn">
-                        <span class="btn btn-primary" onclick="$(this).parent().find('input[type=file]').click();">Browse</span>
-                        <input  id="archivo" accept=".csv" name="archivo" onchange="$(this).parent().parent().find('.form-control').html($(this).val().split(/[\\|/]/).pop());" style="display: none;" type="file">
-                        <input name="MAX_FILE_SIZE" type="hidden" value="20000" />
-                      </span>
-                      <span class="form-control"></span>
-                    </div>
-                </div>
-                  
-                  <div>
-                      <button type="button" name="subir_archivo" id="subir_archivo" class="btn btn-success" style="width:100%;"><div id="buton"></div></button><br>
-                      <center><img id="load" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="50" height="50"></center>
-                  </div>
-                </form> 
-              </div>
-            </div>
-        </div>
-      </div>
-    </div> -->
-
-
-
     <!---- MODAL VER REQUERIMIENTOS ---->
     <div class="modal fade" id="modal_ver_form5" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog" id="mdialTamanio3">
@@ -526,5 +464,6 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
         <script src="<?php echo base_url(); ?>mis_js/programacionpoa/form4.js"></script> 
+        <script src="<?php echo base_url(); ?>mis_js/programacionpoa/programacionpoa.js"></script> 
     </body>
 </html>

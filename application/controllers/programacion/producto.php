@@ -38,16 +38,48 @@ class Producto extends CI_Controller {
       }
     }
 
+    //// Actualizar los codigos de Actividades
+    public function update_codigo($form4) {
+        $nro = 0;
+        
+        // Iniciamos un bloque de transacción rápida para acelerar los updates masivos en lote
+        $this->db->trans_start();
+        
+        foreach($form4 as $rowp) {
+            $nro++;
+            $update_data = array(
+                'prod_cod' => $nro,
+                'fecha'    => date('Y-m-d H:i:s') // Marcador de auditoría
+            );
+            
+            $this->db->where('prod_id', $rowp['prod_id']);
+            $this->db->update('_productos', $update_data);
+        }
+        
+        $this->db->trans_complete();
+    }
+
+
   /*------- LISTA DE FORM 4 (a optimizar)----------*/
     public function lista_productos($com_id){
       $data['componente'] = $this->model_componente->get_componente($com_id,$this->gestion);
       $data['stylo']=$this->programacionpoa->estilo_tabla_form4();
 
-      if(count($data['componente'])!=0){
-          $form4=$this->model_producto->lista_form4_x_unidadresponsable($com_id);
+      if (!empty($data['componente']) && count($data['componente']) != 0) {
+          // A. Recuperamos la matriz cruda de actividades registradas actualmente
+            $form4_crudo = $this->model_producto->lista_form4_x_unidadresponsable($com_id);
+            
+            // 🌟 MOTOR AUTOMÁTICO: Re-enumeramos el correlativo prod_cod (1, 2, 3...) en caliente
+            if (!empty($form4_crudo) && count($form4_crudo) > 0) {
+                $this->update_codigo($form4_crudo);
+            }
 
-          $proy_id=$data['componente'][0]['proy_id'];
-          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
+            // B. 🛠️ REPARADO: Volvemos a consultar la lista ya re-ordenada para que la vista reciba el correlativo nuevo
+            $form4 = $this->model_producto->lista_form4_x_unidadresponsable($com_id);
+            
+            // C. Extraemos el proy_id relacional utilizando el índice cero del framework
+            $proy_id = intval($data['componente'][0]['proy_id']);
+            $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
          
           if($data['proyecto'][0]['tp_id']==1){
             $list_oregional=$this->model_objetivoregion->get_unidad_pregional_programado($proy_id);
@@ -55,7 +87,7 @@ class Producto extends CI_Controller {
           }
           else{
             $list_oregional=$this->model_objetivoregion->list_proyecto_oregional($proy_id);
-            $data['datos_proyecto']='<h2>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' - '.$data['proyecto'][0]['abrev'].'  / '.$data['componente'][0]['serv_cod'].' '.$data['componente'][0]['tipo_subactividad'].' '.$data['componente'][0]['serv_descripcion'].'</h2>';
+            $data['datos_proyecto']='<h2>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' - '.$data['proyecto'][0]['abrev'].'  / <b>'.$data['componente'][0]['serv_cod'].' </b>'.$data['componente'][0]['tipo_subactividad'].' '.$data['componente'][0]['serv_descripcion'].'</h2>';
           }
 
           $data['indi'] = $this->model_proyecto->indicador(); /// indicador
@@ -117,13 +149,13 @@ class Producto extends CI_Controller {
 
                   if(count($form4)!=0){
                     $data['titulo'].='
-                    <a href="#" data-toggle="modal" data-target="#modal_importar_ff" class="btn btn-default importar_ff" name="2" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-                      <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO (FORM 5.CSV)</b>
+                    <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
+                      <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO REQUERIMIENTOS.Xls</b>
                     </a>
                     <a href="#" data-toggle="modal" data-target="#modal_ver_form5" class="btn btn-default ver_requerimientos" name="'.$com_id.'" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
                       <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>VER MIS REQUERIMIENTOS</b>
                     </a>
-                    <a href="javascript:abreVentana(\''.site_url("").'/prog/rep_operacion_componente/'.$com_id.'\');" class="btn btn-primary" title="REPORTE FORM. 4"> <img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>REPORTE FORM N 4</a>
+                    <a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$com_id.'\');" class="btn btn-primary" title="REPORTE FORM. 4"> <img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>REPORTE FORM N 4</a>
                     <a onclick="eliminar_form4_todos()" class="btn btn-danger"  title="Eliminar Actividades de la unidad (todos)"><img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 4 (TODOS)</a>
                     <a onclick="eliminar_requerimientos_servicio()" class="btn btn-danger"  title="Eliminar Requerimientos de la unidad (todos)"><img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 5 (TODOS)</a>';
                   }
@@ -295,7 +327,7 @@ class Producto extends CI_Controller {
                                 <span aria-hidden="true">&times;</span>
                             </button>
                             <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
-                                <i class="fa fa-upload text-primary"></i> Importar Consolidado Actividades
+                                <i class="fa fa-upload text-primary"></i> Importar Actividades
                             </h4>
                         </div>
 
@@ -310,12 +342,13 @@ class Producto extends CI_Controller {
 
                             <!-- Vista previa de columnas (Corregido: Concatenación nativa base_url) -->
                             <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                                <div style="color:blue;">CÓDIGO DE UNIDAD: <b style="font-size:14px;">'.$data['componente'][0]['serv_cod'].' </b></div><br>
                                 <img src="' . base_url('assets/img/img_migracion/migracion_form4_unidad.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
                             </div>
 
                             <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
-                            <form action="' . site_url('programacion/componente/valida_migracion_form4_consolidado') . '" method="post" enctype="multipart/form-data" id="form_subir_sigep" autocomplete="off" style="padding:0; background:transparent;">
-                                <input name="proy_id" value="'.$data['componente'][0]['proy_id'].'" type="hidden" > 
+                            <form action="' . site_url('programacion/producto/valida_migracion_form4') . '" method="post" enctype="multipart/form-data" id="form_subir_actividades" autocomplete="off" style="padding:0; background:transparent;">
+                                <input name="com_id" value="'.$data['componente'][0]['com_id'].'" type="hidden" > 
                                 <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
                                     <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
                                     
@@ -352,6 +385,76 @@ class Producto extends CI_Controller {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="modal fade" id="modal_importar_f5" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
+                <div class="modal-dialog" id="dialog_subirr">
+                    <div class="modal-content" style="border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+                        
+                        <!-- CABECERA DEL COMPONENTE -->
+                        <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                            <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                                <i class="fa fa-upload text-primary"></i> Importar Requerimientos GLOBAL
+                            </h4>
+                        </div>
+
+                        <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
+                        <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                            
+                            <!-- Título e Instrucción -->
+                            <div class="text-center" style="margin-bottom: 20px;">
+                                <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Requerimientos Global (.xls, .xlsx)</h5>
+                                <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                            </div>
+
+                            <!-- Vista previa de columnas (Corregido: Concatenación nativa base_url) -->
+                            <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                                <div style="color:blue;">CÓDIGO DE UNIDAD: <b style="font-size:14px;">'.$data['componente'][0]['serv_cod'].' </b></div><br>
+                                <img src="' . base_url('assets/img/img_migracion/migracion_form5.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
+                            </div>
+
+                            <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
+                            <form action="' . site_url('programacion/producto/valida_migracion_form5_consolidado') . '" method="post" enctype="multipart/form-data" id="form_subir_requerimientos" autocomplete="off" style="padding:0; background:transparent;">
+                                <input name="com_id" value="'.$data['componente'][0]['com_id'].'" type="hidden" > 
+                                <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                    
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                                <i class="fa fa-folder-open"></i> Examinar...
+                                            </button>
+                                            
+                                            <input id="archivo_f5" accept=".xlsx, .xls" name="archivo_f5" 
+                                                   onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                                   style="display: none;" type="file" required>
+                                        </span>
+                                        <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                    </div>
+                                </div>
+
+                                <div id="mensaje_f5" style="margin: 10px 0; font-size: 11px;"></div>
+
+                                <!-- Botón de Envío y Validación Masiva -->
+                                <div style="margin-top: 25px;">
+                                    <button type="button" id="btn_subir_f5" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                        <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                    </button>
+                                </div>
+
+                                <!-- Animación Pre-Loader de la Planilla -->
+                                <div id="loads_f5" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                    <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                    <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
             </div>';
 
             $data['tabla']=$tabla;
@@ -365,7 +468,7 @@ class Producto extends CI_Controller {
     }
 
 
-      //// guardar informacion de la Actividad
+    //// guardar informacion de la Actividad
      public function guardar_campo_form4_en_caliente() {
         if ($this->input->is_ajax_request() && $this->input->post()) {
             
@@ -558,159 +661,6 @@ class Producto extends CI_Controller {
     }
 
 
-      /* public function guardar_campo_form4_en_caliente() {
-        // Validamos que sea una petición asíncrona legítima de JQuery
-        if ($this->input->is_ajax_request() && $this->input->post()) {
-            
-            // 1. Captura y sanitización perimetral de variables del SIIPLAS
-            $prod_id    = intval($this->input->post('prod_id'));
-            $campo_raw  = trim($this->input->post('campo'));
-            $valor_raw  = trim($this->input->post('valor'));
-            $this->gestion = intval($this->gestion); // Gestión activa (ej: 2027)
-
-            if ($prod_id <= 0 || empty($campo_raw)) {
-                echo json_encode(array('status' => 'error', 'message' => 'Parámetros inconsistentes o ID de producto inválido.'));
-                return;
-            }
-
-            // 2. DEDUCCIÓN DE CONTEXTO: ¿Es un campo maestro de texto o una celda mensual?
-            // Si el campo empieza con la letra 'm' seguida de un número (ej: m1, m2... m12) es Temporalidad
-            $tp = 0; 
-            $mes_id = 0;
-            if (preg_match('/^m([1-9]|1[0-2])$/', $campo_raw, $coincidencias)) {
-                $tp = 1;          // Conmutador a modo Temporalidad Mensual
-                $mes_id = intval($coincidencias[1]); // Extraemos el ID del mes (1 al 12)
-            }
-
-            // Inicialización limpia de variables de retorno para JQuery
-            $informacion = 0;
-            $sum_meta = 0;
-
-            // Recuperamos el estado del producto antes de operar
-            $producto = $this->model_producto->get_producto_id($prod_id);
-            if (empty($producto)) {
-                echo json_encode(array('status' => 'error', 'message' => 'El producto/actividad no existe en PostgreSQL.'));
-                return;
-            }
-
-            // ==========================================================================
-            // RAMA A: ACTUALIZACIÓN DE CAMPOS MAESTROS DE LA ACTIVIDAD (_productos)
-            // ==========================================================================
-            if ($tp == 0) {
-                
-                // Mapeamos el nombre virtual que viene del JS al nombre físico real de tu tabla DDL
-                $campo = $campo_raw;
-                if ($campo_raw == 'prod_form4')  $campo = 'prod_producto';
-                if ($campo_raw == 'prod_res')    $campo = 'prod_resultado';
-                if ($campo_raw == 'prod_uni')    $campo = 'prod_unidades';
-                if ($campo_raw == 'prod_indi')   $campo = 'prod_indicador';
-                if ($campo_raw == 'prod_mverif') $campo = 'prod_fuente_verificacion';
-                if ($campo_raw == 'meta')        $campo = 'prod_meta';
-
-                // Lista blanca de columnas autorizadas para mitigar inyecciones maliciosas
-                $columnas_autorizadas = array('prod_cod', 'or_id', 'prod_producto', 'prod_resultado', 'uni_resp', 'prod_unidades', 'indi_id', 'prod_indicador', 'prod_fuente_verificacion', 'prod_meta', 'mt_id');
-                if (!in_array($campo, $columnas_autorizadas)) {
-                    echo json_encode(array('status' => 'error', 'message' => 'Columna no autorizada para persistencia.'));
-                    return;
-                }
-
-                // Saneamiento de tipado según el DDL de PostgreSQL
-                if ($campo == 'prod_cod' || $campo == 'or_id' || $campo == 'indi_id' || $campo == 'mt_id') {
-                    $detalle = ($valor_raw === '') ? 0 : intval($valor_raw);
-                } elseif ($campo == 'prod_meta' || $campo == 'uni_resp') {
-                    $detalle = ($valor_raw === '') ? 0.00 : floatval($valor_raw);
-                } else {
-                    $detalle = strtoupper($this->security->xss_clean($valor_raw));
-                }
-
-                // Ejecutamos la actualización directa en tu tabla de productos
-                $update_form4 = array(
-                    $campo   => $detalle,
-                    'num_ip' => $this->input->ip_address(),
-                    'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
-                );
-                
-                $this->db->where('prod_id', $prod_id);
-                $this->db->update('_productos', $update_form4);
-
-                // Recuperamos el valor guardado para confirmación
-                $producto_actualizado = $this->model_producto->get_producto_id($prod_id);
-                $informacion = $producto_actualizado[0][$campo];
-
-                // Conservamos tu regla de negocio: Si el indicador es de tipo absoluto (1), recalculamos meta
-                if ($producto_actualizado[0]['indi_id'] == 1) {
-                    $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $this->gestion);
-                    if (!empty($suma_temp)) {
-                        $sum_meta = round($suma_temp[0]['prog'], 2);
-                    }
-                } else {
-                    $sum_meta = round($producto_actualizado[0]['prod_meta'], 2);
-                }
-            }
-            // ==========================================================================
-            // RAMA B: ACTUALIZACIÓN DE CRONOGRAMA MENSUAL (prod_programado_mensual)
-            // ==========================================================================
-            else { 
-                $detalle = floatval($valor_raw);
-
-                // --- Se conserva tu lógica estricta de borrado preventivo del mes ---
-                $this->db->where('m_id', $mes_id);
-                $this->db->where('prod_id', $prod_id);
-                $this->db->delete('prod_programado_mensual');
-                // --------------------------------------------------------------------
-
-                if ($detalle != 0) {
-                    // --- Inserción limpia del valor físico mensual en tu tabla real ---
-                    $data_to_store = array( 
-                        'prod_id' => $prod_id, 
-                        'm_id'    => $mes_id, 
-                        'pg_fis'  => $detalle,
-                        'pg_fin'  => 0.00, // Inicializado por defecto
-                        'g_id'    => $this->gestion, 
-                    );
-                    $this->db->insert('prod_programado_mensual', $data_to_store);
-                }
-
-                // Recuperamos la temporalidad registrada para feedback
-                $temp_prod = $this->model_producto->get_mes_programado_form4($prod_id, $mes_id);
-                if (!empty($temp_prod)) {
-                    $informacion = $temp_prod[0]['pg_fis'];
-                }
-
-                // 🌟 LÓGICA CORE RESTABLECIDA: Re-cálculo instantáneo de Meta Anual si indi_id == 1
-               // if ($producto[0]['indi_id'] == 1) {
-                    $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $this->gestion);
-                    if (!empty($suma_temp)) {
-                        $sum_meta = round($suma_temp[0]['prog'], 2);
-                    }
-                    
-                    // Actualizamos la cabecera del maestro con la sumatoria física real del lote
-                    $update_tempform4 = array(
-                        'prod_meta' => $sum_meta
-                    );
-                    $this->db->where('prod_id', $prod_id);
-                    $this->db->update('_productos', $update_tempform4);
-                //} else {
-                  //  $sum_meta = round($producto[0]['prod_meta'], 2);
-               // }
-            }
-
-            // 3. RESPUESTA UNIFICADA: Mantiene tus índices originales 'respuesta', 'update_informacion' y 'update_meta'
-            $result = array(
-                'status'             => 'success',
-                'respuesta'          => 'correcto',
-                'update_informacion' => $informacion,
-                'update_meta'        => $sum_meta
-            );
-
-            echo json_encode($result);
-
-        } else {
-            show_404();
-        }
-    }*/
-
-
     //// Valida Guardar Temporalidad form 4
     public function guardar_temporalidad_mes_en_caliente() {
         // Validamos que sea una petición asíncrona legítima de JQuery
@@ -802,7 +752,7 @@ class Producto extends CI_Controller {
 
 
 
-public function update_datos_form4_uresp(){
+    public function update_datos_form4_uresp(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $prod_id = intval($this->security->xss_clean($post['prod_id']));
@@ -869,7 +819,7 @@ public function update_datos_form4_uresp(){
     /*==========================================================================*/
     /*--- MIGRACIÓN CNS: UPDATE TIPO DE META OPERATIVA (RECURRENTE / TRIM) ----*/
     /*==========================================================================*/
- public function update_datos_tpmeta(){
+    public function update_datos_tpmeta(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         
@@ -990,11 +940,442 @@ public function update_datos_form4_uresp(){
 
 
 
+      /// ==== MIGRACION EXCEL DE ACTIVIDADES - Formulario N° 4 / 2027
+      public function valida_migracion_form4() {
+        ini_set('max_execution_time', 300); // 5 minutos
+        ini_set('memory_limit', '512M');    // Aumentar memoria
+
+        $this->load->library('excel'); 
+        $com_id = $this->input->post('com_id');
+        $get_unidad = $this->model_componente->get_componente($com_id, $this->gestion);
+        
+        // Carga de catálogo relacional de validación de los Objetivos Regionales
+        $list_oregional = $this->model_objetivoregion->list_proyecto_oregional($get_unidad[0]['proy_id']);
+
+        if (empty($get_unidad)) {
+            echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información de la Unidad Organizacional. Verifique su sesión.')));
+            return;
+        }
+
+        if (!isset($_FILES['archivo']) || empty($_FILES['archivo']['tmp_name'])) {
+            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
+            return;
+        }
+
+        $archivo = $_FILES['archivo']['tmp_name'];
+        $errores = array();
+        $data_insertar = array();
+
+        try {
+            $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+            $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
+            
+            // OPTIMIZACIÓN DE MEMORIA: Ignoramos estilos gráficos pesados para no colapsar la RAM
+            $lector->setReadDataOnly(true);
+            
+            $phpExcel    = $lector->load($archivo);
+            $hoja        = $phpExcel->getSheet(0);
+            $filasMax    = $hoja->getHighestRow();
+            
+            // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
+            $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+            $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+            $limitePermitido = 22; 
+
+            if ($totalColumnas != $limitePermitido) {
+                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'V').")));
+                return;
+            }
+
+            // --- 2. VALIDACIÓN FILA POR FILA ---
+            for ($i = 2; $i <= $filasMax; $i++) {
+                //$com_id = 0;
+                $or_id  = 0;
+
+                // Extraer valores básicos de la fila activa
+                $cod_uresp          = trim($hoja->getCell('A' . $i)->getValue());
+                $cod_acp            = trim($hoja->getCell('B' . $i)->getValue());
+                $cod_ope            = trim($hoja->getCell('C' . $i)->getValue());
+                $cod_act            = trim($hoja->getCell('D' . $i)->getValue());
+
+                $actividad          = trim($hoja->getCell('E' . $i)->getValue());
+                $resultado          = trim($hoja->getCell('F' . $i)->getValue());
+                $unidad_responsable = trim($hoja->getCell('G' . $i)->getValue());
+                $indicador          = trim($hoja->getCell('H' . $i)->getValue());
+                $meta               = $hoja->getCell('I' . $i)->getValue();
+                $medioverificacion  = trim($hoja->getCell('V' . $i)->getValue());
+
+                // 🌟 BLINDAJE ANTIFALLA: Filtra y salta las filas vacías inferiores del Excel
+                if (empty($cod_uresp) && empty($actividad) && (empty($meta) || floatval($meta) == 0)) {
+                    continue;
+                }
+
+                if (!empty($cod_uresp)) {
+                    if (strlen($cod_uresp) != 4) {
+                        $errores[] = "Fila $i: El código de 'UNIDAD RESPONSABLE' ($cod_uresp) debe tener exactamente 4 caracteres.";
+                    } 
+                    else {
+                      if($get_unidad[0]['serv_cod']!=$cod_uresp){
+                        $errores[] = "Fila $i: Error en la 'UNIDAD RESPONSABLE' ($cod_uresp). debe exluir del archivo a migrar, ya que corresponde a otra Unidad Responsable.";
+                      }
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO DE UNIDAD RESPONSABLE' es obligatoria.";
+                }
+
+                // Verificando códigos ACP y Operación
+                if (!empty($cod_acp) && is_numeric($cod_acp) && !empty($cod_ope) && is_numeric($cod_ope)) {
+                    if (count($list_oregional) != 0) {
+                        $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
+                        if (count($get_acc) != 0) {
+                            $or_id = $get_acc[0]['or_id'];
+                        } else {
+                            $errores[] = "Fila $i: La combinación ACP ($cod_acp) y OPERACIÓN ($cod_ope) no guarda relación con los Objetivos Regionales.";
+                        }
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO ACP Y OPERACION' son obligatorios y deben ser numéricos.";
+                }
+
+                if (!is_numeric($meta) || floatval($meta) <= 0) {
+                    $errores[] = "Fila $i: La 'META' debe ser un número válido mayor a cero.";
+                }
+
+                // Validación C: Cronograma Mensualizado Saneado (J al U)
+                $suma_meses = 0;
+                $columnas_meses = array('J','K','L','M','N','O','P','Q','R','S','T','U');
+                $meses_valores = array();
+                $m_index = 1;
+                
+                foreach ($columnas_meses as $col) {
+                    $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                    $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+
+                    if (!is_numeric($val_mes)) {
+                        $errores[] = "Fila $i: Valor no numérico detectado en el mes de la columna '$col'.";
+                        break;
+                    }
+                    $monto_mes = floatval($val_mes);
+                    $suma_meses += $monto_mes;
+                    $meses_valores[$m_index] = $monto_mes; // Guardamos en el array indexado temporal de la fila
+                    $m_index++;
+                }
+
+                // Validación de Coincidencia Física Matemática
+                if (abs($suma_meses - floatval($meta)) > 0.01) {
+                    $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con la meta ($meta).";
+                }
+
+                if (empty($errores)) {
+                    // 🌟 SOLUCIÓN RAÍZ: Agrupamos el Maestro y su Detalle mensual correspondiente en paralelo
+                    $data_insertar[] = array(
+                        'maestro' => array(
+                            'com_id'                   => $com_id,
+                            'prod_cod'                 => intval($cod_act),
+                            'prod_producto'            => strtoupper($actividad),
+                            'prod_resultado'           => strtoupper($resultado),
+                            'indi_id'                  => 1,
+                            'prod_indicador'           => strtoupper($indicador),
+                            'prod_fuente_verificacion' => strtoupper($medioverificacion), 
+                            'prod_linea_base'          => 0,
+                            'prod_meta'                => floatval($meta),
+                            'uni_resp'                 => 0, 
+                            'prod_unidades'            => strtoupper($unidad_responsable),
+                            'acc_id'                   => 0,
+                            'prod_ppto'                => 1,
+                            'fecha'                    => date("d/m/Y H:i:s"),
+                            'or_id'                    => $or_id,
+                            'fun_id'                   => intval($this->session->userdata('fun_id')),
+                            'num_ip'                   => $this->input->ip_address(), 
+                            'nom_ip'                   => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                        ),
+                        'meses_lote' => $meses_valores // Queda amarrado en paralelo
+                    );
+                }
+                
+                if (count($errores) > 15) break; 
+            } // Fin del bucle general FOR por fila
+
+            // ==========================================================================
+            // --- 3. CONSOLIDACIÓN FINAL TRANSACCIONAL (POSTGRESQL) --------------------
+            // ==========================================================================
+            if (ob_get_length()) ob_clean(); 
+            header('Content-Type: application/json');
+
+            if (empty($errores) && !empty($data_insertar)) {
+                $this->db->trans_start(); // Iniciar transacción atómica en Postgres
+                
+                foreach ($data_insertar as $fila) {
+                    // Inserción A: Registro maestro del Producto en tu tabla '_productos'
+                    $this->db->insert('_productos', $fila['maestro']);
+                    $prod_id = $this->db->insert_id(); // Capturamos el ID de la base de datos
+                    
+                    /*------------ REGISTRO DE LA TEMPORALIDAD EN TU TABLA REAL ---------*/
+                    for ($m = 1; $m <= 12; $m++) {
+                        $pfin = $this->security->xss_clean($fila['meses_lote'][$m]);
+                        
+                        if ($pfin != 0) {
+                            $data_to_store4 = array( 
+                                'prod_id' => $prod_id,
+                                'm_id'    => $m, 
+                                'pg_fis'  => $pfin, 
+                                'g_id'    => intval($this->gestion), 
+                            );
+                            $this->db->insert('prod_programado_mensual', $data_to_store4);
+                        }
+                    }
+                    /*-------------------------------------------------------------------*/
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos (Transacción fallida en Postgres).')));
+                } else {
+                    echo json_encode(array(
+                        'status' => 'success', 
+                        'msj'    => 'Importación finalizada con éxito.',
+                        'conteo' => count($data_insertar) 
+                    ));
+                }
+            } else {
+                echo json_encode(array(
+                    'status' => 'error', 
+                    'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no tiene datos válidos para procesar.')
+                ));
+            }
+            exit; 
+
+        } catch (Exception $e) {
+            if (ob_get_length()) ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
+        }
+    }
 
 
 
+    /// ==== MIGRACION EXCEL DE REQUERIMIENTOS - Formulario N° 5 / 2027
+      public function valida_migracion_form5_consolidado() {
+        ini_set('max_execution_time', 300); // 5 minutos
+        ini_set('memory_limit', '512M');    // Aumentar memoria
+
+        $this->load->library('excel'); 
+        $com_id = $this->input->post('com_id');
+        $get_unidad = $this->model_componente->get_componente($com_id, $this->gestion);
+        
+        // Carga de catálogo relacional de validación de los Objetivos Regionales
+        $list_oregional = $this->model_objetivoregion->list_proyecto_oregional($get_unidad[0]['proy_id']);
+        $form4 = $this->model_producto->lista_form4_x_unidadresponsable($com_id);
+
+        if (empty($get_unidad)) {
+            echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información de la Unidad Organizacional. Verifique su sesión.')));
+            return;
+        }
+
+        if (!isset($_FILES['archivo']) || empty($_FILES['archivo']['tmp_name'])) {
+            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
+            return;
+        }
+
+        $archivo = $_FILES['archivo']['tmp_name'];
+        $errores = array();
+        $data_insertar = array();
+
+        try {
+            $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+            $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
+            
+            // OPTIMIZACIÓN DE MEMORIA: Ignoramos estilos gráficos pesados para no colapsar la RAM
+            $lector->setReadDataOnly(true);
+            
+            $phpExcel    = $lector->load($archivo);
+            $hoja        = $phpExcel->getSheet(0);
+            $filasMax    = $hoja->getHighestRow();
+            
+            // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
+            $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+            $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+            $limitePermitido = 20; 
+
+            if ($totalColumnas != $limitePermitido) {
+                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'V').")));
+                return;
+            }
+
+            // --- 2. VALIDACIÓN FILA POR FILA ---
+            for ($i = 2; $i <= $filasMax; $i++) {
+                // Extraer valores básicos de la fila activa
+                $cod_act          = trim($hoja->getCell('A' . $i)->getValue());
+                $partida            = trim($hoja->getCell('B' . $i)->getValue());
+                $requerimiento            = trim($hoja->getCell('C' . $i)->getValue());
+                $unidad_medida            = trim($hoja->getCell('D' . $i)->getValue());
+                $cantidad          = trim($hoja->getCell('E' . $i)->getValue());
+                $precio          = trim($hoja->getCell('F' . $i)->getValue());
+                $costo_total = trim($hoja->getCell('G' . $i)->getValue());
+                $observacion  = trim($hoja->getCell('T' . $i)->getValue());
+
+                // 🌟 BLINDAJE ANTIFALLA: Filtra y salta las filas vacías inferiores del Excel
+                if (empty($cod_act) && empty($partida) && (empty($precio) || floatval($costo_total) == 0)) {
+                    continue;
+                }
+
+                if($total!=($cantidad*$precio)){
+                  $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
+                }
+
+                if (!empty($cod_act)) {
+                    $get_form4=$this->model_producto->verif_form4_vigente_para_alineacion($com_id,$cod_act);
+                    if(count($get_form4)==1){
+                      $prod_id=$get_form4[0]['prod_id'];
+                    }
+                    else{
+                      $errores[] = "Fila $i: sin Actividad disponible para su alineacion, revisar el codigo de Actividad.";
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
+                }
 
 
+
+                if (!empty($partida)) {
+                    if (strlen($partida) != 5) {
+                        $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres (tiene " . strlen($partida) . ").";
+                    }
+                    else{
+                      $get_partida=$this->model_partidas->dato_par_codigo($partida);
+                      if(count($get_partida)==1){
+                        $par_id=$get_partida[0]['par_id'];
+                      }
+                      else{
+                        $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe en nuestra Base de Datos.";
+                      }
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
+                }
+
+
+                if (!is_numeric($precio)) {
+                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' debe ser un valor numérico válido.";
+                } else {
+                    $precio_float = floatval($precio);
+
+                    if (floor($precio_float * 100) != ($precio_float * 100)) {
+                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio) excede el límite permitido. Solo se aceptan hasta 2 decimales (Ej: 10.55).";
+                    }
+                }
+
+
+                // Validación C: Cronograma Mensualizado Saneado (J al U)
+                $suma_meses = 0;
+                $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
+                
+                foreach ($columnas_meses as $col) {
+                  // Se evalúa la ecuación mensual directa en caliente
+                  $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                  
+                  // Si la celda con fórmula o vacía no tiene valor, la homologamos a 0 puros
+                  $val_mes = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+
+                  if (!is_numeric($val_mes)) {
+                      $errores[] = "Fila $i: Valor no numérico detectado en el mes de la columna '$col'.";
+                      break;
+                  }
+                  $suma_meses += floatval($val_mes);
+                }
+
+                // Validación de Coincidencia Física Matemática
+                if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
+                    $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con el TOTAL ($total).";
+                }
+
+                if (empty($errores)) {
+                    // 🌟 SOLUCIÓN RAÍZ: Agrupamos el Maestro y su Detalle mensual correspondiente en paralelo
+                    $data_insertar[] = array(
+                        'maestro' => array(
+                            'ins_codigo'   => $this->session->userdata("name").'/REQ/'.$this->gestion,
+                            'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
+                            'par_id'   => $get_partida[0]['par_id'],
+                            'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
+                            'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
+                            'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
+                            'ins_costo_unitario'      => round(floatval($precio), 2),
+                            //'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
+                            'ins_costo_total'     => $total,
+                            'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
+                       
+                            'fun_id' => $this->fun_id, /// Funcionario
+                            'aper_id' => $componente[0]['aper_id'], /// aper id
+                            'com_id' => $componente[0]['com_id'], /// com id 
+                            'form4_cod' => $cod_act, /// cod act
+                            'ins_mod' => 1, /// mod
+                            'num_ip' => $this->input->ip_address(), 
+                            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                        ),
+                        'meses_lote' => $meses_valores // Queda amarrado en paralelo
+                    );
+                }
+                
+                if (count($errores) > 15) break; 
+            } // Fin del bucle general FOR por fila
+
+            // ==========================================================================
+            // --- 3. CONSOLIDACIÓN FINAL TRANSACCIONAL (POSTGRESQL) --------------------
+            // ==========================================================================
+            if (ob_get_length()) ob_clean(); 
+            header('Content-Type: application/json');
+
+            if (empty($errores) && !empty($data_insertar)) {
+                $this->db->trans_start(); // Iniciar transacción atómica en Postgres
+                
+                foreach ($data_insertar as $fila) {
+                    // Inserción A: Registro maestro del Producto en tu tabla '_productos'
+                    $this->db->insert('_productos', $fila['maestro']);
+                    $prod_id = $this->db->insert_id(); // Capturamos el ID de la base de datos
+                    
+                    /*------------ REGISTRO DE LA TEMPORALIDAD EN TU TABLA REAL ---------*/
+                    for ($m = 1; $m <= 12; $m++) {
+                        $pfin = $this->security->xss_clean($fila['meses_lote'][$m]);
+                        
+                        if ($pfin != 0) {
+                            $data_to_store4 = array( 
+                                'prod_id' => $prod_id,
+                                'm_id'    => $m, 
+                                'pg_fis'  => $pfin, 
+                                'g_id'    => intval($this->gestion), 
+                            );
+                            $this->db->insert('prod_programado_mensual', $data_to_store4);
+                        }
+                    }
+                    /*-------------------------------------------------------------------*/
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos (Transacción fallida en Postgres).')));
+                } else {
+                    echo json_encode(array(
+                        'status' => 'success', 
+                        'msj'    => 'Importación finalizada con éxito.',
+                        'conteo' => count($data_insertar) 
+                    ));
+                }
+            } else {
+                echo json_encode(array(
+                    'status' => 'error', 
+                    'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no tiene datos válidos para procesar.')
+                ));
+            }
+            exit; 
+
+        } catch (Exception $e) {
+            if (ob_get_length()) ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
+        }
+    }
 
 
 
