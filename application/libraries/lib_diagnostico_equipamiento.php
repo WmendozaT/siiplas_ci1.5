@@ -243,9 +243,9 @@ class lib_diagnostico_equipamiento extends CI_Controller{
                                         </div>
                                         <div class="col-md-3 form-group">
                                           <label for="rol">Tipo de Compra: *</label>
-                                          <select class="form-control" id="rol" name="rol" required>
-                                            <option value="1">REPOSICIÓN</option>        
-                                            <option value="2">COMPRA NUEVA</option>
+                                          <select class="form-control" name="tp_compra" id="m_tp_compra" required>
+                                            <option value="1">COMPRA NUEVA</option>        
+                                            <option value="2">REPOSICIÓN</option>
                                           </select>
                                         </div>
                                     </div>

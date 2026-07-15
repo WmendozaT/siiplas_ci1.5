@@ -17,6 +17,7 @@ class Producto extends CI_Controller {
         $this->load->model('mantenimiento/model_estructura_org');
         $this->load->model('mestrategico/model_objetivoregion');
         $this->load->model('programacion/insumos/model_insumo');
+        $this->load->model('mantenimiento/model_partidas');
         $this->load->model('menu_modelo');
         $this->load->model('Users_model','',true);
         $this->load->library('security');
@@ -459,7 +460,6 @@ class Producto extends CI_Controller {
 
             $data['tabla']=$tabla;
             $this->load->view('admin/programacion/producto/form_anteproyecto_form4', $data); /// Gasto Corriente
- 
       }
       else{
         redirect('prog/list_serv/'.$com_id);
@@ -1159,26 +1159,21 @@ class Producto extends CI_Controller {
       public function valida_migracion_form5_consolidado() {
         ini_set('max_execution_time', 300); // 5 minutos
         ini_set('memory_limit', '512M');    // Aumentar memoria
-
         $this->load->library('excel'); 
         $com_id = $this->input->post('com_id');
         $get_unidad = $this->model_componente->get_componente($com_id, $this->gestion);
-        
-        // Carga de catálogo relacional de validación de los Objetivos Regionales
-        $list_oregional = $this->model_objetivoregion->list_proyecto_oregional($get_unidad[0]['proy_id']);
-        $form4 = $this->model_producto->lista_form4_x_unidadresponsable($com_id);
 
-        if (empty($get_unidad)) {
+        if (empty($get_unidad) || count($get_unidad) == 0) {
             echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información de la Unidad Organizacional. Verifique su sesión.')));
             return;
         }
 
-        if (!isset($_FILES['archivo']) || empty($_FILES['archivo']['tmp_name'])) {
+        if (!isset($_FILES['archivo_f5']) || empty($_FILES['archivo_f5']['tmp_name'])) {
             echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
             return;
         }
 
-        $archivo = $_FILES['archivo']['tmp_name'];
+        $archivo = $_FILES['archivo_f5']['tmp_name'];
         $errores = array();
         $data_insertar = array();
 
@@ -1199,181 +1194,234 @@ class Producto extends CI_Controller {
             $limitePermitido = 20; 
 
             if ($totalColumnas != $limitePermitido) {
-                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'V').")));
+                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'T').")));
                 return;
             }
 
             // --- 2. VALIDACIÓN FILA POR FILA ---
-            for ($i = 2; $i <= $filasMax; $i++) {
-                // Extraer valores básicos de la fila activa
-                $cod_act          = trim($hoja->getCell('A' . $i)->getValue());
-                $partida            = trim($hoja->getCell('B' . $i)->getValue());
-                $requerimiento            = trim($hoja->getCell('C' . $i)->getValue());
-                $unidad_medida            = trim($hoja->getCell('D' . $i)->getValue());
-                $cantidad          = trim($hoja->getCell('E' . $i)->getValue());
-                $precio          = trim($hoja->getCell('F' . $i)->getValue());
-                $costo_total = trim($hoja->getCell('G' . $i)->getValue());
-                $observacion  = trim($hoja->getCell('T' . $i)->getValue());
+           for ($i = 2; $i <= $filasMax; $i++) {
+                $prod_id = 0;
+                $par_id  = 0;
+                
+                // Extraer valores básicos de la fila activa según la imagen enviada
+                $cod_act       = trim($hoja->getCell('A' . $i)->getValue());
+                $partida       = trim($hoja->getCell('B' . $i)->getValue());
+                $requerimiento = trim($hoja->getCell('C' . $i)->getValue());
+                $unidad_medida = trim($hoja->getCell('D' . $i)->getValue());
+                
+                $cantidad_raw  = $hoja->getCell('E' . $i)->getCalculatedValue();
+                $precio_raw    = $hoja->getCell('F' . $i)->getCalculatedValue();
+                $total_raw     = $hoja->getCell('G' . $i)->getCalculatedValue();
+                $observacion   = trim($hoja->getCell('T' . $i)->getValue());
 
-                // 🌟 BLINDAJE ANTIFALLA: Filtra y salta las filas vacías inferiores del Excel
-                if (empty($cod_act) && empty($partida) && (empty($precio) || floatval($costo_total) == 0)) {
-                    continue;
+                // ==========================================================================
+                // 🛠️ AJUSTADO: TOLERANCIA CERO A FILAS VACÍAS O CON RESIDUOS DE FORMATO
+                // ==========================================================================
+                if (empty($cod_act) && empty($partida) && empty($requerimiento) && (empty($total_raw) || floatval($total_raw) == 0)) {
+                    
+                    // Alerta institucional con la instrucción didáctica de limpieza
+                    $errores[] = "🚨 RECHAZO DE PLANILLA: Se detectó que la Fila N° $i está completamente vacía o contiene residuos de formato invisible de Excel. Por favor, abra su archivo Excel, seleccione la Fila $i completa (haciendo clic en el número de la fila a la izquierda), haga clic derecho y elija la opción 'Eliminar' para purgar la planilla antes de reintentar la subida.";
+                    
+                    // Detiene el bucle por completo para no procesar hileras vacías inferiores
+                    break; 
                 }
 
-                if($total!=($cantidad*$precio)){
-                  $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
-                }
-
-                if (!empty($cod_act)) {
-                    $get_form4=$this->model_producto->verif_form4_vigente_para_alineacion($com_id,$cod_act);
-                    if(count($get_form4)==1){
-                      $prod_id=$get_form4[0]['prod_id'];
+                // 📋 REGLA 1: VALIDACIÓN DE CANTIDAD ENTERA (Sin decimales)
+                if ($cantidad_raw === NULL || trim($cantidad_raw) === '' || !is_numeric($cantidad_raw)) {
+                    $errores[] = "Fila $i: La 'CANTIDAD' es obligatoria y debe ser numérica.";
+                } else {
+                    $cantidad_float = floatval($cantidad_raw);
+                    if ($cantidad_float != floor($cantidad_float)) {
+                        $errores[] = "Fila $i: Restricción contable -> La 'CANTIDAD' ($cantidad_raw) debe ser un número entero puro, sin decimales.";
                     }
-                    else{
-                      $errores[] = "Fila $i: sin Actividad disponible para su alineacion, revisar el codigo de Actividad.";
+                }
+                $cantidad = intval($cantidad_raw);
+
+                // 📋 REGLA 2: VALIDACIÓN DE PRECIO UNITARIO (Máximo 2 decimales)
+                if ($precio_raw === NULL || trim($precio_raw) === '' || !is_numeric($precio_raw)) {
+                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' es obligatorio y debe ser numérico.";
+                } else {
+                    $precio_float = floatval($precio_raw);
+                    if (round($precio_float, 2) != $precio_float) {
+                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio_raw) excede el límite. Solo se aceptan hasta 2 decimales (Ej: 2500.00).";
+                    }
+                }
+                $precio = round(floatval($precio_raw), 2);
+
+                // 📋 REGLA 3: VALIDACIÓN DEL COSTO TOTAL MATEMÁTICO (Cantidad * Precio)
+                $total_calculado = round(($cantidad * $precio), 2);
+                $total_archivo   = round(floatval($total_raw), 2);
+
+                if (abs($total_archivo - $total_calculado) > 0.05) {
+                    $errores[] = "Fila $i: El 'PRECIO TOTAL' registrado ($total_raw) no coincide con la ecuación aritmética (Cantidad: $cantidad * Precio: $precio = $total_calculado).";
+                }
+
+                // Validación y alineación relacional con la actividad (Formulario N° 4)
+                if (!empty($cod_act)) {
+                    $get_form4 = $this->model_producto->verif_form4_vigente_para_alineacion($com_id, $cod_act);
+                    
+                    if (!empty($get_form4) && count($get_form4) == 1) {
+                        $prod_id = $get_form4[0]['prod_id']; 
+                    } else {
+                        if (count($get_form4) > 1) {
+                            $errores[] = "Fila $i: Alerta de Consistencia -> Existe más de una actividad registrada con el código ($cod_act) para esta Unidad Organizacional. Sanee sus códigos.";
+                        } else {
+                            $errores[] = "Fila $i: El CÓDIGO DE ACTIVIDAD ($cod_act) no corresponde a ninguna actividad vigente en el Formulario N° 4 para esta Unidad Organizacional.";
+                        }
                     }
                 } else {
-                    $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
+                    $errores[] = "Fila $i: El 'CÓDIGO DE ACTIVIDAD' es obligatorio para enlazar físicamente el requerimiento.";
                 }
 
-
-
+                 // Validación de Partida
                 if (!empty($partida)) {
                     if (strlen($partida) != 5) {
-                        $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres (tiene " . strlen($partida) . ").";
-                    }
-                    else{
-                      $get_partida=$this->model_partidas->dato_par_codigo($partida);
-                      if(count($get_partida)==1){
-                        $par_id=$get_partida[0]['par_id'];
-                      }
-                      else{
-                        $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe en nuestra Base de Datos.";
-                      }
+                        $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres.";
+                    } else {
+                        $get_partida = $this->model_partidas->dato_par_codigo($partida);
+                        if (!empty($get_partida) && count($get_partida) == 1) {
+                            $par_id = $get_partida[0]['par_id'];
+                        } else {
+                            $errores[] = "Fila $i: La partida contable ($partida) no existe en el clasificador de la base de datos.";
+                        }
                     }
                 } else {
-                    $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
+                    $errores[] = "Fila $i: La 'PARTIDA' es obligatoria.";
                 }
 
-
-                if (!is_numeric($precio)) {
-                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' debe ser un valor numérico válido.";
-                } else {
-                    $precio_float = floatval($precio);
-
-                    if (floor($precio_float * 100) != ($precio_float * 100)) {
-                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio) excede el límite permitido. Solo se aceptan hasta 2 decimales (Ej: 10.55).";
-                    }
-                }
-
-
-                // Validación C: Cronograma Mensualizado Saneado (J al U)
+                // 📋 REGLA 4: VALIDACIÓN MÁSTER Y RESOLUCIÓN DE FÓRMULAS EN LOS 12 MESES (H hasta la S)
                 $suma_meses = 0;
-                $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
+                $columnas_meses = array('H' => 1,'I' => 2,'J' => 3,'K' => 4,'L' => 5,'M' => 6,'N' => 7,'O' => 8,'P' => 9,'Q' => 10,'R' => 11,'S' => 12);
+                $meses_valores = array();
                 
-                foreach ($columnas_meses as $col) {
-                  // Se evalúa la ecuación mensual directa en caliente
-                  $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
-                  
-                  // Si la celda con fórmula o vacía no tiene valor, la homologamos a 0 puros
-                  $val_mes = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
-
-                  if (!is_numeric($val_mes)) {
-                      $errores[] = "Fila $i: Valor no numérico detectado en el mes de la columna '$col'.";
-                      break;
-                  }
-                  $suma_meses += floatval($val_mes);
+                foreach ($columnas_meses as $col => $mes_nro) {
+                    // 🛠️ REPARADO: getCalculatedValue() resuelve la fórmula de Excel (ej: =SUMA(), =5000/12) y extrae el resultado numérico puro
+                    $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                    $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+                    
+                    if (!is_numeric($val_mes)) {
+                        $errores[] = "Fila $i: Valor o fórmula no numérica detectada en la columna del mes '$col'.";
+                        break;
+                    }
+                    
+                    $monto_mes = round(floatval($val_mes), 2);
+                    $suma_meses += $monto_mes;
+                    $meses_valores[$mes_nro] = $monto_mes; 
                 }
 
-                // Validación de Coincidencia Física Matemática
-                if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
-                    $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con el TOTAL ($total).";
+                // 📋 REGLA 5: COMPROBACIÓN DE COINCIDENCIA (Suma de meses == Costo Total)
+                if (abs($suma_meses - $total_archivo) > 0.05) { 
+                    $errores[] = "Fila $i: La suma de la distribución mensual ($suma_meses) no cuadra con el PRECIO TOTAL ($total_archivo) de la celda G.";
                 }
 
                 if (empty($errores)) {
-                    // 🌟 SOLUCIÓN RAÍZ: Agrupamos el Maestro y su Detalle mensual correspondiente en paralelo
                     $data_insertar[] = array(
                         'maestro' => array(
-                            'ins_codigo'   => $this->session->userdata("name").'/REQ/'.$this->gestion,
-                            'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-                            'par_id'   => $get_partida[0]['par_id'],
-                            'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
-                            'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
-                            'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
-                            'ins_costo_unitario'      => round(floatval($precio), 2),
-                            //'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
-                            'ins_costo_total'     => $total,
-                            'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
-                       
-                            'fun_id' => $this->fun_id, /// Funcionario
-                            'aper_id' => $componente[0]['aper_id'], /// aper id
-                            'com_id' => $componente[0]['com_id'], /// com id 
-                            'form4_cod' => $cod_act, /// cod act
-                            'ins_mod' => 1, /// mod
-                            'num_ip' => $this->input->ip_address(), 
-                            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                            'ins_codigo'              => $this->session->userdata("name") . '/REQ/' . $this->gestion,
+                            'ins_fecha_requerimiento' => date('Y-m-d'), 
+                            'par_id'                  => $par_id,
+                            'ins_detalle'             => strtoupper($this->security->xss_clean($requerimiento)),
+                            'ins_unidad_medida'       => strtoupper($this->security->xss_clean($unidad_medida)),
+                            'ins_cant_requerida'      => $cantidad,
+                            'ins_costo_unitario'      => $precio,
+                            'ins_costo_total'         => $total_archivo,
+                            'ins_observacion'         => strtoupper($this->security->xss_clean($observacion)),
+                            'fun_id'                  => $this->fun_id,
+                            'aper_id'                 => $get_unidad[0]['aper_id'], 
+                            'com_id'                  => $get_unidad[0]['com_id'], 
+                            'form4_cod'               => intval($cod_act), 
+                            'ins_mod'                 => 1, // Conmutador de registro insertado
+                            'num_ip'                  => $this->input->ip_address(), 
+                            'nom_ip'                  => gethostbyaddr($_SERVER['REMOTE_ADDR'])
                         ),
-                        'meses_lote' => $meses_valores // Queda amarrado en paralelo
+                        'meses' => $meses_valores // Array indexado del 1 al 12 resuelto por fórmulas
                     );
                 }
-                
-                if (count($errores) > 15) break; 
-            } // Fin del bucle general FOR por fila
+            }
 
             // ==========================================================================
-            // --- 3. CONSOLIDACIÓN FINAL TRANSACCIONAL (POSTGRESQL) --------------------
+            // --- 3. PROCESAMIENTO ATÓMICO FINAL EN BLOQUE (POSTGRESQL MIGRATION) ---
             // ==========================================================================
-            if (ob_get_length()) ob_clean(); 
-            header('Content-Type: application/json');
-
-            if (empty($errores) && !empty($data_insertar)) {
-                $this->db->trans_start(); // Iniciar transacción atómica en Postgres
+            if (empty($errores) && count($data_insertar) > 0) {
                 
-                foreach ($data_insertar as $fila) {
-                    // Inserción A: Registro maestro del Producto en tu tabla '_productos'
-                    $this->db->insert('_productos', $fila['maestro']);
-                    $prod_id = $this->db->insert_id(); // Capturamos el ID de la base de datos
+                // Levantamos los muros de control transaccional para aislar fallas de presupuesto
+                $this->db->trans_start(); 
+                $filas_insertadas_conteo = 0;
+
+                foreach ($data_insertar as $registro) {
                     
-                    /*------------ REGISTRO DE LA TEMPORALIDAD EN TU TABLA REAL ---------*/
-                    for ($m = 1; $m <= 12; $m++) {
-                        $pfin = $this->security->xss_clean($fila['meses_lote'][$m]);
+                    // 🛠️ REPARADO: Se inserta únicamente la estructura plana del sub-arreglo 'maestro'
+                    $this->db->insert('insumos', $registro['maestro']);
+                    
+                    // Recuperamos el ID autogenerado asignado por la secuencia en Postgres
+                    $ins_id = $this->db->insert_id();
+
+                    /*-----------------------------------------------*/
+                    // B. Registro de la alineación relacional en la tabla _insumoproducto
+                    $data_to_store2 = array(
+                        'prod_id' => $prod_id, // Variable física relacional obtenida en la validación
+                        'ins_id'  => $ins_id
+                    );
+                    $this->db->insert('_insumoproducto', $data_to_store2);
+                    /*---------------------------------------------*/
+                    
+                    /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
+                    // 🛠️ REPARADO: Se recorre la colección real 'meses' usando $m_id para no pisar el iterador superior $i
+                    for ($m_id = 1; $m_id <= 12; $m_id++) {
+                        $pfin = isset($registro['meses'][$m_id]) ? $registro['meses'][$m_id] : 0;
                         
                         if ($pfin != 0) {
                             $data_to_store4 = array( 
-                                'prod_id' => $prod_id,
-                                'm_id'    => $m, 
-                                'pg_fis'  => $pfin, 
-                                'g_id'    => intval($this->gestion), 
+                                'ins_id'  => $ins_id,          // Id Insumo maestro correlativo
+                                'mes_id'  => $m_id,            // Mes dinámico (1 al 12)
+                                'ipm_fis' => $pfin,            // Valor físico financiero del mes resuelto
+                                'g_id'    => $this->gestion,   // Gestión POA activa de sesión
                             );
-                            $this->db->insert('prod_programado_mensual', $data_to_store4);
+                            $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
                         }
                     }
-                    /*-------------------------------------------------------------------*/
+                    
+                    $filas_insertadas_conteo++;
                 }
 
+                // Cerramos e indicamos a CodeIgniter que evalúe el estatus de las inserciones
                 $this->db->trans_complete();
 
+                // Si PostgreSQL detecta un desbordamiento numérico o violación de tope, aplica Rollback total
                 if ($this->db->trans_status() === FALSE) {
-                    echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos (Transacción fallida en Postgres).')));
-                } else {
                     echo json_encode(array(
-                        'status' => 'success', 
-                        'msj'    => 'Importación finalizada con éxito.',
-                        'conteo' => count($data_insertar) 
+                        'status'    => 'error', 
+                        'respuesta' => 'error', 
+                        'mensaje'   => 'PostgreSQL rechazó las restricciones físicas o techos de los requerimientos. Matriz revertida de forma íntegra.'
                     ));
+                    return;
                 }
-            } else {
+
+                // 🌟 ÉXITO ABSOLUTO: Despachamos el payload esperado por tu $.ajax en form4.js
                 echo json_encode(array(
-                    'status' => 'error', 
-                    'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no tiene datos válidos para procesar.')
+                    'status'           => 'success',
+                    'respuesta'        => 'correcto',
+                    'mensaje'          => '¡Matriz de requerimientos contables consolidados e inyectados en el sistema de forma exitosa!',
+                    'filas_procesadas' => $filas_insertadas_conteo
+                ));
+
+            } else {
+                // Si la colección de errores contiene advertencias estructurales, frena e informa al usuario
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'mensaje'   => 'Se detectaron observaciones de validación en la estructura o coincidencia de la plantilla.',
+                    'errores'   => !empty($errores) ? $errores : array("No se encontraron registros consistentes para migrar.")
                 ));
             }
-            exit; 
 
         } catch (Exception $e) {
-            if (ob_get_length()) ob_clean();
-            header('Content-Type: application/json');
-            echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
+            // Captura forense de desbordamientos de memoria del motor de PHPExcel
+            echo json_encode(array(
+                'status'    => 'error', 
+                'respuesta' => 'error', 
+                'mensaje'   => 'Falla crítica del lector de planillas: ' . $e->getMessage()
+            ));
         }
     }
 

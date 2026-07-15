@@ -82,9 +82,8 @@ class model_diagnosticoequip extends CI_Model {
             -- 🔄 DECODIFICACIÓN EN CALIENTE: TIPO COMPRA (1: Nuevo, 2: Reposición)
             form.tp_compra,
             CASE 
-                WHEN form.tp_compra = 1 THEN \'NUEVO\'
                 WHEN form.tp_compra = 2 THEN \'REPOSICIÓN\'
-                WHEN form.tp_compra = 3 THEN \'ADECUACIÓN\'
+                WHEN form.tp_compra = 1 THEN \'COMPRA NUEVA\'
                 ELSE \'NO DEFINIDO\'
             END AS tp_compra_nombre,
 
@@ -179,9 +178,8 @@ class model_diagnosticoequip extends CI_Model {
             -- 🔄 DECODIFICACIÓN EN CALIENTE: TIPO COMPRA (1: Nuevo, 2: Reposición)
             form.tp_compra,
             CASE 
-                WHEN form.tp_compra = 1 THEN \'NUEVO\'
                 WHEN form.tp_compra = 2 THEN \'REPOSICIÓN\'
-                WHEN form.tp_compra = 3 THEN \'ADECUACIÓN\'
+                WHEN form.tp_compra = 1 THEN \'COMPRA NUEVA\'
                 ELSE \'NO DEFINIDO\'
             END AS tp_compra_nombre,
 
@@ -277,8 +275,8 @@ class model_diagnosticoequip extends CI_Model {
             -- 🔄 DECODIFICACIÓN EN CALIENTE: TIPO COMPRA (1: Nuevo, 2: Reposición)
             form.tp_compra,
             CASE 
-                WHEN form.tp_compra = 1 THEN \'NUEVO\'
                 WHEN form.tp_compra = 2 THEN \'REPOSICIÓN\'
+                WHEN form.tp_compra = 1 THEN \'COMPRA NUEVA\'
                 ELSE \'NO DEFINIDO\'
             END AS tp_compra_nombre,
 

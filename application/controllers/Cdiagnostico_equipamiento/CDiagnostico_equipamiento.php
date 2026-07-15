@@ -201,7 +201,11 @@ class CDiagnostico_equipamiento extends CI_Controller {
                            style="font-weight: 600; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px; font-size: 11px;">
                             <i class="fa fa-file-pdf-o" style="color: #ef4444;"></i> Equipamiento.PDF
                         </a>
-                        
+
+                        <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" style="font-weight: 600; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px; font-size: 11px;">
+                          <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR EQUIPAMIENTO.Xls</b>
+                        </a>
+                            
                         <!-- 🌟 BOTÓN ADICIONAL: VOLVER / SALIR (Empujado a la derecha en la misma línea) -->
                         <a href="'.site_url("").'/admin/dashboard" 
                            title="VOLVER AL MENÚ ANTERIOR" 
@@ -212,6 +216,75 @@ class CDiagnostico_equipamiento extends CI_Controller {
                     </div>
                 </div>
             </article>';
+
+            $titulo.='
+            <style>
+                /* Estilización formal e inmunizada para la rejilla del cargador masivo */
+                #dialog_subir { width: 45%;}
+            </style>
+            <div class="modal fade" id="modal_importar_f5" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
+                <div class="modal-dialog" id="dialog_subir">
+                    <div class="modal-content" style="border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+                        <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                            <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                                <i class="fa fa-upload text-primary"></i> Importar Equipamiento Regional/Distrital
+                            </h4>
+                        </div>
+                        <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                            <!-- Título e Instrucción -->
+                            <div class="text-center" style="margin-bottom: 20px;">
+                                <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Equipamiento Global (.xls, .xlsx)</h5>
+                                <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                            </div>
+
+                            <!-- Vista previa de columnas (Corregido: Concatenación nativa base_url) -->
+                            <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                                <img src="' . base_url('assets/img/img_migracion/equipamiento.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
+                            </div>
+
+                            <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
+                            <form action="' . site_url('Cdiagnostico_equipamiento/CDiagnostico_equipamiento/valida_migracion_equipamiento') . '" method="post" enctype="multipart/form-data" id="form_subir_equipamiento" autocomplete="off" style="padding:0; background:transparent;">
+                                <input name="dist_id" value="'.$dist_id.'" type="hidden" > 
+                                <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                    
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                                <i class="fa fa-folder-open"></i> Examinar...
+                                            </button>
+                                            
+                                            <input id="archivo_f5" accept=".xlsx, .xls" name="archivo_f5" 
+                                                   onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                                   style="display: none;" type="file" required>
+                                        </span>
+                                        <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                    </div>
+                                </div>
+
+                                <div id="mensaje_f5" style="margin: 10px 0; font-size: 11px;"></div>
+
+                                <!-- Botón de Envío y Validación Masiva -->
+                                <div style="margin-top: 25px;">
+                                    <button type="button" id="btn_subir_f5" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                        <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                    </button>
+                                </div>
+
+                                <!-- Animación Pre-Loader de la Planilla -->
+                                <div id="loads_f5" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                    <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                    <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>';
         }
 
         $data['titulo']=$titulo;
@@ -714,14 +787,72 @@ class CDiagnostico_equipamiento extends CI_Controller {
     }
 
 
-    /// Reporte Formulario Diagnostico Pei Equipamiento
     public function reporte_formulario_equipamiento($dist_id){
+        // 🌟 REGLA 1: Blindaje de recursos de hardware en caliente para la CNS
+        ini_set('max_execution_time', 600); // 10 minutos de tiempo máximo de ejecución
+        ini_set('memory_limit', '1024M');   // Liberamos 1 GB de memoria RAM para el búfer
+        
+        // Deshabilitamos el límite de tiempo de Apache para transmisiones pesadas
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(600);
+        }
+
+        // 1. Recuperamos la cabecera activa
+        $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
+        if (empty($equipamiento)) {
+            show_error("No se encontró ninguna ficha de Diagnóstico activa.");
+            return;
+        }
+
+        // 2. Limpieza de búferes previos de CodeIgniter para liberar RAM
+        if (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        // 3. Ejecutamos la consulta SQL indexada y paginada
+        $data['reporte'] = $this->rep_diagnostico_equipamiento($dist_id);
+        $data['pie_rep'] = 'dnp';
+
+        // ==========================================================================
+        // 🌟 FLUJO DIRECTO: COMPILACIÓN Y STREAMING BINARIO DIRECTO A DISCO
+        // ==========================================================================
+        require_once('assets/html2pdf-4.4.0/html2pdf.class.php');
+        
+        try {
+            $html2pdf = new HTML2PDF('L', 'letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+            $html2pdf->pdf->SetDisplayMode('fullpage');
+            
+            // Segmentación y compilación en disco
+            $html2pdf->writeHTML($data['reporte']);
+            
+            // Generamos un nombre único basado en la distrital y gestión auditora
+            $nombre_archivo = "Reporte_Quinquenal_Distrital_".$dist_id."_".$this->gestion.".pdf";
+            
+            // Despachamos cabeceras nativas de transmisión de archivos limpios
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="'.$nombre_archivo.'"');
+            header('Content-Transfer-Encoding: binary');
+            header('Cache-Control: private, max-age=0, must-revalidate');
+            header('Pragma: public');
+            
+            // Forzamos el vaciado del archivo binario directamente al flujo de red
+            $html2pdf->Output($nombre_archivo, 'I');
+            exit;
+
+        } catch (HTML2PDF_exception $e) {
+            echo "<h3>🚨 Error de Compilación en Lote:</h3><pre>".$e."</pre>";
+            exit;
+        }
+    }
+
+    /// Reporte Formulario Diagnostico Pei Equipamiento
+/*    public function reporte_formulario_equipamiento($dist_id){
         $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
         $data['reporte']= $this->rep_diagnostico_equipamiento($dist_id);
         $data['pie_rep']='dnp';
         $this->load->view('admin/diagnostico_equipamiento/View_report_form_diagequipamiento', $data);
-        //echo $data['reporte'];
-    }
+
+    }*/
 
     //// Detalle Reporte
     public function rep_diagnostico_equipamiento($dist_id) {
@@ -1269,6 +1400,279 @@ class CDiagnostico_equipamiento extends CI_Controller {
         // 6. MOTOR DE AUTO-ANCHO DINÁMICO PARA LAS COLUMNAS (A a G)
         foreach (range('A', 'G') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+    }
+
+
+
+
+    /// ==== MIGRACION EXCEL DE EQUIPAMIENTO 2027
+      public function valida_migracion_equipamiento() {
+        ini_set('max_execution_time', 300); // 5 minutos
+        ini_set('memory_limit', '512M');    // Aumentar memoria
+        $this->load->library('excel'); 
+        $dist_id = $this->input->post('dist_id');
+        $get_unidad = $this->model_componente->get_componente($com_id, $this->gestion);
+
+        if (empty($get_unidad) || count($get_unidad) == 0) {
+            echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información de la Unidad Organizacional. Verifique su sesión.')));
+            return;
+        }
+
+        if (!isset($_FILES['archivo_f5']) || empty($_FILES['archivo_f5']['tmp_name'])) {
+            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
+            return;
+        }
+
+        $archivo = $_FILES['archivo_f5']['tmp_name'];
+        $errores = array();
+        $data_insertar = array();
+
+        try {
+            $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+            $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
+            
+            // OPTIMIZACIÓN DE MEMORIA: Ignoramos estilos gráficos pesados para no colapsar la RAM
+            $lector->setReadDataOnly(true);
+            
+            $phpExcel    = $lector->load($archivo);
+            $hoja        = $phpExcel->getSheet(0);
+            $filasMax    = $hoja->getHighestRow();
+            
+            // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
+            $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+            $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+            $limitePermitido = 20; 
+
+            if ($totalColumnas != $limitePermitido) {
+                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'T').")));
+                return;
+            }
+
+            // --- 2. VALIDACIÓN FILA POR FILA ---
+           for ($i = 2; $i <= $filasMax; $i++) {
+                $prod_id = 0;
+                $par_id  = 0;
+                
+                // Extraer valores básicos de la fila activa según la imagen enviada
+                $cod_act       = trim($hoja->getCell('A' . $i)->getValue());
+                $partida       = trim($hoja->getCell('B' . $i)->getValue());
+                $requerimiento = trim($hoja->getCell('C' . $i)->getValue());
+                $unidad_medida = trim($hoja->getCell('D' . $i)->getValue());
+                
+                $cantidad_raw  = $hoja->getCell('E' . $i)->getCalculatedValue();
+                $precio_raw    = $hoja->getCell('F' . $i)->getCalculatedValue();
+                $total_raw     = $hoja->getCell('G' . $i)->getCalculatedValue();
+                $observacion   = trim($hoja->getCell('T' . $i)->getValue());
+
+                // ==========================================================================
+                // 🛠️ AJUSTADO: TOLERANCIA CERO A FILAS VACÍAS O CON RESIDUOS DE FORMATO
+                // ==========================================================================
+                if (empty($cod_act) && empty($partida) && empty($requerimiento) && (empty($total_raw) || floatval($total_raw) == 0)) {
+                    
+                    // Alerta institucional con la instrucción didáctica de limpieza
+                    $errores[] = "🚨 RECHAZO DE PLANILLA: Se detectó que la Fila N° $i está completamente vacía o contiene residuos de formato invisible de Excel. Por favor, abra su archivo Excel, seleccione la Fila $i completa (haciendo clic en el número de la fila a la izquierda), haga clic derecho y elija la opción 'Eliminar' para purgar la planilla antes de reintentar la subida.";
+                    
+                    // Detiene el bucle por completo para no procesar hileras vacías inferiores
+                    break; 
+                }
+
+                // 📋 REGLA 1: VALIDACIÓN DE CANTIDAD ENTERA (Sin decimales)
+                if ($cantidad_raw === NULL || trim($cantidad_raw) === '' || !is_numeric($cantidad_raw)) {
+                    $errores[] = "Fila $i: La 'CANTIDAD' es obligatoria y debe ser numérica.";
+                } else {
+                    $cantidad_float = floatval($cantidad_raw);
+                    if ($cantidad_float != floor($cantidad_float)) {
+                        $errores[] = "Fila $i: Restricción contable -> La 'CANTIDAD' ($cantidad_raw) debe ser un número entero puro, sin decimales.";
+                    }
+                }
+                $cantidad = intval($cantidad_raw);
+
+                // 📋 REGLA 2: VALIDACIÓN DE PRECIO UNITARIO (Máximo 2 decimales)
+                if ($precio_raw === NULL || trim($precio_raw) === '' || !is_numeric($precio_raw)) {
+                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' es obligatorio y debe ser numérico.";
+                } else {
+                    $precio_float = floatval($precio_raw);
+                    if (round($precio_float, 2) != $precio_float) {
+                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio_raw) excede el límite. Solo se aceptan hasta 2 decimales (Ej: 2500.00).";
+                    }
+                }
+                $precio = round(floatval($precio_raw), 2);
+
+                // 📋 REGLA 3: VALIDACIÓN DEL COSTO TOTAL MATEMÁTICO (Cantidad * Precio)
+                $total_calculado = round(($cantidad * $precio), 2);
+                $total_archivo   = round(floatval($total_raw), 2);
+
+                if (abs($total_archivo - $total_calculado) > 0.05) {
+                    $errores[] = "Fila $i: El 'PRECIO TOTAL' registrado ($total_raw) no coincide con la ecuación aritmética (Cantidad: $cantidad * Precio: $precio = $total_calculado).";
+                }
+
+                // Validación y alineación relacional con la actividad (Formulario N° 4)
+                if (!empty($cod_act)) {
+                    $get_form4 = $this->model_producto->verif_form4_vigente_para_alineacion($com_id, $cod_act);
+                    
+                    if (!empty($get_form4) && count($get_form4) == 1) {
+                        $prod_id = $get_form4[0]['prod_id']; 
+                    } else {
+                        if (count($get_form4) > 1) {
+                            $errores[] = "Fila $i: Alerta de Consistencia -> Existe más de una actividad registrada con el código ($cod_act) para esta Unidad Organizacional. Sanee sus códigos.";
+                        } else {
+                            $errores[] = "Fila $i: El CÓDIGO DE ACTIVIDAD ($cod_act) no corresponde a ninguna actividad vigente en el Formulario N° 4 para esta Unidad Organizacional.";
+                        }
+                    }
+                } else {
+                    $errores[] = "Fila $i: El 'CÓDIGO DE ACTIVIDAD' es obligatorio para enlazar físicamente el requerimiento.";
+                }
+
+                 // Validación de Partida
+                if (!empty($partida)) {
+                    if (strlen($partida) != 5) {
+                        $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres.";
+                    } else {
+                        $get_partida = $this->model_partidas->dato_par_codigo($partida);
+                        if (!empty($get_partida) && count($get_partida) == 1) {
+                            $par_id = $get_partida[0]['par_id'];
+                        } else {
+                            $errores[] = "Fila $i: La partida contable ($partida) no existe en el clasificador de la base de datos.";
+                        }
+                    }
+                } else {
+                    $errores[] = "Fila $i: La 'PARTIDA' es obligatoria.";
+                }
+
+                // 📋 REGLA 4: VALIDACIÓN MÁSTER Y RESOLUCIÓN DE FÓRMULAS EN LOS 12 MESES (H hasta la S)
+                $suma_meses = 0;
+                $columnas_meses = array('H' => 1,'I' => 2,'J' => 3,'K' => 4,'L' => 5,'M' => 6,'N' => 7,'O' => 8,'P' => 9,'Q' => 10,'R' => 11,'S' => 12);
+                $meses_valores = array();
+                
+                foreach ($columnas_meses as $col => $mes_nro) {
+                    // 🛠️ REPARADO: getCalculatedValue() resuelve la fórmula de Excel (ej: =SUMA(), =5000/12) y extrae el resultado numérico puro
+                    $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                    $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+                    
+                    if (!is_numeric($val_mes)) {
+                        $errores[] = "Fila $i: Valor o fórmula no numérica detectada en la columna del mes '$col'.";
+                        break;
+                    }
+                    
+                    $monto_mes = round(floatval($val_mes), 2);
+                    $suma_meses += $monto_mes;
+                    $meses_valores[$mes_nro] = $monto_mes; 
+                }
+
+                // 📋 REGLA 5: COMPROBACIÓN DE COINCIDENCIA (Suma de meses == Costo Total)
+                if (abs($suma_meses - $total_archivo) > 0.05) { 
+                    $errores[] = "Fila $i: La suma de la distribución mensual ($suma_meses) no cuadra con el PRECIO TOTAL ($total_archivo) de la celda G.";
+                }
+
+                if (empty($errores)) {
+                    $data_insertar[] = array(
+                        'maestro' => array(
+                            'ins_codigo'              => $this->session->userdata("name") . '/REQ/' . $this->gestion,
+                            'ins_fecha_requerimiento' => date('Y-m-d'), 
+                            'par_id'                  => $par_id,
+                            'ins_detalle'             => strtoupper($this->security->xss_clean($requerimiento)),
+                            'ins_unidad_medida'       => strtoupper($this->security->xss_clean($unidad_medida)),
+                            'ins_cant_requerida'      => $cantidad,
+                            'ins_costo_unitario'      => $precio,
+                            'ins_costo_total'         => $total_archivo,
+                            'ins_observacion'         => strtoupper($this->security->xss_clean($observacion)),
+                            'fun_id'                  => $this->fun_id,
+                            'aper_id'                 => $get_unidad[0]['aper_id'], 
+                            'com_id'                  => $get_unidad[0]['com_id'], 
+                            'form4_cod'               => intval($cod_act), 
+                            'ins_mod'                 => 1, // Conmutador de registro insertado
+                            'num_ip'                  => $this->input->ip_address(), 
+                            'nom_ip'                  => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                        ),
+                        'meses' => $meses_valores // Array indexado del 1 al 12 resuelto por fórmulas
+                    );
+                }
+            }
+
+            // ==========================================================================
+            // --- 3. PROCESAMIENTO ATÓMICO FINAL EN BLOQUE (POSTGRESQL MIGRATION) ---
+            // ==========================================================================
+            if (empty($errores) && count($data_insertar) > 0) {
+                
+                // Levantamos los muros de control transaccional para aislar fallas de presupuesto
+                $this->db->trans_start(); 
+                $filas_insertadas_conteo = 0;
+
+                foreach ($data_insertar as $registro) {
+                    
+                    // 🛠️ REPARADO: Se inserta únicamente la estructura plana del sub-arreglo 'maestro'
+                    $this->db->insert('insumos', $registro['maestro']);
+                    
+                    // Recuperamos el ID autogenerado asignado por la secuencia en Postgres
+                    $ins_id = $this->db->insert_id();
+
+                    /*-----------------------------------------------*/
+                    // B. Registro de la alineación relacional en la tabla _insumoproducto
+                    $data_to_store2 = array(
+                        'prod_id' => $prod_id, // Variable física relacional obtenida en la validación
+                        'ins_id'  => $ins_id
+                    );
+                    $this->db->insert('_insumoproducto', $data_to_store2);
+                    /*---------------------------------------------*/
+                    
+                    /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
+                    // 🛠️ REPARADO: Se recorre la colección real 'meses' usando $m_id para no pisar el iterador superior $i
+                    for ($m_id = 1; $m_id <= 12; $m_id++) {
+                        $pfin = isset($registro['meses'][$m_id]) ? $registro['meses'][$m_id] : 0;
+                        
+                        if ($pfin != 0) {
+                            $data_to_store4 = array( 
+                                'ins_id'  => $ins_id,          // Id Insumo maestro correlativo
+                                'mes_id'  => $m_id,            // Mes dinámico (1 al 12)
+                                'ipm_fis' => $pfin,            // Valor físico financiero del mes resuelto
+                                'g_id'    => $this->gestion,   // Gestión POA activa de sesión
+                            );
+                            $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+                        }
+                    }
+                    
+                    $filas_insertadas_conteo++;
+                }
+
+                // Cerramos e indicamos a CodeIgniter que evalúe el estatus de las inserciones
+                $this->db->trans_complete();
+
+                // Si PostgreSQL detecta un desbordamiento numérico o violación de tope, aplica Rollback total
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array(
+                        'status'    => 'error', 
+                        'respuesta' => 'error', 
+                        'mensaje'   => 'PostgreSQL rechazó las restricciones físicas o techos de los requerimientos. Matriz revertida de forma íntegra.'
+                    ));
+                    return;
+                }
+
+                // 🌟 ÉXITO ABSOLUTO: Despachamos el payload esperado por tu $.ajax en form4.js
+                echo json_encode(array(
+                    'status'           => 'success',
+                    'respuesta'        => 'correcto',
+                    'mensaje'          => '¡Matriz de requerimientos contables consolidados e inyectados en el sistema de forma exitosa!',
+                    'filas_procesadas' => $filas_insertadas_conteo
+                ));
+
+            } else {
+                // Si la colección de errores contiene advertencias estructurales, frena e informa al usuario
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'mensaje'   => 'Se detectaron observaciones de validación en la estructura o coincidencia de la plantilla.',
+                    'errores'   => !empty($errores) ? $errores : array("No se encontraron registros consistentes para migrar.")
+                ));
+            }
+
+        } catch (Exception $e) {
+            // Captura forense de desbordamientos de memoria del motor de PHPExcel
+            echo json_encode(array(
+                'status'    => 'error', 
+                'respuesta' => 'error', 
+                'mensaje'   => 'Falla crítica del lector de planillas: ' . $e->getMessage()
+            ));
         }
     }
 }

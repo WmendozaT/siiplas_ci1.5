@@ -74,106 +74,106 @@
                         <?php echo $titulo; ?>
                     </div>
                     <div class="row">
-    <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-        <div class="jarviswidget jarviswidget-color-darken">
-            <header>
-                <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-                <h2 class="font-md">Detalle de Requerimientos de Equipamiento Quinquenal</h2>  
-            </header>
-            <div>
-                <div class="widget-body no-padding">
-                    
-                    <!-- 🌟 AJUSTE 1: Bloque responsivo forzado para Scroll Horizontal Limpio -->
-                    <div class="table-responsive" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0;">
-                        
-                        <!-- Se removió width="100%" para evitar que aplaste las columnas y se usa table-layout: fixed condicional opcional si es necesario, pero style="min-width: 1600px;" asegura la retícula perfecta -->
-                        <table id="datatable_fixed_column" class="table table-bordered table-striped" style="min-width: 1700px; margin-bottom: 0; font-family: sans-serif;">
-                            <thead>
-                                <!-- 🌟 AJUSTE 2: Sincronización exacta de las 20 celdas de inputs de búsqueda -->
-                                <tr>
-                                    <th style="width: 1%;"></th> <!-- # -->
-                                    <th style="width: 5%;"></th> <!-- OPCIONES -->
-                                    <th style="width: 5%;"></th> <!-- ADICIONALES -->
-                                    <th class="hasinput" style="min-width:110px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Distrital.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:130px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Responsable.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:160px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Establecimiento.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:160px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Equipamiento.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:150px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Servicio.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:130px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Ubicación.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:100px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Tipo compra.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:80px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Partida.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:80px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Cantidad.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:100px;">
-                                        <input type="text" class="form-control" placeholder="🔍 C. Unitario.."/>
-                                    </th>
-                                    <th class="hasinput" style="min-width:100px;">
-                                        <input type="text" class="form-control" placeholder="🔍 C. Total.."/>
-                                    </th>
-                                    <!-- 🌟 CORREGIDO: Inyección de THs vacíos para los filtros del quinquenio (Evita descuadre de DataTables) -->
-                                    <th style="width: 4%;"></th> <!-- 2026 -->
-                                    <th style="width: 4%;"></th> <!-- 2027 -->
-                                    <th style="width: 4%;"></th> <!-- 2028 -->
-                                    <th style="width: 4%;"></th> <!-- 2029 -->
-                                    <th style="width: 4%;"></th> <!-- 2030 -->
-                                    <th class="hasinput" style="min-width:150px;">
-                                        <input type="text" class="form-control" placeholder="🔍 Observacion.."/>
-                                    </th>
-                                </tr>                          
-                                
-                                <!-- Encabezado de Títulos con min-width en pixeles -->
-                                <tr>
-                                    <th style="width:1%; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc; color:#64748b;">#</th>
-                                    <th style="min-width:130px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">OPCIONES</th>
-                                    <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">ADICIONALES</th>
-                                    <th style="min-width:110px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">DISTRITAL</th>
-                                    <th style="min-width:130px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">RESPONSABLE</th>
-                                    <th style="min-width:160px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">ESTABLECIMIENTO / INVERSIÓN</th>
-                                    <th style="min-width:160px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">NOMBRE DEL EQUIPO</th>
-                                    <th style="min-width:150px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">SERVICIO / UNIDAD</th>
-                                    <th style="min-width:130px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">UBICACIÓN FÍSICA</th>
-                                    <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">TIPO COMPRA</th>
-                                    <th style="min-width:80px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">PARTIDA</th>
-                                    <th style="min-width:80px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">CANTIDAD</th>
-                                    <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">COSTO UNITARIO (Bs.)</th>
-                                    <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">COSTO TOTAL (Bs.)</th>
-                                    
-                                    <!-- Temporalidad Quinquenal de Asignación Financiera (Se mantiene tu estilo verde llamativo) -->
-                                    <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2026</th>
-                                    <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2027</th>
-                                    <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2028</th>
-                                    <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2029</th>
-                                    <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2030</th>
-                                    
-                                    <th style="min-width:150px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">OBSERVACIONES</th>
-                                </tr>
-                            </thead>
-                            <?php echo $listado;?>
-                        </table>
-                        
+                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="jarviswidget jarviswidget-color-darken">
+                                <header>
+                                    <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+                                    <h2 class="font-md">Detalle de Requerimientos de Equipamiento Quinquenal</h2>  
+                                </header>
+                                <div>
+                                    <div class="widget-body no-padding">
+                                        
+                                        <!-- 🌟 AJUSTE 1: Bloque responsivo forzado para Scroll Horizontal Limpio -->
+                                        <div class="table-responsive" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0;">
+                                            
+                                            <!-- Se removió width="100%" para evitar que aplaste las columnas y se usa table-layout: fixed condicional opcional si es necesario, pero style="min-width: 1600px;" asegura la retícula perfecta -->
+                                            <table id="datatable_fixed_column" class="table table-bordered table-striped" style="min-width: 1700px; margin-bottom: 0; font-family: sans-serif;">
+                                                <thead>
+                                                    <!-- 🌟 AJUSTE 2: Sincronización exacta de las 20 celdas de inputs de búsqueda -->
+                                                    <tr>
+                                                        <th style="width: 1%;"></th> <!-- # -->
+                                                        <th style="width: 5%;"></th> <!-- OPCIONES -->
+                                                        <th style="width: 5%;"></th> <!-- ADICIONALES -->
+                                                        <th class="hasinput" style="min-width:110px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Distrital.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:130px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Responsable.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:160px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Establecimiento.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:160px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Equipamiento.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:150px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Servicio.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:130px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Ubicación.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:100px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Tipo compra.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:80px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Partida.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:80px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Cantidad.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:100px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 C. Unitario.."/>
+                                                        </th>
+                                                        <th class="hasinput" style="min-width:100px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 C. Total.."/>
+                                                        </th>
+                                                        <!-- 🌟 CORREGIDO: Inyección de THs vacíos para los filtros del quinquenio (Evita descuadre de DataTables) -->
+                                                        <th style="width: 4%;"></th> <!-- 2026 -->
+                                                        <th style="width: 4%;"></th> <!-- 2027 -->
+                                                        <th style="width: 4%;"></th> <!-- 2028 -->
+                                                        <th style="width: 4%;"></th> <!-- 2029 -->
+                                                        <th style="width: 4%;"></th> <!-- 2030 -->
+                                                        <th class="hasinput" style="min-width:150px;">
+                                                            <input type="text" class="form-control" placeholder="🔍 Observacion.."/>
+                                                        </th>
+                                                    </tr>                          
+                                                    
+                                                    <!-- Encabezado de Títulos con min-width en pixeles -->
+                                                    <tr>
+                                                        <th style="width:1%; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc; color:#64748b;">#</th>
+                                                        <th style="min-width:130px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">OPCIONES</th>
+                                                        <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">ADICIONALES</th>
+                                                        <th style="min-width:110px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">DISTRITAL</th>
+                                                        <th style="min-width:130px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">RESPONSABLE</th>
+                                                        <th style="min-width:160px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">ESTABLECIMIENTO / INVERSIÓN</th>
+                                                        <th style="min-width:160px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">NOMBRE DEL EQUIPO</th>
+                                                        <th style="min-width:150px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">SERVICIO / UNIDAD</th>
+                                                        <th style="min-width:130px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">UBICACIÓN FÍSICA</th>
+                                                        <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">TIPO COMPRA</th>
+                                                        <th style="min-width:80px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">PARTIDA</th>
+                                                        <th style="min-width:80px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">CANTIDAD</th>
+                                                        <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">COSTO UNITARIO (Bs.)</th>
+                                                        <th style="min-width:100px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">COSTO TOTAL (Bs.)</th>
+                                                        
+                                                        <!-- Temporalidad Quinquenal de Asignación Financiera (Se mantiene tu estilo verde llamativo) -->
+                                                        <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2026</th>
+                                                        <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2027</th>
+                                                        <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2028</th>
+                                                        <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2029</th>
+                                                        <th style="width:4%; text-align:center; vertical-align: middle; background:#059669; color: #ffffff; font-size: 11px; font-weight: bold;">2030</th>
+                                                        
+                                                        <th style="min-width:150px; text-align:center; vertical-align: middle; font-size: 11px; background:#f8fafc;">OBSERVACIONES</th>
+                                                    </tr>
+                                                </thead>
+                                                <?php echo $listado;?>
+                                            </table>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
                     </div>
-                </div>
-            </div>
-        </div>
-    </article>
-</div>
                 </section>
             </div>
             <!-- END MAIN CONTENT -->
