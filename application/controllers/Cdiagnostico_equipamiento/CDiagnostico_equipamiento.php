@@ -296,7 +296,29 @@ class CDiagnostico_equipamiento extends CI_Controller {
         }
 
         $this->load->view('admin/diagnostico_equipamiento/View_diagnostico_equipamiento', $data);
+/*        $listado=$this->model_diagnosticoequip->get_list_establecimientos_nacional(2026);
+        $tabla.='
+        <table border=1>
+            <tr>
+                <td>REGIONAL</td>
+                <td>DISTRITAL</td>
+                <td>COD. ESTABLECIMIENTO</td>
+                <td>ESTABLECIMIENTO</td>
+            </tr>';
+            foreach($listado as $row){
+                $tabla.='
+                <tr>
+                    <td>'.$row['dep_departamento'].'</td>
+                    <td>'.$row['dist_distrital'].'</td>
+                    <td>'.$row['act_id'].'</td>
+                    <td>'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].'</td>
+                </tr>';
+            }
+        $tabla.='
 
+        </table>';
+
+        echo $tabla;*/
     }
 
 
@@ -789,12 +811,12 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
     public function reporte_formulario_equipamiento($dist_id){
         // 🌟 REGLA 1: Blindaje de recursos de hardware en caliente para la CNS
-        ini_set('max_execution_time', 600); // 10 minutos de tiempo máximo de ejecución
-        ini_set('memory_limit', '1024M');   // Liberamos 1 GB de memoria RAM para el búfer
+        ini_set('max_execution_time', 900); // 15 minutos de tiempo máximo de ejecución
+        ini_set('memory_limit', '2048M');   // Liberamos 2 GB de memoria RAM para el búfer
         
         // Deshabilitamos el límite de tiempo de Apache para transmisiones pesadas
         if (function_exists('set_time_limit')) {
-            @set_time_limit(600);
+            @set_time_limit(900);
         }
 
         // 1. Recuperamos la cabecera activa
@@ -855,6 +877,157 @@ class CDiagnostico_equipamiento extends CI_Controller {
     }*/
 
     //// Detalle Reporte
+    /* public function rep_diagnostico_equipamiento($dist_id) {
+        $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
+        
+        // 🛠️ REPARADO: Mapeo estricto del índice cero para result_array() relacional
+        if (empty($equipamiento)) {
+            return '';
+        }
+        $equip_id_activo = intval($equipamiento[0]['equip_id']);
+
+        if($dist_id == 0){
+            $listado = $this->model_diagnosticoequip->get_consolidado_formulario_diagnostico_activo($equip_id_activo); 
+        } else {
+            $listado = $this->model_diagnosticoequip->get_distrital_formulario_diagnostico_activo($equip_id_activo, $dist_id); 
+        }
+
+        $tabla = '';
+        $nro = 0; 
+        $fila_actual = 0;
+        $limite_filas = 22; // 📋 TOPE SEGURO PARA TAMAÑO CARTA HORIZONTAL (LANDSCAPE)
+        $total_items = count($listado);
+
+        foreach ($listado as $row) {
+            $nro++;
+            $fila_actual++;
+
+            // 🌟 APERTURA DE HOJA: Abre una nueva página si es el inicio o tras un corte de control
+            if ($fila_actual == 1) {
+                $tabla .= '
+                <page orientation="landscape" backtop="32mm" backbottom="15mm" backleft="10mm" backright="10mm">
+                ' . $this->cabecera_report($equipamiento, $dist_id) . '
+
+                <p style="font-weight: bold; color: #1a237e; font-size: 11px; margin-bottom: 5px; text-transform: uppercase;">1. Objetivo</p>
+                <div style="width: 100%; border: 1px solid #b3b3b3; background: #fafafa; font-size:10.5px; padding: 8px; margin-bottom: 15px; border-radius: 3px;">
+                    Recopilar Informacion sobre el equipamiento medico por Establecimiento de Salud de la Regional/Distrital
+                </div>
+                
+                <table style="width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif;">
+                <thead>
+                    <tr>
+                        <th style="width: 2%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">#</th>
+                        <th style="width: 7%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">DISTRITAL</th>
+                        <th style="width: 8%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">RESPONSABLE</th>
+                        <th style="width: 10%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">ESTABLECIMIENTO / INVERSIÓN</th>
+                        <th style="width: 10%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">NOMBRE DEL EQUIPO</th>
+                        <th style="width: 8%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">SERVICIO / UNIDAD</th>
+                        <th style="width: 8%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">UBICACIÓN FÍSICA</th>
+                        <th style="width: 5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">TIPO COMPRA</th>
+                        <th style="width: 4%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">PARTIDA</th>
+                        <th style="width: 3%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">CANT.</th>
+                        <th style="width: 5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">COSTO UNIT.</th>
+                        <th style="width: 6%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">COSTO TOTAL</th>
+                        <th style="width: 4.5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">2026</th>
+                        <th style="width: 4.5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">2027</th>
+                        <th style="width: 4.5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">2028</th>
+                        <th style="width: 4.5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">2029</th>
+                        <th style="width: 4.5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">2030</th>
+                        <th style="width: 6.5%; background: #404040; color: #ffffff; font-weight: bold; font-size: 6.5px; text-align: center; vertical-align: middle; border: 0.5px solid #ffffff; padding: 5px 2px;">OBSERVACIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>';
+            }
+
+            $establecimiento_detallado = '';
+            if ($row['tp_registro'] == 1) {
+                $establecimiento_detallado = strtoupper($row['tipo_establecimiento'] . ' ' . $row['nombre_establecimiento']) . ' [' . strtoupper($row['abrev_establecimiento']) . ']';
+            } else {
+                $establecimiento_detallado = 'P.I. - ' . strtoupper($row['nombre_establecimiento']);
+            }
+
+            // 🛠️ REPARADO: Mapeo cromático quinquenal convertido enteramente a inline-styles nativos de HTML4
+            $style_2026 = ($row['g_2026'] > 0) ? 'background: #f0fdf4; font-weight: bold; color: #16a34a; text-align: right;' : 'color: #94a3b8; text-align: right;';
+            $style_2027 = ($row['g_2027'] > 0) ? 'background: #f0fdf4; font-weight: bold; color: #16a34a; text-align: right;' : 'color: #94a3b8; text-align: right;';
+            $style_2028 = ($row['g_2028'] > 0) ? 'background: #f0fdf4; font-weight: bold; color: #16a34a; text-align: right;' : 'color: #94a3b8; text-align: right;';
+            $style_2029 = ($row['g_2029'] > 0) ? 'background: #f0fdf4; font-weight: bold; color: #16a34a; text-align: right;' : 'color: #94a3b8; text-align: right;';
+            $style_2030 = ($row['g_2030'] > 0) ? 'background: #f0fdf4; font-weight: bold; color: #16a34a; text-align: right;' : 'color: #94a3b8; text-align: right;';
+
+            $tabla .= '
+            <tr style="background: #ffffff;">
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: center; font-weight: bold; background: #f8fafc; color: #94a3b8; width: 2%;">' . $nro . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; font-weight: bold; color: #475569; width: 7%;">' . strtoupper($row['dist_distrital']) . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; width: 8%;">' . strtoupper($row['responsable']) . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; font-weight: bold; color: #555555; width: 10%;">' . $establecimiento_detallado . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; font-weight: bold; color: #555555; width: 10%;">' . strtoupper($row['nombre_equipamiento']) . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; width: 8%;">' . strtoupper($row['servicio_unidad']) . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; width: 8%;">' . strtoupper($row['ubicacion_fisica']) . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; width: 5%;">' . strtoupper($row['tp_compra_nombre']) . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: center; font-weight: bold; width: 4%;">' . $row['par_codigo'] . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: center; font-weight: bold; color: #334155; width: 3%;">' . intval($row['cantidad']) . '</td>
+<td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: center; font-weight: bold; color: #334155; width: 3%;">' . intval($row['cantidad']) . '</td>
+                
+                // 🛠️ COMPLETADO: Celdas Financieras e Inyección de Estilos en Línea Quinquenales Saneados
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: right; width: 5%;">' . number_format($row['costo_unitario'], 2, '.', ',') . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: right; font-weight: bold; background: #f8fafc; color: #334155; width: 6%;">' . number_format($row['costo_total'], 2, '.', ',') . '</td>
+                
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; width: 4.5%; ' . $style_2026 . '">' . number_format($row['g_2026'], 2, '.', ',') . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; width: 4.5%; ' . $style_2027 . '">' . number_format($row['g_2027'], 2, '.', ',') . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; width: 4.5%; ' . $style_2028 . '">' . number_format($row['g_2028'], 2, '.', ',') . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; width: 4.5%; ' . $style_2029 . '">' . number_format($row['g_2029'], 2, '.', ',') . '</td>
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; width: 4.5%; ' . $style_2030 . '">' . number_format($row['g_2030'], 2, '.', ',') . '</td>
+                
+                <td style="font-size: 6.5px; vertical-align: middle; border: 0.5px solid #b3b3b3; padding: 4px 3px; text-align: left; width: 6.5%;">' . htmlspecialchars(strtoupper($row['observaciones']), ENT_QUOTES, 'UTF-8') . '</td>
+            </tr>';
+
+            // 🌟 DISPARADOR DE CIERRE DE PÁGINA: Al llegar a 22 filas, cierra la tabla y sella con el corte </page>
+            if ($fila_actual == $limite_filas && $nro < $total_items) {
+                $tabla .= '
+                </tbody>
+                </table>
+                </page>';
+                $fila_actual = 0; // Reseteamos contador geométrico para la siguiente página
+            }
+        }
+
+        // Si el bucle terminó y quedan registros colgados, cerramos la última página de forma armoniosa
+        if ($fila_actual > 0 || $nro == $total_items) {
+            $tabla .= '
+            </tbody>
+            </table>';
+
+            // Inyección del bloque de firmas institucional solo al final de la última hoja del reporte
+            $tabla .= '
+            <div style="width: 100%; margin-top: 15mm; text-align: center; display: block;">
+                <p style="font-size: 11px; margin: 0; padding: 0;"><strong>FIRMA RESPONSABLE NACIONAL DNP</strong></p>
+            </div>
+            </page>';
+        }
+
+        // Caso de resguardo técnico por si el reporte de la distrital jala 0 filas
+        if ($nro === 0) {
+            $tabla .= '
+            <page orientation="landscape" backtop="32mm" backbottom="15mm" backleft="10mm" backright="10mm">
+            ' . $this->cabecera_report($equipamiento, $dist_id) . '
+            <table style="width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif;">
+            <tbody>
+                <tr style="background: #ffffff;">
+                    <td style="text-align: center; font-weight: bold; width:100%; padding: 30px; color: #94a3b8; font-style: italic; font-size:12px; border: 0.5px solid #b3b3b3;">
+                        ⚠️ No se identificaron requerimientos de equipamiento médico registrados para la presente gestión distrital.
+                    </td>
+                </tr>
+            </tbody>
+            </table>
+            </page>';
+        }
+
+        return $tabla;
+    }*/
+
+
+
+
+
     public function rep_diagnostico_equipamiento($dist_id) {
         $equipamiento = $this->model_diagnosticoequip->get_diagnostico_equipamiento_activo();
         if($dist_id==0){
@@ -1407,20 +1580,33 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
 
     /// ==== MIGRACION EXCEL DE EQUIPAMIENTO 2027
-      public function valida_migracion_equipamiento() {
-        ini_set('max_execution_time', 300); // 5 minutos
-        ini_set('memory_limit', '512M');    // Aumentar memoria
+       public function valida_migracion_equipamiento() {
+        ini_set('max_execution_time', 450); // 7.5 minutos de respiro para la CNS
+        ini_set('memory_limit', '512M');    // Aumentar memoria para lotes masivos
+
         $this->load->library('excel'); 
         $dist_id = $this->input->post('dist_id');
-        $get_unidad = $this->model_componente->get_componente($com_id, $this->gestion);
+        $distrital = $this->model_diagnosticoequip->get_distrital($dist_id);
+        
+        // Catálogo indexado oficial de Partidas de Gasto institucionales (Clave => Código - Nombre)
+        $partidas_gastos = array(
+            "149" => "39400",
+            "173" => "43110",
+            "174" => "43120",
+            "179" => "43330",
+            "181" => "43400",
+            "182" => "43500",
+            "183" => "43600",
+            "184" => "43700"
+        );
 
-        if (empty($get_unidad) || count($get_unidad) == 0) {
-            echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información de la Unidad Organizacional. Verifique su sesión.')));
+        if (empty($distrital) || count($distrital) == 0) {
+            echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'mensaje' => 'No se encontró información de la Distrital. Verifique su sesión.'));
             return;
         }
 
         if (!isset($_FILES['archivo_f5']) || empty($_FILES['archivo_f5']['tmp_name'])) {
-            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
+            echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'mensaje' => 'Por favor, seleccione un archivo Excel válido.'));
             return;
         }
 
@@ -1432,50 +1618,68 @@ class CDiagnostico_equipamiento extends CI_Controller {
             $archivoTipo = PHPExcel_IOFactory::identify($archivo);
             $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
             
-            // OPTIMIZACIÓN DE MEMORIA: Ignoramos estilos gráficos pesados para no colapsar la RAM
-            $lector->setReadDataOnly(true);
+            // Forzamos FALSE para resolver las fórmulas internas del cronograma quinquenal
+            $lector->setReadDataOnly(false);
             
             $phpExcel    = $lector->load($archivo);
             $hoja        = $phpExcel->getSheet(0);
             $filasMax    = $hoja->getHighestRow();
             
-            // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
+            // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA EXACTA (A hasta R = 18 Columnas según imagen) ---
             $columnaMaxLetra = $hoja->getHighestDataColumn(); 
             $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
-            $limitePermitido = 20; 
+            $limitePermitido = 18; 
 
             if ($totalColumnas != $limitePermitido) {
-                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'T').")));
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'mensaje' => "El archivo tiene $totalColumnas columnas. La estructura oficial exige exactamente $limitePermitido columnas (Hasta la 'R')."));
                 return;
             }
 
             // --- 2. VALIDACIÓN FILA POR FILA ---
-           for ($i = 2; $i <= $filasMax; $i++) {
-                $prod_id = 0;
-                $par_id  = 0;
+            for ($i = 2; $i <= $filasMax; $i++) {
+                $establecimiento_id = 0;
+                $par_id = 0;
                 
                 // Extraer valores básicos de la fila activa según la imagen enviada
-                $cod_act       = trim($hoja->getCell('A' . $i)->getValue());
-                $partida       = trim($hoja->getCell('B' . $i)->getValue());
-                $requerimiento = trim($hoja->getCell('C' . $i)->getValue());
-                $unidad_medida = trim($hoja->getCell('D' . $i)->getValue());
+                $cod_est       = trim($hoja->getCell('A' . $i)->getValue()); // ID ESTABLECIMIENTO
+                $responsable   = trim($hoja->getCell('B' . $i)->getValue());
+                $nombre_equipo = trim($hoja->getCell('C' . $i)->getValue());
+                $servicio      = trim($hoja->getCell('D' . $i)->getValue());
+                $ubicacion     = trim($hoja->getCell('E' . $i)->getValue());
+                $tp_compra_raw = trim($hoja->getCell('F' . $i)->getCalculatedValue());
+                $partida       = trim($hoja->getCell('G' . $i)->getCalculatedValue());
                 
-                $cantidad_raw  = $hoja->getCell('E' . $i)->getCalculatedValue();
-                $precio_raw    = $hoja->getCell('F' . $i)->getCalculatedValue();
-                $total_raw     = $hoja->getCell('G' . $i)->getCalculatedValue();
-                $observacion   = trim($hoja->getCell('T' . $i)->getValue());
+                $cantidad_raw  = $hoja->getCell('H' . $i)->getCalculatedValue();
+                $precio_raw    = $hoja->getCell('I' . $i)->getCalculatedValue();
+                $total_raw     = $hoja->getCell('J' . $i)->getCalculatedValue();
+                
+                $ade_infra     = trim($hoja->getCell('P' . $i)->getValue());
+                $ade_inst      = trim($hoja->getCell('Q' . $i)->getValue());
+                $observaciones = trim($hoja->getCell('R' . $i)->getValue());
 
-                // ==========================================================================
-                // 🛠️ AJUSTADO: TOLERANCIA CERO A FILAS VACÍAS O CON RESIDUOS DE FORMATO
-                // ==========================================================================
-                if (empty($cod_act) && empty($partida) && empty($requerimiento) && (empty($total_raw) || floatval($total_raw) == 0)) {
-                    
-                    // Alerta institucional con la instrucción didáctica de limpieza
-                    $errores[] = "🚨 RECHAZO DE PLANILLA: Se detectó que la Fila N° $i está completamente vacía o contiene residuos de formato invisible de Excel. Por favor, abra su archivo Excel, seleccione la Fila $i completa (haciendo clic en el número de la fila a la izquierda), haga clic derecho y elija la opción 'Eliminar' para purgar la planilla antes de reintentar la subida.";
-                    
-                    // Detiene el bucle por completo para no procesar hileras vacías inferiores
+                // 🌟 BLINDAJE ANTIFALLA CRÍTICO: Filtra, aborta y detiene el procesamiento ante hileras vacías inferiores
+                if (empty($cod_est) && empty($partida) && empty($responsable) && (empty($nombre_equipo) || floatval($total_raw) == 0)) {
+                    $errores[] = "🚨 RECHAZO DE PLANILLA: Se detectó que la Fila N° $i está completamente vacía o contiene residuos de formato invisible. Por favor, elimine las filas en blanco de su archivo antes de reintentar.";
                     break; 
                 }
+
+                // ==========================================================================
+                // 🛠️ REPARADO: VALIDACIÓN ESTRICTA DE TIPO DE COMPRA (SOLO NUMÉRICOS 1 Ó 2)
+                // ==========================================================================
+                if ($tp_compra_raw === NULL || $tp_compra_raw === '') {
+                    $errores[] = "Fila $i: El 'TIPO DE COMPRA' (Columna F) es un campo obligatorio.";
+                } else {
+                    // Validamos que sea un valor numérico y que corresponda únicamente a las opciones 1 ó 2
+                    if (!is_numeric($tp_compra_raw)) {
+                        $errores[] = "Fila $i: Error en 'TIPO DE COMPRA'. Se detectó texto libre ('$tp_compra_raw'). El formato oficial exige únicamente códigos numéricos: '1' para Nuevo o '2' para Reposición.";
+                    } else {
+                        $tp_compra_int = intval($tp_compra_raw);
+                        if ($tp_compra_int !== 1 && $tp_compra_int !== 2) {
+                            $errores[] = "Fila $i: El valor numérico del 'TIPO DE COMPRA' ($tp_compra_raw) está fuera de rango. Solo se permite '1' (Nuevo) o '2' (Reposición).";
+                        }
+                    }
+                }
+                $tp_compra = intval($tp_compra_raw);
 
                 // 📋 REGLA 1: VALIDACIÓN DE CANTIDAD ENTERA (Sin decimales)
                 if ($cantidad_raw === NULL || trim($cantidad_raw) === '' || !is_numeric($cantidad_raw)) {
@@ -1494,7 +1698,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
                 } else {
                     $precio_float = floatval($precio_raw);
                     if (round($precio_float, 2) != $precio_float) {
-                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio_raw) excede el límite. Solo se aceptan hasta 2 decimales (Ej: 2500.00).";
+                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio_raw) excede el límite. Solo se aceptan hasta 2 decimales.";
                     }
                 }
                 $precio = round(floatval($precio_raw), 2);
@@ -1507,85 +1711,80 @@ class CDiagnostico_equipamiento extends CI_Controller {
                     $errores[] = "Fila $i: El 'PRECIO TOTAL' registrado ($total_raw) no coincide con la ecuación aritmética (Cantidad: $cantidad * Precio: $precio = $total_calculado).";
                 }
 
-                // Validación y alineación relacional con la actividad (Formulario N° 4)
-                if (!empty($cod_act)) {
-                    $get_form4 = $this->model_producto->verif_form4_vigente_para_alineacion($com_id, $cod_act);
+                // Validación de correspondencia del Establecimiento de Salud
+                if (!empty($cod_est)) {
+                    // 🛠️ REPARADO: Removida la variable fantasma $cod_act para que el modelo no colapse
+                    $get_establecimiento = $this->model_diagnosticoequip->get_establecimiento(intval($cod_est), $dist_id,$this->gestion);
                     
-                    if (!empty($get_form4) && count($get_form4) == 1) {
-                        $prod_id = $get_form4[0]['prod_id']; 
+                    if (!empty($get_establecimiento) && count($get_establecimiento) == 1) {
+                        $establecimiento_id = $get_establecimiento[0]['act_id']; 
                     } else {
-                        if (count($get_form4) > 1) {
-                            $errores[] = "Fila $i: Alerta de Consistencia -> Existe más de una actividad registrada con el código ($cod_act) para esta Unidad Organizacional. Sanee sus códigos.";
-                        } else {
-                            $errores[] = "Fila $i: El CÓDIGO DE ACTIVIDAD ($cod_act) no corresponde a ninguna actividad vigente en el Formulario N° 4 para esta Unidad Organizacional.";
-                        }
+                        $errores[] = "Fila $i: El CÓDIGO DE ESTABLECIMIENTO ($cod_est) no corresponde a ningún Establecimiento activo para esta Distrital en la gestión " . $this->gestion;
                     }
                 } else {
-                    $errores[] = "Fila $i: El 'CÓDIGO DE ACTIVIDAD' es obligatorio para enlazar físicamente el requerimiento.";
+                    $errores[] = "Fila $i: El 'CÓDIGO DE ESTABLECIMIENTO' es un campo obligatorio relacional.";
                 }
 
-                 // Validación de Partida
+                // 🛠️ REPARADO: Búsqueda elástica de Partidas de Gasto contra el catálogo indexado de la CNS
                 if (!empty($partida)) {
-                    if (strlen($partida) != 5) {
-                        $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres.";
+                    $par_id_buscado = array_search(trim($partida), $partidas_gastos);
+                    if ($par_id_buscado !== false) {
+                        $par_id = intval($par_id_buscado);
                     } else {
-                        $get_partida = $this->model_partidas->dato_par_codigo($partida);
-                        if (!empty($get_partida) && count($get_partida) == 1) {
-                            $par_id = $get_partida[0]['par_id'];
-                        } else {
-                            $errores[] = "Fila $i: La partida contable ($partida) no existe en el clasificador de la base de datos.";
-                        }
+                        $errores[] = "Fila $i: La partida contable ($partida) no corresponde a ninguna de las partidas de equipamiento autorizadas.";
                     }
                 } else {
                     $errores[] = "Fila $i: La 'PARTIDA' es obligatoria.";
                 }
 
-                // 📋 REGLA 4: VALIDACIÓN MÁSTER Y RESOLUCIÓN DE FÓRMULAS EN LOS 12 MESES (H hasta la S)
-                $suma_meses = 0;
-                $columnas_meses = array('H' => 1,'I' => 2,'J' => 3,'K' => 4,'L' => 5,'M' => 6,'N' => 7,'O' => 8,'P' => 9,'Q' => 10,'R' => 11,'S' => 12);
-                $meses_valores = array();
+                // ==========================================================================
+                // 🛠️ REPARADO: RESOLUCIÓN QUINQUENAL DE REQUERIMIENTOS (Columnas K hasta la O)
+                // ==========================================================================
+                $suma_años = 0;
+                $columnas_quinquenales = array('K' => 2026, 'L' => 2027, 'M' => 2028, 'N' => 2029, 'O' => 2030);
+                $cronograma_valores = array();
                 
-                foreach ($columnas_meses as $col => $mes_nro) {
-                    // 🛠️ REPARADO: getCalculatedValue() resuelve la fórmula de Excel (ej: =SUMA(), =5000/12) y extrae el resultado numérico puro
+                foreach ($columnas_quinquenales as $col => $anio) {
                     $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
-                    $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+                    $val_anio    = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
                     
-                    if (!is_numeric($val_mes)) {
-                        $errores[] = "Fila $i: Valor o fórmula no numérica detectada en la columna del mes '$col'.";
+                    if (!is_numeric($val_anio)) {
+                        $errores[] = "Fila $i: Valor no numérico o fórmula rota detectada en el año quinquenal $anio (Columna $col).";
                         break;
                     }
                     
-                    $monto_mes = round(floatval($val_mes), 2);
-                    $suma_meses += $monto_mes;
-                    $meses_valores[$mes_nro] = $monto_mes; 
+                    $monto_anio = round(floatval($val_anio), 2);
+                    $suma_años += $monto_anio;
+                    $cronograma_valores[$anio] = $monto_anio; 
                 }
 
-                // 📋 REGLA 5: COMPROBACIÓN DE COINCIDENCIA (Suma de meses == Costo Total)
-                if (abs($suma_meses - $total_archivo) > 0.05) { 
-                    $errores[] = "Fila $i: La suma de la distribución mensual ($suma_meses) no cuadra con el PRECIO TOTAL ($total_archivo) de la celda G.";
+                if (abs($suma_años - $total_archivo) > 0.05) { 
+                    $errores[] = "Fila $i: La suma del cronograma quinquenal ($suma_años) no coincide con el COSTO TOTAL ($total_archivo) de la celda J.";
                 }
 
                 if (empty($errores)) {
                     $data_insertar[] = array(
                         'maestro' => array(
-                            'ins_codigo'              => $this->session->userdata("name") . '/REQ/' . $this->gestion,
-                            'ins_fecha_requerimiento' => date('Y-m-d'), 
-                            'par_id'                  => $par_id,
-                            'ins_detalle'             => strtoupper($this->security->xss_clean($requerimiento)),
-                            'ins_unidad_medida'       => strtoupper($this->security->xss_clean($unidad_medida)),
-                            'ins_cant_requerida'      => $cantidad,
-                            'ins_costo_unitario'      => $precio,
-                            'ins_costo_total'         => $total_archivo,
-                            'ins_observacion'         => strtoupper($this->security->xss_clean($observacion)),
-                            'fun_id'                  => $this->fun_id,
-                            'aper_id'                 => $get_unidad[0]['aper_id'], 
-                            'com_id'                  => $get_unidad[0]['com_id'], 
-                            'form4_cod'               => intval($cod_act), 
-                            'ins_mod'                 => 1, // Conmutador de registro insertado
-                            'num_ip'                  => $this->input->ip_address(), 
-                            'nom_ip'                  => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                            'equip_id'                   => 1, // Gestión activa unificada
+                            'dist_id'                    => $dist_id,
+                            'act_id'                     => $establecimiento_id,
+                            'responsable'                => strtoupper($this->security->xss_clean($responsable)),
+                            'nombre_equipamiento'        => strtoupper($this->security->xss_clean($nombre_equipo)),
+                            'nombre_inversion'        => '',
+                            'servicio_unidad'            => strtoupper($this->security->xss_clean($servicio)),
+                            'ubicacion_fisica'           => strtoupper($this->security->xss_clean($ubicacion)),
+                            'cantidad'                   => $cantidad,
+                            'costo_unitario'             => $precio,
+                            'costo_total'                => $total_archivo,
+                            'par_id'                     => $par_id,
+                            'tp_compra'                  => $tp_compra,
+                            'tp_adecuacion_infra'        => strtoupper($this->security->xss_clean($ade_infra)),
+                            'tp_adecuacion_instalacion'  => strtoupper($this->security->xss_clean($ade_inst)),
+                            'observaciones'              => strtoupper($this->security->xss_clean($observaciones)),
+                            'estado'                     => 1, // 1 = Registro Activo Válido
+                            'tp_registro'                => 1
                         ),
-                        'meses' => $meses_valores // Array indexado del 1 al 12 resuelto por fórmulas
+                        'cronograma' => $cronograma_valores // Vector quinquenal indexado (2026 al 2030) resuelto por fórmulas
                     );
                 }
             }
@@ -1595,40 +1794,30 @@ class CDiagnostico_equipamiento extends CI_Controller {
             // ==========================================================================
             if (empty($errores) && count($data_insertar) > 0) {
                 
-                // Levantamos los muros de control transaccional para aislar fallas de presupuesto
+                // Levantamos los muros de control transaccional para aislar fallas de presupuesto de la CNS
                 $this->db->trans_start(); 
                 $filas_insertadas_conteo = 0;
 
                 foreach ($data_insertar as $registro) {
+                    // A. Inserción directa de la ficha en la tabla maestra de equipamiento
+                    $this->db->insert('public.formulario_diagnostico_equipamiento', $registro['maestro']);
                     
-                    // 🛠️ REPARADO: Se inserta únicamente la estructura plana del sub-arreglo 'maestro'
-                    $this->db->insert('insumos', $registro['maestro']);
-                    
-                    // Recuperamos el ID autogenerado asignado por la secuencia en Postgres
-                    $ins_id = $this->db->insert_id();
-
-                    /*-----------------------------------------------*/
-                    // B. Registro de la alineación relacional en la tabla _insumoproducto
-                    $data_to_store2 = array(
-                        'prod_id' => $prod_id, // Variable física relacional obtenida en la validación
-                        'ins_id'  => $ins_id
-                    );
-                    $this->db->insert('_insumoproducto', $data_to_store2);
-                    /*---------------------------------------------*/
-                    
-                    /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
-                    // 🛠️ REPARADO: Se recorre la colección real 'meses' usando $m_id para no pisar el iterador superior $i
-                    for ($m_id = 1; $m_id <= 12; $m_id++) {
-                        $pfin = isset($registro['meses'][$m_id]) ? $registro['meses'][$m_id] : 0;
+                    // Recuperamos el ID autogenerado asignado por la secuencia de Postgres (integer)
+                    $nuevo_form_equip_id = $this->db->insert_id(); 
+                    foreach ($registro['cronograma'] as $anio_key => $monto_financiero) {
                         
-                        if ($pfin != 0) {
-                            $data_to_store4 = array( 
-                                'ins_id'  => $ins_id,          // Id Insumo maestro correlativo
-                                'mes_id'  => $m_id,            // Mes dinámico (1 al 12)
-                                'ipm_fis' => $pfin,            // Valor físico financiero del mes resuelto
-                                'g_id'    => $this->gestion,   // Gestión POA activa de sesión
+                        // 📋 REGLA EXIGIDA: Solo se registra en PostgreSQL si el año tiene valor en el archivo
+                        if ($monto_financiero > 0) {
+                            
+                            // Mapeamos los datos de forma exacta a las columnas de public.temporalidad_diagnostico_equipamiento
+                            $data_temporalidad_vertical = array(
+                                'form_equip_id' => intval($nuevo_form_equip_id), // Clave foránea relacional
+                                'g_id'          => intval($anio_key),           // Inyecta el año real (2026, 2027... 2030)
+                                'prog_equi'     => floatval($monto_financiero)  // Valor numeric(18,2) con decimales limpios
                             );
-                            $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+                            
+                            // Inserción limpia por ráfaga unitaria
+                            $this->db->insert('public.temporalidad_diagnostico_equipamiento', $data_temporalidad_vertical);
                         }
                     }
                     
@@ -1638,31 +1827,31 @@ class CDiagnostico_equipamiento extends CI_Controller {
                 // Cerramos e indicamos a CodeIgniter que evalúe el estatus de las inserciones
                 $this->db->trans_complete();
 
-                // Si PostgreSQL detecta un desbordamiento numérico o violación de tope, aplica Rollback total
+                // Si la base de datos detecta una violación de llave foránea o desbordamiento, aplica Rollback total
                 if ($this->db->trans_status() === FALSE) {
                     echo json_encode(array(
                         'status'    => 'error', 
                         'respuesta' => 'error', 
-                        'mensaje'   => 'PostgreSQL rechazó las restricciones físicas o techos de los requerimientos. Matriz revertida de forma íntegra.'
+                        'mensaje'   => 'PostgreSQL rechazó las restricciones físicas o vinculaciones del equipamiento. Matriz revertida de forma íntegra.'
                     ));
                     return;
                 }
 
-                // 🌟 ÉXITO ABSOLUTO: Despachamos el payload esperado por tu $.ajax en form4.js
+                // 🌟 ÉXITO TRANSACCIONAL: Despachamos el payload esperado por tu $.ajax en form4.js
                 echo json_encode(array(
                     'status'           => 'success',
                     'respuesta'        => 'correcto',
-                    'mensaje'          => '¡Matriz de requerimientos contables consolidados e inyectados en el sistema de forma exitosa!',
+                    'mensaje'          => '¡Matriz quinquenal de equipamiento distrital validada e inyectada en el sistema de forma exitosa!',
                     'filas_procesadas' => $filas_insertadas_conteo
                 ));
 
             } else {
-                // Si la colección de errores contiene advertencias estructurales, frena e informa al usuario
+                // Si la colección de errores contiene advertencias estructurales o cortes por fila vacía, frena e informa
                 echo json_encode(array(
                     'status'    => 'error',
                     'respuesta' => 'error',
-                    'mensaje'   => 'Se detectaron observaciones de validación en la estructura o coincidencia de la plantilla.',
-                    'errores'   => !empty($errores) ? $errores : array("No se encontraron registros consistentes para migrar.")
+                    'mensaje'   => 'Se detectaron observaciones de validación en la estructura o coincidencia horizontal de la plantilla.',
+                    'errores'   => !empty($errores) ? $errores : array("No se encontraron registros consistentes elegibles para migrar.")
                 ));
             }
 

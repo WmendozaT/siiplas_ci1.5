@@ -200,7 +200,7 @@ class Certificacionpoa extends CI_Controller{
                   </td>
                   <td><center>'.$row['aper_programa'].''.$row['aper_proyecto'].''.$row['aper_actividad'].'</center></td>
                   <td>'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].'</td>
-                  <td>'.$row['escalon'].'</td>
+                  <td></td>
                   <td>'.$row['nivel'].'</td>
                   <td>'.$row['tipo_adm'].'</td>
                   <td>'.strtoupper($row['dep_departamento']).'</td>
@@ -222,7 +222,7 @@ class Certificacionpoa extends CI_Controller{
 
     /*---- Lista de Proyectos de Inversion (2020) -----*/
     public function list_pinversion($proy_estado){
-      $proyectos=$this->model_proyecto->list_pinversion(1,$proy_estado);
+      $proyectos=$this->model_proyecto->list_unidades(1,$proy_estado);
       $tabla='';
       $tabla.='
         <table id="dt_basic" class="table table-bordered" style="width:100%;">

@@ -414,11 +414,35 @@ class model_diagnosticoequip extends CI_Model {
     }
 
 
+    /*--------- Get Establecimientos Nacional ----------*/
+    public function get_list_establecimientos_nacional($gestion){
+        $sql = 'SELECT *
+                from vlista_establecimientos_salud
+                where aper_gestion='.$gestion.'
+                order by dist_id,tn_id asc';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
     /*--------- Get Establecimientos x distrital ----------*/
     public function get_establecimientos_distrital($dist_id,$gestion){
         $sql = 'SELECT *
                 from vlista_establecimientos_salud
                 where dist_id='.$dist_id.' and aper_gestion='.$gestion.'
+                order by tn_id asc';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*--------- Get Establecimiento de Salud ----------*/
+    public function get_establecimiento($act_id,$dist_id,$gestion){
+        $sql = 'SELECT *
+                from vlista_establecimientos_salud
+                where act_id='.$act_id.' and dist_id='.$dist_id.' and aper_gestion='.$gestion.'
                 order by tn_id asc';
 
         $query = $this->db->query($sql);

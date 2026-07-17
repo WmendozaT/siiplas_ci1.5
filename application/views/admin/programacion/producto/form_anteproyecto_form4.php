@@ -399,18 +399,53 @@
     </div>
 
     <!---- MODAL VER REQUERIMIENTOS ---->
-    <div class="modal fade" id="modal_ver_form5" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-      <div class="modal-dialog" id="mdialTamanio3">
-        <div class="modal-content">
-          <div class="modal-header">
-              <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-          </div>
-          <div class="modal-body">
-              <div id="contenido"></div>
-          </div>
+    <div class="modal fade" id="modal_ver_form5" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.3);">
+        <div class="modal-dialog modal-lg" id="mdialTamanio3" style="max-width: 90%; margin: 30px auto; transition: transform 0.3s ease-out;">
+            <div class="modal-content" style="border-radius: 6px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border: 1px solid #e2e8f0; overflow: hidden; background: #ffffff;">
+                
+                <!-- CABECERA DEL MODAL CORPORATIVA -->
+                <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;">
+                    
+                    <h4 class="modal-title" style="font-family: Helvetica, Arial, sans-serif; font-weight: 700; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa fa-list-alt text-primary" style="font-size: 15px;"></i> 
+                        Cronograma de Requerimientos Asignados (Form 5)
+                    </h4>
+
+                    <!-- Botón de Salida con Diseño de Alta Utilidad -->
+                    <button type="button" class="close" data-dismiss="modal" id="amcl" title="CERRAR VENTANA Y SALVAGUARDAR DATOS" style="font-size: 11px; font-weight: 700; color: #ffffff; background: #ef4444; border: none; padding: 6px 14px; border-radius: 4px; opacity: 0.9; cursor: pointer; text-transform: uppercase; transition: all 0.2s ease; display: flex; align-items: center; gap: 5px;">
+                        <i class="fa fa-times-circle" style="font-size: 13px;"></i> 
+                        <span aria-hidden="true">Salir del Formulario</span>
+                    </button>
+
+                </div>
+
+                <!-- CUERPO TRANSACCIONAL: Receptor de Matrices AJAX -->
+                <div class="modal-body" style="padding: 20px; background: #ffffff; min-height: 300px; max-height: calc(100vh - 150px); overflow-y: auto;">
+                    
+                    <!-- Contenedor Dinámico sobre el cual el JS estampa la Rejilla o el Spinner Vectorial -->
+                    <div id="contenido" style="transition: all 0.3s ease;"></div>
+                    
+                </div>
+                
+                <!-- PIE DE CONTROL DE SEGURIDAD (CNS AUDIT) -->
+                <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 20px; text-align: right; margin-top: 0;">
+                    <small style="font-family: Helvetica, Arial, sans-serif; font-size: 10.5px; color: #94a3b8; font-weight: 500;">
+                        <i class="fa fa-shield"></i> Matriz auditada en tiempo real bajo entorno de red SIIPLAS v2.0
+                    </small>
+                </div>
+
+            </div>
         </div>
-      </div>
     </div>
+
+    <!-- Estilo CSS de Inyección Rápida para asegurar el efecto Hover del botón de cierre -->
+    <style>
+        #modal_ver_form5 button.close:hover {
+            background: #dc2626 !important;
+            opacity: 1 !important;
+            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+        }
+    </style>
     
 
         <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->

@@ -784,25 +784,93 @@ function numerosDecimales(evt) {
     });
 /// -------------------------------------------
 
+  //// ELIMINAR ACTIVIDAD 2027
+    function delete_form4(prod_id) {
+        if (!prod_id || prod_id === undefined || prod_id === 0) {
+            if (typeof alertify !== "undefined") alertify.error("❌ Identificador de actividad inválido.");
+            return false;
+        }
 
+        // Cabecera institucional POA CNS de doble confirmación
+        var mensaje_advertencia = "🚨 ¿ESTÁ SEGURO DE ELIMINAR ESTA ACTIVIDAD?<br><br>" +
+                                  "<b>Consecuencias Transaccionales:</b><br>" +
+                                  "• Se desactivará el registro del Formulario N° 4.<br>" +
+                                  "• La numeración correlativa se re-ajustará en pantalla.<br><br>" +
+                                  "<i>Esta acción quedará registrada en las bitácoras del SIIPLAS v2.0.</i>";
 
+        // Alerta de confirmación clásica de Alertify
+        alertify.confirm(mensaje_advertencia, function (a) {
+            if (a) { 
+                var url = base + "index.php/programacion/producto/desactiva_producto";
+                
+                // Buscamos la fila HTML exacta en el DOM para dar feedback visual inmediato
+                var $fila_tr = $('#fila_prod_' + prod_id);
+                $fila_tr.css({'background-color': '#fee2e2', 'opacity': '0.6'}); // Tono rojo de advertencia de borrado
 
+                // Captura perimetral automática del Token CSRF de resguardo
+                var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
 
+                var request = $.ajax({
+                    url: url,
+                    type: "POST",
+                    dataType: "json",
+                    data: "prod_id=" + prod_id + token_seguridad
+                });
 
+                request.done(function (response) { 
+                    if (response.respuesta == 'correcto') {
+                        
+                        // 🌟 REPARACIÓN MÁSTER: Desvanecimiento de la fila en vivo sin recargar la pantalla
+                        $fila_tr.fadeOut(400, function() {
+                            $(this).remove(); // Remueve físicamente el nodo del árbol HTML
+                            
+                            if (typeof alertify !== "undefined") {
+                                alertify.success("✔ Se eliminó correctamente la actividad.");
+                            }
 
+                            // 🌟 RE-ENUMERACIÓN EN CALIENTE: Ajusta de forma automatizada los códigos visuales (1, 2, 3...)
+                            reordenar_codigos_actividades_pantalla_local();
+                        });
 
+                    } else {
+                        // Si el servidor rebota por alguna restricción (ej: tiene insumos amarrados)
+                        $fila_tr.css({'background-color': '#ffffff', 'opacity': '1'});
+                        if (typeof alertify !== "undefined") {
+                            alertify.error("🚨 Error: " + (response.message || "No se pudo desactivar el registro."));
+                        }
+                    }
+                });
 
+                request.fail(function (jqXHR, textStatus, errorThrown) {
+                    $fila_tr.css({'background-color': '#ffffff', 'opacity': '1'});
+                    console.error("CNS ERROR ELIMINACIÓN -> Status: " + textStatus + " | Detalle: " + errorThrown);
+                    if (typeof alertify !== "undefined") alertify.error("❌ Error de comunicación con el servidor.");
+                });
 
+            } else {
+                // El usuario canceló la acción
+                if (typeof alertify !== "undefined") alertify.error("CANCELADA");
+            }
+        });
 
+        return false;
+    }
 
-
-
-
-
-////============================================================
-
-    //// ELIMINAR ACTIVIDAD 2025
-  function delete_form4(prod_id){
+    /**
+     * Re-enumera visualmente las actividades remanentes en pantalla tras una eliminación
+     * Sincronizado al selector compacto id="prod_cod[ID]" de tu listado PHP
+     */
+    function reordenar_codigos_actividades_pantalla_local() {
+        var correlativo = 0;
+        // Recorremos todos los inputs de la grilla cuyos IDs inicien con 'prod_cod'
+        $('input[id^="prod_cod"]').each(function() {
+            correlativo++;
+            $(this).val(correlativo.toFixed(2)); // Mantiene el formato con dos decimales de tu value="'.round(..., 2).'"
+        });
+    }
+/*  function delete_form4(prod_id){
     alertify.confirm("DESEA ELIMINAR ACTIVIDAD ?", function (a) {
         if (a) { 
         //  alert(prod_id)
@@ -840,7 +908,7 @@ function numerosDecimales(evt) {
       });
     return false;
   }
-
+*/
 
 
 
@@ -1094,15 +1162,88 @@ function numerosDecimales(evt) {
 
 
       // /*------- ELIMINAR SOLO ACTIVIDADES Y REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
-      // function eliminar_form4_todos(){
-      //   alertify.confirm("DESEA ELIMINAR ACTIVIDADES ?", function (a) {
-      //     if (a) {
-      //       window.location=base+"index.php/prog/delete_form4/"+com_id;
-      //     } else {
-      //         alertify.error("OPCI\u00D3N CANCELADA");
-      //     }
-      //   });
-      // }
+    function eliminar_form4_todos() {
+    // Capturamos de forma dinámica el com_id oculto del DOM de tu vista
+    var com_id = $('input[name="com_id"]').val() || $('#com_id').val() || "";
+
+    if (com_id === "" || com_id === "0") {
+        if (typeof alertify !== "undefined") alertify.error("❌ Error: No se localizó el ID del Componente.");
+        return false;
+    }
+
+    // Cabecera institucional POA CNS de máxima advertencia
+    var mensaje_advertencia = "🚨 ¿ESTÁ COMPLETAMENTE SEGURO DE ELIMINAR TODO EL FORMULARIO?<br><br>" +
+                              "<b>Consecuencias Críticas:</b><br>" +
+                              "• Se borrarán TODAS las actividades de esta Unidad Organizacional.<br>" +
+                              "• Se purgarán en cascada todos sus requerimientos e insumos (Form 5).<br><br>" +
+                              "<i>Esta acción es destructiva e irreversible y se registra bajo auditoría.</i>";
+
+    // Primera Alerta: Confirmación de intencionalidad de Alertify
+    alertify.confirm(mensaje_advertencia, function (a) {
+        if (a) {
+            // Segunda Alerta: Doble confirmación para mitigar clics por error del operador
+            alertify.confirm("🚨 CORRECCIÓN DE SEGURIDAD: ¿Confirma la purga absoluta del Formulario N° 4?", function (confirmado) {
+                if (confirmado) {
+                    
+                    // 🛠️ CORREGIDO Y SINCRONIZADO: Apanta a delete_form4 para evitar el rebote 404/500 de HTML
+                    var url = base + "index.php/programacion/producto/delete_form4/" + com_id;
+                    
+                    // Bloqueamos la grilla visualmente dándole un fondo opaco de procesamiento
+                    $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '0.5', 'background-color': '#fef2f2'});
+                    if (typeof alertify !== "undefined") alertify.log("💥 Vaciando matriz en PostgreSQL, espere...");
+
+                    // Captura perimetral automática del Token CSRF de resguardo de la CNS
+                    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                    var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
+
+                    // Despachamos la petición asíncrona
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        dataType: "json",
+                        data: "com_id=" + com_id + token_seguridad,
+                        success: function (response) {
+                            // Verificamos de forma elástica ambas banderas de éxito del servidor
+                            if (response.respuesta == 'correcto' || response.status === 'success') {
+                                
+                                if (typeof alertify !== "undefined") {
+                                    alertify.success("✔ Se vació correctamente el Formulario N° 4.");
+                                }
+                                
+                                // Refresco limpio automático controlado tras un breve segundo de retraso
+                                setTimeout(function() {
+                                    window.location.reload(true);
+                                }, 1500);
+
+                            } else {
+                                // Restablecemos los colores originales de la grilla si el controlador manda un error controlado
+                                $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
+                                if (typeof alertify !== "undefined") {
+                                    alertify.error("🚨 Error: " + (response.message || "No se pudo vaciar la matriz."));
+                                }
+                            }
+                        },
+                        error: function (xhr, textStatus, errorThrown) {
+                            $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
+                            console.error("CNS ERROR VACIADO TOTAL -> Status: " + textStatus + " | Detalle: " + errorThrown);
+                            
+                            // Muestra en la alerta el HTML de error de CodeIgniter si el servidor explota por base de datos
+                            var msg_error_crudo = "❌ FALLA CRÍTICA EN EL CONTROLADOR PHP:\n\n" + 
+                                                  "Código HTTP: " + xhr.status + " (" + errorThrown + ")\n\n" +
+                                                  "Revise los logs de Apache o verifique la consola (F12).";
+                            alert(msg_error_crudo);
+                            
+                            if (typeof alertify !== "undefined") alertify.error("❌ Falla de red. PostgreSQL abortó el vaciado.");
+                        }
+                    });
+                }
+            });
+        } else {
+            if (typeof alertify !== "undefined") alertify.error("OPCIÓN CANCELADA");
+        }
+    });
+}
 
 
       // /*------- UPDATE CÓDIGO --------*/
@@ -1408,45 +1549,102 @@ function numerosDecimales(evt) {
 
 
 
-    /*---- VER REQUERIMIENTOS CARGADOS POR COMPONENTE ---*/
-  $(function () {
-    $(".ver_requerimientos").on("click", function (e) {
-        com_id = $(this).attr('name');
-        
-        $('#contenido').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Requerimientos !</div>');
-        
-        var url = base+"index.php/programacion/cservicios/get_ver_requerimientos";
-        var request;
-        if (request) {
-            request.abort();
-        }
-        request = $.ajax({
-            url: url,
-            type: "POST",
-            dataType: 'json',
-            data: "com_id="+com_id
-        });
+  /*---- VER REQUERIMIENTOS CARGADOS POR UNIDAD RESPONSABLE ---*/
+    $(function () {
+        // 🌟 REPARACIÓN CORE: Ámbito global del objeto de petición para un Abort legítimo
+        var xhr_requerimientos = null;
 
-        request.done(function (response, textStatus, jqXHR) {
-        if (response.respuesta == 'correcto') {
-            $('#contenido').fadeIn(1000).html(response.tabla);
-           // $('#caratula').fadeIn(1000).html(response.caratula);
-        }
-        else{
-            alertify.error("ERROR AL RECUPERAR DATOS DE LOS SERVICIOS");
-        }
+        /**
+         * ESCUCHA OPTIMIZADA: Delegación global en el documento (Inmune a recargas AJAX de la grilla)
+         */
+        $(document).on("click", ".ver_requerimientos", function (e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            // Usamos el atributo estándar data-id o name de forma segura
+            var com_id = $btn.attr('name') || $btn.data('id'); 
 
+            if (!com_id || com_id === "0" || com_id === "") {
+                if (typeof alertify !== "undefined") alertify.error("⚠️ Identificador de componente inválido.");
+                return false;
+            }
+
+            // 🌟 REPARADO: Cancelación legítima de peticiones fantasmas en cola ante doble clic
+            if (xhr_requerimientos && xhr_requerimientos.readyState !== 4) {
+                xhr_requerimientos.abort();
+                console.log("CNS OPTIMIZACIÓN -> Petición previa abortada para salvaguardar canal de red.");
+            }
+
+            // Inyección inmediata del Pre-loader institucional de la CNS
+            $('#contenido').html(
+            '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 260px; padding: 40px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); margin: 15px 0; transition: all 0.3s ease;">' +
+                
+                // Spinner Vectorial con CSS puro (Sin GIFs pesados de red)
+                '<div style="position: relative; width: 50px; height: 50px; margin-bottom: 20px;">' +
+                    '<div style="box-sizing: border-box; display: block; position: absolute; width: 48px; height: 48px; border: 4px solid #cbd5e1; border-radius: 50%;"></div>' +
+                    '<div style="box-sizing: border-box; display: block; position: absolute; width: 48px; height: 48px; border: 4px solid transparent; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>' +
+                '</div>' +
+                
+                // Mensaje Principal Corporativo
+                '<h4 style="font-family: Helvetica, Arial, sans-serif; font-weight: 700; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px 0; padding: 0;">' +
+                    'Sincronizando Requerimientos' +
+                '</h4>' +
+                
+                // Micro-texto de progreso de red
+                '<p style="font-family: Helvetica, Arial, sans-serif; font-size: 11.5px; color: #64748b; margin: 0; padding: 0; font-weight: 500;">' +
+                    '<i class="fa fa-database text-primary" style="animation: pulse 1.5s infinite; margin-right: 4px;"></i> ' +
+                    'Conectando con la base de datos PostgreSQL, un momento por favor...' +
+                '</p>' +
+                
+                // Inyección dinámica de la regla CSS de animación (Blindado contra archivos CSS externos desactualizados)
+                '<style>' +
+                    '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }' +
+                    '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }' +
+                '</style>' +
+            '</div>'
+        );
+
+            // Captura perimetral automática del Token CSRF de resguardo
+            var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+            var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+            var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
+
+            // Ejecución transaccional AJAX optimizada
+            xhr_requerimientos = $.ajax({
+                url: base + "index.php/programacion/producto/get_ver_requerimientos",
+                type: "POST",
+                dataType: 'json',
+                cache: false, // Evita que el navegador cachee listados desactualizados
+                data: "com_id=" + com_id + token_seguridad
+            });
+
+            // Respuesta Exitosa
+            xhr_requerimientos.done(function (response) {
+                if (response.respuesta === 'correcto' || response.status === 'success') {
+                    // fadeIn controlado sin parpadeos bruscos de interfaz
+                    $('#contenido').hide().html(response.tabla).fadeIn(300);
+                    if (typeof alertify !== "undefined") alertify.success("✔ Requerimientos cargados.");
+                } else {
+                    $('#contenido').html('<div class="alert alert-danger">❌ Error: ' + (response.message || 'No se pudieron procesar los servicios.') + '</div>');
+                    if (typeof alertify !== "undefined") alertify.error("ERROR AL RECUPERAR DATOS DE LOS SERVICIOS");
+                }
+            });
+
+            // Falla de Canal de Red
+            xhr_requerimientos.fail(function (jqXHR, textStatus, errorThrown) {
+                // Ignoramos la falla si fue provocada intencionalmente por nuestro propio .abort()
+                if (textStatus === 'abort') return;
+
+                console.error("CNS SIIPLAS CRITICAL ERROR -> Status: " + textStatus + " | Detalle: " + errorThrown);
+                
+                var msg_caida = '<div class="alert alert-danger" style="margin:10px 0;">' +
+                                    '<strong>❌ Error de Red (' + jqXHR.status + '):</strong> ' +
+                                    'Imposible comunicar con el catálogo de servicios. Intente de nuevo.' +
+                                '</div>';
+                $('#contenido').html(msg_caida);
+            });
         });
-        request.fail(function (jqXHR, textStatus, thrown) {
-            console.log("ERROR: " + textStatus);
-        });
-        request.always(function () {
-            //console.log("termino la ejecuicion de ajax");
-        });
-        e.preventDefault();
-        
-      });
-  });
+    });
 
 
 
