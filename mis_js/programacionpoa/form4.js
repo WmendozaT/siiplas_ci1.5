@@ -1149,11 +1149,11 @@ function numerosDecimales(evt) {
         }
       }
 
-      // /*------- ELIMINAR SOLO REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
-      // function eliminar_requerimientos_servicio(){
+      /*------- ELIMINAR SOLO REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
+      // function eliminar_requerimientos_UnidadReponsable(){
       //   alertify.confirm("DESEA ELIMINAR TODOS LOS REQUERIMIENTOS DE LA UNIDAD ?", function (a) {
       //     if (a) {
-      //       window.location=base+"index.php/prog/delete_insumos_servicio/"+com_id;
+      //       window.location=base+"index.php/programacion/producto/delete_insumos_servicios/"+com_id;
       //     } else {
       //         alertify.error("OPCI\u00D3N CANCELADA");
       //     }
@@ -1161,102 +1161,164 @@ function numerosDecimales(evt) {
       // }
 
 
-      // /*------- ELIMINAR SOLO ACTIVIDADES Y REQUERIMIENTOS DE LA UNIDAD (TODOS) --------*/
-    function eliminar_form4_todos() {
-    // Capturamos de forma dinámica el com_id oculto del DOM de tu vista
-    var com_id = $('input[name="com_id"]').val() || $('#com_id').val() || "";
 
-    if (com_id === "" || com_id === "0") {
-        if (typeof alertify !== "undefined") alertify.error("❌ Error: No se localizó el ID del Componente.");
-        return false;
+    // /*------- ELIMINAR SOLO ACTIVIDADES Y REQUERIMIENTOS DE LA UNIDAD (TODOS) 2027 --------*/
+    function eliminar_form4_todos() {
+        // Capturamos de forma dinámica el com_id oculto del DOM de tu vista
+        var com_id = $('input[name="com_id"]').val() || $('#com_id').val() || "";
+
+        if (com_id === "" || com_id === "0") {
+            if (typeof alertify !== "undefined") alertify.error("❌ Error: No se localizó el ID del Componente.");
+            return false;
+        }
+
+        // Cabecera institucional POA CNS de máxima advertencia
+        var mensaje_advertencia = "🚨 ¿ESTÁ COMPLETAMENTE SEGURO DE ELIMINAR TODO EL FORMULARIO?<br><br>" +
+                                  "<b>Consecuencias Críticas:</b><br>" +
+                                  "• Se borrarán TODAS las actividades de esta Unidad Organizacional.<br>" +
+                                  "• Se purgarán en cascada todos sus requerimientos e insumos (Form 5).<br><br>" +
+                                  "<i>Esta acción es destructiva e irreversible y se registra bajo auditoría.</i>";
+
+        // Primera Alerta: Confirmación de intencionalidad de Alertify
+        alertify.confirm(mensaje_advertencia, function (a) {
+            if (a) {
+                // Segunda Alerta: Doble confirmación para mitigar clics por error del operador
+                alertify.confirm("🚨 CORRECCIÓN DE SEGURIDAD: ¿Confirma la purga absoluta del Formulario N° 4?", function (confirmado) {
+                    if (confirmado) {
+                        
+                        // 🛠️ CORREGIDO Y SINCRONIZADO: Apanta a delete_form4 para evitar el rebote 404/500 de HTML
+                        var url = base + "index.php/programacion/producto/delete_form4/" + com_id;
+                        
+                        // Bloqueamos la grilla visualmente dándole un fondo opaco de procesamiento
+                        $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '0.5', 'background-color': '#fef2f2'});
+                        if (typeof alertify !== "undefined") alertify.log("💥 Vaciando matriz en PostgreSQL, espere...");
+
+                        // Captura perimetral automática del Token CSRF de resguardo de la CNS
+                        var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                        var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                        var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
+
+                        // Despachamos la petición asíncrona
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            dataType: "json",
+                            data: "com_id=" + com_id + token_seguridad,
+                            success: function (response) {
+                                // Verificamos de forma elástica ambas banderas de éxito del servidor
+                                if (response.respuesta == 'correcto' || response.status === 'success') {
+                                    
+                                    if (typeof alertify !== "undefined") {
+                                        alertify.success("✔ Se vació correctamente el Formulario N° 4.");
+                                    }
+                                    
+                                    // Refresco limpio automático controlado tras un breve segundo de retraso
+                                    setTimeout(function() {
+                                        window.location.reload(true);
+                                    }, 1500);
+
+                                } else {
+                                    // Restablecemos los colores originales de la grilla si el controlador manda un error controlado
+                                    $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
+                                    if (typeof alertify !== "undefined") {
+                                        alertify.error("🚨 Error: " + (response.message || "No se pudo vaciar la matriz."));
+                                    }
+                                }
+                            },
+                            error: function (xhr, textStatus, errorThrown) {
+                                $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
+                                console.error("CNS ERROR VACIADO TOTAL -> Status: " + textStatus + " | Detalle: " + errorThrown);
+                                
+                                // Muestra en la alerta el HTML de error de CodeIgniter si el servidor explota por base de datos
+                                var msg_error_crudo = "❌ FALLA CRÍTICA EN EL CONTROLADOR PHP:\n\n" + 
+                                                      "Código HTTP: " + xhr.status + " (" + errorThrown + ")\n\n" +
+                                                      "Revise los logs de Apache o verifique la consola (F12).";
+                                alert(msg_error_crudo);
+                                
+                                if (typeof alertify !== "undefined") alertify.error("❌ Falla de red. PostgreSQL abortó el vaciado.");
+                            }
+                        });
+                    }
+                });
+            } else {
+                if (typeof alertify !== "undefined") alertify.error("OPCIÓN CANCELADA");
+            }
+        });
     }
 
-    // Cabecera institucional POA CNS de máxima advertencia
-    var mensaje_advertencia = "🚨 ¿ESTÁ COMPLETAMENTE SEGURO DE ELIMINAR TODO EL FORMULARIO?<br><br>" +
-                              "<b>Consecuencias Críticas:</b><br>" +
-                              "• Se borrarán TODAS las actividades de esta Unidad Organizacional.<br>" +
-                              "• Se purgarán en cascada todos sus requerimientos e insumos (Form 5).<br><br>" +
-                              "<i>Esta acción es destructiva e irreversible y se registra bajo auditoría.</i>";
 
-    // Primera Alerta: Confirmación de intencionalidad de Alertify
-    alertify.confirm(mensaje_advertencia, function (a) {
-        if (a) {
-            // Segunda Alerta: Doble confirmación para mitigar clics por error del operador
-            alertify.confirm("🚨 CORRECCIÓN DE SEGURIDAD: ¿Confirma la purga absoluta del Formulario N° 4?", function (confirmado) {
-                if (confirmado) {
-                    
-                    // 🛠️ CORREGIDO Y SINCRONIZADO: Apanta a delete_form4 para evitar el rebote 404/500 de HTML
-                    var url = base + "index.php/programacion/producto/delete_form4/" + com_id;
-                    
-                    // Bloqueamos la grilla visualmente dándole un fondo opaco de procesamiento
-                    $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '0.5', 'background-color': '#fef2f2'});
-                    if (typeof alertify !== "undefined") alertify.log("💥 Vaciando matriz en PostgreSQL, espere...");
+    /// Eliminar todos los requerimientos de las Actividades 2027
+    function eliminar_requerimientos_UnidadReponsable() {
+        // 🛠️ REPARADO: Captura el com_id de forma elástica desde el árbol del DOM
+        var com_id = $('input[name="com_id"]').val() || $('#com_id').val() || "";
 
-                    // Captura perimetral automática del Token CSRF de resguardo de la CNS
-                    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
-                    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
-                    var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
-
-                    // Despachamos la petición asíncrona
-                    $.ajax({
-                        url: url,
-                        type: "POST",
-                        dataType: "json",
-                        data: "com_id=" + com_id + token_seguridad,
-                        success: function (response) {
-                            // Verificamos de forma elástica ambas banderas de éxito del servidor
-                            if (response.respuesta == 'correcto' || response.status === 'success') {
-                                
-                                if (typeof alertify !== "undefined") {
-                                    alertify.success("✔ Se vació correctamente el Formulario N° 4.");
-                                }
-                                
-                                // Refresco limpio automático controlado tras un breve segundo de retraso
-                                setTimeout(function() {
-                                    window.location.reload(true);
-                                }, 1500);
-
-                            } else {
-                                // Restablecemos los colores originales de la grilla si el controlador manda un error controlado
-                                $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
-                                if (typeof alertify !== "undefined") {
-                                    alertify.error("🚨 Error: " + (response.message || "No se pudo vaciar la matriz."));
-                                }
-                            }
-                        },
-                        error: function (xhr, textStatus, errorThrown) {
-                            $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
-                            console.error("CNS ERROR VACIADO TOTAL -> Status: " + textStatus + " | Detalle: " + errorThrown);
-                            
-                            // Muestra en la alerta el HTML de error de CodeIgniter si el servidor explota por base de datos
-                            var msg_error_crudo = "❌ FALLA CRÍTICA EN EL CONTROLADOR PHP:\n\n" + 
-                                                  "Código HTTP: " + xhr.status + " (" + errorThrown + ")\n\n" +
-                                                  "Revise los logs de Apache o verifique la consola (F12).";
-                            alert(msg_error_crudo);
-                            
-                            if (typeof alertify !== "undefined") alertify.error("❌ Falla de red. PostgreSQL abortó el vaciado.");
-                        }
-                    });
-                }
-            });
-        } else {
-            if (typeof alertify !== "undefined") alertify.error("OPCIÓN CANCELADA");
+        if (com_id === "" || com_id === "0") {
+            if (typeof alertify !== "undefined") alertify.error("❌ Error: No se localizó el ID del Componente.");
+            return false;
         }
-    });
-}
 
+        var mensaje_advertencia = "🚨 ¿ESTÁ COMPLETAMENTE SEGURO DE ELIMINAR TODOS LOS REQUERIMIENTOS?<br><br>" +
+                                  "<b>Consecuencias Transaccionales:</b><br>" +
+                                  "• Se borrarán TODOS los insumos y partidas del Formulario N° 5.<br>" +
+                                  "• Las actividades del Formulario N° 4 se mantendrán intactas pero con metas en cero.<br><br>" +
+                                  "<i>Esta acción es irreversible y afectará los techos financieros de la Unidad.</i>";
 
-      // /*------- UPDATE CÓDIGO --------*/
-      // function update_codigo(){
-      //   alertify.confirm("DESEA ACTUALIZAR LOS CÓDIGOS DE ACTIVIDAD ?", function (a) {
-      //     if (a) {
-      //       window.location=base+"index.php/prog/update_codigo/"+com_id;
-      //     } else {
-      //         alertify.error("OPCI\u00D3N CANCELADA");
-      //     }
-      //   });
-      // }
+        // Primera Alerta: Confirmación de Alertify
+        alertify.confirm(mensaje_advertencia, function (a) {
+            if (a) {
+                // Segunda Alerta: Doble confirmación de resguardo contra errores involuntarios
+                alertify.confirm("🚨 CANDADO SIIPLAS: ¿Confirma el vaciado absoluto de requerimientos de insumos?", function (confirmado) {
+                    if (confirmado) {
+                        
+                        var url = base + "index.php/programacion/producto/delete_insumos_Unidad_Responsable/" + com_id;
+                        
+                        // Feedback visual sutil (Fondo opaco de procesamiento)
+                        $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '0.5', 'background-color': '#fef2f2'});
+                        if (typeof alertify !== "undefined") alertify.log("💥 Purgando insumos en PostgreSQL, espere...");
 
+                        // Captura automática del Token CSRF de seguridad de la CNS
+                        var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                        var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                        var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
+
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            dataType: "json",
+                            data: "com_id=" + com_id + token_seguridad,
+                            success: function (response) {
+                                if (response.respuesta == 'correcto' || response.status === 'success') {
+                                    
+                                    if (typeof alertify !== "undefined") {
+                                        alertify.success("✔ Se eliminaron todos los requerimientos de la unidad.");
+                                    }
+                                    
+                                    // Refresco automático controlado tras breve segundo de retraso
+                                    setTimeout(function() {
+                                        window.location.reload(true);
+                                    }, 1500);
+
+                                } else {
+                                    // Restablecemos los estilos si el servidor devuelve un error de negocio o certificaciones
+                                    $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
+                                    if (typeof alertify !== "undefined") {
+                                        alertify.error("🚨 Error: " + (response.message || "No se pudo vaciar la matriz de insumos."));
+                                    }
+                                }
+                            },
+                            error: function (xhr, textStatus, errorThrown) {
+                                $('table.tabla-datos, #contenido_grilla_poa').css({'opacity': '1', 'background-color': '#ffffff'});
+                                console.error("CNS ERROR VACIADO F5 -> Status: " + textStatus + " | Detalle: " + errorThrown);
+                                alert("❌ FALLA CRÍTICA EN EL CONTROLADOR PHP:\n\nCódigo HTTP: " + xhr.status + " (" + errorThrown + ")");
+                            }
+                        });
+                    }
+                });
+            } else {
+                if (typeof alertify !== "undefined") alertify.error("OPCIÓN CANCELADA");
+            }
+        });
+    }
 
     ///// vigente para asignar prioridad
     function doSelectAlert(event,priori,prod_id) {

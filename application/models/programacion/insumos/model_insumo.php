@@ -687,7 +687,7 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    /// lista de requerimientos por cada formulario N° 4 para Programas Bolsas
+    /// lista de requerimientos por cada formulario N° 4 para Programas Bolsas Vigente 2027
     function lista_insumos_prod($prod_id){
         $sql = 'SELECT 
                 prod.prod_id, 

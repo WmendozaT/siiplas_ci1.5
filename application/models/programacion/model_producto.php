@@ -19,45 +19,45 @@ class model_producto extends CI_Model {
     }*/
 
     /*----- LISTA DE FORMULARIO 4 (2022) para el SEguimiento POA (A optimizar)-----*/
-    function list_operaciones_subactividad($com_id){
-        $sql = '
-        select 
-            p.prod_id,
-            p.com_id,
-            p.prod_cod,
-            p.prod_producto,
-            p.indi_id,
-            mt.mt_id,
-            p.prod_indicador,
-            p.prod_linea_base,
-            p.prod_meta,
-            p.prod_fuente_verificacion,
-            p.prod_unidades,
-            p.prod_resultado,
-            p.acc_id,
-            p.prod_priori,
-            p.prod_priori,
-            p.uni_resp,
-            ore.or_id,
-            ore.or_codigo,
-            ore.or_objetivo,
-            ore.or_indicador,
-            ore.or_producto,
-            ore.or_resultado,
-            ore.or_verificacion,
-            mt.mt_tipo,
-            mt.mt_descripcion
+    // function list_operaciones_subactividad($com_id){
+    //     $sql = '
+    //     select 
+    //         p.prod_id,
+    //         p.com_id,
+    //         p.prod_cod,
+    //         p.prod_producto,
+    //         p.indi_id,
+    //         mt.mt_id,
+    //         p.prod_indicador,
+    //         p.prod_linea_base,
+    //         p.prod_meta,
+    //         p.prod_fuente_verificacion,
+    //         p.prod_unidades,
+    //         p.prod_resultado,
+    //         p.acc_id,
+    //         p.prod_priori,
+    //         p.prod_priori,
+    //         p.uni_resp,
+    //         ore.or_id,
+    //         ore.or_codigo,
+    //         ore.or_objetivo,
+    //         ore.or_indicador,
+    //         ore.or_producto,
+    //         ore.or_resultado,
+    //         ore.or_verificacion,
+    //         mt.mt_tipo,
+    //         mt.mt_descripcion
         
-          from _productos as p
-          Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
-          Inner Join indicador as tp On p.indi_id=tp.indi_id
-          Inner Join meta_relativo as mt On mt.mt_id=p.mt_id
-          where p.estado!=\'3\' and p.com_id='.$com_id.'
-          ORDER BY p.prod_cod asc'; 
+    //       from _productos as p
+    //       Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
+    //       Inner Join indicador as tp On p.indi_id=tp.indi_id
+    //       Inner Join meta_relativo as mt On mt.mt_id=p.mt_id
+    //       where p.estado!=\'3\' and p.com_id='.$com_id.'
+    //       ORDER BY p.prod_cod asc'; 
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*--- VERIF ALINEACION DEL REQUERIMIENTO A LA ACTIVIDAD 2026 ---*/
@@ -310,12 +310,12 @@ class model_producto extends CI_Model {
 
 
 
-    /*----- RELACION INSUMO PRODUCTO (VIGENTE) -----*/
+    /*----- RELACION INSUMO PRODUCTO (VIGENTE) 2027 -----*/
     function insumo_producto($prod_id){
-        $sql = 'select ip.ins_id
+        $sql = 'SELECT ip.ins_id
                 from _insumoproducto ip
                 Inner Join insumos as i On i.ins_id=ip.ins_id
-                where ip.prod_id='.$prod_id.' and i.ins_estado!=\'3\' and i.ins_gestion='.$this->gestion.' and i.aper_id!=\'30\'
+                where ip.prod_id='.$prod_id.' and i.ins_estado!=3 and i.ins_gestion='.$this->gestion.' 
                 group by ip.ins_id'; 
 
         $query = $this->db->query($sql);
@@ -357,7 +357,7 @@ class model_producto extends CI_Model {
     }*/
     /*====================================================*/
 
-    /* ----- GET FORM 4 -----*/
+    /* ----- GET FORM 4 2027 -----*/
     function get_producto_id($id_prod){
         $sql = '
         SELECT 

@@ -11,15 +11,6 @@ class Model_componente extends CI_Model{
     }
     //lista de organismo financiador
 
-    /*--  Lista de Unidades --*/
-/*    function lista_unidades($dist_id){
-        $sql = 'select * 
-                from lista_poa_gastocorriente_distrital('.$dist_id.','.$this->gestion.')'; 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
-
     /*------------ Relacion Proyecto Componente -------*/
     function proyecto_componente($proy_id){
         $sql = 'select *
@@ -29,16 +20,6 @@ class Model_componente extends CI_Model{
         $query = $this->db->query($sql);
         return $query->result_array();
     }
-
-    /*------------ suma Ponderacion -------*/
-/*    function suma_ponderacion($pfec_id){
-        $sql = 'select SUM(com_ponderacion) as suma
-                from _componentes
-                where pfec_id='.$pfec_id.' and estado!=\'3\''; 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
 
     /*------ LISTA DE SERVICIOS Y COMPONENTES PARA LA EVALUACIÓN -------*/
     function list_servicios_operaciones($pfec_id){
@@ -52,19 +33,6 @@ class Model_componente extends CI_Model{
         return $query->result_array();
     }
 
-    /*=========== LISTA DE COMPONENTES ================*/
-/*    public function componentes_id($id_f, $tp_id){
-        $sql = 'select c.*,f.fun_id as resp_id,f.fun_id as resp_id, f.fun_nombre,f.fun_paterno,f.fun_materno,u.*,sa.*,tpsa.*
-                from _componentes as c
-                Inner Join funcionario as f On f.fun_id=c.resp_id
-                Inner Join unidadorganizacional as u On u.uni_id=c.uni_id
-                Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                where c.pfec_id='.$id_f.' and c.estado!=\'3\' 
-                ORDER BY serv_cod asc';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
 
     public function componentes_fun_id($id_f,$fun_id){
         $sql = 'select c.*,f.fun_id as resp_id,f.fun_id as resp_id, f.fun_nombre,f.fun_paterno,f.fun_materno,u.*,sa.*,tpsa.*
@@ -107,7 +75,7 @@ class Model_componente extends CI_Model{
                     p.proy_id,p.proy_nombre, p.proy_estado, p.proy_pr, p.tp_id, p.dep_id, p.proy_sisin,
                     d.dep_cod,d.dep_departamento, 
                     p.dist_id, ds.dist_distrital, p.por_id, ds.abrev, ds.da, ds.ue,ds.dist_cod, 
-                    te.tipo, 
+                    te.tipo, ua.act_descripcion, 
                     apg.aper_id, apg.aper_gestion, apg.aper_proy_estado, apg.aper_programa, apg.aper_proyecto, apg.aper_actividad, apg.aper_descripcion
                 FROM _componentes c
                 /* 1. Filtros directos de la tabla principal y su relación inmediata */
@@ -130,7 +98,8 @@ class Model_componente extends CI_Model{
         return $query->result_array();
     }
 
-    /*====== LISTA UNIDADES RESPONSABLES 2026 ======*/
+
+        /*====== LISTA UNIDADES RESPONSABLES 2026 ======*/
     public function lista_UnidadesResponsables($proy_id){
         $sql = 'SELECT *
                 from vista_lista_UnidadesResponsables
@@ -140,6 +109,25 @@ class Model_componente extends CI_Model{
         return $query->result_array();
     }
 
+
+    /*====== LISTA verif items certificados x componente ======*/
+    public function lista_Verif_items_cert_x_componente($com_id){
+        $sql = 'SELECT *
+            FROM _productos p
+            INNER JOIN _insumoproducto AS ip ON p.prod_id = ip.prod_id
+            INNER JOIN insumos AS i ON i.ins_id = ip.ins_id
+            INNER JOIN temporalidad_prog_insumo AS temp ON i.ins_id = temp.ins_id
+            INNER JOIN cert_temporalidad_prog_insumo AS cert_temp ON temp.tins_id = cert_temp.tins_id
+
+            WHERE p.com_id = '.$com_id.'
+              AND p.estado != 3 
+              AND i.ins_estado != 3 
+              AND i.aper_id != 0 
+              AND i.ins_gestion = '.$this->gestion.'
+            ORDER BY p.prod_cod, i.ins_id ASC;'; 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     /*====== GET UNIDAD RESPONSABLE 2026 ======*/
     public function get_UnidadesResponsables($proy_id, $cod_unidad) {
@@ -221,22 +209,6 @@ class Model_componente extends CI_Model{
         return $query->result_array();
     }
 
-    /*--- Lista de Unidades Operativas por Gerencias de Area (a eliminar) ---*/
-/*    function lista_subactividad($proy_id){
-        if($this->gestion==2023){ /// excluyendo a todos los servicios
-            $sql = 'select *
-                from vista_subactividades
-                where proy_id='.$proy_id.' and aper_gestion='.$this->gestion.'  and (com_id!=\'6303\' and com_id!=\'6304\' and com_id!=\'6305\' and com_id!=\'6306\' and com_id!=\'6307\'  and com_id!=\'6336\' and com_id!=\'6337\' and com_id!=\'6330\' and com_id!=\'6333\' and com_id!=\'6335\' and com_id!=\'6719\' and com_id!=\'6647\')'; 
-        }
-        else{
-            $sql = 'select *
-                from vista_subactividades
-                where proy_id='.$proy_id.' and aper_gestion='.$this->gestion.''; 
-        }
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
 
     /*--- Lista de Subactividad alineados a Actividad por Regional---*/
     function lista_poa_subactividad($dep_id){

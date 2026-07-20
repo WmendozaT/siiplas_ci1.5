@@ -1176,76 +1176,76 @@ class Minsumos extends CI_Model{
     }*/
 
     /*---- LISTA REQUERIMIENTOS - ACTIVIDADES POR SUB ACTIVIDADES (COMPONENTES)-----*/
-    function list_requerimientos_actividades_procesos($com_id){
-        if($this->gestion!=2020){
-            $sql = 'select *
-                from _componentes c
-                Inner Join _productos as p On c.com_id=p.com_id
-                Inner Join _actividades as a On p.prod_id=a.prod_id
-                Inner Join _insumoactividad as ia On ia.act_id=a.act_id
-                Inner Join insumos as i On i.ins_id=ia.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                Inner Join insumo_gestion as ig On ig.ins_id=i.ins_id
-                where c.com_id='.$com_id.' and p.estado!=\'3\' and a.estado!=\'3\' and i.ins_estado!=\'3\' and ig.g_id='.$this->gestion.' and ig.insg_estado!=\'3\' and i.aper_id!=\'0\'
-                order by par.par_codigo,i.ins_id asc';
-        }
-        else{
-            $sql = 'select *
-                from _componentes c
-                Inner Join _productos as p On c.com_id=p.com_id
-                Inner Join _actividades as a On p.prod_id=a.prod_id
-                Inner Join _insumoactividad as ia On ia.act_id=a.act_id
-                Inner Join insumos as i On i.ins_id=ia.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where c.com_id='.$com_id.' and p.estado!=\'3\' and a.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\'  and i.ins_gestion='.$this->gestion.'
-                order by par.par_codigo,i.ins_id asc';
-        }
+    // function list_requerimientos_actividades_procesos($com_id){
+    //     if($this->gestion!=2020){
+    //         $sql = 'select *
+    //             from _componentes c
+    //             Inner Join _productos as p On c.com_id=p.com_id
+    //             Inner Join _actividades as a On p.prod_id=a.prod_id
+    //             Inner Join _insumoactividad as ia On ia.act_id=a.act_id
+    //             Inner Join insumos as i On i.ins_id=ia.ins_id
+    //             Inner Join partidas as par On par.par_id=i.par_id
+    //             Inner Join insumo_gestion as ig On ig.ins_id=i.ins_id
+    //             where c.com_id='.$com_id.' and p.estado!=\'3\' and a.estado!=\'3\' and i.ins_estado!=\'3\' and ig.g_id='.$this->gestion.' and ig.insg_estado!=\'3\' and i.aper_id!=\'0\'
+    //             order by par.par_codigo,i.ins_id asc';
+    //     }
+    //     else{
+    //         $sql = 'select *
+    //             from _componentes c
+    //             Inner Join _productos as p On c.com_id=p.com_id
+    //             Inner Join _actividades as a On p.prod_id=a.prod_id
+    //             Inner Join _insumoactividad as ia On ia.act_id=a.act_id
+    //             Inner Join insumos as i On i.ins_id=ia.ins_id
+    //             Inner Join partidas as par On par.par_id=i.par_id
+    //             where c.com_id='.$com_id.' and p.estado!=\'3\' and a.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\'  and i.ins_gestion='.$this->gestion.'
+    //             order by par.par_codigo,i.ins_id asc';
+    //     }
         
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
-    /*---- LISTA CONSOLIDADO DE ACTIVIDAD PARTIDAS POR SUB ACTIVIDADES (COMPONENTES)-----*/
-    function list_consolidado_partidas_act_componentes($com_id){
-        if($this->gestion!=2020){
-            $sql = 'select c.com_id, c.pfec_id,par.par_id, par.par_codigo,par.par_nombre, SUM(i.ins_costo_total) as monto
-                from _componentes c
-                Inner Join _productos as p On c.com_id=p.com_id
-                Inner Join _actividades as a On p.prod_id=a.prod_id
-                Inner Join _insumoactividad as ia On ia.act_id=a.act_id
-                Inner Join insumos as i On i.ins_id=ia.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                Inner Join insumo_gestion as ig On ig.ins_id=i.ins_id
-                where c.com_id='.$com_id.' and p.estado!=\'3\' and a.estado!=\'3\' and i.ins_estado!=\'3\' and ig.g_id='.$this->gestion.' and ig.insg_estado!=\'3\' and i.aper_id!=\'0\'
-                group by c.com_id, c.pfec_id, par.par_id, par.par_codigo,par.par_nombre
-                order by par.par_codigo asc';
-        }
-        else{
-            $sql = 'select c.com_id, c.pfec_id,par.par_id, par.par_codigo,par.par_nombre, SUM(i.ins_costo_total) as monto
-                from _componentes c
-                Inner Join _productos as p On c.com_id=p.com_id
-                Inner Join _actividades as a On p.prod_id=a.prod_id
-                Inner Join _insumoactividad as ia On ia.act_id=a.act_id
-                Inner Join insumos as i On i.ins_id=ia.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where c.com_id='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\'  and i.ins_gestion='.$this->gestion.'
-                group by c.com_id, c.pfec_id,par.par_id,   par.par_codigo,par.par_nombre
-                order by par.par_codigo asc';
-        }
+    // /*---- LISTA CONSOLIDADO DE ACTIVIDAD PARTIDAS POR SUB ACTIVIDADES (COMPONENTES)-----*/
+    // function list_consolidado_partidas_act_componentes($com_id){
+    //     if($this->gestion!=2020){
+    //         $sql = 'select c.com_id, c.pfec_id,par.par_id, par.par_codigo,par.par_nombre, SUM(i.ins_costo_total) as monto
+    //             from _componentes c
+    //             Inner Join _productos as p On c.com_id=p.com_id
+    //             Inner Join _actividades as a On p.prod_id=a.prod_id
+    //             Inner Join _insumoactividad as ia On ia.act_id=a.act_id
+    //             Inner Join insumos as i On i.ins_id=ia.ins_id
+    //             Inner Join partidas as par On par.par_id=i.par_id
+    //             Inner Join insumo_gestion as ig On ig.ins_id=i.ins_id
+    //             where c.com_id='.$com_id.' and p.estado!=\'3\' and a.estado!=\'3\' and i.ins_estado!=\'3\' and ig.g_id='.$this->gestion.' and ig.insg_estado!=\'3\' and i.aper_id!=\'0\'
+    //             group by c.com_id, c.pfec_id, par.par_id, par.par_codigo,par.par_nombre
+    //             order by par.par_codigo asc';
+    //     }
+    //     else{
+    //         $sql = 'select c.com_id, c.pfec_id,par.par_id, par.par_codigo,par.par_nombre, SUM(i.ins_costo_total) as monto
+    //             from _componentes c
+    //             Inner Join _productos as p On c.com_id=p.com_id
+    //             Inner Join _actividades as a On p.prod_id=a.prod_id
+    //             Inner Join _insumoactividad as ia On ia.act_id=a.act_id
+    //             Inner Join insumos as i On i.ins_id=ia.ins_id
+    //             Inner Join partidas as par On par.par_id=i.par_id
+    //             where c.com_id='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\'  and i.ins_gestion='.$this->gestion.'
+    //             group by c.com_id, c.pfec_id,par.par_id,   par.par_codigo,par.par_nombre
+    //             order by par.par_codigo asc';
+    //     }
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
-    /*---- LISTA REQUERIMIENTOS (AUXILIAR)-----*/
-    function list_requerimientos_auxiliar($com_id){
-        $sql = 'select *
-                from aux_requerimiento
-                where com_id='.$com_id.'
-                order by rep_id asc';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    // /*---- LISTA REQUERIMIENTOS (AUXILIAR)-----*/
+    // function list_requerimientos_auxiliar($com_id){
+    //     $sql = 'select *
+    //             from aux_requerimiento
+    //             where com_id='.$com_id.'
+    //             order by rep_id asc';
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*---- LISTA CONSOLIDADO DE REQUERIMIENTOS POR UNIDAD (2019) -----*/

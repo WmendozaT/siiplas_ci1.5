@@ -39,143 +39,176 @@ class crequerimiento extends CI_Controller{
         }
     }
 
-    /*---- LISTA DE COMPONENTES SEGUN EL TIPO DE EJECUCION (a optimizar) ----*/
-    function list_requerimientos($prod_id){
-      $data['producto']=$this->model_producto->get_producto_id($prod_id); // Producto
-      $data['stylo']=$this->programacionpoa->estilo_tabla_form5();
-      if(count($data['producto'])!=0){
-        $data['componente']=$this->model_componente->get_componente($data['producto'][0]['com_id'],$this->gestion); // Componente
-        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['componente'][0]['proy_id']);
-        $data['menu']=$this->genera_menu($data['proyecto'][0]['proy_id']);
-        //$data['monto_asig']=$this->model_ptto_sigep->suma_ptto_accion($data['proyecto'][0]['aper_id'],1);
-        //$data['monto_prog']=$this->model_ptto_sigep->suma_ptto_accion($data['proyecto'][0]['aper_id'],2);
-        $monto_a=0;$monto_p=0;$monto_saldo=0;
-/*        if(count($data['monto_asig'])!=0){
-            $monto_a=$data['monto_asig'][0]['monto'];
-        }
-        if(count($data['monto_prog'])){
-            $monto_p=$data['monto_prog'][0]['monto'];
-        }*/
-
-        $data['monto_a']=$monto_a;
-        $data['monto_p']=$monto_p;
-        $tit='<small>PROYECTO : </small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['proy_sisin'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['proy_nombre'].'';
-        /*--------- Gasto Corriente ----------*/
-        if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['proyecto'][0]['proy_id']);
-          $tit='<small>'.$data['proyecto'][0]['establecimiento'].' : </small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' - '.$data['proyecto'][0]['abrev'].'';
-
-        }
-
-        $data['datos']=
-                '<h1>'.$tit.'</h1>
-                <h1><small>ACTIVIDAD : </small>COD - '.$data['producto'][0]['prod_cod'].'. '.$data['producto'][0]['prod_producto'].'</h1>';
-
-        $data['prog_especial']='';
-        
-        if($data['proyecto'][0]['por_id']==1){
-          $unidad=$this->model_componente->get_componente($data['producto'][0]['uni_resp'],$this->gestion);
-          $data['prog_especial']='<h1><font color=red><b>DEBE SELECCIONAR UNIDAD RESPONSABLE !!!!!</b></font></h1>';
-          if(count($unidad)!=0){
-            $data['prog_especial']='<h1><font color=blue>UNIDAD RESP. : <b>'.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</b></font></h1>';
-          }
+    /*---- LISTA DE REQUERIMIENTO POR ACTIVIDAD ----*/
+    public function list_requerimientos($prod_id) {
+        // 🌟 REGLA 1: Blindaje elástico de hardware y cast numérico compatible con Postgres
+        if (function_exists('ini_set')) {
+            ini_set('memory_limit', '256M'); // Espacio de búfer para el cronograma de insumos
         }
         
-        $data['part_padres'] = $this->model_partidas->lista_padres();//partidas padres
-        $data['part_hijos'] = $this->model_partidas->lista_partidas();//partidas hijos
-        
-        $data['requerimientos'] = $this->mis_requerimientos($prod_id,$data['componente']); /// Lista de requerimientos 2020 
-        $data['button']=$this->programacionpoa->button_form5();
+        // Casteamos la clave primaria debido al DDL numeric(18,0) de tu tabla maestra
+        $prod_id_clean = floatval($this->security->xss_clean($prod_id));
 
-        $this->load->view('admin/programacion/requerimiento/list_requerimientos', $data);
-      }
-      else{
-        echo "Error !!!";
-      }
+        if ($prod_id_clean <= 0) {
+            show_error("Identificador de Actividad inválido o corrupto en el SIIPLAS.");
+            return;
+        }
+
+        // 1. Recuperamos la ficha maestra de la actividad seleccionada
+        $get_producto = $this->model_producto->get_producto_id($prod_id_clean);
+        
+        // 🛠️ REPARADO: Validación de existencia real antes de evaluar posiciones de arreglos
+        if (!empty($get_producto) && count($get_producto) > 0) {
+            
+            // Asignamos el sub-arreglo plano para simplificar la nomenclatura de tus variables
+            $data['producto'] = $get_producto;
+            $producto_row = $get_producto[0]; // Hilera única activa de la consulta
+            
+            $data['stylo'] = $this->programacionpoa->estilo_tabla_form5();
+            $com_id_actual = intval($producto_row['com_id']);
+
+            // 2. Recuperamos el Componente / Unidad Organizacional vinculada
+            $get_componente = $this->model_componente->get_componente($com_id_actual, $this->gestion);
+            
+            if (empty($get_componente) || count($get_componente) == 0) {
+                show_error("Error de Consistencia Relacional: La actividad está vinculada a un componente inexistente.");
+                return;
+            }
+            
+            $data['componente'] = $get_componente;
+            $componente_row = $get_componente[0]; // Hilera única activa del componente
+
+            // 3. CONSTRUCCIÓN DE LA CABECERA INSTITUCIONAL CNS
+            // Plantilla base para Proyectos de Inversión (tp_id != 4)
+            $tit = '<small>PROYECTO : </small>' . $componente_row['aper_programa'] . ' ' . $componente_row['proy_sisin'] . ' ' . $componente_row['aper_actividad'] . ' - ' . $componente_row['proy_nombre'];
+            
+            /*--------- Caso Gasto Corriente (Apertura tipo 4) ----------*/
+            if (intval($componente_row['tp_id']) == 4) {
+                $tit = '<h2>' . $componente_row['aper_programa'] . ' ' . $componente_row['aper_proyecto'] . ' ' . $componente_row['aper_actividad'] . ' - ' . $componente_row['tipo'] . ' ' . $componente_row['act_descripcion'] . ' - ' . $componente_row['abrev'] . '  / <b>' . $componente_row['serv_cod'] . ' </b>' . $componente_row['tipo_subactividad'] . ' ' . $componente_row['serv_descripcion'] . '</h2>';
+            }
+
+            $data['datos'] = '<h1>' . $tit . '</h1>
+                             <h1><small>ACTIVIDAD : </small>COD - ' . round($producto_row['prod_cod'], 2) . '. ' . $producto_row['prod_producto'] . '</h1>';
+
+            $data['prog_especial'] = '';
+            
+            // 4. 🛠️ REPARADO: Validación elástica de la Unidad Responsable para proyectos de arrastre Bolsa
+            if (intval($componente_row['por_id']) == 1) {
+                $uni_resp_id = intval($producto_row['uni_resp']);
+                
+                // Inicializamos la alerta roja restrictiva institucional
+                $data['prog_especial'] = '<h1><font color="red"><b>🚨 RESTRICCIÓN: DEBE SELECCIONAR UNIDAD RESPONSABLE EN LA GRILA MAESTRA ANTES DE ASIGNAR INSUMOS V5 !!!!!</b></font></h1>';
+                
+                if ($uni_resp_id > 0) {
+                    $unidad = $this->model_componente->get_componente($uni_resp_id, $this->gestion);
+                    
+                    if (!empty($unidad) && count($unidad) > 0) {
+                        $data['prog_especial'] = '<h1><font color="blue">UNIDAD RESP. ALINEADA : <b>' . $unidad[0]['tipo_subactividad'] . ' ' . $unidad[0]['serv_descripcion'] . '</b></font></h1>';
+                    }
+                }
+            }
+            
+            // 5. Carga de clasificadores nacionales de partidas presupuestarias
+            $data['part_padres'] = $this->model_partidas->lista_padres(); // Partidas padres (Agrupadores)
+            $data['part_hijos']  = $this->model_partidas->lista_partidas(); // Partidas hijos (Sub-ítems)
+            
+            // 6. Carga de requerimientos vigentes asignados
+            $data['requerimientos'] = $this->mis_requerimientos($get_producto, $data['componente']); 
+            
+            // Inyectamos el botón de validación de techos del Formulario N° 5
+            $data['button_form5'] = $this->programacionpoa->button_form5($com_id_actual);
+
+            // 7. Despachamos el pool de datos a la vista unificada de SmartAdmin de la CNS
+            $this->load->view('admin/programacion/requerimiento/list_requerimientos', $data);
+
+        } else {
+            // Protección forense por si fuerzan en la URL un ID de producto que ya fue borrado
+            show_error("🚨 Error SIIPLAS: La Actividad física solicitada no existe en PostgreSQL o fue purgada del Formulario N° 4.");
+        }
     }
 
 
 
     /*--------- VALIDA ADD REQUERIMIENTO ----------*/
-     public function valida_insumo(){
-      if($this->input->post()) {
-        $post = $this->input->post();
-        $prod_id = $this->security->xss_clean($post['prod_id']); /// prod
-        $detalle = $this->security->xss_clean($post['ins_detalle']); /// detalle
-        $cantidad = $this->security->xss_clean($post['ins_cantidad']); /// cantidad
-        $costo_unitario = $this->security->xss_clean($post['ins_costo_u']); /// costo unitario
-        $costo_total = $this->security->xss_clean($post['costo']); /// costo Total
-        $um_id = $this->security->xss_clean($post['um_id']); /// Unidad de medida
-        $partida = $this->security->xss_clean($post['partida_id']); /// costo unitario
-        $observacion = $this->security->xss_clean($post['ins_observacion']); /// Observacion
+    //  public function valida_insumo(){
+    //   if($this->input->post()) {
+    //     $post = $this->input->post();
+    //     $prod_id = $this->security->xss_clean($post['prod_id']); /// prod
+    //     $detalle = $this->security->xss_clean($post['ins_detalle']); /// detalle
+    //     $cantidad = $this->security->xss_clean($post['ins_cantidad']); /// cantidad
+    //     $costo_unitario = $this->security->xss_clean($post['ins_costo_u']); /// costo unitario
+    //     $costo_total = $this->security->xss_clean($post['costo']); /// costo Total
+    //     $um_id = $this->security->xss_clean($post['um_id']); /// Unidad de medida
+    //     $partida = $this->security->xss_clean($post['partida_id']); /// costo unitario
+    //     $observacion = $this->security->xss_clean($post['ins_observacion']); /// Observacion
 
-        $producto=$this->model_producto->get_producto_id($prod_id); // Producto
-        $componente=$this->model_componente->get_componente($producto[0]['com_id'],$this->gestion); // Componente
-        $proyecto = $this->model_proyecto->get_id_proyecto($componente[0]['proy_id']); /// DATOS DEL PROYECTO
+    //     $producto=$this->model_producto->get_producto_id($prod_id); // Producto
+    //     $componente=$this->model_componente->get_componente($producto[0]['com_id'],$this->gestion); // Componente
+    //     $proyecto = $this->model_proyecto->get_id_proyecto($componente[0]['proy_id']); /// DATOS DEL PROYECTO
         
-        $umedida=$this->model_insumo->get_unidadmedida($um_id);
+    //     $umedida=$this->model_insumo->get_unidadmedida($um_id);
 
-          $query=$this->db->query('set datestyle to DMY');
-          $data_to_store = array( 
-          'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
-          'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-          'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
-          'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
-          'ins_costo_unitario' => $costo_unitario, /// Costo Unitario
-          'ins_costo_total' => $costo_total, /// Costo Total
-          'ins_unidad_medida' => $umedida[0]['um_descripcion'], /// Insumo Unidad de Medida
-          'ins_gestion' => $this->gestion, /// Insumo gestion
-          'par_id' => $partida, /// Partidas
-          'ins_tipo' => 1, /// Ins Tipo
-          'ins_observacion' => strtoupper($observacion), /// Observacion
-          'fun_id' => $this->fun_id, /// Funcionario
-          'aper_id' => $proyecto[0]['aper_id'], /// aper id
-          'com_id' => $producto[0]['com_id'], /// com id 
-          'form4_cod' => $producto[0]['prod_cod'], /// aper id
-          'num_ip' => $this->input->ip_address(), 
-          'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-          );
-          $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
-          $ins_id=$this->db->insert_id();
+    //       $query=$this->db->query('set datestyle to DMY');
+    //       $data_to_store = array( 
+    //       'ins_codigo' => $this->session->userdata("name").'/REQ/'.$this->gestion, /// Codigo Insumo
+    //       'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
+    //       'ins_detalle' => strtoupper($detalle), /// Insumo Detalle
+    //       'ins_cant_requerida' => round($cantidad,0), /// Cantidad Requerida
+    //       'ins_costo_unitario' => $costo_unitario, /// Costo Unitario
+    //       'ins_costo_total' => $costo_total, /// Costo Total
+    //       'ins_unidad_medida' => $umedida[0]['um_descripcion'], /// Insumo Unidad de Medida
+    //       'ins_gestion' => $this->gestion, /// Insumo gestion
+    //       'par_id' => $partida, /// Partidas
+    //       'ins_tipo' => 1, /// Ins Tipo
+    //       'ins_observacion' => strtoupper($observacion), /// Observacion
+    //       'fun_id' => $this->fun_id, /// Funcionario
+    //       'aper_id' => $proyecto[0]['aper_id'], /// aper id
+    //       'com_id' => $producto[0]['com_id'], /// com id 
+    //       'form4_cod' => $producto[0]['prod_cod'], /// aper id
+    //       'num_ip' => $this->input->ip_address(), 
+    //       'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //       );
+    //       $this->db->insert('insumos', $data_to_store); ///// Guardar en Tabla Insumos 
+    //       $ins_id=$this->db->insert_id();
 
-          /*--------------------------------------------------------*/
-            $data_to_store2 = array( ///// Tabla InsumoProducto
-                'prod_id' => $prod_id, /// prod id
-                'ins_id' => $ins_id, /// ins_id
-                'tp_ins' => $proyecto[0]['tp_id'], /// tp id                
-              );
-              $this->db->insert('_insumoproducto', $data_to_store2);
-            /*----------------------------------------------------------*/
+    //       /*--------------------------------------------------------*/
+    //         $data_to_store2 = array( ///// Tabla InsumoProducto
+    //             'prod_id' => $prod_id, /// prod id
+    //             'ins_id' => $ins_id, /// ins_id
+    //             'tp_ins' => $proyecto[0]['tp_id'], /// tp id                
+    //           );
+    //           $this->db->insert('_insumoproducto', $data_to_store2);
+    //         /*----------------------------------------------------------*/
           
 
-            /*------------ PARA LA GESTION 2020 ---------*/
-            for ($i=1; $i <=12 ; $i++) {
-              $pfin=$this->security->xss_clean($post['m'.$i]);
-              if($pfin!=0){
-                  $data_to_store4 = array( 
-                    'ins_id' => $ins_id, /// Id Insumo
-                    'mes_id' => $i, /// Mes 
-                    'ipm_fis' => $pfin, /// Valor mes
-                    'g_id' => $this->gestion, /// Gestion
-                    );
-                  $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
-              }
-            }
+    //         /*------------ PARA LA GESTION 2020 ---------*/
+    //         for ($i=1; $i <=12 ; $i++) {
+    //           $pfin=$this->security->xss_clean($post['m'.$i]);
+    //           if($pfin!=0){
+    //               $data_to_store4 = array( 
+    //                 'ins_id' => $ins_id, /// Id Insumo
+    //                 'mes_id' => $i, /// Mes 
+    //                 'ipm_fis' => $pfin, /// Valor mes
+    //                 'g_id' => $this->gestion, /// Gestion
+    //                 );
+    //               $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+    //           }
+    //         }
 
-          $get_ins=$this->model_insumo->get_insumo_producto($ins_id);
-            if(count($get_ins)==1){
-              $this->session->set_flashdata('success','EL REQUERIMIENTO SE REGISTRO CORRECTAMENTE :)');
-            }
-            else{
-              $this->session->set_flashdata('danger','EL REQUERIMIENTO NOSE REGISTRO CORRECTAMENTE, VERIFIQUE DATOS :(');
-            }
+    //       $get_ins=$this->model_insumo->get_insumo_producto($ins_id);
+    //         if(count($get_ins)==1){
+    //           $this->session->set_flashdata('success','EL REQUERIMIENTO SE REGISTRO CORRECTAMENTE :)');
+    //         }
+    //         else{
+    //           $this->session->set_flashdata('danger','EL REQUERIMIENTO NOSE REGISTRO CORRECTAMENTE, VERIFIQUE DATOS :(');
+    //         }
 
-        redirect(site_url("").'/prog/requerimiento/'.$prod_id.'');
+    //     redirect(site_url("").'/prog/requerimiento/'.$prod_id.'');
             
-      } else {
-          show_404();
-      }
-    }
+    //   } else {
+    //       show_404();
+    //   }
+    // }
 
     /*--- VALIDA UPDATE REQUERIMIENTO A NIVEL DE OPERACIONES ---*/
      public function valida_update_insumo(){
@@ -242,10 +275,89 @@ class crequerimiento extends CI_Controller{
       }
     }
 
+
+    //// Modal de Migracion de requerimientos
+    public function modal_migracion_form5x_actividad($producto,$componente){
+    $tabla='';
+    $tabla.='
+    <div class="modal fade" id="modal_importar_f5" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
+                <div class="modal-dialog" id="dialog_subirr">
+                    <div class="modal-content" style="border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+                        
+                        <!-- CABECERA DEL COMPONENTE -->
+                        <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                            <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                                <i class="fa fa-upload text-primary"></i> Importar Requerimientos x Actividad
+                            </h4>
+                        </div>
+
+                        <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
+                        <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                            
+                            <!-- Título e Instrucción -->
+                            <div class="text-center" style="margin-bottom: 20px;">
+                                <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Requerimientos x Actividad (.xls, .xlsx)</h5>
+                                <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                            </div>
+
+                            <!-- Vista previa de columnas (Corregido: Concatenación nativa base_url) -->
+                            <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                                <div style="color:blue;">CÓDIGO DE UNIDAD: <b style="font-size:14px;">'.$componente[0]['serv_cod'].' </b></div><br>
+                                <img src="' . base_url('assets/img/img_migracion/migracion_form5.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
+                            </div>
+
+                            <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
+                            <form action="' . site_url('programacion/producto/valida_migracion_form5_consolidado') . '" method="post" enctype="multipart/form-data" id="form_subir_requerimientos" autocomplete="off" style="padding:0; background:transparent;">
+                                <input name="com_id" value="'.$producto[0]['prod_id'].'" type="hidden" > 
+                                <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                    
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                                <i class="fa fa-folder-open"></i> Examinar...
+                                            </button>
+                                            
+                                            <input id="archivo_f5" accept=".xlsx, .xls" name="archivo_f5" 
+                                                   onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                                   style="display: none;" type="file" required>
+                                        </span>
+                                        <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                    </div>
+                                </div>
+
+                                <div id="mensaje_f5" style="margin: 10px 0; font-size: 11px;"></div>
+
+                                <!-- Botón de Envío y Validación Masiva -->
+                                <div style="margin-top: 25px;">
+                                    <button type="button" id="btn_subir_f5" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                        <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                    </button>
+                                </div>
+
+                                <!-- Animación Pre-Loader de la Planilla -->
+                                <div id="loads_f5" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                    <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                    <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>';
+
+      return $tabla;
+    }
+
     /*----------- LISTA DE REQUERIMIENTOS (2020) (A optimizar) --------------*/
-    public function mis_requerimientos($prod_id,$componente){
-      $lista_insumos = $this->model_insumo->lista_insumos_prod($prod_id);
+    public function mis_requerimientos($producto,$componente){
+      $lista_insumos = $this->model_insumo->lista_insumos_prod($producto[0]['prod_id']);
       $tabla='';
+      $tabla.=$this->modal_migracion_form5x_actividad($producto,$componente);
       $total=0;
       $tabla.='
       <input type="hidden" name="prod_id" id="prod_id" value="'.$prod_id.'">
@@ -382,29 +494,29 @@ class crequerimiento extends CI_Controller{
 
 
     /*--- ELIMINAR TODOS LOS REQUERIMIENTOS DE LA OPERACION/ACTIVIDAD ---*/
-    function eliminar_todos_insumos($prod_id){
-      $insumos = $this->model_insumo->lista_insumos_prod($prod_id); //// Insumos Operacion
+    // function eliminar_todos_insumos($prod_id){
+    //   $insumos = $this->model_insumo->lista_insumos_prod($prod_id); //// Insumos Operacion
 
-      foreach ($insumos as $row) {
-        /*-------- DELETE INSUMO PROGRAMADO --------*/  
-          $this->db->where('ins_id', $row['ins_id']);
-          $this->db->delete('temporalidad_prog_insumo');
-        /*------------------------------------------*/
+    //   foreach ($insumos as $row) {
+    //     /*-------- DELETE INSUMO PROGRAMADO --------*/  
+    //       $this->db->where('ins_id', $row['ins_id']);
+    //       $this->db->delete('temporalidad_prog_insumo');
+    //     /*------------------------------------------*/
 
-        /*-------- DELETE INSUMO --------*/
-          $this->db->where('prod_id', $prod_id);
-          $this->db->where('ins_id', $row['ins_id']);
-          $this->db->delete('_insumoproducto');
-          /*--------------------------------*/
+    //     /*-------- DELETE INSUMO --------*/
+    //       $this->db->where('prod_id', $prod_id);
+    //       $this->db->where('ins_id', $row['ins_id']);
+    //       $this->db->delete('_insumoproducto');
+    //       /*--------------------------------*/
 
-        /*-------- DELETE INSUMO  --------*/  
-          $this->db->where('ins_id', $row['ins_id']);
-          $this->db->delete('insumos');
-        /*--------------------------------*/
-      }
+    //     /*-------- DELETE INSUMO  --------*/  
+    //       $this->db->where('ins_id', $row['ins_id']);
+    //       $this->db->delete('insumos');
+    //     /*--------------------------------*/
+    //   }
       
-      redirect(site_url("").'/prog/requerimiento/'.$prod_id.'');    
-    }
+    //   redirect(site_url("").'/prog/requerimiento/'.$prod_id.'');    
+    // }
    
     /*------ CAMBIA ALINEACION A ACTIVIDAD 2022---------*/
     function cambia_actividad(){
@@ -652,38 +764,38 @@ class crequerimiento extends CI_Controller{
     }
 
     /*--------------- GENERA MENU -------------*/
-    public function genera_menu($proy_id){
-      $id_f = $this->model_faseetapa->get_id_fase($proy_id);
-      $enlaces=$this->menu_modelo->get_Modulos_programacion(2);
-      $tabla='';
-      $tabla.='<nav>
-              <ul>
-                  <li>
-                      <a href='.site_url("admin").'/dashboard'.' title="MENU PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
-                  </li>
-                  <li class="text-center">
-                      <a href='.base_url().'index.php/admin/proy/mis_proyectos/1'.' title="PROGRAMACI&Oacute;N POA"> <span class="menu-item-parent">PROGRAMACI&Oacute;N POA</span></a>
-                  </li>';
-                  if(count($id_f)!=0){
-                      for($i=0;$i<count($enlaces);$i++){ 
-                          $tabla.='
-                          <li>
-                              <a href="#" >
-                                  <i class="'.$enlaces[$i]['o_image'].'"></i> <span class="menu-item-parent">'.$enlaces[$i]['o_titulo'].'</span></a>
-                              <ul >';
-                              $submenu= $this->menu_modelo->get_Modulos_sub($enlaces[$i]['o_child']);
-                              foreach($submenu as $row) {
-                                 $tabla.='<li><a href='.base_url($row['o_url'])."/".$id_f[0]['proy_id'].'>'.$row['o_titulo'].'</a></li>';
-                              }
-                          $tabla.='</ul>
-                          </li>';
-                      }
-                  }
-              $tabla.='
-              </ul>
-          </nav>';
+    // public function genera_menu($proy_id){
+    //   $id_f = $this->model_faseetapa->get_id_fase($proy_id);
+    //   $enlaces=$this->menu_modelo->get_Modulos_programacion(2);
+    //   $tabla='';
+    //   $tabla.='<nav>
+    //           <ul>
+    //               <li>
+    //                   <a href='.site_url("admin").'/dashboard'.' title="MENU PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
+    //               </li>
+    //               <li class="text-center">
+    //                   <a href='.base_url().'index.php/admin/proy/mis_proyectos/1'.' title="PROGRAMACI&Oacute;N POA"> <span class="menu-item-parent">PROGRAMACI&Oacute;N POA</span></a>
+    //               </li>';
+    //               if(count($id_f)!=0){
+    //                   for($i=0;$i<count($enlaces);$i++){ 
+    //                       $tabla.='
+    //                       <li>
+    //                           <a href="#" >
+    //                               <i class="'.$enlaces[$i]['o_image'].'"></i> <span class="menu-item-parent">'.$enlaces[$i]['o_titulo'].'</span></a>
+    //                           <ul >';
+    //                           $submenu= $this->menu_modelo->get_Modulos_sub($enlaces[$i]['o_child']);
+    //                           foreach($submenu as $row) {
+    //                              $tabla.='<li><a href='.base_url($row['o_url'])."/".$id_f[0]['proy_id'].'>'.$row['o_titulo'].'</a></li>';
+    //                           }
+    //                       $tabla.='</ul>
+    //                       </li>';
+    //                   }
+    //               }
+    //           $tabla.='
+    //           </ul>
+    //       </nav>';
 
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
 }

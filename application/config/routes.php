@@ -202,7 +202,7 @@ $route['prog/rep_operaciones/(:any)'] = 'programacion/creporte/programacion_fisi
 /*-----------------------------  PROGRAMACION DEL PROYECTO - PRODUCTOS  -------------------------------*/
 $route['admin/prog/list_prod/(:any)'] = 'programacion/producto/lista_productos/$1';  //// lista de productos (2020)
 //$route['prog/verif_cod'] = 'programacion/producto/verif_codigo'; ////// verificando codigo Operacion
-$route['prog/delete_insumos_servicio/(:any)'] = 'programacion/producto/delete_insumos_servicios/$1';// Eliminar Todas los requerimientos de la unidad (2025)
+//$route['prog/delete_insumos_servicio/(:any)'] = 'programacion/producto/delete_insumos_servicios/$1';// Eliminar Todas los requerimientos de la unidad (2025)
 //$route['prog/delete_form4/(:any)'] = 'programacion/producto/delete_form4_form5/$1';// Eliminar Todas los actividades y requerimientos (2025)
 //$route['prog/delete_requerimientos/(:any)'] = 'programacion/producto/delete_requerimientos/$1';// Eliminar Todas los Requerimientos (2020)
 $route['admin/prog/valida_upload_prod'] = 'programacion/producto/subir_producto';  //// Subir Archivo Productos txt
@@ -239,7 +239,7 @@ $route['prog/reporte_form4_consolidado/(:any)'] = 'programacion/creporte/reporte
 /*-----------------------------  PROGRAMACION REQUERIMIENTOS (2020) -------------------------------*/
 //$route['prog/prog_financiera/(:any)'] = 'programacion/crequerimiento/list_componente/$1';  //// Listado de componentes/operacione, segun el tipo de proyecto
 $route['prog/requerimiento/(:any)'] = 'programacion/crequerimiento/list_requerimientos/$1';  //// Listado de Requerimientos
-$route['prog/eliminar_insumos_todos/(:any)'] = 'programacion/crequerimiento/eliminar_todos_insumos/$1';  //// eliminar todos los requerimientos
+//$route['prog/eliminar_insumos_todos/(:any)'] = 'programacion/crequerimiento/eliminar_todos_insumos/$1';  //// eliminar todos los requerimientos
 
 $route['prog/combo_partidas'] = 'programacion/crequerimiento/combo_partidas_hijos';// COMBO PARTIDAS HIJOS
 $route['prog/combo_umedida'] = 'programacion/crequerimiento/combo_unidad_medida';// COMBO UNIDAD DE MEDIDA

@@ -132,6 +132,28 @@ class Model_proyecto extends CI_Model{
         return $query->result_array();
     }
 
+    /*---------- LISTA POA 2027 - CONSULTA ----------*/
+    public function lista_programacion_poa_x_regional($dep_id,$tp_id){
+        $sql = 'select *
+                    from fn_lista_poa_nacional('.$this->gestion.')
+                    where dep_id='.$dep_id.' and tp_id='.$tp_id.'
+                    order by aper_programa,aper_actividad, aper_actividad asc'; 
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    /*---------- LISTA POA 2027 - CONSULTA ----------*/
+    public function lista_programacion_poa_x_distrital($dist_id,$tp_id){
+        $sql = 'select *
+                    from fn_lista_poa_nacional('.$this->gestion.')
+                    where dep_id='.$dist_id.' and tp_id='.$tp_id.'
+                    order by aper_programa,aper_actividad, aper_actividad asc'; 
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
 
     /*================= NUMERO DE RESPONSABLES DE PROYECTOS =================*/
     public function nro_resp($proy_id){

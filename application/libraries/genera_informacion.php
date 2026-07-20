@@ -142,15 +142,15 @@ class Genera_informacion extends CI_Controller{
             $tabla.='</td>
             <td align=center>'.$row['da'].'</td>
             <td align=center>'.$row['ue'].'</td>
-            <td align=center>'.$row['prog'].'</td>
-            <td align=center>'.$row['proy'].'</td>
-            <td align=center>'.$row['act'].'</td>
+            <td align=center>'.$row['aper_programa'].'</td>
+            <td align=center>'.$row['aper_proyecto'].'</td>
+            <td align=center>'.$row['aper_actividad'].'</td>
             <td>';
               if($tp_id==1){
               $tabla.='<b>'.$row['proy_nombre'].'</b>';
             }
             else{
-              $tabla.='<b>'.$row['tipo'].' '.$row['actividad'].' '.$row['abrev'].'</b>';
+              $tabla.='<b>'.$row['tipo'].' '.$row['act_descripcion'].' '.$row['abrev'].'</b>';
             }
             $tabla.='
             </td>

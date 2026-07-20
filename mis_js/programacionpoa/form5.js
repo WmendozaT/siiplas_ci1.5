@@ -2,11 +2,11 @@ base = $('[name="base"]').val();
 prod_id = $('[name="prod_id"]').val();
 
 
-function abreVentana(PDF){             
+/*function abreVentana(PDF){             
   var direccion;
   direccion = '' + PDF;
   window.open(direccion, "REPORTE FORMULARIO N° 5" , "width=800,height=700,scrollbars=NO") ; 
-}
+}*/
 
 function doSelectAlert(event,prod_id,ins_id) {
   var option = event.srcElement.children[event.srcElement.selectedIndex];
@@ -55,7 +55,7 @@ function doSelectAlert(event,prod_id,ins_id) {
      }
 
   ///  ELIMINAR TODOS LOS REQUERIMIENTOS DE LA ACTIVIDAD
-  function eliminar_requerimientos(){
+/*  function eliminar_requerimientos(){
     alertify.confirm("DESEA ELIMINAR TODOS LOS REQUERIMIENTOS ?", function (a) {
           if (a) {
             window.location=base+"index.php/prog/eliminar_insumos_todos/"+prod_id;
@@ -63,7 +63,7 @@ function doSelectAlert(event,prod_id,ins_id) {
               alertify.error("OPCI\u00D3N CANCELADA");
           }
       });
-  }
+  }*/
 
 
   $(document).ready(function() {
@@ -110,25 +110,25 @@ function doSelectAlert(event,prod_id,ins_id) {
     })
 
 
-    function suma_programado(){ 
-      sum=0;
-      for (var i = 1; i<=12; i++) {
-        sum=parseFloat(sum)+parseFloat($('[name="m'+i+'"]').val());
-      }
+    // function suma_programado(){ 
+    //   sum=0;
+    //   for (var i = 1; i<=12; i++) {
+    //     sum=parseFloat(sum)+parseFloat($('[name="m'+i+'"]').val());
+    //   }
 
-      $('[name="tot"]').val((sum).toFixed(2));
-      programado = parseFloat($('[name="tot"]').val()); //// programado total
-      ctotal = parseFloat($('[name="costo"]').val()); //// Costo Total
+    //   $('[name="tot"]').val((sum).toFixed(2));
+    //   programado = parseFloat($('[name="tot"]').val()); //// programado total
+    //   ctotal = parseFloat($('[name="costo"]').val()); //// Costo Total
 
-      if(programado!=ctotal){
-        $('#atit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO, VERIFIQUE DATOS</div></center>');
-            $('#but').slideUp();
-      }
-      else{
-        $('#atit').html('');
-            $('#but').slideDown();
-      }
-    }
+    //   if(programado!=ctotal){
+    //     $('#atit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO, VERIFIQUE DATOS</div></center>');
+    //         $('#but').slideUp();
+    //   }
+    //   else{
+    //     $('#atit').html('');
+    //         $('#but').slideDown();
+    //   }
+    // }
 
       function suma_programado_modificado(){ 
         sum=0;
@@ -171,25 +171,25 @@ function doSelectAlert(event,prod_id,ins_id) {
         }
       }
 
-      function costo_total(){ 
-        a = parseFloat($('[name="ins_cantidad"]').val()); //// cantidad
-        b = parseFloat($('[name="ins_costo_u"]').val()); //// Costo unitario
-        if (a!=0 && a>0 ){
-            $('[name="costo"]').val((b*a).toFixed(2) );
-            $('[name="costo2"]').val((b*a).toFixed(2) );
-        }
+      // function costo_total(){ 
+      //   a = parseFloat($('[name="ins_cantidad"]').val()); //// cantidad
+      //   b = parseFloat($('[name="ins_costo_u"]').val()); //// Costo unitario
+      //   if (a!=0 && a>0 ){
+      //       $('[name="costo"]').val((b*a).toFixed(2) );
+      //       $('[name="costo2"]').val((b*a).toFixed(2) );
+      //   }
 
-        ct = parseFloat($('[name="costo"]').val()); //// total
-        mt = parseFloat($('[name="tot"]').val()); //// prog
-        if(ct!=mt ||  isNaN(a) || ct==0){
-          $('#atit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO</div></center>');
-              $('#but').slideUp();
-        }
-        else{
-          $('#atit').html('');
-              $('#but').slideDown();
-        }
-      }
+      //   ct = parseFloat($('[name="costo"]').val()); //// total
+      //   mt = parseFloat($('[name="tot"]').val()); //// prog
+      //   if(ct!=mt ||  isNaN(a) || ct==0){
+      //     $('#atit').html('<center><div class="alert alert-danger alert-block">EL MONTO PROGRAMADO NO COINCIDE CON EL COSTO TOTAL DEL REQUERIMIENTO</div></center>');
+      //         $('#but').slideUp();
+      //   }
+      //   else{
+      //     $('#atit').html('');
+      //         $('#but').slideDown();
+      //   }
+      // }
 
       function verif(){ 
         a = parseFloat($('[name="costot"]').val()); //// total
@@ -206,85 +206,85 @@ function doSelectAlert(event,prod_id,ins_id) {
 
 
   //// INSERTAR NUEVO REQUERIMIENTO
-  $(function () {
-      $("#subir_ins").on("click", function () {
-          var $validator = $("#form_nuevo").validate({
-              rules: {
-                  prod_id: { //// producto
-                  required: true,
-                  },
-                  proy_id: { //// proyecto
-                      required: true,
-                  },
-                  ins_detalle: { //// Detalle
-                      required: true,
-                  },
-                  ins_cantidad: { //// Cantidad
-                      required: true,
-                  },
-                  ins_costo_u: { //// Costo U
-                      required: true,
-                  },
-                  costo: { //// costo tot
-                      required: true,
-                  },
-                  um_id: { //// unidad medida
-                      required: true,
-                  },
-                  padre: { //// par padre
-                      required: true,
-                  },
-                  partida_id: { //// par hijo
-                      required: true,
-                  }
-              },
-              messages: {
-                  ins_detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>", 
-                  ins_cantidad: "<font color=red>CANTIDAD</font>",
-                  ins_costo_u: "<font color=red>COSTO UNITARIO</font>",
-                  costo: "<font color=red>COSTO TOTAL</font>",
-                  um_id: "<font color=red>SELECCIONE UNIDAD DE MEDIDA</font>",
-                  padre: "<font color=red>SELECCIONE GRUPO DE PARTIDAS</font>",
-                  partida_id: "<font color=red>SELECCIONE PARTIDA</font>",                     
-              },
-              highlight: function (element) {
-                  $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-              },
-              unhighlight: function (element) {
-                  $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-              },
-              errorElement: 'span',
-              errorClass: 'help-block',
-              errorPlacement: function (error, element) {
-                  if (element.parent('.input-group').length) {
-                      error.insertAfter(element.parent());
-                  } else {
-                      error.insertAfter(element);
-                  }
-              }
-          });
+  // $(function () {
+  //     $("#subir_ins").on("click", function () {
+  //         var $validator = $("#form_nuevo").validate({
+  //             rules: {
+  //                 prod_id: { //// producto
+  //                 required: true,
+  //                 },
+  //                 proy_id: { //// proyecto
+  //                     required: true,
+  //                 },
+  //                 ins_detalle: { //// Detalle
+  //                     required: true,
+  //                 },
+  //                 ins_cantidad: { //// Cantidad
+  //                     required: true,
+  //                 },
+  //                 ins_costo_u: { //// Costo U
+  //                     required: true,
+  //                 },
+  //                 costo: { //// costo tot
+  //                     required: true,
+  //                 },
+  //                 um_id: { //// unidad medida
+  //                     required: true,
+  //                 },
+  //                 padre: { //// par padre
+  //                     required: true,
+  //                 },
+  //                 partida_id: { //// par hijo
+  //                     required: true,
+  //                 }
+  //             },
+  //             messages: {
+  //                 ins_detalle: "<font color=red>REGISTRE DETALLE DEL REQUERIMIENTO</font>", 
+  //                 ins_cantidad: "<font color=red>CANTIDAD</font>",
+  //                 ins_costo_u: "<font color=red>COSTO UNITARIO</font>",
+  //                 costo: "<font color=red>COSTO TOTAL</font>",
+  //                 um_id: "<font color=red>SELECCIONE UNIDAD DE MEDIDA</font>",
+  //                 padre: "<font color=red>SELECCIONE GRUPO DE PARTIDAS</font>",
+  //                 partida_id: "<font color=red>SELECCIONE PARTIDA</font>",                     
+  //             },
+  //             highlight: function (element) {
+  //                 $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+  //             },
+  //             unhighlight: function (element) {
+  //                 $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
+  //             },
+  //             errorElement: 'span',
+  //             errorClass: 'help-block',
+  //             errorPlacement: function (error, element) {
+  //                 if (element.parent('.input-group').length) {
+  //                     error.insertAfter(element.parent());
+  //                 } else {
+  //                     error.insertAfter(element);
+  //                 }
+  //             }
+  //         });
 
-          var $valid = $("#form_nuevo").valid();
-          if (!$valid) {
-              $validator.focusInvalid();
-          } else {
-            saldo=document.getElementById("saldo").value;
-              programado=document.getElementById("tot").value;
-              dif=saldo-programado;
-              $('#atit').html('');
-                alertify.confirm("GUARDAR DATOS REQUERIMIENTO ?", function (a) {
-                    if (a) {
-                      document.getElementById("loadi").style.display = 'block';
-                          document.getElementById('subir_ins').disabled = true;
-                          document.getElementById("subir_ins").value = "GUARDANDO DATOS REQUERIMIENTO...";
-                          document.forms['form_nuevo'].submit();
-                      } else {
-                          alertify.error("OPCI\u00D3N CANCELADA");
-                    }
-                }); 
-          }
-      });
-  });
+  //         var $valid = $("#form_nuevo").valid();
+  //         if (!$valid) {
+  //             $validator.focusInvalid();
+  //         } else {
+  //           saldo=document.getElementById("saldo").value;
+  //             programado=document.getElementById("tot").value;
+  //             dif=saldo-programado;
+  //             $('#atit').html('');
+  //               alertify.confirm("GUARDAR DATOS REQUERIMIENTO ?", function (a) {
+  //                   if (a) {
+  //                     document.getElementById("loadi").style.display = 'block';
+  //                         document.getElementById('subir_ins').disabled = true;
+  //                         document.getElementById("subir_ins").value = "GUARDANDO DATOS REQUERIMIENTO...";
+  //                         document.forms['form_nuevo'].submit();
+  //                     } else {
+  //                         alertify.error("OPCI\u00D3N CANCELADA");
+  //                   }
+  //               }); 
+  //         }
+  //     });
+  // });
 
   ////// ===== MODIFICAR REUQERIMIENTO
     $(function () {

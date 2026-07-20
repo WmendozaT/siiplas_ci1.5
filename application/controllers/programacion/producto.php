@@ -158,7 +158,7 @@ class Producto extends CI_Controller {
                     </a>
                     <a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$com_id.'\');" class="btn btn-primary" title="REPORTE FORM. 4"> <img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>REPORTE FORM N 4</a>
                     <a onclick="eliminar_form4_todos()" class="btn btn-danger"  title="Eliminar Actividades de la unidad (todos)"><img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 4 (TODOS)</a>
-                    <a onclick="eliminar_requerimientos_servicio()" class="btn btn-danger"  title="Eliminar Requerimientos de la unidad (todos)"><img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 5 (TODOS)</a>';
+                    <a onclick="eliminar_requerimientos_UnidadReponsable()" class="btn btn-danger"  title="Eliminar Solo Requerimientos de la unidad (todos)"><img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 5 (TODOS)</a>';
                   }
                   $data['titulo'].='
               </div>
@@ -456,98 +456,7 @@ class Producto extends CI_Controller {
             </div>';
 
             $data['tabla']=$tabla;
-          //  $this->load->view('admin/programacion/producto/form_anteproyecto_form4', $data); /// Gasto Corriente
-
-/*
-Error Number:
-
-ERROR: update o delete en «temporalidad_prog_insumo» viola la llave foránea «cert_temporalidad_prog_insumo_tins_id_fkey» en la tabla «cert_temporalidad_prog_insumo» DETAIL: La llave (tins_id)=(1187402) todavía es referida desde la tabla «cert_temporalidad_prog_insumo».
-
-DELETE FROM "temporalidad_prog_insumo" WHERE "ins_id" = 851619
-
-Filename: C:\xampp56\htdocs\siiplas_ci1.5\system\database\DB_driver.php
-
-Line Number: 331
-*/
-
-                        $com_id_clean = 8654;
-
-            if ($com_id_clean <= 0) {
-                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador del componente corrupto o vacío.'));
-                return;
-            }
-
-            // 1. Recuperamos la matriz completa de actividades asociadas a esta Unidad Organizacional
-            $form4 = $this->model_producto->lista_form4_x_unidadresponsable($com_id_clean);
-            
-            if (empty($form4) || count($form4) == 0) {
-                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'La Unidad Responsable seleccionada ya se encuentra vacía. No existen registros para purgar.'));
-                return;
-            }
-
-            // ==========================================================================
-            // 🌟 INICIO DE COMPUERTA TRANSACCIONAL ATÓMICA DE MÁXIMA SEGURIDAD (POSTGRESQL)
-            // ==========================================================================
-            $this->db->trans_start();
-
-            foreach ($form4 as $rowp) {
-                $prod_id_actual = floatval($rowp['prod_id']); // numeric(18,0)
-
-                // 🛠️ REPARADO: Se utiliza el modelo y función real certificada de tu proyecto 'insumo_producto'
-                $insumos = $this->model_producto->insumo_producto($prod_id_actual); 
-                
-                if (!empty($insumos) && count($insumos) > 0) {
-                    foreach ($insumos as $rowi) {
-                        $ins_id_actual = intval($rowi['ins_id']);
-
-                        // PASO A: Purgamos la temporalidad financiera mensual del insumo
-                        $this->db->where('ins_id', $ins_id_actual);
-                        $this->db->delete('temporalidad_prog_insumo');
-
-                        // PASO B: Purgamos el nudo de enlace intermedio de la tabla cruzada _insumoproducto
-                        $this->db->where('prod_id', $prod_id_actual);
-                        $this->db->where('ins_id', $ins_id_actual);
-                        $this->db->delete('_insumoproducto');
-
-                        // PASO C: Eliminamos físicamente la cabecera del requerimiento en la tabla insumos
-                        $this->db->where('ins_id', $ins_id_actual);
-                        $this->db->delete('insumos');
-                    }
-                }
-
-                // PASO D: Una vez limpio el Formulario 5, purgamos el cronograma físico mensualizado de la actividad (Form 4)
-                $this->db->where('prod_id', $prod_id_actual);
-                $this->db->delete('prod_programado_mensual');
-
-                // PASO E: Purgamos la hilera maestra de la actividad de la tabla de productos
-                $this->db->where('prod_id', $prod_id_actual);
-                $this->db->delete('_productos');
-            }
-
-            // Sella las inserciones obligando a PostgreSQL a verificar la consistencia del lote entero
-            $this->db->trans_complete();
-            // ==========================================================================
-
-            // 2. VERIFICACIÓN POST-TRANSACCIONAL DE COINCIDENCIA DE BASE DE DATOS
-            if ($this->db->trans_status() !== FALSE) {
-                
-                $result = array(
-                    'status'    => 'success',
-                    'respuesta' => 'correcto',
-                    'message'   => 'Se ha purgado de forma completa y absoluta la matriz física y financiera de la Unidad Responsable.'
-                );
-                
-                $this->session->set_flashdata('success', 'SE ELIMINO CORRECTAMENTE EL FORMULARIO DE LA UNIDAD.');
-
-            } else {
-                $result = array(
-                    'status'    => 'error',
-                    'respuesta' => 'error',
-                    'message'   => 'PostgreSQL abortó el vaciado en lote debido a una violación de integridad relacional externa.'
-                );
-            }
-
-            echo json_encode($result);
+            $this->load->view('admin/programacion/producto/form_anteproyecto_form4', $data); /// Gasto Corriente
       }
       else{
         redirect('prog/list_serv/'.$com_id);
@@ -1746,7 +1655,7 @@ Line Number: 331
     }
 
 
-    /*--- ELIMINAR TOD@S LAS ACTIVIDADES REQUERIMIENTOS DE LA UNIDAD (2025) ---*/
+    /*--- ELIMINAR TOD@S LAS ACTIVIDADES y REQUERIMIENTOS DE LA UNIDAD responsable (2027) ---*/
      public function delete_form4($com_id) {
         // Validamos que sea una petición asíncrona legítima de JQuery
         if ($this->input->is_ajax_request()) {
@@ -1755,6 +1664,18 @@ Line Number: 331
 
             if ($com_id_clean <= 0) {
                 echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador del componente corrupto o vacío.'));
+                return;
+            }
+            
+            $verif=$this->model_componente->lista_Verif_items_cert_x_componente($com_id_clean);
+            if ($com_id_clean <= 0) {
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador del componente corrupto o vacío.'));
+                return;
+            }
+
+            // Ejecutamos tu consulta optimizada para cazar certificaciones activas en la gestión actual
+            if (count($verif) != 0) {
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Error al eliminar actividades de la Unidad Responsable, existen Items Certificados..'));
                 return;
             }
 
@@ -1836,68 +1757,174 @@ Line Number: 331
     }
 
 
-    /*--- ELIMINAR TOD@S LOS REQUERIMIENTOS DEL SERVICIO (SOLO REQUERIMIENTOS) (2025) ---*/
-    public function delete_insumos_servicios($com_id){
-    //  $productos = $this->model_producto->list_producto_programado($com_id,$this->gestion); // Lista de productos
-      $productos=$this->model_producto->lista_form4_x_unidadresponsable($com_id);
-      $nro=0;$nro_ins=0;
-      //echo "eliminar productos";
-      foreach($productos as $rowp){
-        $insumos=$this->model_insumo->lista_insumos_prod($rowp['prod_id']);
-        foreach ($insumos as $rowi) {
-          /*--------- delete temporalidad --------*/
-          $this->db->where('ins_id', $rowi['ins_id']);
-          $this->db->delete('temporalidad_prog_insumo');
+    /*--- ELIMINAR TOD@S LOS REQUERIMIENTOS DEL COMPONENTE (SOLO REQUERIMIENTOS) (2027) ---*/
+      public function delete_insumos_Unidad_Responsable($com_id) {
+        // Validamos que sea una petición asíncrona legítima de JQuery
+        if ($this->input->is_ajax_request()) {
+            
+            $com_id_clean = intval($com_id);
+            $g_id = intval($this->gestion);
 
-          $this->db->where('ins_id', $rowi['ins_id']);
-          $this->db->delete('_insumoproducto');
+            if ($com_id_clean <= 0) {
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador del componente corrupto o vacío.'));
+                return;
+            }
+            // ==========================================================================
+            if ($com_id_clean <= 0) {
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador del componente corrupto o vacío.'));
+                return;
+            }
+            // ==========================================================================
 
-          /*--------- delete Insumos --------*/
-          $this->db->where('ins_id', $rowi['ins_id']);
-          $this->db->delete('insumos');
+            // Ejecutamos tu consulta optimizada para cazar certificaciones activas en la gestión actual
+            $verif=$this->model_componente->lista_Verif_items_cert_x_componente($com_id_clean);
+            if (count($verif) != 0) {
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Error al eliminar Requerimientos, existen Items Certificados..'));
+                return;
+            }
 
-          if(count($this->model_insumo->get_insumo_producto($rowi['ins_id']))==0){
-            $nro_ins++;
-          }
+            $productos = $this->model_producto->lista_form4_x_unidadresponsable($com_id_clean);
+            $nro_ins = 0;
+
+            if (empty($productos) || count($productos) == 0) {
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'La Unidad Responsable seleccionada no registra actividades vigentes.'));
+                return;
+            }
+
+            // ==========================================================================
+            // 🌟 INICIO DE COMPUERTA TRANSACCIONAL ATÓMICA DE MÁXIMA SEGURIDAD
+            // ==========================================================================
+            $this->db->trans_start();
+
+            foreach ($productos as $rowp) {
+                $prod_id_actual = floatval($rowp['prod_id']); // numeric(18,0)
+                
+                // Usamos la función interna de tu proyecto
+                $insumos = $this->model_insumo->lista_insumos_prod($prod_id_actual);
+                
+                if (!empty($insumos) && count($insumos) > 0) {
+                    foreach ($insumos as $rowi) {
+                        $ins_id_actual = intval($rowi['ins_id']);
+
+                        // PASO A: Purgamos la temporalidad financiera mensual del insumo
+                        $this->db->where('ins_id', $ins_id_actual);
+                        $this->db->delete('temporalidad_prog_insumo');
+
+                        // PASO B: Purgamos el nudo relacional de la tabla intermedia cruzada
+                        $this->db->where('prod_id', $prod_id_actual);
+                        $this->db->where('ins_id', $ins_id_actual);
+                        $this->db->delete('_insumoproducto');
+
+                        // PASO C: Eliminamos físicamente el insumo
+                        $this->db->where('ins_id', $ins_id_actual);
+                        $this->db->delete('insumos');
+
+                        $nro_ins++; // Acumulador de auditoría exitosa
+                    }
+                }
+
+                // 🛠️ REPARACIÓN SOLUCIÓN GENERAL: Limpieza cruda complementaria fuera del bucle
+                $this->db->where('prod_id', $prod_id_actual);
+                $this->db->delete('_insumoproducto');
+
+                // PASO D: Reseteamos la meta física anual a cero debido a la remoción de su presupuesto
+                $this->db->where('prod_id', $prod_id_actual);
+                $this->db->update('_productos', array(
+                    'prod_ppto' => 1,
+                    'fun_id'    => $this->fun_id
+                ));
+            }
+
+            // Sella el lote completo de consultas forzando consistencia en Postgres
+            $this->db->trans_complete();
+            // ==========================================================================
+
+            if ($this->db->trans_status() !== FALSE) {
+                
+                // 🛠️ REPARADO: Se quita el redirect síncrono y se despacha el JSON esperado por tu request.done
+                echo json_encode(array(
+                    'status'    => 'success',
+                    'respuesta' => 'correcto',
+                    'message'   => 'Se eliminaron correctamente ' . $nro_ins . ' requerimientos contables del Formulario N° 5.'
+                ));
+                
+                $this->session->set_flashdata('success', 'SE ELIMINO CORRECTAMENTE ' . $nro_ins . ' REQUERIMIENTOS DE LA UNIDAD.');
+
+            } else {
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'message'   => 'PostgreSQL rechazó la purga masiva de insumos debido a restricciones de consistencia interna.'
+                ));
+            }
+
+        } else {
+            show_404();
         }
-      }
-
-      $update_prod= array(
-        'fun_id' => $this->fun_id,
-        'prod_ppto' => 1
-      );
-      $this->db->where('com_id', $com_id);
-      $this->db->update('_productos', $update_prod);
-
-
-      $this->session->set_flashdata('success','SE ELIMINO CORRECTAMENTE '.$nro_ins.' REQUERIMIENTOS DE LA UNIDAD ');
-      redirect(site_url("").'/admin/prog/list_prod/'.$com_id);
     }
+
+
+    // public function delete_insumos_Unidad_Responsable($com_id){
+
+    //   $productos=$this->model_producto->lista_form4_x_unidadresponsable($com_id);
+    //   $nro=0;$nro_ins=0;
+    //   //echo "eliminar productos";
+    //   foreach($productos as $rowp){
+    //     $insumos=$this->model_insumo->lista_insumos_prod($rowp['prod_id']);
+    //     foreach ($insumos as $rowi) {
+    //       /*--------- delete temporalidad --------*/
+    //       $this->db->where('ins_id', $rowi['ins_id']);
+    //       $this->db->delete('temporalidad_prog_insumo');
+
+    //       $this->db->where('ins_id', $rowi['ins_id']);
+    //       $this->db->delete('_insumoproducto');
+
+    //       /*--------- delete Insumos --------*/
+    //       $this->db->where('ins_id', $rowi['ins_id']);
+    //       $this->db->delete('insumos');
+
+    //       if(count($this->model_insumo->get_insumo_producto($rowi['ins_id']))==0){
+    //         $nro_ins++;
+    //       }
+    //     }
+    //   }
+
+    //   $update_prod= array(
+    //     'fun_id' => $this->fun_id,
+    //     'prod_ppto' => 1
+    //   );
+    //   $this->db->where('com_id', $com_id);
+    //   $this->db->update('_productos', $update_prod);
+
+
+    //   $this->session->set_flashdata('success','SE ELIMINO CORRECTAMENTE '.$nro_ins.' REQUERIMIENTOS DE LA UNIDAD ');
+    //   redirect(site_url("").'/admin/prog/list_prod/'.$com_id);
+    // }
 
 
     /*--- ELIMINAR LISTA TOTAL DE REQUERIMEITNOS POR UNIDAD*/
-    public function delete_list_requerimientos($aper_id){
-      $insumos=$this->model_insumo->insumos_por_unidad($aper_id);
-      $nro_ins=0;
-      foreach ($insumos as $rowi) {
-        /*--------- delete temporalidad --------*/
-        $this->db->where('ins_id', $rowi['ins_id']);
-        $this->db->delete('temporalidad_prog_insumo');
+    // public function delete_list_requerimientos($aper_id){
+    //   $insumos=$this->model_insumo->insumos_por_unidad($aper_id);
+    //   $nro_ins=0;
+    //   foreach ($insumos as $rowi) {
+    //     /*--------- delete temporalidad --------*/
+    //     $this->db->where('ins_id', $rowi['ins_id']);
+    //     $this->db->delete('temporalidad_prog_insumo');
 
-        $this->db->where('ins_id', $rowi['ins_id']);
-        $this->db->delete('_insumoproducto');
+    //     $this->db->where('ins_id', $rowi['ins_id']);
+    //     $this->db->delete('_insumoproducto');
 
-        /*--------- delete Insumos --------*/
-        $this->db->where('ins_id', $rowi['ins_id']);
-        $this->db->delete('insumos');
+    //     /*--------- delete Insumos --------*/
+    //     $this->db->where('ins_id', $rowi['ins_id']);
+    //     $this->db->delete('insumos');
 
-        if(count($this->model_insumo->get_insumo_producto($rowi['ins_id']))==0){
-          $nro_ins++;
-        }
-      }
+    //     if(count($this->model_insumo->get_insumo_producto($rowi['ins_id']))==0){
+    //       $nro_ins++;
+    //     }
+    //   }
 
-      return $nro_ins;
-    }
+    //   return $nro_ins;
+    // }
 
 
     /*----- ELIMINAR VARIOS OPERACIONES SELECCIONADOS -----*/
@@ -1965,12 +1992,41 @@ Line Number: 331
     public function desactiva_producto(){
       if ($this->input->is_ajax_request() && $this->input->post()) {
           $post = $this->input->post();
-          
           // 🛠️ AJUSTE 1: Cast numérico elástico compatible con DDL numeric(18,0)
           $prod_id = floatval($this->security->xss_clean($post['prod_id'])); 
           
-          $insumos = $this->model_producto->insumo_producto($prod_id); 
+           if ($prod_id <= 0) {
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador relacional corrupto.'));
+                return;
+            }
 
+            // ==========================================================================
+            // CANDADO DE AUDITORÍA: VERIFICACIÓN POR PRODUCTO SELECCIONADO
+            // ==========================================================================
+            $sql_verif_cert_individual = "
+                SELECT COUNT(cert_temp.ctins_id) AS total_certificados
+                FROM public.insumos i
+                INNER JOIN public._insumoproducto ip ON i.ins_id = ip.ins_id
+                INNER JOIN public.temporalidad_prog_insumo temp ON i.ins_id = temp.ins_id
+                INNER JOIN public.cert_temporalidad_prog_insumo cert_temp ON temp.tins_id = cert_temp.tins_id
+                WHERE ip.prod_id = ?
+                  AND i.ins_estado != 3 
+                  AND i.ins_gestion = ?
+            ";
+            
+            $query_cert_ind = $this->db->query($sql_verif_cert_individual, array($prod_id, intval($this->gestion)));
+            $res_cert_ind   = $query_cert_ind->row_array();
+
+            if (!empty($res_cert_ind) && intval($res_cert_ind['total_certificados']) > 0) {
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'message'   => 'Restricción de Operación: No se puede eliminar esta actividad debido a que contiene ('.$res_cert_ind['total_certificados'].') requerimientos con CERTIFICACIÓN PRESUPUESTARIA VIGENTE.'
+                ));
+                return;
+            }
+
+          $insumos = $this->model_producto->insumo_producto($prod_id); 
           // 🌟 AJUSTE 2: Compuesta transaccional atómica para blindar PostgreSQL
           $this->db->trans_start();
 
@@ -2527,39 +2583,39 @@ Line Number: 331
    }
 
     /*--------------- GENERA MENU -------------*/
-    public function genera_menu($proy_id){
-      $id_f = $this->model_faseetapa->get_id_fase($proy_id);
-      $enlaces=$this->menu_modelo->get_Modulos_programacion(2);
-      $tabla='';
-      $tabla.='
-          <nav>
-            <ul>
-                <li>
-                    <a href='.site_url("admin").'/dashboard'.' title="MENU PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
-                </li>
-                <li class="text-center">
-                    <a href='.base_url().'index.php/admin/proy/mis_proyectos/1'.' title="PROGRAMACI&Oacute;N POA"> <span class="menu-item-parent">PROGRAMACI&Oacute;N POA</span></a>
-                </li>';
-                if(count($id_f)!=0){
-                    for($i=0;$i<count($enlaces);$i++){ 
-                        $tabla.='
-                        <li>
-                            <a href="#" >
-                                <i class="'.$enlaces[$i]['o_image'].'"></i> <span class="menu-item-parent">'.$enlaces[$i]['o_titulo'].'</span></a>
-                            <ul >';
-                            $submenu= $this->menu_modelo->get_Modulos_sub($enlaces[$i]['o_child']);
-                            foreach($submenu as $row) {
-                               $tabla.='<li><a href='.base_url($row['o_url'])."/".$id_f[0]['proy_id'].'>'.$row['o_titulo'].'</a></li>';
-                            }
-                        $tabla.='</ul>
-                        </li>';
-                    }
-                }
-            $tabla.='
-            </ul>
-          </nav>';
+    // public function genera_menu($proy_id){
+    //   $id_f = $this->model_faseetapa->get_id_fase($proy_id);
+    //   $enlaces=$this->menu_modelo->get_Modulos_programacion(2);
+    //   $tabla='';
+    //   $tabla.='
+    //       <nav>
+    //         <ul>
+    //             <li>
+    //                 <a href='.site_url("admin").'/dashboard'.' title="MENU PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
+    //             </li>
+    //             <li class="text-center">
+    //                 <a href='.base_url().'index.php/admin/proy/mis_proyectos/1'.' title="PROGRAMACI&Oacute;N POA"> <span class="menu-item-parent">PROGRAMACI&Oacute;N POA</span></a>
+    //             </li>';
+    //             if(count($id_f)!=0){
+    //                 for($i=0;$i<count($enlaces);$i++){ 
+    //                     $tabla.='
+    //                     <li>
+    //                         <a href="#" >
+    //                             <i class="'.$enlaces[$i]['o_image'].'"></i> <span class="menu-item-parent">'.$enlaces[$i]['o_titulo'].'</span></a>
+    //                         <ul >';
+    //                         $submenu= $this->menu_modelo->get_Modulos_sub($enlaces[$i]['o_child']);
+    //                         foreach($submenu as $row) {
+    //                            $tabla.='<li><a href='.base_url($row['o_url'])."/".$id_f[0]['proy_id'].'>'.$row['o_titulo'].'</a></li>';
+    //                         }
+    //                     $tabla.='</ul>
+    //                     </li>';
+    //                 }
+    //             }
+    //         $tabla.='
+    //         </ul>
+    //       </nav>';
 
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
 }

@@ -777,21 +777,34 @@ class Programacionpoa extends CI_Controller{
     }
     
 
-    /*--- BOTON ESTADO FORM 5---*/
-    function button_form5(){
-      $tabla='';
-      if($this->conf_form5==1 || $this->fun_id==401 || $this->fun_id==399 || $this->fun_id==583 || $this->fun_id==600){
-      //if($this->tp_adm==1 || $this->conf_form5==1){
-        $tabla.=' <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default nuevo_ff" title="NUEVO REGISTRO FORM N 5" class="btn btn-success">
-                    <img src="'.base_url().'assets/Iconos/add.png" WIDTH="20" HEIGHT="20"/>&nbsp;NUEVO REGISTRO
-                  </a>
-                  
-                  <a href="#" data-toggle="modal" data-target="#modal_importar_ff" class="btn btn-default importar_ff" name="1" title="IMPORTAR REQUERIMIENTOS" >
-                    <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;SUBIR REQUERIMIENTOS.CSV
-                  </a>';
+    /*--- BOTON ESTADO FORM 5 2027 ---*/
+    public function button_form5($com_id){
+      $tabla = '';
+      
+      // Filtro perimetral elástico: Solo Administradores Nacionales o Configuraciones Regionales activas
+      if($this->tp_adm == 1 || $this->conf_form5 == 1){
+        $tabla .= ' 
+          <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
+            <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO REQUERIMIENTOS.Xls</b>
+          </a>';
       }
 
-      $tabla.='<br><br>';
+      // 🛠️ REPARADO: Corrección de rutas, nombres y cierre limpio de etiquetas HTML 
+      $tabla .= ' 
+        <a href="javascript:abreVentana_poa(\''.site_url("prog/reporte_form5_uresponsable/".$com_id).'\');" class="btn btn-primary" title="IMPRIMIR REPORTE CONSOLIDADO DE INSUMOS" style="font-weight:bold; margin-right:5px;"> 
+            <img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/>&nbsp;IMPRIMIR FORM N° 5
+        </a>
+        
+        <!-- 🛠️ REPARADO: Apunta al disparador específico de limpieza financiera de la Unidad sin borrar el Form 4 -->
+        <a onclick="eliminar_requerimientos_UnidadReponsable();" class="btn btn-danger" title="ELIMINAR TODOS LOS REQUERIMIENTOS E INSUMOS DE ESTA UNIDAD" style="font-weight:bold;">
+            <img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;ELIMINAR REQUERIMIENTOS (TODOS)
+        </a>
+
+        <a href="'.site_url("admin/proy/list_proy").'" class="btn btn-default" title="SALIR A MENU PRINCIPAL" style="font-weight:bold; background-color: #475569; color: #ffffff; border-color: #475569; transition: all 0.2s ease;">
+            <i class="fa fa-arrow-circle-left" style="font-size:14px; margin-right:4px;"></i> SALIR
+        </a>';
+        
+      $tabla .= '<br><br>';
       
       return $tabla;
     }
@@ -823,6 +836,9 @@ class Programacionpoa extends CI_Controller{
         }
         #mdialTamanio2{
           width: 55% !important;
+        }
+        #dialog_subirr{
+          width: 45% !important;
         }
         input[type="checkbox"] {
                 display:inline-block;
