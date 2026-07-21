@@ -124,6 +124,36 @@ class Cajustes extends CI_Controller {
 
       echo $tabla;*/
       //$data['certificado']='';
+
+      $listado_form4_sigep=$this->model_configuracion->form4_sigep();
+      $tabla='';
+      $tabla.='
+      <table border="1" cellpadding="0" cellspacing="0" class="tabla" style="width:20%;" align="center">';
+      foreach ($listado_form4_sigep as $row){
+        $tabla.='
+        <tr>
+          <td>'.$row['dep_departamento'].'</td>
+          <td>'.$row['dist_distrital'].'</td>
+          <td>'.$row['aper_programa'].'</td>
+          <td>'.$row['aper_actividad'].'</td>
+          <td>'.$row['tipo'].' '.$row['proy_nombre'].' '.$row['abrev'].'</td>
+          <td>'.$row['tipo_subactividad'].' '.$row['com_componente'].'</td>
+          <td>'.$row['prod_id'].'</td>
+          <td>'.$row['prod_producto'].'</td>
+          <td>'.$row['prod_indicador'].'</td>
+          <td>'.round($row['prod_meta'],2).'</td>';
+          for ($i=1; $i <=12 ; $i++) { 
+            $tabla.='<td>'.round($row['m'.$i],2).'</td>';
+          }
+          $tabla.='<td>-</td>';
+          for ($i=1; $i <=12 ; $i++) { 
+            $tabla.='<td>'.round($row['ejec_m'.$i],2).'</td>';
+          }
+        $tabla.='
+        </tr>';
+      }
+      $tabla.='</table>';
+      $data['certificado']=$tabla;
       $this->load->view('admin/mantenimiento/ajustes_siiplas/menu_ajustes', $data);
     }
     ////--------------------------

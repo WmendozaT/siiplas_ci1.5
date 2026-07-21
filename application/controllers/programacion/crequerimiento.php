@@ -360,7 +360,7 @@ class crequerimiento extends CI_Controller{
       $tabla.=$this->modal_migracion_form5x_actividad($producto,$componente);
       $total=0;
       $tabla.='
-      <input type="hidden" name="prod_id" id="prod_id" value="'.$prod_id.'">
+      <input type="hidden" name="prod_id" id="prod_id" value="'.$producto[0]['prod_id'].'">
       <input type="hidden" name="base" value="'.base_url().'">
       <table id="dt_basic" class="table table table-bordered" width="100%">
           <thead>

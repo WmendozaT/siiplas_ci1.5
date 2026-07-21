@@ -20,13 +20,15 @@ class Model_configuracion extends CI_Model {
         return $query->result_array();
     }
 
-    /*--------- Lista de FUNCIONARIOPROYECTO ----------*/
-/*    public function funcionarioproyecto($fun_id){
-        $sql = 'select * from _proyectofuncionario
-                where fun_estado=\'3\''; 
+    /*--------- Lista de form4 para sigep ----------*/
+    public function form4_sigep(){
+        $sql = 'select *
+                from get_formulario4_consolidado_nacional('.$this->gestion.')
+                where sigep_priori=1
+                order by dep_id,dist_id,aper_programa,aper_proyecto,aper_actividad asc'; 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
 
     /*--------- Lista de responsables para evaluacion ----------*/
