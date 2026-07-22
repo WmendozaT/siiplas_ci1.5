@@ -656,7 +656,7 @@ function numerosDecimales(evt) {
     });
 
 
-    /// Requerimientos
+    /// Subir Requerimientos Global
     $(document).on('click', '#btn_subir_f5', function(e) {
         e.preventDefault();
         $('#mensaje_f5').html(''); 

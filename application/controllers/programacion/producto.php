@@ -1146,10 +1146,10 @@ class Producto extends CI_Controller {
 
 
 
-    /// ==== MIGRACION EXCEL DE REQUERIMIENTOS - Formulario N° 5 / 2027
+    /// ==== MIGRACION EXCEL DE REQUERIMIENTOS GLOBAL - Formulario N° 5 / 2027
       public function valida_migracion_form5_consolidado() {
-        ini_set('max_execution_time', 300); // 5 minutos
-        ini_set('memory_limit', '512M');    // Aumentar memoria
+        ini_set('max_execution_time', 900); // 15 minutos máximos de procesamiento de CPU
+        ini_set('memory_limit', '3072M'); 
         $this->load->library('excel'); 
         $com_id = $this->input->post('com_id');
         $get_unidad = $this->model_componente->get_componente($com_id, $this->gestion);
