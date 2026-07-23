@@ -10,7 +10,7 @@ class Model_insumo extends CI_Model{
         $this->fun_id = $this->session->userData('fun_id');
     }
 
-    // ------ Lista Insumos Todos 
+    // ------ Lista Insumos Todos (revisar)
     public function lista_insumos($gestion){
         $sql = 'select apg.*,p.*,dep.*,dist.*,i.*,ua.*,te.*
                 from vlista_insumos i
@@ -42,7 +42,7 @@ class Model_insumo extends CI_Model{
     }
 
 
-    // ------ lista Programacion Financiera
+    // ------ lista Programacion Financiera (revisar)
     public function lista_prog_fin($ins_id){
         $sql = 'select *
                 from temporalidad_prog_insumo
@@ -389,36 +389,6 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    // lista de requerimientos alineados a la operacion y a la subactividad (anterior a borrar)
-/*    function list_requerimientos_operacion_procesos($com_id){
-        $sql = ' select 
-                p.com_id,
-                p.prod_cod,
-                 i.ins_id,
-                i.ins_codigo,
-                i.ins_cant_requerida,
-                i.ins_costo_unitario,
-                i.ins_costo_total,
-                i.ins_detalle,
-                i.ins_unidad_medida,
-                i.ins_gestion,
-                i.ins_observacion,
-                i.ins_monto_certificado,
-                i.ins_tipo_modificacion,
-                par.par_id,
-                par.par_codigo,
-                par.par_nombre
-                from _productos p
-                Inner Join _insumoproducto as ip On p.prod_id=ip.prod_id
-                Inner Join insumos as i On i.ins_id=ip.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where p.com_id='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
-                order by p.prod_cod,par.par_codigo,i.ins_id asc';
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
     // lista de requerimientos alineados a la Unidad Responsable
     function list_requerimientos_uresponsable($com_id){
         $sql = '
@@ -544,28 +514,6 @@ class Model_insumo extends CI_Model{
     }
 
 
-
-    // LISTA CONSOLIDADO POR PARTIDAS PROGRAMAS BOLSAS por actividad (Antiguo)
-/*    function list_consolidado_partidas_programas_boLsas_uresponsable2($prod_id,$com_id){
-         $sql = 'select poa.prod_id,poa.par_id,poa.par_codigo,poa.par_nombre,SUM(poa.ins_costo_total) as monto
-                from (
-
-                    select p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre
-                    from _productos p
-                    Inner Join _insumoproducto as ip On p.prod_id=ip.prod_id
-                    Inner Join insumos as i On i.ins_id=ip.ins_id
-                    Inner Join partidas as par On par.par_id=i.par_id
-                    where p.prod_id='.$prod_id.' and p.uni_resp='.$com_id.' and p.estado!=\'3\' and i.ins_estado!=\'3\' and i.aper_id!=\'0\' and i.ins_gestion='.$this->gestion.'
-                    group by p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,par.par_codigo,par.par_nombre
-                    order by par.par_codigo,i.ins_id asc
-                ) poa
-                group by poa.prod_id,poa.par_id,poa.par_codigo,poa.par_nombre
-                order by poa.par_codigo asc';
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
     // LISTA CONSOLIDADO POR PARTIDAS PROGRAMAS BOLSAS 2026
     function list_consolidado_partidas_programas_boLsas_uresponsable($aper_id,$com_id){
         $sql = 'SELECT 
@@ -593,7 +541,6 @@ class Model_insumo extends CI_Model{
 
     /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2026 -----*/
     function list_consolidado_partidas_uResponsable($com_id){
-
             $sql = 'SELECT 
                         c.com_id, 
                         c.pfec_id, 
@@ -628,19 +575,6 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    /*---- LISTA GET MONTO PROGRAMADO POR PARTIDA Y PROGRAMA UNIDAD REPONSABLE 2023 -----*/
-/*    function get_monto_programado_x_partida_programa_uresponsable($com_id,$par_id,$aper_id_oe){
-                $sql = 'select com_id,par_id,par_codigo,par_nombre,obj_id,aper_id_oe,SUM(ins_costo_total) monto
-                        from vista_get_detalle_x_cat_programatica_partida_form5
-                        where com_id='.$com_id.' and g_id='.$this->gestion.' and par_id='.$par_id.' and aper_id_oe='.$aper_id_oe.'
-                        group by com_id,par_id,par_codigo,par_nombre,obj_id,aper_id_oe';
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-    /////===== END CONSOLIDADO DE PARTIDAS POR UNIDAD RESPONSABLE
-
-
     /////===== CONSOLIDADO DE PARTIDAS 2023 - POR PROYECTO / UNIDAD RESPONSABLE
     /*---- LISTA GET PROGRAMA CONSOLIDADO DE PARTIDAS POR UNIDAD / PROYECTO 2023 -----*/
     function get_lista_clasificacion_x_programas_partidas_unidad($proy_id){
@@ -653,21 +587,8 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    /*---- LISTA GET MONTO PROGRAMADO POR PARTIDA Y PROGRAMA UNIDAD REPONSABLE 2023 -----*/
-/*    function get_monto_programado_x_partida_programa_unidad($proy_id,$par_id,$aper_id_oe){
-        $sql = 'select proy_id,par_id,par_codigo,par_nombre,obj_id,aper_id_oe,SUM(ins_costo_total) monto
-                from vista_get_detalle_x_cat_programatica_partida_form5
-                where proy_id='.$proy_id.' and g_id='.$this->gestion.' and par_id='.$par_id.' and aper_id_oe='.$aper_id_oe.'
-                group by proy_id,par_id,par_codigo,par_nombre,obj_id,aper_id_oe';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-    /////===== END CONSOLIDADO DE PARTIDAS POR UNIDAD RESPONSABLE
-
-
-
-    /*---- GET REQUERIMIENTO + temporalidad 2026 -----*/
+    /*---- GET REQUERIMIENTO + temporalidad 2027 -----*/
     function get_requerimiento($ins_id){
         $sql = 'SELECT ip.*, 
                 i.*, 
@@ -687,7 +608,7 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    /// lista de requerimientos por cada formulario N° 4 para Programas Bolsas Vigente 2027
+    /// lista de requerimientos por cada formulario N° 4 para Programas Bolsas Vigente 2027 Sin Temporalidad
     function lista_insumos_prod($prod_id){
         $sql = 'SELECT 
                 prod.prod_id, 
@@ -711,21 +632,40 @@ class Model_insumo extends CI_Model{
               AND i.ins_estado != 3 
               AND i.aper_id != 0
             ORDER BY par.par_codigo, i.ins_id ASC';
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
-
-        /*$sql = 'select prod.prod_id,prod.prod_cod,par.par_codigo,i.ins_id,i.ins_detalle,i.ins_unidad_medida,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,ins_monto_certificado,ins_observacion,i.ins_tipo_modificacion,i.ins_ejec_cpoa
-                from _productos prod
-                Inner Join (
-                select prod_id,ins_id,tp_ins
-                from _insumoproducto
-                group by prod_id,ins_id,tp_ins
-                ) as ip On ip.prod_id=prod.prod_id
-                
-                Inner Join insumos as i On i.ins_id=ip.ins_id
-                Inner Join partidas as par On par.par_id=i.par_id
-                where ip.prod_id='.$prod_id.' and i.ins_estado!=\'3\' and i.aper_id!=\'0\'
-                group by prod.prod_id,prod.prod_cod,par.par_codigo,i.ins_id,i.ins_detalle,i.ins_unidad_medida,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,ins_monto_certificado,ins_observacion
-                order by par.par_codigo,i.ins_id asc';*/
+    /// lista de requerimientos por cada formulario N° 4 Con Temporalidad
+    function lista_insumos_x_form4($prod_id){
+        $sql = 'SELECT 
+                prod.prod_id, 
+                prod.prod_cod, 
+                par.par_codigo, 
+                i.ins_id, 
+                i.ins_detalle, 
+                i.ins_unidad_medida, 
+                i.ins_cant_requerida, 
+                i.ins_costo_unitario, 
+                i.ins_costo_total, 
+                i.ins_monto_certificado, 
+                i.ins_observacion, 
+                i.ins_tipo_modificacion, 
+                i.ins_ejec_cpoa,
+                prog.programado_total, -- 🌟 OPTIMIZACIÓN: Selecciona explícitamente las columnas necesarias de la vista
+                prog.mes1, prog.mes2, prog.mes3, prog.mes4, prog.mes5, prog.mes6, 
+                prog.mes7, prog.mes8, prog.mes9, prog.mes10, prog.mes11, prog.mes12
+            FROM public._productos prod
+            INNER JOIN public._insumoproducto ip ON ip.prod_id = prod.prod_id
+            INNER JOIN public.insumos i ON i.ins_id = ip.ins_id
+            INNER JOIN public.partidas par ON par.par_id = i.par_id
+            -- 🌟 REPARADO: Unión compuesta acoplada al índice de gestión del año actual de sesión
+            LEFT JOIN public.vista_temporalidad_insumo2 prog ON prog.ins_id = i.ins_id
+            WHERE prod.prod_id = '.$prod_id.' 
+              AND i.ins_estado != 3 
+              AND i.aper_id != 0
+            ORDER BY par.par_codigo, i.ins_id ASC;';
         
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -939,7 +879,7 @@ class Model_insumo extends CI_Model{
 
 
     //// ---- LISTA DE REQUERIMIENTOS POR UNIDAD ORGANIZACIONAL
-    function get_lista_requerimientos_unidad_partida($aper_id,$tp_id,$par_id,$dep_id){
+/*    function get_lista_requerimientos_unidad_partida($aper_id,$tp_id,$par_id,$dep_id){
         if($aper_id==0){ /// consolidado Regional
             $sql = 'select *
                     from lista_requerimientos_institucional_directo('.$tp_id.','.$this->gestion.')
@@ -954,7 +894,7 @@ class Model_insumo extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /// =================================== INSTITUCIONAL ============================================

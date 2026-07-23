@@ -40,17 +40,15 @@ class crequerimiento extends CI_Controller {
       $get_producto = $this->model_producto->get_producto_id($prod_id_activo);
       if (!empty($get_producto) && count($get_producto) > 0) {
         $get_componente = $this->model_componente->get_componente($get_producto[0]['com_id'], $this->gestion);
-        $data['titulo']=$this->cabecera($get_producto, $get_componente); //// Cabecera
+        
         $data['part_padres'] = $this->model_partidas->lista_padres(); // Partidas padres (Agrupadores)
         $data['part_hijos']  = $this->model_partidas->lista_partidas(); // Partidas hijos (Sub-ítems)
+        $data['titulo']=$this->cabecera($get_producto, $get_componente); //// Cabecera
 
 
-
-
-
-
-         // Recuperamos la colección base de requerimientos vinculados (Form 5)
-        $lista_insumos = $this->model_insumo->lista_insumos_prod($prod_id_activo);
+        // Recuperamos la colección base de requerimientos vinculados (Form 5)
+        $lista_insumos = $this->model_insumo->lista_insumos_x_form4($prod_id_activo);
+        $lista_form4=$this->model_producto->lista_productos($get_componente[0]['com_id']);
         
         $tabla = '';
         $total = 0;
@@ -68,14 +66,15 @@ class crequerimiento extends CI_Controller {
         <table id="dt_basic" class="table table-striped table-bordered table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11px; border-collapse: collapse;">
             <thead>
               <tr style="background: #475569; color: #ffffff; text-transform: uppercase; font-size: 10px; letter-spacing: 0.3px;">
-                <th style="text-align: center; vertical-align: middle; width: 3%; padding: 8px;">#</th>
                 <th style="text-align: center; vertical-align: middle; width: 4%; padding: 8px;">ACCIONES</th>
+                <th style="text-align: center; vertical-align: middle; width: 2%; padding: 8px;">COD. ACT.</th>
+                <th style="text-align: center; vertical-align: middle; width: 2%; padding: 8px;">ELIMINAR</th>
                 <th style="text-align: center; vertical-align: middle; width: 5%; padding: 8px;">PARTIDA</th>
                 <th style="text-align: left; vertical-align: middle; width: 15%; padding: 8px;">DETALLE REQUERIMIENTO</th>
-                <th style="text-align: left; vertical-align: middle; width: 6%; padding: 8px;">UNIDAD MEDIDA</th>
-                <th style="text-align: center; vertical-align: middle; width: 4%; padding: 8px;">CANT.</th>
-                <th style="text-align: right; vertical-align: middle; width: 6%; padding: 8px;">COSTO UNIT.</th>
-                <th style="text-align: right; vertical-align: middle; width: 7%; padding: 8px;">COSTO TOTAL</th>
+                <th style="text-align: left; vertical-align: middle; width: 4%; padding: 8px;">UNIDAD MEDIDA</th>
+                <th style="text-align: center; vertical-align: middle; width: 4%; padding: 8px;">CANTIDAD</th>
+                <th style="text-align: right; vertical-align: middle; width: 5%; padding: 8px;">PRECIO</th>
+                <th style="text-align: right; vertical-align: middle; width: 5%; padding: 8px;">COSTO TOTAL</th>
                 
                 <!-- Cabeceras Mensuales en Verde Agua Institucional CNS -->
                 <th style="background-color: #0aa699; color: #ffffff; text-align: right; width: 4.5%; padding: 8px 4px;">ENE</th>
@@ -100,29 +99,22 @@ class crequerimiento extends CI_Controller {
             foreach ($lista_insumos as $row) {
                 $cont++;
                 $ins_id_actual = intval($row['ins_id']);
-                
-                // Verificación de blindaje de Certificación Presupuestaria SIGEP
                 $ins_cert = (floatval($row['ins_monto_certificado']) > 0) ? 1 : 0;
-                
-                // Fila con sombreado de alerta suave si el ítem está bloqueado por presupuesto
                 $tr_style = ($ins_cert == 1) ? 'style="background: #fef2f2;"' : '';
-
                 $tabla .= '<tr ' . $tr_style . ' title="ID Insumo: ' . $ins_id_actual . '">';
-                
-                // COLUMNA 1: Correlativo numérico rígido de control lineal
-                $tabla .= '<td style="text-align: center; font-weight: bold; color: #64748b; padding: 6px; vertical-align: middle;">' . $cont . '</td>';
-                
-                // COLUMNA 2: Rejilla unificada elástica de Acciones/Frenos de Auditoría
-                $tabla .= '<td style="text-align: center; padding: 6px; vertical-align: middle;">';
+                $tabla .= '<td style="text-align: center; padding: 6px; vertical-align: middle; height:40px;">';
                 if ($this->tp_adm == 1 || $this->conf_form5 == 1) {
                     if ($ins_cert == 0) {
                         $tabla .= '
-                        <div style="display: flex; gap: 4px; justify-content: center;">
-                            <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-xs btn-default mod_ff" name="' . $ins_id_actual . '" title="MODIFICAR REQUERIMIENTO PRESUPUESTARIO" style="padding: 2px 5px;"><i class="fa fa-pencil text-warning" style="font-size:14px;"></i></a>
-                            <a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-xs btn-default del_ff" name="' . $ins_id_actual . '" title="ELIMINAR REQUERIMIENTO" style="padding: 2px 5px;"><i class="fa fa-trash text-danger" style="font-size:14px;"></i></a>
+                        <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                            <a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-xs btn-default mod_ff" name="' . $ins_id_actual . '" title="MODIFICAR REQUERIMIENTO PRESUPUESTARIO" style="padding: 10px 15px;"><i class="fa fa-pencil text-warning" style="font-size:18px;"></i></a>
+                            
+                            <a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-xs btn-default del_ff" name="' . $ins_id_actual . '" title="ELIMINAR REQUERIMIENTO PRESUPUESTARIO" style="padding: 10px 15px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 4px; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;">
+                                <img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="20" HEIGHT="20"/>
+                            </a>
                         </div>';
                     } else {
-                        $tabla .= '<span class="label label-danger" style="font-size: 9px; padding: 2px 5px; font-weight: bold; background-color: #ef4444;"><i class="fa fa-lock"></i> CERTIFICADO</span>';
+                        $tabla .= '<span class="label label-danger" style="font-size: 9px; padding: 12px 27px; font-weight: bold; background-color: #ef4444;"><i class="fa fa-lock"></i> CERTIFICADO</span>';
                     }
                 } else {
                     $tabla .= '<i class="fa fa-eye text-muted" title="Solo lectura"></i>';
@@ -130,54 +122,266 @@ class crequerimiento extends CI_Controller {
                 $tabla .= '</td>';
 
                 // Columnas descriptivas base del clasificador nacional
+                $tabla .= '<td style="text-align: center; font-weight: bold; color: #1e293b; padding: 6px; vertical-align: middle;">';
+                if (($this->tp_adm == 1 || $this->conf_form5 == 1) && $ins_cert == 0) {
+                  $tabla.='<select class="form-control select-actividad" data-id="' . $row['ins_id'] . '" style="width: auto; min-width: 50px;">';
+                                foreach ($lista_form4 as $pr) {
+                                    $selected = ($pr['prod_id'] == $row['prod_id']) ? 'selected' : '';
+                                    $tabla .= '<option value="' . $pr['prod_id'] . '" ' . $selected . '>' . $pr['prod_cod'] . '</option>';
+                                }
+                            $tabla .= '
+                            </select>';
+                }
+                else{
+                  $tabla.='<b>' . $row['prod_cod'] . '</b>';
+                }
+                $tabla.='</td>';
+                $tabla.='<td>';
+                if (($this->tp_adm == 1 || $this->conf_form5 == 1) && $ins_cert == 0) {
+                  $tabla.='
+                  <center style="margin: 0; padding: 0;">
+                     <input type="checkbox" 
+                            class="check-eliminar" 
+                            name="ins[]" 
+                            value="' . $row['ins_id'] . '" 
+                            style="cursor: pointer; width: 22px; height: 22px; accent-color: #dc2626; outline: 1px solid #fecdd3; border-radius: 4px; transition: transform 0.1s ease;"
+                            onmouseover="this.style.transform=\'scale(1.1)\'"
+                            onmouseout="this.style.transform=\'scale(1.0)\'">
+                  </center>';
+                }
+                $tabla.='</td>';
                 $tabla .= '<td style="text-align: center; font-weight: bold; color: #1e293b; padding: 6px; vertical-align: middle;">' . $row['par_codigo'] . '</td>';
                 $tabla .= '<td style="text-align: left; padding: 6px; color: #334155; vertical-align: middle;">' . strtoupper($row['ins_detalle']) . '</td>';
-                $tabla .= '<td style="text-align: left; padding: 6px; color: #475569; vertical-align: middle;">' . strtoupper($row['ins_unidad_medida']) . '</td>';
-                $tabla .= '<td style="text-align: center; font-weight: bold; color: #1e293b; padding: 6px; vertical-align: middle;">' . intval($row['ins_cant_requerida']) . '</td>';
-                $tabla .= '<td style="text-align: right; padding: 6px; vertical-align: middle;">' . number_format($row['ins_costo_unitario'], 2, '.', ',') . '</td>';
-                $tabla .= '<td style="text-align: right; font-weight: bold; background: #f8fafc; color: #0f172a; padding: 6px; vertical-align: middle;">' . number_format($row['ins_costo_total'], 2, '.', ',') . '</td>';
-
-                // ==========================================================================
-                // 🛠️ REPARADO: RESOLUCIÓN DINÁMICA DE LA PROGRAMACIÓN MENSUAL DE LA BASE DE DATOS
-                // ==========================================================================
-                // Recuperamos el desglose real (mes 1 al 12) vinculando el ins_id
-                /*$programacion_meses = $this->model_insumo->get_programacion_meses_insumo($ins_id_actual, intval($this->gestion));
-                
+                $tabla .= '<td style="text-align: left; padding: 6px; width: 4%; color: #475569; vertical-align: middle;">' . strtoupper($row['ins_unidad_medida']) . '</td>';
+                $tabla .= '<td style="text-align: center; font-weight: bold; width: 4%;color: #1e293b; padding: 6px; vertical-align: middle;">' . intval($row['ins_cant_requerida']) . '</td>';
+                $tabla .= '<td style="text-align: right; padding: 6px; width: 5%; vertical-align: middle;">' . number_format($row['ins_costo_unitario'], 2, '.', ',') . '</td>';
+                $tabla .= '<td style="text-align: right; font-weight: width: 5%; bold; background: #f8fafc; color: #0f172a; padding: 6px; vertical-align: middle;">' . number_format($row['ins_costo_total'], 2, '.', ',') . '</td>';
                 for ($m = 1; $m <= 12; $m++) {
-                    $monto_mes_real = isset($programacion_meses[$m]) ? floatval($programacion_meses[$m]) : 0.00;
-                    
-                    // Estilos cromáticos con resalte si la celda contiene dinero programado
-                    $style_celda_mes = ($monto_mes_real > 0) ? 'style="text-align: right; background: #f0fdf4; color: #16a34a; font-weight: bold; padding: 6px; vertical-align: middle;"' : 'style="text-align: right; color: #cbd5e1; padding: 6px; vertical-align: middle;"';
-                    
+                    $monto_mes_real = isset($row['mes' . $m]) ? floatval($row['mes' . $m]) : 0.00;
+                    $style_celda_mes = ($monto_mes_real > 0) ? 'style="text-align: right; width: 4.5%; background: #f0fdf4; color: #16a34a; font-weight: bold; padding: 6px; vertical-align: middle;"' : 'style="text-align: right; color: #cbd5e1; padding: 6px; vertical-align: middle;"';
                     $tabla .= '<td ' . $style_celda_mes . '>' . ($monto_mes_real > 0 ? number_format($monto_mes_real, 2, '.', ',') : '0.00') . '</td>';
-                    
-                    // Acumulamos el subtotal de la columna vertical para el resumen inferior
                     $total_meses[$m] += $monto_mes_real;
-                }*/
-                // ==========================================================================
-
+                }
                 $tabla .= '<td style="text-align: left; color: #64748b; font-style: italic; padding: 6px; vertical-align: middle;">' . htmlspecialchars(strtoupper($row['ins_observacion']), ENT_QUOTES, 'UTF-8') . '</td>';
                 $tabla .= '</tr>';
-                
                 $total += floatval($row['ins_costo_total']);
             }
-
             $tabla.='
             </tbody>
               <tr class="modo1">
-                <td colspan="6"> TOTAL </td>
-                <td><font color="blue" size=1>'.number_format($total, 2, ',', '.') .'</font></td>
-                <td colspan="15"></td>
+                <td colspan="8"> TOTAL PROGRAMADO</td>
+                <td style="text-align: right; font-size:20px;"><font color="blue" size=1>'.number_format($total, 2, ',', '.') .'</font></td>
+                <td colspan="13"></td>
               </tr>
           </table>';
         $tabla .= $this->modal_migracion_form5x_actividad($get_producto, $get_componente); /// modal de migracion
         $data['tabla']=$tabla;
+
         $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
       }
       else{
         show_error("🚨 Error SIIPLAS: La Actividad física solicitada no existe en PostgreSQL o fue purgada del Formulario N° 4.");
       }
     }
+
+
+    //// Cambia alineacion de Actividad
+    public function cambia_actividad() {
+        // 1. Validar que la petición sea una solicitud asíncrona legítima de red
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+        // 2. Recibir y sanitizar los datos numéricos enviados desde el JQuery
+        $ins_id  = intval($this->input->post('ins_id'));
+        $prod_id = floatval($this->input->post('nuevo_prod_id')); // numeric(18,0) de Postgres
+
+        if ($ins_id <= 0 || $prod_id <= 0) {
+            echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Parámetros relacionales corruptos o vacíos.'));
+            return;
+        }
+        // 3. Ejecución del query físico sobre la tabla intermedia pivote
+        $update_prod = array(
+            'prod_id' => $prod_id,
+        );
+        
+        $this->db->where('ins_id', $ins_id);
+        $db_status = $this->db->update('public._insumoproducto', $update_prod);
+
+        // 🌟 PASO EXCLUSIVO ANTI-FALLAS JSON: Purgamos buffers ocultos de CodeIgniter
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        header('Content-Type: application/json; charset=utf-8');
+        // 4. Responder al cliente de forma simétrica
+        if ($db_status) {
+            $respuesta = array(
+                'status'    => 'success', 
+                'respuesta' => 'correcto', // Sincronizado para tu response.respuesta === 'correcto'
+                'message'   => '¡Se ha re-alineado el requerimiento de forma exitosa!'
+            );
+        } else {
+            $respuesta = array(
+                'status'    => 'error', 
+                'respuesta' => 'error', 
+                'message'   => 'PostgreSQL rechazó la re-alineación por restricciones de clave externa.'
+            );
+        }
+        echo json_encode($respuesta);
+        exit; // Detiene el hilo impidiendo filtraciones HTML
+    }
+
+    //// Eliminar Requerimiento
+    public function eliminar_requerimiento_unitario() {
+          // 1. Validar que sea una solicitud asíncrona legítima de red (Evita accesos directos por URL)
+          if (!$this->input->is_ajax_request()) {
+              show_404();
+              return;
+          }
+
+          // 2. Recibir y sanitizar el identificador único del insumo enviado por POST
+          $ins_id = intval($this->input->post('ins_id'));
+
+          if ($ins_id <= 0) {
+              echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador relacional de requerimiento vacío o corrupto.'));
+              return;
+          }
+
+          // ==========================================================================
+          // 🔒 CANDADO DE AUDITORÍA: VERIFICACIÓN PREVENTIVA DE CERTIFICACIÓN VIGENTE
+          // ==========================================================================
+          // Si el requerimiento ya está amarrado a una certificación, detenemos la purga física
+          $sql_verif_cert = "
+              SELECT COUNT(cert_temp.ctins_id) AS certificado_total
+              FROM public.temporalidad_prog_insumo temp
+              INNER JOIN public.cert_temporalidad_prog_insumo cert_temp ON temp.tins_id = cert_temp.tins_id
+              WHERE temp.ins_id = ?
+          ";
+          $query_cert = $this->db->query($sql_verif_cert, array($ins_id));
+          $res_cert   = $query_cert->row_array();
+
+          if (!empty($res_cert) && intval($res_cert['certificado_total']) > 0) {
+              echo json_encode(array(
+                  'status'    => 'error',
+                  'respuesta' => 'error',
+                  'message'   => 'Restricción de Control de Gasto: Este requerimiento específico ya cuenta con celdas mensuales CERTIFICADAS dentro del SIGEP. Revierta el trámite en el Departamento de Presupuestos antes de poder eliminar el registro.'
+              ));
+              return;
+          }
+          // ==========================================================================
+
+          // ==========================================================================
+          // 🌟 INICIO DE COMPUERTA TRANSACCIONAL ATÓMICA DE POSTGRESQL (CASCADA)
+          // ==========================================================================
+          $this->db->trans_start();
+
+          // PASO A: Purgamos la temporalidad programada de los 12 meses financieros (Form 5)
+          $this->db->where('ins_id', $ins_id);
+          $this->db->delete('public.temporalidad_prog_insumo');
+
+          // PASO B: Purgamos el nudo relacional de la tabla intermedia pivote _insumoproducto
+          $this->db->where('ins_id', $ins_id);
+          $this->db->delete('public._insumoproducto');
+
+          // PASO C: Finalmente, barremos el registro maestro en la tabla de insumos
+          $this->db->where('ins_id', $ins_id);
+          $this->db->delete('public.insumos');
+
+          // Sella las instrucciones obligando al driver a verificar consistencias físicas en disco
+          $this->db->trans_complete();
+          // ==========================================================================
+
+          // 🌟 REPARACIÓN MÁSTER ANTI-FALLAS: Purgamos buffers ocultos de CodeIgniter 
+          // Esto garantiza un flujo JSON puro libre de código HTML (Evita el Unexpected token '<')
+          while (ob_get_level() > 0) {
+              ob_end_clean();
+          }
+          header('Content-Type: application/json; charset=utf-8');
+
+          // 3. Evaluar el estatus final de la transacción de base de datos
+          if ($this->db->trans_status() !== FALSE) {
+              echo json_encode(array(
+                  'status'    => 'success',
+                  'respuesta' => 'correcto', // Sincronizado milimétricamente con tu form5.js
+                  'message'   => 'El requerimiento presupuestario y su desglose mensualizado fueron eliminados del SIIPLAS v2.0 con éxito.'
+              ));
+          } else {
+              echo json_encode(array(
+                  'status'    => 'error',
+                  'respuesta' => 'error',
+                  'message'   => 'PostgreSQL rechazó la remoción física debido a una restricción de integridad relacional interna.'
+              ));
+          }
+          
+          exit; // Detiene la ejecución impidiendo que el framework inyecte layouts o vistas muertas
+      }
+  
+
+      ///// Valida Elimnacion masiva de requerimientos
+      public function eliminar_requerimientos_masivo() {
+        // 1. Validar que sea una solicitud asíncrona legítima de red (Evita accesos directos por URL)
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+            return;
+        }
+
+        // 2. Recibir la matriz de identificadores seleccionados por el operador regional
+        $ins_ids = $this->input->post('ins_ids');
+
+        if (empty($ins_ids) || !is_array($ins_ids)) {
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'La lista de requerimientos seleccionados se encuentra vacía.'));
+            exit;
+        }
+
+        // Sanitizamos y casteamos cada ID del arreglo a enteros puros para blindar contra inyecciones SQL
+        $clean_ids = array_map('intval', $ins_ids);
+        // ==========================================================================
+        // 🌟 INICIO DE COMPUERTA TRANSACCIONAL ATÓMICA MASIVA EN POSTGRESQL (WHERE IN)
+        // ==========================================================================
+        $this->db->trans_start();
+
+        // PASO A: Barremos en lote la temporalidad de meses programada (Form 5)
+        $this->db->where_in('ins_id', $clean_ids);
+        $this->db->delete('public.temporalidad_prog_insumo');
+
+        // PASO B: Barremos en lote el nudo intermedio pivote _insumoproducto
+        $this->db->where_in('ins_id', $clean_ids);
+        $this->db->delete('public._insumoproducto');
+
+        // PASO C: Barremos en lote la cabecera maestra de insumos
+        $this->db->where_in('ins_id', $clean_ids);
+        $this->db->delete('public.insumos');
+
+        // Sella las instrucciones obligando al driver a verificar consistencias físicas en disco
+        $this->db->trans_complete();
+        // ==========================================================================
+
+        // 🌟 REPARACIÓN MÁSTER ANTI-FALLAS: Purgamos buffers ocultos de CodeIgniter 
+        // Esto garantiza un flujo JSON puro libre de código HTML (Evita el Unexpected token '<')
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        header('Content-Type: application/json; charset=utf-8');
+
+        // 3. Evaluar el estatus final de la transacción de base de datos de la CNS
+        if ($this->db->trans_status() !== FALSE) {
+            echo json_encode(array(
+                'status'    => 'success',
+                'respuesta' => 'correcto', // Engancha perfecto con tu res.respuesta === 'correcto' en el JS
+                'message'   => 'Se han eliminado correctamente los (' . count($clean_ids) . ') requerimientos seleccionados y sus desgloses mensuales del SIIPLAS.'
+            ));
+        } else {
+            echo json_encode(array(
+                'status'    => 'error', 
+                'respuesta' => 'error', 
+                'message'   => 'PostgreSQL rechazó la purga en lote debido a una restricción de integridad relacional externa.'
+            ));
+        }
+        exit; // Detiene la ejecución impidiendo que el framework filtre layouts o vistas pie de página
+    }
+
 
 
     //// Cabecera titulo
@@ -216,20 +420,41 @@ class crequerimiento extends CI_Controller {
         <input type="hidden" name="base" value="'.base_url().'">
         <div class="well">
           '.$data['datos'].'
-          '.$data['prog_especial'].'';
-          
-          if($this->tp_adm==1 || $this->conf_form5==1){
-            $tabla.='
-            <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-              <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO REQUERIMIENTOS.Xls</b>
-            </a>';
-          }
-          $tabla.='
+          '.$data['prog_especial'].'
+          '.$this->button_opciones().'
         </div>
       </article>';
 
       return $tabla;
     }
+
+    //// opciones formulario 5
+    public function button_opciones(){
+      $tabla='';
+      if($this->tp_adm==1 || $this->conf_form5==1){
+            $tabla.='
+            <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
+              <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO REQUERIMIENTOS.Xls</b>
+            </a>
+            <button type="button" id="btn_eliminar_masivo_f5" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Eliminar Items Seleccionados</button>';
+          }
+      $tabla.='
+      <div style="margin: 10px 0; text-align: right;">
+          <a href="' . site_url('admin/proy/list_proy') . '" 
+             class="btn btn-default" 
+             title="REGRESAR AL LISTADO DE PROGRAMACIÓN POA" 
+             style="font-weight: bold; font-size: 12px; padding: 8px 20px; background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s ease;"
+             onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
+             onmouseout="this.style.background=\'#f8fafc\'; this.style.borderColor=\'#cbd5e1\';">
+              <i class="fa fa-chevron-circle-left" style="color: #64748b; font-size: 14px;"></i> Volver al Listado
+          </a>
+      </div>';
+
+      return $tabla;
+    }
+
+
+
 
     //// Modal de migracion requerimientos
     public function modal_migracion_form5x_actividad($producto, $componente){
@@ -504,6 +729,7 @@ class crequerimiento extends CI_Controller {
                           'ins_costo_unitario'      => $precio,
                           'ins_costo_total'         => $total_archivo,
                           'ins_observacion'         => strtoupper($this->security->xss_clean($observacion)),
+                          'ins_gestion'             => $this->gestion,
                           'fun_id'                  => $this->fun_id,
                           'aper_id'                 => $get_unidad[0]['aper_id'], 
                           'com_id'                  => $get_unidad[0]['com_id'], 
@@ -605,10 +831,9 @@ class crequerimiento extends CI_Controller {
         $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos requerimientos productos
         $producto=$this->model_producto->get_producto_id($insumo[0]['prod_id']); /// Get producto
         $componente = $this->model_componente->get_componente($producto[0]['com_id'],$this->gestion); /// Get Componente
-        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($componente[0]['proy_id']); ////// DATOS DEL PROYECTO
 
-        $monto_asig=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],1);
-        $monto_prog=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],2);
+        $monto_asig=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($componente[0]['aper_id'],1);
+        $monto_prog=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($componente[0]['aper_id'],2);
         
 
         $m_asig=0;$m_prog=0;
@@ -623,7 +848,6 @@ class crequerimiento extends CI_Controller {
         
         $par_padre=$this->model_partidas->get_partida_padre($insumo[0]['par_depende']); /// lista de partidas padres
         $lista_partidas=$this->programacionpoa->partidas_dependientes($insumo); /// Lista de Insumos dependientes
-        $temporalidad=$this->programacionpoa->distribucion_financiera($insumo); /// Distribucion Financiera
         $lista_umedida=$this->programacionpoa->unidades_medida($insumo); /// Lista de Unidad de medida
 
         if(count($insumo)!=0){
@@ -634,7 +858,6 @@ class crequerimiento extends CI_Controller {
             'lista_partidas'=> $lista_partidas,
             'lista_umedida'=> $lista_umedida,
             'ppdre' => $par_padre,
-            'prog' => $temporalidad,
           );
         }
         else{
@@ -650,7 +873,129 @@ class crequerimiento extends CI_Controller {
     }
 
 
+      /// Valida Update Insumo - Formulario de modificacion
+      public function valida_update_insumo(){
+        // 🌟 REPARADO: Se adapta para validar tanto peticiones POST como solicitudes legítimas AJAX
+        if($this->input->post()) {
+            
+            $post = $this->input->post();
+            
+            // Sanitización y tipado estricto de claves primarias contables
+            $ins_id         = intval($this->security->xss_clean($post['ins_id'])); 
+            $detalle        = $this->security->xss_clean($post['detalle']); 
+            $cantidad       = intval($this->security->xss_clean($post['cantidad'])); 
+            $costo_unitario = round(floatval($this->security->xss_clean($post['costou'])), 2); 
+            $umedida        = $this->security->xss_clean($post['iumedida']); 
+            $partida        = intval($this->security->xss_clean($post['par_hijo'])); 
+            $observacion    = $this->security->xss_clean($post['observacion']); 
 
+            // 🌟 CONTROL ARITMÉTICO DE SEGURIDAD: Recalculamos el costo total al centavo
+            $costo_total = round(($cantidad * $costo_unitario), 2); 
+
+            if ($ins_id <= 0 || $cantidad <= 0 || $costo_unitario <= 0 || $partida <= 0) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Se detectaron celdas con montos vacíos o tipados incorrectos en la planilla.'));
+                exit;
+            }
+
+            // Recuperamos la herencia jerárquica para amarrar los datos del componente POA
+            $insumo      = $this->model_insumo->get_requerimiento($ins_id); 
+            $producto    = $this->model_producto->get_producto_id($insumo[0]['prod_id']); 
+            $componente  = $this->model_componente->get_componente($producto[0]['com_id'], $this->gestion); 
+
+            // ==========================================================================
+            // 🌟 INICIO DE COMPUERTA TRANSACCIONAL ATÓMICA EN POSTGRESQL (CASCADA)
+            // ==========================================================================
+            $this->db->trans_start();
+
+            /*------------ A. UPDATE REQUERIMIENTO (CABECERA) -------*/
+            $update_ins = array(
+                'ins_cant_requerida'=> $cantidad,
+                'ins_costo_unitario'=> $costo_unitario,
+                'ins_costo_total'   => $costo_total,
+                'ins_detalle'       => strtoupper($detalle),
+                'par_id'            => $partida, 
+                'ins_unidad_medida' => strtoupper($umedida),
+                'ins_observacion'   => strtoupper($observacion),
+                'fun_id'            => intval($this->session->userdata('fun_id')), // Se extrae seguro de la sesión activa
+                'com_id'            => $producto[0]['com_id'], 
+                'form4_cod'         => $producto[0]['prod_cod'], 
+                'ins_estado'        => 2, // Estado modificado de auditoría
+                'num_ip'            => $this->input->ip_address(), 
+                'nom_ip'            => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+            );
+            
+            $this->db->where('ins_id', $ins_id);
+            $this->db->update('insumos', $update_ins); // 🛠️ REPARADO: Se remueve el xss_clean duplicado que rompía arrays en CI
+
+            /*-------- B. DELETE CRONOGRAMA MENSUAL PREVIO --------*/  
+            $this->db->where('ins_id', $ins_id);
+            $this->db->delete('temporalidad_prog_insumo');
+
+            /*-------- C. INSERT NUEVA DISTRIBUCIÓN MENSUALIZADA --------*/  
+            for ($i = 1; $i <= 12; $i++) {
+                if (isset($post['mm' . $i])) {
+                    $pfin = round(floatval($this->security->xss_clean($post['mm' . $i])), 2);
+                    
+                    if ($pfin > 0) {
+                        $data_to_store4 = array( 
+                            'ins_id'  => $ins_id, 
+                            'mes_id'  => $i, 
+                            'ipm_fis' => $pfin, 
+                            'g_id'    => intval($this->gestion), 
+                        );
+                        $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
+                    }
+                }
+            }
+
+            // Sella las instrucciones y obliga al driver nativo a verificar consistencias relacionales
+            $this->db->trans_complete();
+            // ==========================================================================
+
+            // 🌟 COMPUETA ANTI-FALLAS CRÍTICAS: Purgamos buffers ocultos de CodeIgniter 
+            // Garantiza una salida JSON limpia desprovista de cualquier layout HTML
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            header('Content-Type: application/json; charset=utf-8');
+
+            // Evaluamos el estatus final del compromiso en la base de datos de la CNS
+            if ($this->db->trans_status() !== FALSE) {
+                echo json_encode(array(
+                    'status'    => 'success',
+                    'respuesta' => 'correcto', // Engancha perfecto con tu if (response.respuesta === "correcto")
+                    'message'   => '¡El requerimiento presupuestario y su distribución mensual fueron modificados con éxito en el SIIPLAS!'
+                ));
+            } else {
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'message'   => 'PostgreSQL rechazó la modificación por lotes debido a un conflicto de integridad referencial externa.'
+                ));
+            }
+            exit; // Congela el hilo impidiendo filtraciones de layouts o vistas pie de página del framework
+
+        } else {
+            show_404();
+        }
+    }
+
+
+
+    public function combo_partidas_hijos(){
+      //echo "urbanizaciones";
+      $salida = "";
+      $id_pais = $_POST["elegido"];
+      // construimos el combo de ciudades deacuerdo al pais seleccionado
+      $combog = pg_query("SELECT * FROM partidas WHERE par_depende=$id_pais");
+      $salida .= "<option value=''>" . mb_convert_encoding('SELECCIONE PARTIDA', 'cp1252', 'UTF-8') . "</option>";
+      while ($sql_p = pg_fetch_row($combog)) {
+          $salida .= "<option value='" . $sql_p[0] . "'>" .$sql_p[4]." - ".$sql_p[1] . "</option>";
+      }
+      echo $salida;
+    }
 
 
 

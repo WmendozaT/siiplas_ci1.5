@@ -444,7 +444,7 @@ class Programacionpoa extends CI_Controller{
 
 
 
-    /*--- TIPO DE RESPONSABLE ---*/
+    /*--- TIPO DE RESPONSABLE (Vigente) ---*/
     public function tp_resp(){
       $ddep = $this->model_proyecto->dep_dist($this->dist);
       if($this->adm==1){
@@ -492,7 +492,7 @@ class Programacionpoa extends CI_Controller{
   ///// ============= FORMULARIO N° 4 
 
   /*--- ACTUALIZA CODIGO DE ACTIVIDAD (FORM 4) ----*/
-  public function update_codigo_actividad($com_id){  
+/*  public function update_codigo_actividad($com_id){  
     $productos = $this->model_producto->lista_form4_x_unidadresponsable($com_id,$this->gestion); // Lista de productos
     $nro=0;
     foreach($productos as $row){
@@ -504,10 +504,10 @@ class Programacionpoa extends CI_Controller{
       $this->db->where('prod_id', $row['prod_id']);
       $this->db->update('_productos', $update_prod);
     }
-  }
+  }*/
 
     /*--- BOTON REPORTE SEGUIMIENTO POA (MES VIGENTE)---*/
-    function button_form4($nro,$com_id){
+/*    function button_form4($nro,$com_id){
       $tabla='';
       if($this->conf_form4==1 || $this->fun_id==401 || $this->fun_id==399 || $this->fun_id==583 || $this->fun_id==600){
       //if($this->tp_adm==1 || $this->conf_form4==1){
@@ -536,7 +536,7 @@ class Programacionpoa extends CI_Controller{
       $tabla.='<br><br>';
       
       return $tabla;
-    }
+    }*/
 
     /*--- LISTA DE OBJETIVO REGIONAL (GASTO CORRIENTE )-----*/
     public function lista_oregional($proy_id){
@@ -676,7 +676,7 @@ class Programacionpoa extends CI_Controller{
 /// ===== FORMULARIO N5
 
     /*------- TIPO AJUSTE POA --------*/
-    public function titulo_ajuste($proyecto,$componente){
+/*    public function titulo_ajuste($proyecto,$componente){
       $tabla='';
       $tabla.='
         <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -698,11 +698,11 @@ class Programacionpoa extends CI_Controller{
         </article>';
 
       return $tabla;
-    } 
+    }*/ 
 
 
     /*--- DISTRIBUCION FINANCIERA ---*/
-    function distribucion_financiera($insumo){
+/*    function distribucion_financiera($insumo){
       $prog=$this->model_insumo->list_temporalidad_insumo($insumo[0]['ins_id']); /// Temporalidad Requerimiento 2020
         for ($i=0; $i <=12 ; $i++) { 
           if($i==0){
@@ -722,7 +722,7 @@ class Programacionpoa extends CI_Controller{
         }
 
       return $temporalidad;
-    }
+    }*/
 
     /*--- PARTIDAS DEPENDIENTES ---*/
     function partidas_dependientes($insumo){
@@ -778,7 +778,7 @@ class Programacionpoa extends CI_Controller{
     
 
     /*--- BOTON ESTADO FORM 5 2027 ---*/
-    public function button_form5($com_id){
+/*    public function button_form5($com_id){
       $tabla = '';
       
       // Filtro perimetral elástico: Solo Administradores Nacionales o Configuraciones Regionales activas
@@ -807,7 +807,7 @@ class Programacionpoa extends CI_Controller{
       $tabla .= '<br><br>';
       
       return $tabla;
-    }
+    }*/
 
     /*--- ESTILO FORM 5---*/
     public function estilo_tabla_form5(){
