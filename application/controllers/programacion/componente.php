@@ -64,28 +64,8 @@ class Componente extends CI_Controller {
         $unidad_responsable = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
         if(count($unidad_responsable)!=0){
             $data['menu']=$this->genera_menu($proy_id);
-            $button='';
-            if($this->conf_form4==1 || $this->tp_adm==1){
-                $button='
-                <br>&nbsp;
-                <a href="#" data-toggle="modal" data-target="#modal_importar" class="btn btn-default importar_ff" title="SUBIR ARCHIVO EXCEL">
-                  <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="25" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO ACTIVIDADES.Xls </b>
-                </a>
-                <hr>';
-            }
             $listado='';
             $listado.='
-                <div class="row">
-                    <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                        <section id="widget-grid" class="well">
-                            <ul class="nav nav-pills">
-                              <li class="active"><a href="#">MIS UNIDADES RESPONSABLES</a></li>
-                              <li><a href="#">MIS ACTIVIDADES</a></li>
-                            </ul>
-                        </section>
-                    </article>
-                </div>
-
             <input type="hidden" name="base" value="'.base_url().'">
             <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
               <section id="widget-grid" class="well" style="background: #ffffff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -107,7 +87,6 @@ class Componente extends CI_Controller {
                                   <i class="fa fa-arrows-v"></i> LISTA DE OBJETIVOS REGIONALES ALINEADOS
                               </button>
                           </p>
-                          '.$button.'
                           <!-- Tu enlace original "VOLVER" adaptado estéticamente a la botonera formal -->
                           <a href="' . site_url("admin/proy/list_proy") . '" 
                              title="VOLVER AL MENÚ ANTERIOR" 
@@ -287,7 +266,7 @@ class Componente extends CI_Controller {
     }
 
 
-/*---- UNIDADES RESPONSABLES / COMPONENTES ---------*/
+  /*---- UNIDADES RESPONSABLES / COMPONENTES ---------*/
   function unidades_resp($proyecto){
     //$proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
     $componente=$this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
@@ -303,6 +282,7 @@ class Componente extends CI_Controller {
                         <th style="width:15%; text-align:center;">UNIDAD RESPONSABLE</th>
                         <th style="width:15%; text-align:center;">DESCRIPCI&Oacute;N COMPONENTE</th>
                         <th style="width:5%; text-align:center;">NRO. ACT.</th>
+                        <th style="width:5%; text-align:center;">MIS ACTIVIDADES</th>
                         <th style="width:5%; text-align:center;">MIS ACTIVIDADES</th>
                         <th style="width:5%; text-align:center;">FORM. POA N 4</th>
                         <th style="width:5%; text-align:center;">FORM. POA N 5</th>
@@ -348,73 +328,135 @@ class Componente extends CI_Controller {
             </table>';
     }
     else{ /// Gasto Corriente
-        $tabla.='
-            <table id="dt_basic4" class="table table table-bordered" width="100%">
+        $tabla .= '
+        <div style="margin-bottom: 15px; display: flex; gap: 8px; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px;">
+            <div style="display: flex; gap: 6px;">';
+                if($this->conf_form4==1 || $this->tp_adm==1){
+                  $tabla.='
+                    <a href="#" data-toggle="modal" data-target="#modal_importar" class="btn btn-default importar_ff" title="SUBIR ARCHIVO EXCEL">
+                      <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="25" HEIGHT="20"/>&nbsp;<b>SUBIR ACTIVIDADES.Xls </b>
+                    </a>';
+                }
+                $tabla.='
+                <!-- 📊 Exportación General Consolidadas -->
+                <a href="' . site_url('programacion/crequerimiento/exportar_excel_consolidado_form4') . '" class="btn btn-sm btn-success" title="EXPORTAR EXCEL CONSOLIDADO" style="font-weight: bold; background: #16a34a; border-color: #16a34a; color: #fff;">
+                    <i class="fa fa-file-excel-o"></i> Excel Consolidado
+                </a>
+            </div>
+            
+            <!-- 🌟 BOTÓN DETONANTE PARA EL MODAL DE TECHOS INSTITUCIONALES -->
+            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal_techos_resumen_global" style="font-weight: bold; background: #2563eb; border-color: #2563eb;">
+                <i class="fa fa-sliders"></i> Ver Techos Generales
+            </button>
+        </div>';
+
+        // ==========================================================================
+        // 📊 GRID MÁSTER: LISTADO DE UNIDADES RESPONSABLES E INSUMOS COMPILADOS
+        // ==========================================================================
+        $tabla .= '
+        <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px;">
+            <table id="dt_basic4" class="table table-striped table-bordered table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11.5px; border-collapse: collapse;">
                 <thead>
-                    <tr style="height:45px;">
-                        <th style="width:1%; text-align:center;">#</th>
-                        <th style="width:5%; text-align:center;">CODIGO UNIDAD RESPONSABLE</th>
-                        <th style="width:20%; text-align:center;">UNIDAD RESPONSABLE</th>
-                        <th style="width:5%; text-align:center;">NRO. ACT.</th>
-                        <th style="width:5%; text-align:center;">MIS ACTIVIDADES</th>
-                        <th style="width:5%; text-align:center;">FORM. POA N 4</th>
-                        <th style="width:5%; text-align:center;">FORM. POA N 5</th>
-                        <th style="width:5%; text-align:center;">EXCEL ACTIVIDADES</th>
-                        <th style="width:5%; text-align:center;">ELIMINAR ACTIVIDADES </th>
+                    <tr style="background: #334155; color: #ffffff; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.3px; height:45px;">
+                        <th style="width: 2%; text-align:center; vertical-align: middle;">#</th>
+                        <th style="width: 4%; text-align:center; vertical-align: middle;">ACCIONES</th>
+                        <th style="width: 8%; text-align:center; vertical-align: middle;">CÓDIGO UNIDAD</th>
+                        <th style="width: 30%; text-align:left; vertical-align: middle; padding-left:10px;">UNIDAD RESPONSABLE</th>
+                        <th style="width: 6%; text-align:center; vertical-align: middle;">NRO. ACT.</th>
+                        <th style="width: 15%; text-align:center; vertical-align: middle;">FORM. POA N° 4 (ACTIVIDADES)</th>
+                        <th style="width: 15%; text-align:center; vertical-align: middle;">FORM. POA N° 5 (REQUERIMIENTOS)</th>
+                        <th style="width: 10%; text-align:center; vertical-align: middle;">EXPORTAR POA.</th>
+                        <th style="width: 10%; text-align:center; vertical-align: middle;">PPTO. POA.</th>
                     </tr>
                 </thead>
                 <tbody>';
-                $num=0; $ponderacion=0; $sum=0;
-                foreach($componente as $row){
+
+                $num = 0;
+                foreach($componente as $row) {
                     $num++;
-                    $tabla.='
-                    <tr>';
-                        if(count($this->model_producto->lista_productos($row['com_id']))==0 & $this->tp_adm==1){
-                            $tabla.='<td><a href="#" data-toggle="modal" data-target="#modal_neg_ff" class="btn btn-default neg_ff" title="DESHABILITAR SUB-ACTIVIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/img/neg.jpg" WIDTH="35" HEIGHT="35"/></td>';
-                        }
-                        else{
-                            if($this->fun_id==399){
-                                $tabla.='<td>';
-                                $tp_sact = $this->model_componente->tp_subactividad(); // tp de subactividad
-                                  $tabla .='<select class="form-control" onchange="doSelectAlert(event,this.value,'.$row['com_id'].');">';
-                                    foreach($tp_sact as $pr){
-                                        if($pr['tp_sact']==$row['tp_sact']){
-                                          $tabla .="<option value=".$pr['tp_sact']." selected>".$pr['tipo_subactividad']."</option>";
-                                        }
-                                        else{
-                                          $tabla .="<option value=".$pr['tp_sact'].">".$pr['tipo_subactividad']."</option>"; 
-                                        }
-                                    }
-                                  $tabla.='</select>';
-                                $tabla.='</td>';
+                    $com_id_actual = intval($row['com_id']);
+                    
+                    // 🛠️ OPTIMIZACIÓN CORE: Guardamos la consulta en memoria para no saturar a PostgreSQL
+                    $productos_unidad = $this->model_producto->lista_productos($com_id_actual);
+                    $conteo_actividades = count($productos_unidad);
+
+                    $tabla .= '<tr>';
+                    
+                    // COLUMNA 1: Correlativo numérico
+                    $tabla .= '<td style="text-align: center; font-weight: bold; color: #64748b; vertical-align: middle;" title="'.$row['com_id'].'">' . $num . '</td>';
+                    
+                    // COLUMNA 2: Filtros de Control / Roles de Configuración en el cliente
+                    $tabla .= '<td style="text-align: center; vertical-align: middle;">';
+                    if ($conteo_actividades == 0 && $this->tp_adm == 1) {
+                        $tabla .= '
+                        <a href="#" data-toggle="modal" data-target="#modal_neg_ff" class="btn btn-xs btn-danger neg_ff" title="DESHABILITAR SUB-ACTIVIDAD" name="' . $com_id_actual . '" id="' . $conteo_actividades . '" style="padding: 4px 8px;">
+                            <i class="fa fa-ban" style="font-size:14px;"></i>
+                        </a>';
+                    } else {
+                        if (intval($this->tp_adm) == 1) {
+                            $tp_sact = $this->model_componente->tp_subactividad();
+                            $tabla .= '<select class="form-control input-sm select-subactividad-cns" data-id="' . $com_id_actual . '" style="font-size:11px; height:28px; padding:2px 4px; font-weight:bold;">';
+                            foreach($tp_sact as $pr) {
+                                $selected = ($pr['tp_sact'] == $row['tp_sact']) ? 'selected' : '';
+                                $tabla .= '<option value="' . $pr['tp_sact'] . '" ' . $selected . '>' . $pr['tipo_subactividad'] . '</option>';
                             }
-                            else{
-                                $tabla.='<td>'.$num.'</td>';
-                            }
+                            $tabla .= '</select>';
+                        } else {
+                            $tabla .= '<span class="text-muted" style="font-size:11px;"><i class="fa fa-lock" title="Bloqueado por Auditoría"></i> F-' . $num . '</span>';
                         }
-                        $tabla.='
-                        <td bgcolor="#FAF9AC" align="center" title="'.$row["com_id"].'"><font color="blue" size=3><b>'.$row['serv_cod'].'</b></font></td>
-                        <td>'.$row['serv_descripcion'].'</td>
-                        <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>
-                        <td align="center">
-                            <a href="'.site_url("admin").'/prog/list_prod/'.$row['com_id'].'" title="MIS ACTIVIDADES" class="btn btn-default" target=_black><img src="'.base_url().'assets/ifinal/archivo.png" WIDTH="34" HEIGHT="34"/></a>
-                        </td>
-                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 4" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
-                        <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
-                        <td align="center"></td>
-                        <td align="center">';
-                        if(count($this->model_producto->lista_productos($row['com_id']))!=0 & $this->tp_adm==1){
-                            $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR TODAS LAS ACTIVIDADES DE LA UNIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
-                        }
-                        $tabla.='
-                        </td>
-                    </tr>';
-                    $sum=$sum+count($this->model_producto->lista_productos($row['com_id']));
-                    $ponderacion=$ponderacion+$row['com_ponderacion'];
+                    }
+                    $tabla .= '</td>';
+
+                    // Columnas de Datos Identificadores de la Unidad Organizacional
+                    $tabla .= '<td style="text-align: center; font-weight: bold; background-color: #fef08a; color: #1e3a8a; vertical-align: middle; font-size: 12.5px;">' . $row['serv_cod'] . '</td>';
+                    $tabla .= '<td style="text-align: left; vertical-align: middle; font-weight: 500; color: #1e293b; padding-left:10px;">' . strtoupper($row['serv_descripcion']) . '</td>';
+                    
+                    // Conteo Dinámico de Actividades con resalte cromático azul CNS
+                    $tabla .= '<td style="text-align: center; font-weight: bold; background-color: #e0f2fe; color: #0369a1; vertical-align: middle; font-size:12px;">' . $conteo_actividades . '</td>';
+                    
+                    // 🌟 COLUMNA: FORMULARIO N° 4 - GESTIÓN DE ACTIVIDADES Y EXPORTACIÓN INDIVIDUAL
+                    $tabla .= '<td style="text-align: center; vertical-align: middle;">
+                        <div style="display: inline-flex; gap: 4px;">
+                            <a href="' . site_url("admin/prog/list_prod/" . $com_id_actual) . '" title="VER MIS ACTIVIDADES (FORM 4)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-list text-primary" style="font-size:15px;"></i></a>
+                            <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 4 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger" style="font-size:15px;"></i></a>
+                        </div>
+                    </td>';
+                    
+                    // 🌟 COLUMNA: FORMULARIO N° 5 - GESTIÓN DE INSUMOS Y EXPORTACIÓN INDIVIDUAL
+                    $tabla .= '<td style="text-align: center; vertical-align: middle;">
+                        <div style="display: inline-flex; gap: 4px;">
+                            <a href="' . site_url("prog/requerimiento_unidad/" . $com_id_actual) . '" title="REQUERIMIENTOS DE LA UNIDAD (FORM 5)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-usd text-primary" style="font-size:15px; font-weight: bold;"></i></a>
+                            <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 5 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger" style="font-size:15px;"></i></a>
+                        </div>
+                    </td>';
+                    
+                    $tabla.='<td style="text-align: center; vertical-align: middle;">
+                      <button type="button" 
+                                     class="btn btn-xs btn-default btn-exportar-excel-fila" 
+                                     onclick="exportarExcelConLoading(this, ' . $com_id_actual . ')" 
+                                     style="padding: 15px 20px; background:#f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px;" 
+                                     title="EXPORTAR CONSOLIDADO EN EXCEL">
+                                  <span class="txt-btn-excel-fila">
+                                      <i class="fa fa-file-excel-o text-success" style="font-size:14px;"></i>
+                                  </span>
+                            </button>
+                    </td>';
+                    // 🌟 COLUMNA 8: DISPARADOR INDIVIDUAL DEL MODAL DE PRESUPUESTO POA
+                    $tabla .= '<td style="text-align: center; vertical-align: middle;">
+                        <button type="button" class="btn btn-xs btn-info btn-ver-presupuesto" data-id="' . $com_id_actual . '" data-codigo="' . $row['serv_cod'] . '" data-nombre="' . htmlspecialchars($row['serv_descripcion'], ENT_QUOTES, 'UTF-8') . '" title="VER RESUMEN DE TECHOS PRESUPUESTARIOS" style="font-weight: bold; padding: 5px 10px; background: #0284c7; border-color:#0284c7;">
+                            <i class="fa fa-eye"></i> Techo F5
+                            </button>
+                    </td>';
+                    
+                    // Cierre simétrico de la hilera activa de la Unidad Responsable
+                    $tabla .= '</tr>';
                 }
-                $tabla.='    
+                
+        // Cierre final del cuerpo de la tabla y de la superestructura responsiva
+        $tabla .= '    
                 </tbody>
-            </table>';
+            </table>
+        </div>';
     }
    
             $tabla.='

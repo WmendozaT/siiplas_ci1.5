@@ -449,9 +449,116 @@
 
     
 
+    ////= Exportar Formulario N° 4 por Unidad Organizacional 2027
+    function exportar_poa_unidad_organizacional($proy_id, $token = NULL) {
+    // En tu función principal
+    $data['form4'] = $this->exportar_form4_uresponsable($com_id);
+    // Pestaña 2 también debe ser una tabla para que se vea bien
+    $data['form5'] = $this->exportar_form5_uresponsable($com_id);
+
+    // 3. Manejo del Token para el Loading de JS
+    if($token != NULL) {
+        // Importante: El path "/" asegura que la cookie sea visible en todo el sitio
+        header("Set-Cookie: downloadToken=$token; path=/; SameSite=Lax");
+    }
+
+    // 4. Cabeceras para Excel (Formato XML Spreadsheet 2003)
+    header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+    header("Content-Disposition: attachment; filename=Reporte_POA_UResponsable.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    
+    // 5. Cargar la vista especial XML que definimos antes
+    $this->load->view('admin/reportes_cns/exportar_requerimientos/exportar_poa_uresponsable',$data); 
+
+    }
 
 
-    ////= Exportar Formulario N° 4 por Unidad Responsable 2026
+    ////= (Archivo) Exportar Formulario N° 4 por Unidad Organizacional 2027
+    public function exportar_form4_uOrganizacional($proy_id){
+    $tabla='';
+    $formularioN4 = $this->model_producto->get_lista_form4_uresp_consolidado($com_id); /// poa normal + Bolsa
+
+    $tabla.='
+          <Row ss:Height="30">
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACP.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. OPE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACT.</Data></Cell> 
+          <Cell ss:StyleID="header"><Data ss:Type="String">ACTIVIDAD</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">RESULTADO</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">UNIDAD RESPONSABLE</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">INDICADOR</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">META</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">ENE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">FEB.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">MAR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">ABR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">MAY.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">JUN.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">JUL.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">AGO.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">SEPT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">OCT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">NOV.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">DIC.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">VERIFICACIÓN</Data></Cell>
+      </Row>';
+
+    $nro=0;
+    foreach($formularioN4 as $rowp){
+        $tabla .= '<Row ss:AutoFitHeight="1">'; // Autoajusta la altura si el texto es largo
+        
+        // Celdas de Códigos (Centradas)
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['og_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['or_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['prod_cod'].'</Data></Cell>';
+        
+        // Celdas de Texto Largo (Alineadas a la izquierda con ajuste de texto)
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_producto'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_resultado'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_unidades'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_indicador'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        // Meta (Centrada)
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['prod_meta'],2).'</Data></Cell>';
+        
+        // Meses (Estrechos y Centrados)
+        for ($i=1; $i <=12 ; $i++) { 
+            $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['m'.$i],2).'</Data></Cell>';
+        }
+
+        // Fuente de Verificación
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($rowp['prod_fuente_verificacion'], ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $tabla .= '</Row>';
+    }
+
+    return $tabla;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ////= Exportar Formulario N° 4 por Unidad Responsable 2027
     function exportar_poa_uresponsable($com_id, $token = NULL) {
     // En tu función principal
     $data['form4'] = $this->exportar_form4_uresponsable($com_id);

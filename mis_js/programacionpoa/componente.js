@@ -1,7 +1,69 @@
 base = $('[name="base"]').val();
 
-  ////------------  PARA MIGRAR ARCHIVO EN EXCEL 2026 ==========
+    ////----- Exportar Actividades por Unidad Responsable
+    function exportarExcelConLoading(botonElemento, id) {
+        // 🛠️ REPARADO: Mapeo relativo para congelar únicamente la celda pulsada
+        var $btn = $(botonElemento);
+        var $txt = $btn.find('.txt-btn-excel-fila');
+        
+        var token = new Date().getTime(); // Token único cronológico
+        var segundos_transcurridos = 0;
+        var limite_segundos_resguardo = 8; // Tiempo estimado para que Apache despache el .xls
 
+        // Guardamos los HTML e íconos originales para restaurarlos al centavo
+        var html_interno_origen = $txt.html();
+
+        // 1. ESTADO CARGANDO LOCAL: Bloqueo de fila activa en tono naranja de procesamiento
+        $btn.prop('disabled', true).css({
+            'background-color': '#fef3c7',
+            'border-color': '#fde68a',
+            'cursor': 'not-allowed'
+        });
+        
+        // Inyectamos el spinner vectorial mini adentro del botón de la fila
+        $txt.html('<i class="fa fa-refresh fa-spin text-warning" style="font-size:14px;"></i>');
+
+        // 2. Redirección para iniciar la descarga tradicional en el navegador
+        window.location.href = base + "index.php/reportes_cns/exporting_datos/exportar_poa_uresponsable/" + id + "/" + token;
+
+        // 3. MONITOR DE CONTROL HÍBRIDO (Bucle por Segundo)
+        var checkDownload = setInterval(function() {
+            segundos_transcurridos++;
+
+            // A. Intento de lectura tradicional por si alguna pantalla sí inyecta la cookie
+            var cookieValue = document.cookie.split('; ').find(function(row) {
+                return row.trim().startsWith('downloadToken=');
+            });
+            
+            // B. EVALUACIÓN DE COMPUERTA: Apaga el loader si se detecta la cookie o si se agota el tiempo de resguardo
+            if ((cookieValue && cookieValue.split('=')[1] == token) || segundos_transcurridos >= limite_segundos_resguardo) {
+                
+                // 4. FINALIZAR LOADING Y RESTAURAR FILA INTACTA
+                clearInterval(checkDownload);
+                
+                // Limpieza higiénica de la cookie de control si existiera
+                document.cookie = "downloadToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; 
+                
+                // Devolvemos la prolijidad, colores e interacción original al botón de la hilera
+                $btn.prop('disabled', false).css({
+                    'background-color': '#f0fdf4',
+                    'border-color': '#bbf7d0',
+                    'cursor': 'pointer'
+                });
+                
+                $txt.html(html_interno_origen); // Repone el ícono del Excel verde original
+                
+                if (typeof alertify !== "undefined" && segundos_transcurridos < limite_segundos_resguardo) {
+                    alertify.success("✔ Reporte Excel descargado.");
+                }
+            }
+        }, 1000);
+    }
+    //// -------------------------
+
+
+
+    
 
 
     function doSelectAlert(event,tp_id,com_id) {
@@ -42,7 +104,7 @@ base = $('[name="base"]').val();
             }
 
             /*----------- ELIMINAR OPERACIONES ---------------*/
-            $(".del_ff").on("click", function (e) {
+/*            $(".del_ff").on("click", function (e) {
                 reset();
                 var name = $(this).attr('name');
                 var nro = $(this).attr('id');
@@ -92,7 +154,7 @@ base = $('[name="base"]').val();
                     }
                 });
                 return false;
-            });
+            });*/
 
             /*----------- DESHABILITAR SUB ACTIVIDAD ---------------*/
             $(".neg_ff").on("click", function (e) {

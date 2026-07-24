@@ -182,7 +182,17 @@ class model_producto extends CI_Model {
     }
 
 
-
+    /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL + prog Bolsa x UNI ORGANIZACIONAL (consolidado para resporte)-----*/
+    function get_lista_form4_uOrganizacional_consolidado($proy_id){
+        $sql = "
+              SELECT *
+              from vista_consolidado_unidades_actividades_form4
+              where proy_id=$proy_id
+              ORDER BY serv_cod, aper_programa,prod_cod ASC;"; 
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
     /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL + prog Bolsa x UNI RESP (consolidado para resporte)-----*/

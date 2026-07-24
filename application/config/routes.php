@@ -157,9 +157,11 @@ $route['exportar_consulta_ppto_poa/(:any)'] = 'reportes_cns/crep_consultafinanci
 $route['rep/exportar_requerimientos_institucional/(:any)'] = 'reportes_cns/exporting_datos/requerimientos_institucional/$1'; ///// Exportar Requerimientos Institucional
 $route['rep/exportar_form5/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN5/$1/$2/$3'; ///// Exportar Requerimientos regional- distrital 2026
 $route['rep/exportar_poa_oregional/(:any)']='reportes_cns/exporting_datos/ver_poa_oregional_distrital/$1/$2';// Consolidado operaciones por Objetivo Regional 2020-2021 (Distrital)
-$route['rep/exportar_poa_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/exportar_poa_uresponsable/$1/$2'; ///// Exportar POa 2026 (Excel)
-$route['rep/exportar_form4_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/form4_x_unidad_responsable/$1'; ///// Exportar formulario 4 por Unidad Reponsable (Formulario 4) (Excel)
-$route['rep/consolidado_requerimientos_mas_programas_bolsas_unidad/(:any)'] = 'reportes_cns/exporting_datos/consolidado_requerimientos_mas_programas_bolsas_unidad/$1'; ///// Exportar Requerimientos consolidado (mas bolsas) por Unidad Reponsable (Ejecucion Presupuestaria) (Excel)
+
+$route['rep/exportar_poa_uorganizacional/(:any)'] = 'reportes_cns/exporting_datos/exportar_poa_unidad_organizacional/$1/$2'; ///// Exportar POa 2026 Unidad Organizacional (Excel)
+$route['rep/exportar_poa_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/exportar_poa_uresponsable/$1/$2'; ///// Exportar POa 2026 Unidad Responsable (Excel)
+//$route['rep/exportar_form4_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/form4_x_unidad_responsable/$1'; ///// Exportar formulario 4 por Unidad Reponsable (Formulario 4) (Excel)
+//$route['rep/consolidado_requerimientos_mas_programas_bolsas_unidad/(:any)'] = 'reportes_cns/exporting_datos/consolidado_requerimientos_mas_programas_bolsas_unidad/$1'; ///// Exportar Requerimientos consolidado (mas bolsas) por Unidad Reponsable (Ejecucion Presupuestaria) (Excel)
 
 //// ajustara a 2026
 $route['rep/comparativo_unidad_ppto/(:any)'] = 'reportes_cns/rep_operaciones/comparativo_presupuesto_distrital/$1/$2/$3'; ///// cuadro comparativo pto asig. poa - Partidas por unidad (DISTRITAL) 2020-2021

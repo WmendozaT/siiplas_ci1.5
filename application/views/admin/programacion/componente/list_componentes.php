@@ -48,30 +48,14 @@
 			</div>
 			<!-- end pulled right: nav area -->
 		</header>
-		<!-- Left panel : Navigation area -->
-		<aside id="left-panel">
-			<!-- User info -->
-			<div class="login-info">
-				<span> <!-- User image size is adjusted inside CSS, it should stay as is --> 
-					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
-            <span>
-                <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
-            </span>
-					</a> 
-				</span>
-			</div>
-
-			<?php echo $menu;?>
-			<span class="minifyme" data-action="minifyMenu"> <i class="fa fa-arrow-circle-left hit"></i> </span>
-		</aside>
 
 		<!-- MAIN PANEL -->
-		<div id="main" role="main">
+		<div>
 			<!-- RIBBON -->
 			<div id="ribbon">
 				<!-- breadcrumb -->
 				<ol class="breadcrumb">
-					<li><a href="<?php echo base_url().'index.php/admin/proy/list_proy';?>" title="POA">Programaci&oacute;n POA</a></li><li>Programaci&oacute;n F&iacute;sica</a></li><li>Mis Unidades Responsables</li>
+					<li><a href="<?php echo base_url().'index.php/admin/dashboard';?>" title="MENU PRINCIPAL">DASHBOARD</a></li><li><a href="<?php echo base_url().'index.php/admin/proy/list_proy';?>" title="Lista POA">Programacion POA</a></li><li>Ante Proyecto POA</li>
 				</ol>
 			</div>
 			<!-- END RIBBON -->
