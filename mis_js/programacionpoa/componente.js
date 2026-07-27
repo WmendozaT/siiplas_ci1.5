@@ -340,3 +340,58 @@ var xhr_cambia_subactividad = null;
                 }
             });
         });
+
+/////-------------------
+$(document).on('click', '.btn-ver-presupuesto', function(e) {
+    e.preventDefault();
+
+    var $btn = $(this);
+    var com_id = $btn.data('id');
+    var serv_cod = $btn.data('codigo');
+    var serv_desc = $btn.data('nombre');
+    
+    var $target_body = $('#contenedor_techo_dinamico_cns');
+
+    // 🌟 INYECCIÓN DE PRELOADER LOCAL MIENTRAS RESPONDE EL HARDWARE DE BASE DE DATOS
+    $target_body.html(
+        '<div style="text-align:center; padding: 30px; color: #475569; font-weight: bold;">' +
+            '<i class="fa fa-refresh fa-spin fa-2x text-primary" style="margin-bottom:10px; display:block;"></i>' +
+            'Compilando techos de gasto y compromisos del SIGEP...' +
+        '</div>'
+    );
+
+    var url = base + "index.php/programacion/crequerimiento/get_resumen_techo_unidad_ajax";
+    
+    // Captura automática de Token CSRF perimetral de la CNS
+    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+    var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
+
+    $.ajax({
+        type: "POST",
+        url: url,
+        dataType: "json",
+        data: "com_id=" + com_id + token_seguridad,
+        success: function(res) {
+            if (res.status === 'success' || res.respuesta === 'correcto') {
+                
+                // Formamos el encabezado descriptivo de la Unidad Responsable consultada
+                var html_header = `
+                    <div style="background: #f0fdf4; border-left: 4px solid #0aa699; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                        <span style="display:block; font-size:11px; font-weight:bold; color:#16a34a; text-transform:uppercase;">Unidad Responsable Seleccionada:</span>
+                        <strong style="color:#1e293b; font-size:13px;">${serv_cod} .- ${serv_desc}</strong>
+                    </div>
+                `;
+                
+                // Estampamos el bloque completo desvaneciendo suavemente el loading
+                $target_body.hide().html(html_header + res.html_reporte).fadeIn(200);
+
+            } else {
+                $target_body.html('<div class="alert alert-danger">❌ Error: ' + res.message + '</div>');
+            }
+        },
+        error: function() {
+            $target_body.html('<div class="alert alert-danger">❌ Falla crítica de red al conectar con el servidor de presupuestos.</div>');
+        }
+    });
+});

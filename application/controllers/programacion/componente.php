@@ -458,6 +458,36 @@ class Componente extends CI_Controller {
         </div>';
     }
    
+      //// modal para mostrar la programacion de requerimientos por partidas por cada componente
+      $tabla.='
+      <div class="modal fade" id="modal_techos_resumen_global" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
+          <div class="modal-dialog" style="width: 50% !important; margin: 30px auto;">
+              <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
+                  
+                  <!-- CABECERA DEL MODAL -->
+                  <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+                      <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
+                          <i class="fa fa-calculator text-primary"></i> RESUMEN PRESUPUESTARIO INSTITUCIONAL
+                      </h4>
+                      <button type="button" class="close" data-dismiss="modal" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer;">&times;</button>
+                  </div>
+
+                  <!-- CUERPO RECEPTOR DINÁMICO AJAX -->
+                  <div class="modal-body" id="contenedor_techo_dinamico_cns" style="padding: 25px; background: #ffffff;">
+                      <!-- Aquí el JS estampará el spinner y luego la tabla analítica de saldos -->
+                  </div>
+                  
+                  <!-- PIE DE VENTANA -->
+                  <div class="modal-header" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 20px; text-align: right;">
+                      <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold; font-size: 11.5px; padding: 5px 14px; border-radius: 3px;">CERRAR PANEL</button>
+                  </div>
+
+              </div>
+          </div>
+      </div>';
+
+
+
             $tabla.='
             <div class="modal fade" id="modal_nuevo_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
               <div class="modal-dialog modal-lg" role="document">
