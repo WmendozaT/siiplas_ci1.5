@@ -656,7 +656,7 @@ function numerosDecimales(evt) {
     });
 
 
-    /// Subir Requerimientos Global
+    /*/// Subir Requerimientos Global
     $(document).on('click', '#btn_subir_f5', function(e) {
         e.preventDefault();
         $('#mensaje_f5').html(''); 
@@ -781,7 +781,7 @@ function numerosDecimales(evt) {
                 }
             }
         });
-    });
+    });*/
 /// -------------------------------------------
 
   //// ELIMINAR ACTIVIDAD 2027

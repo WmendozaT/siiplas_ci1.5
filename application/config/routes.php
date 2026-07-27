@@ -240,7 +240,8 @@ $route['prog/reporte_form4_consolidado/(:any)'] = 'programacion/creporte/reporte
 
 /*-----------------------------  PROGRAMACION REQUERIMIENTOS (2020) -------------------------------*/
 //$route['prog/prog_financiera/(:any)'] = 'programacion/crequerimiento/list_componente/$1';  //// Listado de componentes/operacione, segun el tipo de proyecto
-$route['prog/requerimiento/(:any)'] = 'programacion/crequerimiento/list_requerimientos/$1';  //// Listado de Requerimientos
+$route['prog/requerimiento/(:any)'] = 'programacion/crequerimiento/list_requerimientos/$1';  //// Listado de Requerimientos por Actividad 2027
+$route['prog/requerimiento_x_uresponsable/(:any)'] = 'programacion/crequerimiento/list_requerimientos_x_unidadresponsable/$1';  //// Listado de Requerimientos por Unidad Responsable 2027
 //$route['prog/eliminar_insumos_todos/(:any)'] = 'programacion/crequerimiento/eliminar_todos_insumos/$1';  //// eliminar todos los requerimientos
 
 $route['prog/combo_partidas'] = 'programacion/crequerimiento/combo_partidas_hijos';// COMBO PARTIDAS HIJOS

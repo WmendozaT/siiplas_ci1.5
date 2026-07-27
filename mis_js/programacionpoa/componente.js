@@ -63,31 +63,77 @@ base = $('[name="base"]').val();
 
 
 
-    
+var xhr_cambia_subactividad = null;
 
+    // ==========================================================================
+    // 14. CAMBIO EN CALIENTE DE TIPO DE SUBACTIVIDAD (DELEGACIÓN GLOBAL)
+    // ==========================================================================
+    $(document).on('change', '.select-subactividad-cns', function(e) {
+        var $select = $(this);
+        var com_id = $select.data('id'); // ID de la Unidad Organizacional
+        var nuevo_tp_id = $select.val(); // Nuevo valor seleccionado
+        
+        // Almacenamos el valor previo por si el operador regional cancela el cambio
+        var valor_previo = $select.data('previo') || $select.find('option[selected]').val();
+        
+        var url = base + "index.php/programacion/componente/cambia_tp_sact";
 
-    function doSelectAlert(event,tp_id,com_id) {
-        var option = event.srcElement.children[event.srcElement.selectedIndex];
-        if (option.dataset.noAlert !== undefined) {
-            return;
-        }
+        // Feedback visual sutil: Pintamos un fondo amarillo de procesamiento
+        $select.css('background-color', '#fef3c7');
 
-        alertify.confirm("CAMBIAR TIPO DE SUBACTIVIDAD ?", function (a) {
-              if (a) {
-              var url = base+"index.php/programacion/componente/cambia_tp_sact";
-              $.ajax({
-                  type: "post",
-                  url: url,
-                  data:{com_id:com_id,tp_id:tp_id},
-                      success: function (data) {
-                      window.location.reload(true);
-                  }
-              });
-              } else {
-                  alertify.error("OPCI\u00D3N CANCELADA");
-              }
+        if (typeof alertify !== "undefined") {
+            alertify.confirm("🚨 ¿ESTÁ SEGURO DE CAMBIAR EL TIPO DE SUBACTIVIDAD DE ESTA UNIDAD?", function(a) {
+                if (a) {
+                    $select.prop('disabled', true);
+
+                    // Captura perimetral automática del Token CSRF de resguardo
+                    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                    var data_post = { com_id: com_id, tp_id: nuevo_tp_id };
+                    if (csrf_name !== '') { data_post[csrf_name] = csrf_hash; }
+
+                    if (xhr_cambia_subactividad && xhr_cambia_subactividad.readyState !== 4) {
+                        xhr_cambia_subactividad.abort();
+                    }
+
+                    // Despachamos la ráfaga asíncrona hacia CodeIgniter
+                    xhr_cambia_subactividad = $.ajax({
+                        type: "POST",
+                        url: url,
+                        dataType: "json",
+                        data: data_post,
+                        success: function(res) {
+                            $select.prop('disabled', false).css('background-color', '#ffffff');
+                            
+                            if (res.status === 'success' || res.respuesta === 'correcto') {
+                                alertify.success("✔ " + (res.message || "Tipo de subactividad actualizado."));
+                                // Seteamos el nuevo valor como el previo legítimo
+                                $select.data('previo', nuevo_tp_id);
+                            } else {
+                                alertify.error("🚨 Rechazo: " + res.message);
+                                $select.val(valor_previo); // Revertimos el control
+                            }
+                        },
+                        error: function(xhr, textStatus) {
+                            $select.prop('disabled', false).css('background-color', '#ffffff').val(valor_previo);
+                            if (textStatus !== 'abort') {
+                                alertify.error("❌ Falla de red. El servidor abortó la modificación.");
+                            }
+                        }
+                    });
+                } else {
+                    // Si presionan cancelar, limpiamos los colores y reponemos el valor original
+                    $select.css('background-color', '#ffffff').val(valor_previo);
+                    alertify.log("Operación cancelada. El registro permanece intacto.");
+                }
             });
-    }
+        }
+    });
+
+
+
+
+
 
         $(function () {
             function reset() {
@@ -103,58 +149,6 @@ base = $('[name="base"]').val();
                 });
             }
 
-            /*----------- ELIMINAR OPERACIONES ---------------*/
-/*            $(".del_ff").on("click", function (e) {
-                reset();
-                var name = $(this).attr('name');
-                var nro = $(this).attr('id');
-                var request;
-                alertify.confirm("ESTA SEGURO DE ELIMINAR "+nro+" ACTIVIDADES ?", function (a) {
-                    if (a) { 
-                        var url = base+"index.php/programacion/componente/elimina_operaciones_componente";
-                        if (request) {
-                            request.abort();
-                        }
-                        request = $.ajax({
-                            url: url,
-                            type: "POST",
-                            dataType: "json",
-                          data: "com_id="+name
-
-                        });
-
-                        request.done(function (response, textStatus, jqXHR) { 
-                          reset();
-                          if (response.respuesta == 'correcto') {
-                              alertify.alert("LAS OPERACIONES SE ELIMINARON CORRECTAMENTE ", function (e) {
-                                  if (e) {
-                                      window.location.reload(true);
-                                  }
-                              });
-                          } else {
-                              alertify.alert("ERROR AL ELIMINAR OPERACIONES!!!", function (e) {
-                                  if (e) {
-                                      window.location.reload(true);
-                                  }
-                              });
-                          }
-                      });
-                        request.fail(function (jqXHR, textStatus, thrown) {
-                            console.log("ERROR: " + textStatus);
-                        });
-                        request.always(function () {
-                            //console.log("termino la ejecuicion de ajax");
-                        });
-
-                        e.preventDefault();
-
-                    } else {
-                        // user clicked "cancel"
-                        alertify.error("OPCIÓN CANCELADA");
-                    }
-                });
-                return false;
-            });*/
 
             /*----------- DESHABILITAR SUB ACTIVIDAD ---------------*/
             $(".neg_ff").on("click", function (e) {

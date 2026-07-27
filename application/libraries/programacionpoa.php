@@ -38,6 +38,216 @@ class Programacionpoa extends CI_Controller{
       $this->conf_poa_estado = $this->session->userData('conf_poa_estado'); /// Ajuste POA 1: Inicial, 2 : Ajuste, 3 : aprobado
     }
 
+
+
+  /*--- Modal Para Migrar Requerimientos x Componente 2027 ---*/
+  public function modal_migracion_form5x_componente($componente){
+    $tabla='';
+    $tabla.='
+    <div class="modal fade" id="modal_importar_f5" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
+          <div class="modal-dialog" id="dialog_subirr">
+              <div class="modal-content" style="border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+                  
+                  <!-- CABECERA DEL COMPONENTE -->
+                  <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                      <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                      <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                          <i class="fa fa-upload text-primary"></i> Importar Requerimientos GLOBAL
+                      </h4>
+                  </div>
+
+                  <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
+                  <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                      
+                      <!-- Título e Instrucción -->
+                      <div class="text-center" style="margin-bottom: 20px;">
+                          <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Requerimientos Global (.xls, .xlsx)</h5>
+                          <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                      </div>
+
+                      <!-- Vista previa de columnas (Corregido: Concatenación nativa base_url) -->
+                      <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                          <div style="color:blue;">CÓDIGO DE UNIDAD: <b style="font-size:14px;">'.$componente[0]['serv_cod'].' </b></div><br>
+                          <img src="' . base_url('assets/img/img_migracion/migracion_form5.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
+                      </div>
+
+                      <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
+                      <form action="' . site_url('programacion/producto/valida_migracion_form5_consolidado') . '" method="post" enctype="multipart/form-data" id="form_subir_requerimientos" autocomplete="off" style="padding:0; background:transparent;">
+                          <input name="com_id" value="'.$componente[0]['com_id'].'" type="hidden" > 
+                          <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                              <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                              
+                              <div class="input-group input-group-sm">
+                                  <span class="input-group-btn">
+                                      <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                          <i class="fa fa-folder-open"></i> Examinar...
+                                      </button>
+                                      
+                                      <input id="archivo_f5" accept=".xlsx, .xls" name="archivo_f5" 
+                                             onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                             style="display: none;" type="file" required>
+                                  </span>
+                                  <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                              </div>
+                          </div>
+
+                          <div id="mensaje_f5" style="margin: 10px 0; font-size: 11px;"></div>
+
+                          <!-- Botón de Envío y Validación Masiva -->
+                          <div style="margin-top: 25px;">
+                              <button type="button" id="btn_subir_f5" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                  <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                              </button>
+                          </div>
+
+                          <!-- Animación Pre-Loader de la Planilla -->
+                          <div id="loads_f5" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                              <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                              <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                          </div>
+                      </form>
+                      
+                  </div>
+              </div>
+          </div>
+      </div>';
+
+    return $tabla;
+  }
+
+    //// Modal de migracion requerimientos x Actividad
+    public function modal_migracion_form5x_actividad($producto, $componente){
+        $prog_especial = '';
+        $bloquear_formulario = false;
+            
+        // 🛠️ REPARADO: Evaluación elástica de la matriz de la Unidad Organizacional
+        if (!empty($componente) && isset($componente[0]['por_id']) && intval($componente[0]['por_id']) == 1) {
+            $uni_resp_id = intval($producto[0]['uni_resp']);
+            
+            // Mensaje corporativo SmartAdmin de bloqueo elástico si uni_resp es 0
+            $prog_especial = '
+                <div class="alert alert-danger text-center" style="margin-bottom: 20px; border-left: 5px solid #ef4444; background: #fef2f2; color: #991b1b; padding: 12px; font-size:12px; font-weight:bold;">
+                    <i class="fa fa-exclamation-triangle fa-2x" style="margin-bottom:5px; display:block;"></i>
+                    🚨 RESTRICCIÓN DE FORMULACIÓN: DEBE SELECCIONAR LA UNIDAD RESPONSABLE EN LA GRILLA PRINCIPAL (FORM 4) ANTES DE PODER CARGAR O ASIGNAR INSUMOS.
+                </div>';
+            
+            $bloquear_formulario = true; // Gatilla el conmutador de bloqueo de red
+            
+            if ($uni_resp_id > 0) {
+                $unidad = $this->model_componente->get_componente($uni_resp_id, $this->gestion);
+                
+                if (!empty($unidad) && count($unidad) > 0) {
+                    // Si ya tiene asignación, muestra un banner azul informativo limpio
+                    $prog_especial = '
+                        <div class="alert alert-info" style="margin-bottom: 20px; border-left: 5px solid #3b82f6; background: #eff6ff; color: #1e3a8a; padding: 10px; font-size:11.5px; font-weight:600;">
+                            <i class="fa fa-info-circle"></i> UNIDAD RESPONSABLE VINCULADA: ' . strtoupper($unidad[0]['tipo_subactividad'] . ' ' . $unidad[0]['serv_descripcion']) . '
+                        </div>';
+                    $bloquear_formulario = false; // Libera el formulario
+                }
+            }
+        }
+
+        $tabla = '';
+        // Inyectamos el fondo carbón oscuro y el desenfoque elástico de SmartAdmin
+        $tabla .= '
+        <div class="modal fade" id="modal_importar_f5" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
+            <div class="modal-dialog" id="dialog_subirr">
+                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2); border: none; overflow: hidden;">
+                    
+                    <!-- CABECERA DEL COMPONENTE -->
+                    <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                        <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                            <i class="fa fa-upload text-primary"></i> Importar Requerimientos x Actividad
+                        </h4>
+                    </div>
+
+                    <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
+                    <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                        
+                        <!-- 🌟 INYECCIÓN DEL CANDADO DE AUDITORÍA: Alerta o Banner Informativo -->
+                        ' . $prog_especial . '
+
+                        <!-- Título e Instrucción -->
+                        <div class="text-center" style="margin-bottom: 20px;">
+                            <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Requerimientos x Actividad (.xls, .xlsx)</h5>
+                            <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                        </div>
+
+                        <!-- Vista previa de columnas -->
+                        <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                            <div style="color:blue; font-weight:bold; font-size:11px;">CÓD. ACT.: <span style="color:#334155; font-size:11.5px;">' . round($producto[0]['prod_cod'], 2) . '.- ' . strtoupper($producto[0]['prod_producto']) . '</span></div><br>
+                            <img src="' . base_url('assets/img/img_migracion/migracion_form5.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
+                        </div>';
+
+                        // 📋 REGLA DE BLOQUEO: Ocultamos el formulario si la unidad obligatoria no fue seleccionada
+                        if ($bloquear_formulario === false) {
+                            $tabla .= '
+                            <!-- Formulario de persistencia binaria -->
+                            <!-- 🛠️ REPARADO: Sincronizada la URL de acción exacta hacia el controlador unificado de productos -->
+                            <form action="' . site_url('programacion/crequerimiento/valida_migracion_form5_x_actividad') . '" method="post" enctype="multipart/form-data" id="form_subir_requerimientos_act" autocomplete="off" style="padding:0; background:transparent;">
+                                <input name="prod_id" value="' . $producto[0]['prod_id'] . '" type="hidden" > 
+                                <input type="hidden" name="base" value="'.base_url().'">
+                                <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                    
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                                <i class="fa fa-folder-open"></i> Examinar...
+                                            </button>
+                                            
+                                            <input id="archivo_f5" accept=".xlsx, .xls" name="archivo_f5" 
+                                                   onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                                   style="display: none;" type="file" required>
+                                        </span>
+                                        <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                    </div>
+                                </div>
+
+                                <div id="mensaje_f5_act" style="margin: 10px 0; font-size: 11px;"></div>
+
+                                <!-- Botón de Envío y Validación Masiva -->
+                                <div style="margin-top: 25px;">
+                                    <button type="button" id="btn_subir_f5_act" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                        <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                    </button>
+                                </div>
+
+                                <!-- 🛠️ COMPLETADO: Cierre simétrico y limpio del Pre-Loader animado institucional -->
+                                <div id="loads_f5_act" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                    <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                    <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                                </div>
+                            </form>';
+                        } else {
+                            // Si está bloqueado por auditoría, inyectamos un botón deshabilitado inactivo de advertencia
+                            $tabla .= '
+                            <button type="button" class="btn btn-default btn-block" disabled style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; text-transform: uppercase; background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; cursor:not-allowed;">
+                                <i class="fa fa-lock"></i> Importación bloqueada por Auditoría
+                            </button>';
+                        }
+                        
+                    $tabla .= '
+                    </div>
+                </div>
+            </div>
+        </div>';
+
+        return $tabla;
+    }
+
+
+
+
+
+
+
+
   /// ----- APERTURAR NUEVO POA (UNIDAD)
   /*------------ FORMULACIÓN - ADICION - POA (2020) ----------*/
   public function formulacion_add_poa_adm(){

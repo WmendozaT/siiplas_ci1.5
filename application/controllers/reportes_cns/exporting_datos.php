@@ -157,7 +157,7 @@
 
 
 
-    /*------ EXPORTAR ACTIVIDADES Regional - Distrital 2026 -------*/
+    /*------ EXPORTAR ACTIVIDADES Regional - Distrital 2026 (Reporte Gerencial) -------*/
     public function exportar_formularioN4($dep_id, $dist_id, $tp_id) {
       // 1. Configuración y ampliación drástica de recursos del servidor
       set_time_limit(1200);             // 20 minutos de ejecución interna
@@ -418,7 +418,7 @@
       echo $tabla;
     }
 
-    /*--- EXPORTAR REQUERIMIENTOS A DETALLE 2026 a mejorar ---*/
+    /*--- EXPORTAR REQUERIMIENTOS A DETALLE 2026 a mejorar (Reporte Gerencial) ---*/
     public function exportar_formularioN5($dep_id,$dist_id,$tp_id){
       date_default_timezone_set('America/Lima');
       $fecha = date("d-m-Y H:i:s");
@@ -452,7 +452,7 @@
     ////= Exportar Formulario N° 4 por Unidad Organizacional 2027
     function exportar_poa_unidad_organizacional($proy_id, $token = NULL) {
     // En tu función principal
-    $data['form4'] = $this->exportar_form4_uresponsable($com_id);
+    $data['form4'] = $this->exportar_form4_uOrganizacional($proy_id);
     // Pestaña 2 también debe ser una tabla para que se vea bien
     $data['form5'] = $this->exportar_form5_uresponsable($com_id);
 
@@ -477,10 +477,12 @@
     ////= (Archivo) Exportar Formulario N° 4 por Unidad Organizacional 2027
     public function exportar_form4_uOrganizacional($proy_id){
     $tabla='';
-    $formularioN4 = $this->model_producto->get_lista_form4_uresp_consolidado($com_id); /// poa normal + Bolsa
+    $formularioN4 = $this->model_producto->get_lista_form4_uOrganizacional_consolidado($proy_id); /// poa normal + Bolsa por Unidad Organizacional
 
     $tabla.='
           <Row ss:Height="30">
+          <Cell ss:StyleID="header"><Data ss:Type="String">UNIDAD ORGANIZACIONAL</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">UNIDAD RESPONSABLE</Data></Cell>
 
           <Cell ss:StyleID="header"><Data ss:Type="String">PROG.</Data></Cell>
           <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACP.</Data></Cell>
@@ -511,6 +513,9 @@
         $tabla .= '<Row ss:AutoFitHeight="1">'; // Autoajusta la altura si el texto es largo
         
         // Celdas de Códigos (Centradas)
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_descripcion'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['unidad_tipo_subactividad'].' '.$rowp['com_componente'].'</Data></Cell>';
+
         $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>';
         $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['og_codigo'].'</Data></Cell>';
         $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['or_codigo'].'</Data></Cell>';
@@ -1156,22 +1161,22 @@
    
 
     /*-------- GET LISTA DE REQ. CERTIFICADOS ------------*/
-    public function get_requerimientos(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id);
-        $tabla=$this->list_req_cert_unidad($proyecto[0]['proy_id'],$proyecto[0]['tp_id']);
-        $result = array(
-            'respuesta' => 'correcto',
-            'tabla'=>$tabla,
-          );
+    // public function get_requerimientos(){
+    //   if($this->input->is_ajax_request() && $this->input->post()){
+    //     $post = $this->input->post();
+    //     $proy_id = $this->security->xss_clean($post['proy_id']);
+    //     $proyecto = $this->model_proyecto->get_id_proyecto($proy_id);
+    //     $tabla=$this->list_req_cert_unidad($proyecto[0]['proy_id'],$proyecto[0]['tp_id']);
+    //     $result = array(
+    //         'respuesta' => 'correcto',
+    //         'tabla'=>$tabla,
+    //       );
           
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }
+    //     echo json_encode($result);
+    //   }else{
+    //       show_404();
+    //   }
+    // }
 
    
     /*-------- GET LISTA DE DISTRITALES --------*/

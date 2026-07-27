@@ -499,6 +499,7 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
         <script src="<?php echo base_url(); ?>mis_js/programacionpoa/form4.js"></script> 
+        <script src="<?php echo base_url(); ?>mis_js/programacionpoa/form5.js"></script> 
         <script src="<?php echo base_url(); ?>mis_js/programacionpoa/programacionpoa.js"></script> 
     </body>
 </html>

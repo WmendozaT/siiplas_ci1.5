@@ -182,11 +182,11 @@ class model_producto extends CI_Model {
     }
 
 
-    /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL + prog Bolsa x UNI ORGANIZACIONAL (consolidado para resporte)-----*/
+    /*----- GET LISTA DE ACTIVIDADES PROGRAMA NORMAL + prog Bolsa x UNI ORGANIZACIONAL (consolidado para reporte)-----*/
     function get_lista_form4_uOrganizacional_consolidado($proy_id){
         $sql = "
               SELECT *
-              from vista_consolidado_unidades_actividades_form4
+              from vista_consolidado_actividades_mas_bolsa_ordenado_form4
               where proy_id=$proy_id
               ORDER BY serv_cod, aper_programa,prod_cod ASC;"; 
         
@@ -487,6 +487,7 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }
 
+    /// lista POA Formulario N4 completo
     function lista_form4_x_regional_completo($dep_id,$tp_id){
         $sql = 'SELECT *
                 from get_formulario4_consolidado_nacional('.$this->gestion.')

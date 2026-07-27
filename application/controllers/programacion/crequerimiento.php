@@ -32,8 +32,36 @@ class crequerimiento extends CI_Controller {
       }
     }
 
+    
+    /*------- LISTA DE FORM 5 x Unidad Responsable (Componentes) ----------*/
+    public function list_requerimientos_x_unidadresponsable($com_id){
+        $tabla='';
+        $data['stylo'] = $this->programacionpoa->estilo_tabla_form5();
+        $get_componente = $this->model_componente->get_componente($com_id, $this->gestion);
+        if (!empty($get_componente) && count($get_componente) > 0) {
+            $data['part_padres'] = $this->model_partidas->lista_padres(); // Partidas padres (Agrupadores)
+            $data['part_hijos']  = $this->model_partidas->lista_partidas(); // Partidas hijos (Sub-ítems)
+            $data['titulo']=$this->cabecera_f5_uresponsable($get_componente); //// Cabecera 
+        
+            // Recuperamos la colección base de requerimientos vinculados (Form 5)
+            $lista_insumos = $this->model_insumo->lista_insumos_x_uresponsable($com_id);
+            $lista_form4=$this->model_producto->lista_productos($com_id);
+            $base='<input type="hidden" name="com_id" id="com_id" value="' . $com_id . '">';
+            $tabla.=$this->vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$this->button_opciones_componente());
+            $tabla.=$this->programacionpoa->modal_migracion_form5x_componente($get_componente);
 
-    /*------- LISTA DE FORM 5 (a optimizar)----------*/
+            $data['tabla']=$tabla;
+            $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
+      }
+      else{
+        show_error("🚨 Error SIIPLAS: La Actividad física solicitada no existe en PostgreSQL o fue purgada del Formulario N° 4.");
+      }
+       
+    }
+
+
+
+    /*------- LISTA DE FORM 5 x Actividad (Form N° 4) ----------*/
     public function list_requerimientos($prod_id_activo){
       $tabla='';
       $data['stylo'] = $this->programacionpoa->estilo_tabla_form5();
@@ -49,18 +77,35 @@ class crequerimiento extends CI_Controller {
         // Recuperamos la colección base de requerimientos vinculados (Form 5)
         $lista_insumos = $this->model_insumo->lista_insumos_x_form4($prod_id_activo);
         $lista_form4=$this->model_producto->lista_productos($get_componente[0]['com_id']);
-        
+        $base='<input type="hidden" name="prod_id" id="prod_id" value="' . $prod_id_activo . '">';
+        $tabla.=$this->vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$this->button_opciones_actividad());
+        $tabla.=$this->programacionpoa->modal_migracion_form5x_actividad($get_producto, $get_componente); /// modal de migracion x actividad
+        $data['tabla']=$tabla;
+        $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
+      }
+      else{
+        show_error("🚨 Error SIIPLAS: La Actividad física solicitada no existe en PostgreSQL o fue purgada del Formulario N° 4.");
+      }
+    }
+
+
+
+
+
+    /*------- VISTA LISTA DE REQUERIMIENTOS (ANTEPROYECTO POA) 2027 ----------*/
+    public function vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$button_opciones){
         $tabla = '';
         $total = 0;
-        
         // Totales verticales acumuladores para el pie de la grilla contable
         $total_meses = array(1=>0, 2=>0, 3=>0, 4=>0, 5=>0, 6=>0, 7=>0, 8=>0, 9=>0, 10=>0, 11=>0, 12=>0);
-
-        // Inputs hidden limpios de anclaje para el motor form5.js
-        $tabla .= '<input type="hidden" name="prod_id" id="prod_id" value="' . $prod_id_activo . '">';
+        $tabla.=$base;
         $tabla .= '<input type="hidden" name="base" id="base_url_siiplas" value="' . base_url() . '">';
         
         // Tabla con diseño vectorial responsivo de SmartAdmin
+        $tabla .= '
+        <div style="margin-bottom: 15px; display: flex; gap: 8px; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px;">
+            <div style="display: flex; gap: 6px;">'.$button_opciones.'</div>
+        </div>';
         $tabla .= '
         <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #e2e8f0; border-radius: 4px;">
         <table id="dt_basic" class="table table-striped table-bordered table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11px; border-collapse: collapse;">
@@ -174,15 +219,14 @@ class crequerimiento extends CI_Controller {
                 <td colspan="13"></td>
               </tr>
           </table>';
-        $tabla .= $this->modal_migracion_form5x_actividad($get_producto, $get_componente); /// modal de migracion
-        $data['tabla']=$tabla;
-
-        $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
-      }
-      else{
-        show_error("🚨 Error SIIPLAS: La Actividad física solicitada no existe en PostgreSQL o fue purgada del Formulario N° 4.");
-      }
+        
+        return $tabla;
     }
+
+
+
+
+
 
 
     //// Cambia alineacion de Actividad
@@ -384,7 +428,7 @@ class crequerimiento extends CI_Controller {
 
 
 
-    //// Cabecera titulo
+    //// Cabecera titulo por Actividad
     public function cabecera($producto_row, $componente){
       $componente_row = $componente[0]; // Hilera única activa del componente
       $producto_row = $producto_row[0]; // Hilera única activa de la consulta
@@ -421,164 +465,67 @@ class crequerimiento extends CI_Controller {
         <div class="well">
           '.$data['datos'].'
           '.$data['prog_especial'].'
-          '.$this->button_opciones().'
         </div>
       </article>';
 
       return $tabla;
     }
 
-    //// opciones formulario 5
-    public function button_opciones(){
+
+    //// Cabecera titulo por Unidad Responsable
+    public function cabecera_f5_uresponsable($componente){
+      $componente_row = $componente[0]; // Hilera única activa del componente
+      $tit = '<small>PROYECTO : </small>' . $componente_row['aper_programa'] . ' ' . $componente_row['proy_sisin'] . ' ' . $componente_row['aper_actividad'] . ' - ' . $componente_row['proy_nombre'];
+      /*--------- Caso Gasto Corriente (Apertura tipo 4) ----------*/
+      if (intval($componente_row['tp_id']) == 4) {
+          $tit = '<h2>' . $componente_row['aper_programa'] . ' ' . $componente_row['aper_proyecto'] . ' ' . $componente_row['aper_actividad'] . ' - ' . $componente_row['tipo'] . ' ' . $componente_row['act_descripcion'] . ' - ' . $componente_row['abrev'] . '  / <b>' . $componente_row['serv_cod'] . ' </b>' . $componente_row['tipo_subactividad'] . ' ' . $componente_row['serv_descripcion'] . '</h2>';
+      }
+
+      $data['datos'] = '<h1>' . $tit . '</h1>';
+
+      $tabla='';
+      $tabla.='
+      <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <input type="hidden" name="base" value="'.base_url().'">
+        <div class="well">
+          '.$data['datos'].'
+        </div>
+      </article>';
+
+      return $tabla;
+    }
+
+    //// Opciones formulario 5 x Actividad
+    public function button_opciones_actividad(){
       $tabla='';
       if($this->tp_adm==1 || $this->conf_form5==1){
             $tabla.='
             <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-              <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO REQUERIMIENTOS.Xls</b>
+              <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>Subir Archivo Requerimientos.xls</b>
             </a>
             <button type="button" id="btn_eliminar_masivo_f5" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Eliminar Items Seleccionados</button>';
           }
-      $tabla.='
-      <div style="margin: 10px 0; text-align: right;">
-          <a href="' . site_url('admin/proy/list_proy') . '" 
-             class="btn btn-default" 
-             title="REGRESAR AL LISTADO DE PROGRAMACIÓN POA" 
-             style="font-weight: bold; font-size: 12px; padding: 8px 20px; background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s ease;"
-             onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
-             onmouseout="this.style.background=\'#f8fafc\'; this.style.borderColor=\'#cbd5e1\';">
-              <i class="fa fa-chevron-circle-left" style="color: #64748b; font-size: 14px;"></i> Volver al Listado
-          </a>
-      </div>';
+      return $tabla;
+    }
 
+
+    //// Opciones formulario 5 x Componente
+    public function button_opciones_componente(){
+      $tabla='';
+      if($this->tp_adm==1 || $this->conf_form5==1){
+            $tabla.='
+            <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-success importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
+              <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>Subir Archivo Requerimientos.xls</b>
+            </a>
+            <button type="button" id="btn_eliminar_masivo_f5" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Eliminar Items Seleccionados</button>';
+          }
       return $tabla;
     }
 
 
 
 
-    //// Modal de migracion requerimientos
-    public function modal_migracion_form5x_actividad($producto, $componente){
-        $prog_especial = '';
-        $bloquear_formulario = false;
-            
-        // 🛠️ REPARADO: Evaluación elástica de la matriz de la Unidad Organizacional
-        if (!empty($componente) && isset($componente[0]['por_id']) && intval($componente[0]['por_id']) == 1) {
-            $uni_resp_id = intval($producto[0]['uni_resp']);
-            
-            // Mensaje corporativo SmartAdmin de bloqueo elástico si uni_resp es 0
-            $prog_especial = '
-                <div class="alert alert-danger text-center" style="margin-bottom: 20px; border-left: 5px solid #ef4444; background: #fef2f2; color: #991b1b; padding: 12px; font-size:12px; font-weight:bold;">
-                    <i class="fa fa-exclamation-triangle fa-2x" style="margin-bottom:5px; display:block;"></i>
-                    🚨 RESTRICCIÓN DE FORMULACIÓN: DEBE SELECCIONAR LA UNIDAD RESPONSABLE EN LA GRILLA PRINCIPAL (FORM 4) ANTES DE PODER CARGAR O ASIGNAR INSUMOS.
-                </div>';
-            
-            $bloquear_formulario = true; // Gatilla el conmutador de bloqueo de red
-            
-            if ($uni_resp_id > 0) {
-                $unidad = $this->model_componente->get_componente($uni_resp_id, $this->gestion);
-                
-                if (!empty($unidad) && count($unidad) > 0) {
-                    // Si ya tiene asignación, muestra un banner azul informativo limpio
-                    $prog_especial = '
-                        <div class="alert alert-info" style="margin-bottom: 20px; border-left: 5px solid #3b82f6; background: #eff6ff; color: #1e3a8a; padding: 10px; font-size:11.5px; font-weight:600;">
-                            <i class="fa fa-info-circle"></i> UNIDAD RESPONSABLE VINCULADA: ' . strtoupper($unidad[0]['tipo_subactividad'] . ' ' . $unidad[0]['serv_descripcion']) . '
-                        </div>';
-                    $bloquear_formulario = false; // Libera el formulario
-                }
-            }
-        }
-
-        $tabla = '';
-        // Inyectamos el fondo carbón oscuro y el desenfoque elástico de SmartAdmin
-        $tabla .= '
-        <div class="modal fade" id="modal_importar_f5" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-            <div class="modal-dialog" id="dialog_subirr">
-                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2); border: none; overflow: hidden;">
-                    
-                    <!-- CABECERA DEL COMPONENTE -->
-                    <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
-                        <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
-                            <i class="fa fa-upload text-primary"></i> Importar Requerimientos x Actividad
-                        </h4>
-                    </div>
-
-                    <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
-                    <div class="modal-body" style="padding: 25px; background: #ffffff;">
-                        
-                        <!-- 🌟 INYECCIÓN DEL CANDADO DE AUDITORÍA: Alerta o Banner Informativo -->
-                        ' . $prog_especial . '
-
-                        <!-- Título e Instrucción -->
-                        <div class="text-center" style="margin-bottom: 20px;">
-                            <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Requerimientos x Actividad (.xls, .xlsx)</h5>
-                            <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
-                        </div>
-
-                        <!-- Vista previa de columnas -->
-                        <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
-                            <div style="color:blue; font-weight:bold; font-size:11px;">CÓD. ACT.: <span style="color:#334155; font-size:11.5px;">' . round($producto[0]['prod_cod'], 2) . '.- ' . strtoupper($producto[0]['prod_producto']) . '</span></div><br>
-                            <img src="' . base_url('assets/img/img_migracion/migracion_form5.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
-                        </div>';
-
-                        // 📋 REGLA DE BLOQUEO: Ocultamos el formulario si la unidad obligatoria no fue seleccionada
-                        if ($bloquear_formulario === false) {
-                            $tabla .= '
-                            <!-- Formulario de persistencia binaria -->
-                            <!-- 🛠️ REPARADO: Sincronizada la URL de acción exacta hacia el controlador unificado de productos -->
-                            <form action="' . site_url('programacion/crequerimiento/valida_migracion_form5_x_actividad') . '" method="post" enctype="multipart/form-data" id="form_subir_requerimientos" autocomplete="off" style="padding:0; background:transparent;">
-                                <input name="prod_id" value="' . $producto[0]['prod_id'] . '" type="hidden" > 
-                                <input type="hidden" name="base" value="'.base_url().'">
-                                <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
-                                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
-                                    
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-btn">
-                                            <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
-                                                <i class="fa fa-folder-open"></i> Examinar...
-                                            </button>
-                                            
-                                            <input id="archivo_f5" accept=".xlsx, .xls" name="archivo_f5" 
-                                                   onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
-                                                   style="display: none;" type="file" required>
-                                        </span>
-                                        <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
-                                    </div>
-                                </div>
-
-                                <div id="mensaje_f5" style="margin: 10px 0; font-size: 11px;"></div>
-
-                                <!-- Botón de Envío y Validación Masiva -->
-                                <div style="margin-top: 25px;">
-                                    <button type="button" id="btn_subir_f5" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
-                                        <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
-                                    </button>
-                                </div>
-
-                                <!-- 🛠️ COMPLETADO: Cierre simétrico y limpio del Pre-Loader animado institucional -->
-                                <div id="loads_f5" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
-                                    <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
-                                    <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
-                                </div>
-                            </form>';
-                        } else {
-                            // Si está bloqueado por auditoría, inyectamos un botón deshabilitado inactivo de advertencia
-                            $tabla .= '
-                            <button type="button" class="btn btn-default btn-block" disabled style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; text-transform: uppercase; background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; cursor:not-allowed;">
-                                <i class="fa fa-lock"></i> Importación bloqueada por Auditoría
-                            </button>';
-                        }
-                        
-                    $tabla .= '
-                    </div>
-                </div>
-            </div>
-        </div>';
-
-        return $tabla;
-    }
+   
 
     //// Valida Migracion de Requerimientos por Actividad
     public function valida_migracion_form5_x_actividad() {
@@ -832,7 +779,7 @@ class crequerimiento extends CI_Controller {
         $producto=$this->model_producto->get_producto_id($insumo[0]['prod_id']); /// Get producto
         $componente = $this->model_componente->get_componente($producto[0]['com_id'],$this->gestion); /// Get Componente
 
-        $monto_asig=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($componente[0]['aper_id'],1);
+/*        $monto_asig=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($componente[0]['aper_id'],1);
         $monto_prog=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($componente[0]['aper_id'],2);
         
 
@@ -842,10 +789,10 @@ class crequerimiento extends CI_Controller {
         }
         if(count($monto_prog)!=0){
           $m_prog=$monto_prog[0]['monto'];
-        }
+        }*/
 
-        $saldo=($m_asig-$m_prog);
-        
+        //$saldo=($m_asig-$m_prog);
+        $saldo=0;
         $par_padre=$this->model_partidas->get_partida_padre($insumo[0]['par_depende']); /// lista de partidas padres
         $lista_partidas=$this->programacionpoa->partidas_dependientes($insumo); /// Lista de Insumos dependientes
         $lista_umedida=$this->programacionpoa->unidades_medida($insumo); /// Lista de Unidad de medida
