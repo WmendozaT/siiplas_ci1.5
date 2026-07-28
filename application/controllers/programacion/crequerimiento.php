@@ -945,8 +945,50 @@ class crequerimiento extends CI_Controller {
     }
 
 
+    //// Get partidas asignadas y programadas
+   public function get_resumen_techo_proyecto_global_ajax() {
+        // Validamos la legitimidad asíncrona de la solicitud de red
+        if ($this->input->is_ajax_request() && $this->input->post()) {
+            
+            $proy_id = intval($this->input->post('proy_id'));
+            $g_id    = intval($this->gestion); // Gestión POA de la sesión activa
 
+            if ($proy_id <= 0) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'message' => 'Identificador de proyecto inválido o vacío.'));
+                return;
+            }
 
+            // Recuperamos la ficha e indicadores maestros del Proyecto CNS
+            $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
+
+            if (empty($proyecto)) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'message' => 'El proyecto solicitado no existe en PostgreSQL.'));
+                return;
+            }
+
+           $tabla=$this->programacionpoa->modal_partidas_unidad_organizacional($proyecto);
+
+            // Purgamos búferes intermedios ocultos de CodeIgniter para garantizar salida JSON pura libre de HTML
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+
+            // 🌟 REPARADO: Agregados los puntos de concatenación contables obligatorios para los strings
+            echo json_encode(array(
+                'status'       => 'success',
+                'respuesta'    => 'correcto',
+                'proy_nombre'  => strtoupper($proyecto[0]['tipo'].' '.$proyecto[0]['proy_nombre'] . " [" . $proyecto[0]['abrev'] . "]"),
+                'html_reporte' => $tabla
+            ));
+            exit;
+
+        } else {
+            show_404();
+        }
+    }
 
 
 

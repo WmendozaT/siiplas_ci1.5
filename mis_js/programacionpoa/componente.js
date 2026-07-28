@@ -341,57 +341,161 @@ var xhr_cambia_subactividad = null;
             });
         });
 
-/////-------------------
-$(document).on('click', '.btn-ver-presupuesto', function(e) {
+/////------------------- Get Partidas programadas x Unidad Organizacional
+$(document).on('click', '[data-target="#modal_techos_resumen_global"]', function(e) {
     e.preventDefault();
 
     var $btn = $(this);
-    var com_id = $btn.data('id');
-    var serv_cod = $btn.data('codigo');
-    var serv_desc = $btn.data('nombre');
-    
     var $target_body = $('#contenedor_techo_dinamico_cns');
 
-    // 🌟 INYECCIÓN DE PRELOADER LOCAL MIENTRAS RESPONDE EL HARDWARE DE BASE DE DATOS
+    // 🌟 1. Evitamos que se ejecute la carga relacional si el clic provino de un botón de fila individual
+    // Ya que este listener solo debe reaccionar cuando pulsan el botón Máster Superior
+    if ($btn.hasClass('btn-ver-presupuesto')) {
+        return; // Cede el control a la función 15 de hileras individuales
+    }
+
+    // 🌟 2. INYECCIÓN DE PRELOADER VECTORIAL COPORATIVO MIENTRAS RESPONDE POSTGRESQL
     $target_body.html(
-        '<div style="text-align:center; padding: 30px; color: #475569; font-weight: bold;">' +
-            '<i class="fa fa-refresh fa-spin fa-2x text-primary" style="margin-bottom:10px; display:block;"></i>' +
-            'Compilando techos de gasto y compromisos del SIGEP...' +
-        '</div>'
+        '<div style="text-align:center; padding: 40px 20px; color: #475569; font-weight: bold;">' +
+            '<i class="fa fa-refresh fa-spin fa-2x text-primary" style="margin-bottom:12px; display:block;"></i>' +
+            'Compilando Techos de Gasto de la Unidad Organizacional...' +
+        '</div>' +
+        '<style>' +
+            '@keyframes spin_f5_mod { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }' +
+        '</style>'
     );
 
-    var url = base + "index.php/programacion/crequerimiento/get_resumen_techo_unidad_ajax";
+    // 🌟 3. LEER VARIABLES GLOBALES DEL DOM (Asegúrate de que en tu vista exista un input hidden con name="proy_id" o id="proy_id")
+    var proy_id_global = $('#proy_id').val() || $('[name="proy_id"]').val() || '';
+
+    if (proy_id_global === "") {
+        $target_body.html('<div class="alert alert-danger text-center" style="font-weight:bold;"><i class="fa fa-times-circle"></i> Error SIIPLAS: Identificador del Proyecto no detectado en el DOM.</div>');
+        return false;
+    }
+
+    var url = base + "index.php/programacion/crequerimiento/get_resumen_techo_proyecto_global_ajax";
     
-    // Captura automática de Token CSRF perimetral de la CNS
+    // Captura automática de Token CSRF perimetral de la CNS para evitar bloqueos perimetrales
     var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
     var csrf_hash = $('[name="csrf_test_name"]').val() || '';
     var token_seguridad = (csrf_name !== '') ? "&" + csrf_name + "=" + csrf_hash : "";
 
+    // 🌟 4. EJECUCIÓN DE LA RÁFAGA AJAX HACIA EL COMPILADOR MÁSTER
     $.ajax({
         type: "POST",
         url: url,
         dataType: "json",
-        data: "com_id=" + com_id + token_seguridad,
+        data: "proy_id=" + proy_id_global + token_seguridad,
         success: function(res) {
             if (res.status === 'success' || res.respuesta === 'correcto') {
                 
-                // Formamos el encabezado descriptivo de la Unidad Responsable consultada
+                // Formamos el encabezado descriptivo del Proyecto POA consolidado
                 var html_header = `
-                    <div style="background: #f0fdf4; border-left: 4px solid #0aa699; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
-                        <span style="display:block; font-size:11px; font-weight:bold; color:#16a34a; text-transform:uppercase;">Unidad Responsable Seleccionada:</span>
-                        <strong style="color:#1e293b; font-size:13px;">${serv_cod} .- ${serv_desc}</strong>
+                    <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+                        <span style="display:block; font-size:10.5px; font-weight:bold; color:#1e40af; text-transform:uppercase; letter-spacing:0.3px;"><i class="fa fa-folder-open"></i> Resumen Consolidado por Partidas:</span>
+                        <strong style="color:#0f172a; font-size:13px; display:block; margin-top:2px;">${res.proy_nombre}</strong>
                     </div>
                 `;
                 
-                // Estampamos el bloque completo desvaneciendo suavemente el loading
-                $target_body.hide().html(html_header + res.html_reporte).fadeIn(200);
+                // Estampamos el bloque completo de la tabla financiera desvaneciendo suavemente el loading
+                $target_body.hide().html(html_header + res.html_reporte).fadeIn(250);
 
             } else {
-                $target_body.html('<div class="alert alert-danger">❌ Error: ' + res.message + '</div>');
+                $target_body.html('<div class="alert alert-danger" style="font-weight:bold;"><i class="fa fa-times-circle"></i> ' + res.message + '</div>');
             }
         },
-        error: function() {
-            $target_body.html('<div class="alert alert-danger">❌ Falla crítica de red al conectar con el servidor de presupuestos.</div>');
+        error: function(xhr, textStatus, errorThrown) {
+            console.error("CNS ERROR GET GLOBAL CEIL -> " + textStatus + " | " + errorThrown);
+            $target_body.html('<div class="alert alert-danger" style="font-weight:bold;"><i class="fa fa-exclamation-triangle"></i> Falla crítica de red al conectar con el servidor de presupuestos centralizados.</div>');
         }
     });
 });
+
+function imprimirTechosModal() {
+    // Capturamos el HTML del cuadro y los títulos institucionales cargados en el modal
+    var contenido_tabla = document.getElementById("area_impresion_techos_f5").innerHTML;
+    var info_proyecto = $(".modal-body div[style*='border-left']").html() || "RESUMEN DE TECHOS PRESUPUESTARIOS POA";
+
+    // Creamos una ventana en memoria flotante temporal
+    var ventana_impresion = window.open('', '_blank', 'height=700,width=1100');
+
+    ventana_impresion.document.write('<html><head><title>Sistema de Planificación de Salud - SIIPLAS V2.0</title>');
+    
+    // Inyectamos estilos de impresión limpios estilo reporte oficial de la CNS
+    ventana_impresion.document.write('<style>');
+    
+    // 🌟 REPARADO: Fuerza al cuadro de diálogo a pre-configurarse en Carta Horizontal con márgenes optimizados
+    ventana_impresion.document.write('@page { size: letter landscape; margin: 8mm 6mm 8mm 6mm; }');
+    
+    // Mantenemos tu tipografía y colores base intactos en la pantalla intermedia
+    ventana_impresion.document.write('body { font-family: Arial, sans-serif; padding: 20px; color: #000; background:#fff; }');
+    ventana_impresion.document.write('.header-print { border-bottom: 3px double #000; padding-bottom: 8px; margin-bottom: 15px; }');
+    
+    // 🌟 MANTENIDO: El tamaño original de fuente (10px) solicitado para no alterar la visualización
+    ventana_impresion.document.write('table { width: 100% !important; border-collapse: collapse; font-size: 10px; margin-top: 10px; table-layout: auto; page-break-inside: auto; }');
+    ventana_impresion.document.write('tr { page-break-inside: avoid; page-break-after: auto; }');
+    ventana_impresion.document.write('th, td { border: 1px solid #000; padding: 5px; text-align: right; word-wrap: break-word; }');
+    ventana_impresion.document.write('th { background: #e2e8f0 !important; color: #000 !important; text-align: center; font-weight: bold; }');
+    ventana_impresion.document.write('td:first-child, th:first-child { text-align: left; }');
+    
+    // 🌟 REPARADO CORE: El secreto de ingeniería para ajustar N columnas a la hoja respetando el font-size de 10px
+    // Al imprimir, encogemos proporcionalmente un 15% el renderizado para que calce exacto en el ancho Letter Horizontal
+    ventana_impresion.document.write('@media print { body { zoom: 85%; -webkit-print-color-adjust: exact; print-color-adjust: exact; } table { width: 100% !important; } }');
+    
+    ventana_impresion.document.write('<' + '/style></head><body>'); // Separación preventiva de etiqueta de cierre script
+    
+    // Estampamos el membrete corporativo institucional de la Caja Nacional de Salud
+    ventana_impresion.document.write('<div class="header-print">');
+    ventana_impresion.document.write('<h3 style="margin:0; text-transform:uppercase;">Caja Nacional de Salud</h3>');
+    ventana_impresion.document.write('<small style="color:#475569;">SIIPLAS v2.0 - Departamento Nacional de Planificación</small>');
+    ventana_impresion.document.write('<div style="margin-top:10px; font-size:10px;">' + info_proyecto + '</div>');
+    ventana_impresion.document.write('</div>');
+    
+    // Inyectamos la estructura del listado de techos extraído en caliente desde el DOM
+    ventana_impresion.document.write(contenido_tabla);
+    ventana_impresion.document.write('</body></html>');
+
+    ventana_impresion.document.close();
+    ventana_impresion.focus();
+    
+    // Pausa técnica de 400ms para asegurar que el navegador asimile la escala y el tamaño carta horizontal
+    setTimeout(function() {
+        ventana_impresion.print();
+        ventana_impresion.close();
+    }, 400);
+}
+
+/**
+ * 📊 MÓDULO B: EXPORTACIÓN FLASH A EXCEL DESDE EL DOM
+ * Transforma el árbol HTML renderizado en un archivo descargable .xls en microsegundos sin tocar la BD.
+ */
+function exportarExcelModalDirecto() {
+    var tabla_html = document.getElementById("tabla_techos_reporte_cns");
+    
+    if (!tabla_html) {
+        if (typeof alertify !== "undefined") alertify.error("No se encontró la tabla de datos para exportar.");
+        return;
+    }
+
+    var html_crudo = tabla_html.outerHTML;
+    
+    // Aplicamos un formateo básico de soporte de tildes y caracteres en español para Excel de escritorio
+    var plantilla_excel = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://w3.org">';
+    plantilla_excel += '<head><meta charset="utf-8"/><style>table, th, td { border: 0.5pt solid #cbd5e1; font-family: Arial; font-size: 10pt; }</style></head><body>';
+    plantilla_excel += html_crudo;
+    plantilla_excel += '</body></html>';
+
+    // Generamos el Blob binario de descarga directa
+    var blob = new Blob([plantilla_excel], { type: "application/vnd.ms-excel;charset=utf-8" });
+    var url_descarga = URL.createObjectURL(blob);
+    
+    var disparador_link = document.createElement("a");
+    disparador_link.href = url_descarga;
+    
+    // Seteamos el nombre del reporte adjuntando la marca de tiempo para evitar solapamientos
+    disparador_link.download = "SIIPLAS_Reporte_Techos_Consolidado_" + new Date().getTime() + ".xls";
+    
+    document.body.appendChild(disparador_link);
+    disparador_link.click();
+    document.body.removeChild(disparador_link);
+}

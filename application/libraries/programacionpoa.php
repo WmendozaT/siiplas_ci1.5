@@ -242,6 +242,84 @@ class Programacionpoa extends CI_Controller{
     }
 
 
+    //// Modal lista de partidas asignados y programados por Unidad Organizacional
+    public function modal_partidas_unidad_organizacional($proyecto){
+        $tabla='';
+        $partidas   = $this->model_insumo->lista_partidas_ppto_poa_asignado(intval($proyecto[0]['aper_id']), $g_id);
+        $componente = $this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
+        
+        $tabla .= '
+        <div style="margin-bottom: 12px; display: flex; gap: 6px; justify-content: flex-end; background: #f8fafc; padding: 8px; border: 1px dashed #cbd5e1; border-radius: 4px;">
+            <!-- Botón Imprimir -->
+            <button type="button" class="btn btn-sm btn-default" onclick="imprimirTechosModal();" style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; padding: 5px 12px; font-size:11.5px; color:#334155; border-radius:3px;">
+                <i class="fa fa-print text-primary" style="font-size:13px;"></i> Imprimir Cuadro
+            </button>
+            <!-- Botón Excel Masivo Directo -->
+            <button type="button" class="btn btn-sm btn-default" onclick="exportarExcelModalDirecto();" style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; padding: 5px 12px; font-size:11.5px; color:#334155; border-radius:3px;">
+                <i class="fa fa-file-excel-o text-success" style="font-size:13px;"></i> Descargar Excel
+            </button>
+        </div>';
+
+        // ==========================================================================
+        // 🚨 TU LÓGICA DE LISTADO ORIGINAL (MANTENIDA INTACTA AL 100%)
+        // ==========================================================================
+        $tabla.='
+        <div id="area_impresion_techos_f5" class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px;">
+            <table id="tabla_techos_reporte_cns" class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11px; border-collapse: collapse;">
+              <thead>
+                <tr style="background: #334155; color: #ffffff; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; height: 38px; vertical-align: middle;">
+                  <th style="text-align: left; padding-left: 10px; min-width: 240px; background: #1e293b;">PARTIDA CONTABLE</th>
+                  <th style="text-align: right; padding-right: 10px; width: 12%; background: #1e3a8a;">PPTO. ASIGNADO</th>';
+                  
+                  // CABECERA: Bucle elástico de unidades responsables
+                  foreach($componente as $rowc){
+                    $tabla .= '<th style="text-align: right; padding-right: 8px; min-width: 95px;">' . $rowc['tipo_subactividad'] . '<br><small style="color:#94a3b8; font-size:8.5px; font-weight:normal;">' . substr(strtoupper($rowc['com_componente']), 0, 12) . '.</small></th>';
+                  }
+                  
+              $tabla .= '
+                  <th style="text-align: right; padding-right: 10px; width: 11%; background: #d97706;">TOTAL POA</th>
+                  <th style="text-align: right; padding-right: 10px; width: 11%; background: #475569;">SALDO DISP.</th>
+                </tr>
+              </thead>
+              <tbody>';
+          foreach($partidas as $row){
+            $saldo_item    = floatval($row['saldo_disponible']);
+            $style_saldo = ($saldo_item < 0) ? 'background: #fef2f2; color: #dc2626; font-weight: bold;' : 'background: #f0f9ff; color: #2563eb; font-weight: bold;';
+
+            $tabla.='
+            <tr style="height: 30px; vertical-align: middle;">
+              <td style="font-weight: bold; color: #1e293b; padding-left: 10px; background: #f8fafc; border-right: 2px solid #e2e8f0;" >'.$row['par_codigo'].' - '.$row['par_nombre'].'</td>
+              <td style="text-align: right; padding-right: 10px; font-weight: 600; background: #f8fafc;">' . number_format($row['presupuesto_asignado_sigep'], 2, '.', ',') . '</td>';
+              foreach($componente as $rowc){
+                $get_partida=$this->model_insumo->get_partida_programado_x_uresponsable($rowc['com_id'],$row['par_id']);
+                $tabla.='
+                <td style="text-align: right; padding-right: 8px; font-weight: 500;">';
+                if(count($get_partida)!=0){
+                  $tabla.=number_format($get_partida[0]['ppto_poa'], 2, '.', ',');
+                }
+                else{
+                  $tabla.='0.00';
+                }
+                $tabla.='
+                </td>';
+              }
+            $tabla.='
+            <td style="text-align: right; font-weight: bold; background: #fef3c7; color: #b45309; padding-right: 10px;">' . number_format($row['presupuesto_programado_poa'], 2, '.', ',') . '</td>
+            <td style="text-align: right; padding-right: 10px; ' . $style_saldo . '">' . number_format($row['saldo_disponible'], 2, '.', ',') . '</td>
+            </tr>';
+          }
+        $tabla.='
+        </tbody>
+        </table>
+        </div>';
+
+        return $tabla;
+    }
+
+
+
+
+
 
 
 

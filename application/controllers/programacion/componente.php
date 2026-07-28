@@ -9,7 +9,8 @@ class Componente extends CI_Controller {
             $this->load->model('programacion/model_componente');
             $this->load->model('programacion/model_producto');
            // $this->load->model('programacion/model_actividad');
-            $this->load->model('programacion/insumos/minsumos');
+           // $this->load->model('programacion/insumos/minsumos');
+            $this->load->model('programacion/insumos/model_insumo');
             $this->load->model('mantenimiento/model_estructura_org');
             $this->load->model('mestrategico/model_objetivoregion');
             $this->load->model('menu_modelo');
@@ -34,7 +35,7 @@ class Componente extends CI_Controller {
 
     /*----- VERIFICA EL TIPO DE GASTO ------*/
     public function verif_tipo_gasto($proy_id){
-        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id); // Proy
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id); // Datos de la Unidad Organizacional
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
             if($data['proyecto'][0]['tp_id']==1){ //// Proyecto de Inversion
@@ -42,8 +43,8 @@ class Componente extends CI_Controller {
             }
             else{ /// Gasto Corriente
 
-                if($data['proyecto'][0]['por_id']==0){
-                    $this->lista_uresponsables($proy_id); /// lista de unidades responsables
+                if($data['proyecto'][0]['aper_programa']=='00'){
+                  $this->lista_uresponsables($proy_id); /// lista de unidades responsables parte Administrativa
                 }
                 else{
                     $componente=$this->model_componente->proyecto_componente($proy_id); /// Programas Bolsa
@@ -61,7 +62,7 @@ class Componente extends CI_Controller {
     /*------- GASTO CORRIENTE-----------*/
     /*--------- LISTA DE UNIDADES RESPONSABLES ------*/
     public function lista_uresponsables($proy_id){
-        $unidad_responsable = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $unidad_responsable = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         if(count($unidad_responsable)!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $listado='';
@@ -146,7 +147,7 @@ class Componente extends CI_Controller {
 
     //// Lista de Componentes - Proyectos de Inversion
     public function lista_componentes($proy_id){
-        $unidad_responsable = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $unidad_responsable = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         
         if(count($unidad_responsable)!=0){
             $data['menu']=$this->genera_menu($proy_id);
@@ -356,7 +357,7 @@ class Componente extends CI_Controller {
             <table id="dt_basic4" class="table table-striped table-bordered table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11.5px; border-collapse: collapse;">
                 <thead>
                     <tr style="background: #334155; color: #ffffff; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.3px; height:45px;">
-                        <th style="width: 2%; text-align:center; vertical-align: middle;">#</th>
+                        <th style="width: 2%; text-align:center; vertical-align: middle;">'.$proyecto[0]['aper_id'].'</th>
                         <th style="width: 4%; text-align:center; vertical-align: middle;">ACCIONES</th>
                         <th style="width: 8%; text-align:center; vertical-align: middle;">CÓDIGO UNIDAD</th>
                         <th style="width: 30%; text-align:left; vertical-align: middle; padding-left:10px;">UNIDAD RESPONSABLE</th>
@@ -458,16 +459,16 @@ class Componente extends CI_Controller {
         </div>';
     }
    
-      //// modal para mostrar la programacion de requerimientos por partidas por cada componente
+      //// modal para mostrar la programacion de partidas por cada componente
       $tabla.='
       <div class="modal fade" id="modal_techos_resumen_global" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
-          <div class="modal-dialog" style="width: 50% !important; margin: 30px auto;">
+          <div class="modal-dialog" style="width: 70% !important; margin: 30px auto;">
               <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
                   
                   <!-- CABECERA DEL MODAL -->
                   <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
                       <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
-                          <i class="fa fa-calculator text-primary"></i> RESUMEN PRESUPUESTARIO INSTITUCIONAL
+                          <i class="fa fa-calculator text-primary"></i> RESUMEN PRESUPUESTARIO
                       </h4>
                       <button type="button" class="close" data-dismiss="modal" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer;">&times;</button>
                   </div>

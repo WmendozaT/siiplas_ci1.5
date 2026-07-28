@@ -379,7 +379,7 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    // ------ Lista insumos por Unidad, Establecimiento, Proyecto de Inversion
+    // ------ Lista insumos por Unidad, Establecimiento, Proyecto de Inversion (Vigente)
     public function insumos_por_unidad($aper_id){
         $sql = 'select *
                 from insumos
@@ -389,7 +389,42 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    // lista de requerimientos alineados a la Unidad Responsable
+
+    // ------ Lista de partidas por Unidad Organizacional del ppto poa y asignado 2027
+    public function lista_partidas_ppto_poa_asignado($aper_id){
+        $sql = ' SELECT * 
+            FROM public.vista_balance_partidas_sigep_vs_poa_form5
+            WHERE aper_id = '.$aper_id.'
+              AND gestion_fiscal = '.$this->gestion.'
+            ORDER BY par_codigo ASC';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    // ------ Get sumatoria por partida de la unidad responsable
+    public function get_partida_programado_x_uresponsable($com_id,$par_id){
+        $sql = 'SELECT i.par_id,i.com_id,COALESCE(SUM(i.ins_costo_total), 0.00)::numeric(18,2) AS ppto_poa
+                   from insumos i
+                   where i.com_id='.$com_id.' 
+                    and i.par_id='.$par_id.'
+                    AND i.ins_estado != 3 
+                    AND i.aper_id != 0 
+                    AND i.ins_tp_reg = 0
+                   group by i.com_id,i.par_id';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
+
+
+
+
+
+    // lista de requerimientos alineados a la Unidad Responsable (Componente) 2027
     function list_requerimientos_uresponsable($com_id){
         $sql = '
             SELECT 
