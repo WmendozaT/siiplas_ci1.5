@@ -606,7 +606,7 @@ class Proyecto extends CI_Controller {
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
 
         $caratula_poa='';
         $titulo_poa=$proyecto[0]['aper_programa'].' '.$proyecto[0]['proy_sisin'].' '.$proyecto[0]['proy_nombre'];
@@ -660,7 +660,7 @@ class Proyecto extends CI_Controller {
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
         $tabla='';
         
         if(count($this->model_ptto_sigep->partidas_accion_region($proyecto[0]['dep_id'],$proyecto[0]['aper_id'],1))==0 || count($this->model_insumo->insumos_por_unidad($proyecto[0]['aper_id']))!=0){
@@ -772,7 +772,7 @@ class Proyecto extends CI_Controller {
   function form_update_poa_unidades($proy_id){
     $data['menu']=$this->programacionpoa->menu(2);
     $data['res_dep']=$this->programacionpoa->tp_resp();
-    $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+    $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
     if(count($data['proyecto'])!=0){
       $data['form']=$this->programacionpoa->formulacion_update_poa($data['proyecto']);
 
@@ -857,7 +857,7 @@ class Proyecto extends CI_Controller {
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
         $tp = $this->security->xss_clean($post['tp']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
         $oregionales=$this->model_objetivoregion->get_unidad_pregional_programado($proyecto[0]['act_id']); /// Objetivos Regionales
 
           if($tp==0){ /// Deselecciona
@@ -1226,7 +1226,7 @@ class Proyecto extends CI_Controller {
   /*----- CARATULA UNIDAD ORGANIZACIONAL POA (2023) -----*/
   public  function presentacion_poa($proy_id){
     $data['menu']=$this->programacionpoa->menu(2);
-    $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+    $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
     if(count($data['proyecto'])!=0){
       $data['mes'] = $this->mes_nombre();
       $data['cuerpo']=$this->programacionpoa->caratula_poa_gacorriente($data['proyecto']);

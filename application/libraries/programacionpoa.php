@@ -1213,7 +1213,7 @@ class Programacionpoa extends CI_Controller{
         /* Línea Verde Institucional Sincronizada */
         .cns-linea-verde { 
             height: 2px; 
-            background: #475569; 
+            background: #000000; 
             width: 100%; 
             margin-top: 3px;
             margin-bottom: 5px; 
@@ -1226,9 +1226,9 @@ class Programacionpoa extends CI_Controller{
             margin: 10px 0 5px 0; 
             table-layout: fixed; 
         }
-        .cns-tbl-ident td { padding: 4px 6px; font-size: 7.5px; border: 0.7px solid #cbd5e1; vertical-align: middle; color: #334155; }
-        .cns-tbl-ident td.cns-lbl { background: #E3F0FA; font-weight: bold; color: #475569; width: 22%; text-transform: uppercase; }
-        .cns-tbl-ident td.cns-val { background: #ffffff; font-weight: 600; width: 78%; }
+        .cns-tbl-ident td { padding: 4px 6px; font-size: 7.5px; border: 0.9px solid #cbd5e1; vertical-align: middle; color: #000000; }
+        .cns-tbl-ident td.cns-lbl { background: #EBEBEB; font-weight: bold; color: #000000; width: 22%; height:1.3%; text-transform: uppercase; }
+        .cns-tbl-ident td.cns-val { background: #ffffff; font-weight: 600; color: #000000; width: 78%; }
     </style>
 
     <!-- 🌟 ENCAPSULAMIENTO PERIMETRAL HORIZONTAL -->
@@ -1267,7 +1267,7 @@ class Programacionpoa extends CI_Controller{
                 <td style="width: 15%; text-align: right; vertical-align: middle;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
-                            <td style="padding: 4px 5px; background: #475569; color: #ffffff; font-weight: bold; font-size: 8px; text-align: center; border: 0.5px solid #475569; text-transform: uppercase;">
+                            <td style="padding: 4px 5px; background: #000000; color: #ffffff; font-weight: bold; font-size: 8px; text-align: center; border: 0.5px solid #475569; text-transform: uppercase;">
                                 ' . strtoupper($titulo_form) . '
                             </td>
                         </tr>
@@ -1299,7 +1299,7 @@ class Programacionpoa extends CI_Controller{
             $tabla .= '
             </tr>
             ' . $comp . '
-        </table>
+        </table><br>
 
         <!-- 4. APERTURA COMPACTA DEL ÁREA DE REGISTROS -->
         <div class="cns-linea-verde"></div>
@@ -1549,12 +1549,12 @@ public function pie_foda(){
             <td style="width: 33%; padding-right: 5px; vertical-align: top;">
                 <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
-                        <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
+                        <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                             <b>'.$firma1.'</b>
                         </td>
                     </tr>
                     <tr>
-                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #64748b;">
+                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #000000;">
                           <b>FIRMA y SELLO</b>
                       </td>
                     </tr>
@@ -1565,12 +1565,12 @@ public function pie_foda(){
             <td style="width: 34%; padding-right: 5px; vertical-align: top;">
                 <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
-                      <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
+                      <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                           <b>'.$firma2.'</b>
                       </td>
                     </tr>
                     <tr>
-                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #64748b;">
+                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #000000;">
                           <b>FIRMA y SELLO</b>
                       </td>
                     </tr>
@@ -1581,12 +1581,12 @@ public function pie_foda(){
             <td style="width: 33%; vertical-align: top;">
                 <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
-                      <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
+                      <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                           <b>'.$firma3.'</b>
                       </td>
                     </tr>
                     <tr>
-                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #64748b;">
+                      <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #000000;">
                           <b>FIRMA y SELLO</b>
                       </td>
                     </tr>
@@ -1823,13 +1823,13 @@ public function pie_foda(){
           
           /* Encabezados compactos de alta densidad alineados al ras de la cabecera */
           .cns-tbl-form4-report th { 
-              background: #475569; 
+              background: #6E6E6E; 
               color: #ffffff; 
               font-weight: bold; 
               font-size: 6.5px; /* Tamaño micro-contable comprimido para 22 columnas */
               text-align: center; 
               vertical-align: middle; 
-              border: 0.7px solid #ffffff; 
+              border: 0.7px solid #000000; 
               padding: 4px 1px;
               text-transform: uppercase;
           }
@@ -1838,14 +1838,14 @@ public function pie_foda(){
           .cns-tbl-form4-report td { 
               font-size: 6px; 
               vertical-align: middle; 
-              border: 0.5px solid #cbd5e1; 
+              border: 0.5px solid #000000; 
               padding: 3px 2px; 
-              color: #334155;
+              color: #000000;
               line-height: 1.2;
           }
           
           /* Estilos semánticos para columnas de códigos (Estilo .cns-lbl) */
-          .cns-td-bold-code { font-weight: bold; font-size: 7px !important; text-align: center; color: #475569; }
+          .cns-td-bold-code { font-weight: bold; font-size: 7px !important; text-align: center; color: #000000; }
           .cns-td-bold-meta { font-weight: bold; font-size: 7.5px !important; text-align: center; color: #1e3a8a; }
       </style>
 

@@ -274,7 +274,7 @@ class Creporte extends CI_Controller {
             $pie=$this->programacionpoa->pie_form($componente);
             
             $data['informacion'] = '
-              <page orientation="landscape" backtop="62.5mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
+              <page orientation="landscape" backtop="67mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
                 <!-- Cabecera Institucional Inalterada -->
                 <page_header>
                     <br><div class="verde"></div>

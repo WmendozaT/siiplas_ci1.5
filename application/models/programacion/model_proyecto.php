@@ -88,7 +88,7 @@ class Model_proyecto extends CI_Model{
     public function lista_programas_bolsas_distrital($dist_id){ /// 
         $sql = '
             SELECT poa.*
-            from fnlista_poa_nacional('.$this->gestion.') poa
+            from fn_lista_poa_nacional('.$this->gestion.') poa
             where poa.dist_id='.$dist_id.' and poa.por_id=\'1\'
             order by poa.aper_programa asc';
         $query = $this->db->query($sql);
