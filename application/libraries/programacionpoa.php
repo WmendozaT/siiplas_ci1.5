@@ -323,7 +323,7 @@ class Programacionpoa extends CI_Controller{
         $tabla='';
         $tabla.='
         <div class="modal fade" id="modal_desglose_partidas_unidad" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
-            <div class="modal-dialog modal-lg" style="width: 80% !important; max-width: 95%; margin: 25px auto;">
+            <div class="modal-dialog modal-lg" style="width: 40% !important; max-width: 95%; margin: 25px auto;">
                 <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
                     
                     <!-- CABECERA DEL MODAL CORPORATIVA -->
