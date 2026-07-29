@@ -416,8 +416,8 @@ class Componente extends CI_Controller {
                     $tabla .= '
                     <td style="text-align: center; vertical-align: middle;">
                       <div style="display: inline-flex; gap: 4px;">
-                        <a href="' . site_url("admin/prog/list_prod/" . $com_id_actual) . '" title="VER MIS ACTIVIDADES (FORM 4)" class="btn btn-xs btn-default" target=_black style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-list text-primary" style="font-size:15px;"></i></a>
-                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 4 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger" style="font-size:15px;"></i></a>
+                        <a href="' . site_url("admin/prog/list_prod/" . $com_id_actual) . '" title="VER MIS ACTIVIDADES (FORM 4)" class="btn btn-xs btn-default" target=_black style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-list text-primary" style="font-size:15px;"><br>Act.</i></a>
+                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 4 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger"><br>Form N° 4</i></a>
                       </div>
                     </td>';
                     
@@ -425,8 +425,9 @@ class Componente extends CI_Controller {
                     $tabla .= '
                     <td style="text-align: center; vertical-align: middle;">
                       <div style="display: inline-flex; gap: 4px;">
-                        <a href="' . site_url("prog/requerimiento_x_uresponsable/" . $com_id_actual) . '" title="REQUERIMIENTOS DE LA UNIDAD (FORM 5)" class="btn btn-xs btn-default" target=_black  style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-usd text-primary" style="font-size:15px; font-weight: bold;"></i></a>
-                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 5 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger" style="font-size:15px;"></i></a>
+                        <a href="' . site_url("prog/requerimiento_x_uresponsable/" . $com_id_actual) . '" title="REQUERIMIENTOS DE LA UNIDAD (FORM 5)" class="btn btn-xs btn-default" target=_black  style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-usd text-primary" style=" font-weight: bold;"><br>Req.</i></a>
+                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 5 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger"><br>Form N° 5</i></a>
+                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable_programa_bolsa_consoldado/" . $com_id_actual) . '\');" title="REPORTE POA FORM 5 - PROGRAMA BOLSA(PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger"><br>Form N° 5</i></a>
                       </div>
                     </td>';
                     

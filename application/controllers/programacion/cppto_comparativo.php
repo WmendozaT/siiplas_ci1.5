@@ -34,235 +34,16 @@ class Cppto_comparativo extends CI_Controller {
       }
     }
 
-    //// ====== COMPARATIVO POR REGIONAL
-    /*----- REPORTE COMPARATIVO DE PARTIDAS (ASIG - PROG) ----*/
-/*    public function reporte_presupuesto_consolidado_comparativo_regional($dep_id,$tp_id){
-      $data['mes'] = $this->mes_nombre();
-      $data['regional']=$this->model_proyecto->get_departamento($dep_id);
-      $data['titulo_reporte']='CONSOLIDADO_PARTIDAS_NACIONAL';
-      if($dep_id!=0){
-        $data['titulo_reporte']=strtoupper($data['regional'][0]['dep_departamento']);
-      }
-
-      $titulo='CONSOLIDADO INSTITUCIONAL';
-      if($dep_id!=0){
-        $titulo=strtoupper($data['regional'][0]['dep_departamento']);
-      }
-
-      $data['cabecera']='
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px;">              
-            <td style="width:70%;height: 2%">
-                <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 13px;font-family: Arial;">
-                        <td style="width:40%;height: 20%;">&nbsp;&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
-                    </tr>
-                    <tr>
-                        <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-              '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </td>
-        </tr>
-      </table>
-      <hr>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-          <tr style="border: solid 0px black; text-align: center;">
-            <td style="width:100%; height: 5%">
-              <table align="center" border="0" style="width:100%;">
-                  <tr style="font-size: 27px;font-family: Arial;">
-                      <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
-                  </tr>
-                  <tr style="font-size: 17px;font-family: Arial;">
-                    <td style="height: 5%;">CUADRO CONSOLIDADO POA - PRESUPUESTO</td>
-                  </tr>
-                  <tr style="font-size: 25px;font-family: Arial;">
-                    <td style="height: 5%;"><b>'.$titulo.'</b></td>
-                  </tr>
-              </table>
-            </td>
-          </tr>
-      </table>
-      <hr>';
-
-      $tabla='';
-      if(count($data['regional'])!=0){
-        $suma_ppto_asig=0;$suma_ppto_prog=0;
-
-        /// ppto asignado
-        $suma_ppto_asignado=$this->model_ptto_sigep->sum_ppto_asignado_regional($dep_id); //// Suma Ptto Asignado por Regional
-        if(count($suma_ppto_asignado)!=0){
-          $suma_ppto_asig=$suma_ppto_asignado[0]['asignado'];
-        }
-
-        /// ppto programado
-        $suma_ppto_programado=$this->model_ptto_sigep->sum_ppto_programado_regional($dep_id,$tp_id); //// Suma Ptto Programado por Regional
-        if(count($suma_ppto_programado)!=0){
-          $suma_ppto_prog=$suma_ppto_programado[0]['programado'];
-        }
-
-        /// Lista de partidas Asig, prog
-        $partidas_asig=$this->model_ptto_sigep->lista_partidas_asignado_regional($dep_id,$tp_id); /// Lista de Partidas Asignadas
-        $partidas_prog=$this->model_ptto_sigep->lista_partidas_programado_regional($dep_id,$tp_id); /// Lista de Partidas Programado
-
-
-        /// comparando suma de presupuesto
-        if($suma_ppto_asig==$suma_ppto_prog){ /// igualdad en los techos
-          $data['tabla'] = $this->comparativo_partidas_normal_regional($partidas_prog,$dep_id);
-        }
-        else{
-          //$data['tabla'] = 'REGIONAL NO AJUSTADO';
-          $data['tabla'] =$this->comparativo_update_partidas_normal_regional($partidas_asig,$partidas_prog,$dep_id);
-        }
-        echo $data['tabla'];
-        //$data['tabla']=$tabla;
-
-       // $this->load->view('admin/programacion/reportes/reporte_consolidado_presupuesto_comparativo_regional', $data);
-      }
-      else{
-          echo "<b>ERROR !!!!!</b>";
-      }
-    }*/
-
-
-
-    //// ====== DISTRIBUCION PRESUPUESTO NACIONAL
-    /*----- REPORTE COMPARATIVO distribucion nacional Presupuesto ----*/
-    /*public function reporte_presupuesto_consolidado_distribucion_nacional(){
-      $data['mes'] = $this->mes_nombre();
-
-      $data['cabecera']='
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px;">              
-            <td style="width:70%;height: 2%">
-              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                <tr style="font-size: 13px;font-family: Arial;">
-                    <td style="width:40%;height: 20%;">&nbsp;&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
-                </tr>
-                <tr>
-                    <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-                </tr>
-              </table>
-            </td>
-            <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-              '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </td>
-        </tr>
-      </table>
-      <hr>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-          <tr style="border: solid 0px black; text-align: center;">
-            <td style="width:100%; height: 5%">
-              <table align="center" border="0" style="width:100%;">
-                <tr style="font-size: 27px;font-family: Arial;">
-                    <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
-                </tr>
-                <tr style="font-size: 17px;font-family: Arial;">
-                  <td style="height: 5%;">CUADRO CONSOLIDADO POA - PRESUPUESTO</td>
-                </tr>
-                <tr style="font-size: 25px;font-family: Arial;">
-                  <td style="height: 5%;"><b>PPTO. CONSOLIDADO INSTITUCIONAL</b></td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-      </table>
-      <hr>';
-
-      $tabla='';
-      $ppto_asignado_regional=$this->model_ptto_sigep->lista_ppto_total_asignado_nacional();
-
-      $tabla .='
-      <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;" align=center>
-        <thead>
-          <tr style="height:15px;" bgcolor="#eceaea" align=center>
-            <th style="width:3%;height:13px;" align=center>#</th>
-            <th style="width:10%;">REGIONAL</th>
-            <th style="width:15%;">PPTO. ASIGNADO '.$this->gestion.'</th>
-            <th style="width:15%;">PRESUPUESTO POA (SIIPLAS)</th>
-            <th style="width:15%;">SALDO POA</th></tr>
-        </thead>
-        <tbody>';
-
-        $nro=0;$ppto_asig=0;$ppto_prog=0;
-        foreach($ppto_asignado_regional as $row){
-          $get_ppto_prog=$this->model_ptto_sigep->get_ppto_total_programado_regional($row['dep_id']); /// ppto programado
-          $monto_programado=0;
-
-          if(count($get_ppto_prog)!=0){
-            $monto_programado=$get_ppto_prog[0]['programado'];
-          }
-
-          $nro++;
-          $tabla.='
-          <tr>
-            <td style="width:3%;height:15px;" align=center>'.$nro.'</td>
-            <td style="width: 20%;">'.strtoupper($row['dep_departamento']).'</td>
-            <td style="width: 12%; text-align: right;">'.number_format($row['asignado'], 2, ',', '.').'</td>
-            <td style="width: 12%; text-align: right;">'.number_format($monto_programado, 2, ',', '.').'</td>
-            <td style="width: 12%; text-align: right;">'.number_format(($row['asignado']-$monto_programado), 2, ',', '.').'</td>
-          </tr>';
-          $ppto_asig=$ppto_asig+$row['asignado'];
-          $ppto_prog=$ppto_prog+$monto_programado;
-        }
-        $tabla.='
-          <tr>
-            <td></td>
-            <td style="height:13px;" align=right><b>TOTAL</b></td>
-            <td style="width: 12%; text-align: right;"><b>'.number_format($ppto_asig, 2, ',', '.').'</b></td>
-            <td style="width: 12%; text-align: right;"><b>'.number_format($ppto_prog, 2, ',', '.').'</b></td>
-            <td style="width: 12%; text-align: right;"><b>'.number_format(($ppto_asig-$ppto_prog), 2, ',', '.').'</b></td>
-          </tr>
-        </tbody>
-      </table>';
-
-      $data['titulo_reporte']='CONSOLIDADO_PPTO_ASIGNADO_PROGRAMADO_INSTITUCIONAL';
-      $data['tabla']=$tabla;
-
-        $this->load->view('admin/programacion/reportes/reporte_consolidado_presupuesto_comparativo_regional', $data);
-
-    }*/
-
-
-
-
-
-
-
-
-
-    // //// ====== COMPARATIVO POR UNIDAD ORGANIZACIONAL
-    // /*-------- GET CUADRO COMPARATIVO ASIGNADO-POA --------*/
-    // public function get_cuadro_comparativo_ptto(){
-    //   if($this->input->is_ajax_request() && $this->input->post()){
-    //     $post = $this->input->post();
-    //     $proy_id = $this->security->xss_clean($post['proy_id']);
-    //     $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
-
-    //     $tabla='Actualizando';
-
-    //     $result = array(
-    //       'respuesta' => 'correcto',
-    //       'tabla'=>$tabla,
-    //     );
-          
-    //     echo json_encode($result);
-    //   }else{
-    //       show_404();
-    //   }
-    // }
-
 
 
     /*----- REPORTE COMPARATIVO DE PARTIDAS (ASIG - PROG) ----*/
     public function reporte_presupuesto_consolidado_comparativo_programa($proy_id){
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
       $cabecera=$this->programacionpoa->cabecera($proyecto,0);
       $lista_partidas=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($proyecto[0]['aper_id']);
       $partidas='';
       $partidas.='
+                <div style="font-size: 8px; font-weight: bold; color: #1e293b; text-transform: uppercase; font-family: helvetica;">DETALLE :</div>
                 <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:80%;" align=center>
                   <thead>
                       <tr style="font-size: 8px;height:12px;" bgcolor="#eceaea" align=center>
@@ -308,7 +89,7 @@ class Cppto_comparativo extends CI_Controller {
 
                     $partidas.='
                     <tr style="font-size: 8px;">
-                      <td style="width:5%;;height:10px;";text-align:center">'.$nro.'</td>
+                      <td style="width:5%;;height:12px;text-align:center">'.$nro.'</td>
                       <td style="width:7%;text-align:center"><b>'.$row['codigo_partida'].'</b></td>
                       <td style="width:25%;">'.$row['partida'].'</td>
                       <td style="text-align:right">'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>
@@ -335,7 +116,7 @@ class Cppto_comparativo extends CI_Controller {
 
       $tabla='';
       $tabla.='
-      <page backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
+      <page orientation="portrait" backtop="57mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
           <page_header>
               <br><div class="verde"></div>
               '.$cabecera.'
@@ -346,9 +127,27 @@ class Cppto_comparativo extends CI_Controller {
           '.$partidas.'
       </page>';
 
-      $data['lista_partidas']=$tabla;
-      $data['pie_rep']='PPTO_POA';
-      $this->load->view('admin/programacion/reportes/reporte_consolidado_presupuesto', $data);
+      $data['lista']=$tabla;
+      $pie_report='PPTO_POA';
+      // 1. Capturamos el HTML estructurado de la vista en una variable
+          $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
+          // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+          if (ob_get_length()) ob_clean();
+          // 3. Importación segura del motor conversor usando la ruta física del servidor
+          require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+          try {
+              // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+              $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+              $html2pdf->pdf->SetDisplayMode('fullpage');
+              $html2pdf->writeHTML($html_reporte);
+              
+              // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+              $html2pdf->Output($pie_report. '.pdf', 'I');
+          }
+          catch(HTML2PDF_exception $e) {
+              echo "Error al compilar el reporte: " . $e;
+          }
+          exit;
     }
 
 
@@ -357,7 +156,7 @@ class Cppto_comparativo extends CI_Controller {
     /*----- REPORTE COMPARATIVO DE PARTIDAS (ASIG - PROG) a borrar ----*/
       public function reporte_presupuesto_consolidado_comparativo2($proy_id){
       $data['mes'] = $this->mes_nombre();
-      $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
       $data['cabecera']=$this->programacionpoa->cabecera($data['proyecto'],0);
       //$data['proyecto'] = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
       if(count($data['proyecto'])!=0){

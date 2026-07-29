@@ -229,13 +229,13 @@ $route['prog/delete_act'] = 'programacion/actividades/delete_actividad';	//// El
 
 //// Reportes POA
 $route['prog/reporte_form4_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario4_unidadResponsable/$1';  //// Reporte Form 4 Unidad Responsable 2026
-$route['prog/reporte_form5_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario5/$1';  //// Reporte requerimiento por Unidad Responsable
+$route['prog/reporte_form5_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario5_unidadResponsable/$1';  //// Reporte requerimiento por Unidad Responsable
 $route['prog/reporte_form5_uresponsable_programa_bolsa/(:any)'] = 'programacion/creporte/reporte_prog_bolsa_formulario5/$1/$2';  //// Reporte requerimiento por ID PRODUCTO
 $route['prog/reporte_form5_uresponsable_programa_bolsa_consoldado/(:any)'] = 'programacion/creporte/reporte_formulario5_bolsas_consolidado/$1';  //// Reporte requerimiento consolidado Bolsas por Unidad Responsable
 
 $route['prog/reporte_ptto_consolidado_comparativo_programa/(:any)'] = 'programacion/cppto_comparativo/reporte_presupuesto_consolidado_comparativo_programa/$1';  //// Reporte Comparativo Total de Ppto Unidad/Establecimiento/Proyecto de Inversion 2026
 
-$route['prog/reporte_form4_consolidado/(:any)'] = 'programacion/creporte/reporte_formulario4_consolidado/$1';  //// Reporte POA Consolidado por Programa
+$route['prog/reporte_form4_consolidado/(:any)'] = 'programacion/creporte/reporte_formulario4_consolidado/$1';  //// Reporte POA Consolidado por Unidad ORganizacional 2027
 
 
 /*-----------------------------  PROGRAMACION REQUERIMIENTOS (2020) -------------------------------*/

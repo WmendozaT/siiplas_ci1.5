@@ -14,6 +14,4 @@ ini_set('memory_limit', '2048M');
         width: 100%;
     }
 </style>
-
-<!-- Inyección limpia de las directivas <page> acumuladas desde el controlador -->
 <?php echo $lista; ?>

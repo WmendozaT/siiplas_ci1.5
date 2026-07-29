@@ -268,7 +268,7 @@ class Funcionario extends CI_Controller {
 
     /*-- LISTA SUBACTIVIDADES --*/
     public function list_subactividades($componente){
-        $procesos=$this->model_componente->lista_subactividad($componente[0]['proy_id']);
+        $procesos=$this->model_componente->lista_UnidadesResponsables($componente[0]['proy_id']);
         $tabla='';
         $tabla.='
                   <option value="">Seleccione...</option>';

@@ -18,7 +18,8 @@ class Programacionpoa extends CI_Controller{
       $this->load->model('ejecucion/model_evaluacion');
     //  $this->load->model('mantenimiento/model_configuracion');
       $this->load->model('ejecucion/model_certificacion');
-      $this->load->model('programacion/insumos/minsumos');
+      $this->load->model('analisis_situacion/model_analisis_situacion');
+      //$this->load->model('programacion/insumos/minsumos');
       $this->load->model('mestrategico/model_objetivoregion');
       $this->load->model('programacion/insumos/model_insumo'); /// gestion 2020
       $this->load->model('mantenimiento/model_estructura_org');
@@ -317,6 +318,40 @@ class Programacionpoa extends CI_Controller{
     }
 
 
+    //// Modal lista de partidas programados por Unidad Responsable
+    public function modal_partidas_programadas_unidad_responsable($com_id){
+        $tabla='';
+        $tabla.='
+        <div class="modal fade" id="modal_desglose_partidas_unidad" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
+            <div class="modal-dialog modal-lg" style="width: 80% !important; max-width: 95%; margin: 25px auto;">
+                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
+                    
+                    <!-- CABECERA DEL MODAL CORPORATIVA -->
+                    <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+                        <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
+                            <i class="fa fa-folder-open text-primary"></i> Desglose de Presupuesto Programado por Partidas
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer;">&times;</button>
+                    </div>
+
+                    <!-- CUERPO RECEPTOR DINÁMICO AJAX -->
+                    <div class="modal-body" id="contenedor_desglose_dinamico_cns" style="padding: 20px 25px; background: #ffffff; max-height: calc(100vh - 165px); overflow-y: auto;">
+                        <!-- Aquí el JS estampará el spinner y luego la matriz cruzada de saldos -->
+                    </div>
+                    
+                    <!-- PIE DE VENTANA ACCIONES -->
+                    <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 20px; text-align: right; margin:0;">
+                        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" style="font-weight: bold; font-size: 11.5px; padding: 6px 16px; border-radius: 3px; background:#64748b; color:#fff; border-color:#475569;">
+                            <i class="fa fa-arrow-circle-left"></i> Cerrar Ventana
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>';
+
+        return $tabla;
+    }
 
 
 
@@ -1147,7 +1182,53 @@ class Programacionpoa extends CI_Controller{
 
   //// ======== CABECERA Y PIE PARA LOS REPORTES POA 2024
   //// Cabecera Reporte form 3, 4 y 5
-  public function cabecera($datos_poa, $tp_rep) {
+    public function stylo_cabecera() {
+    $tabla='
+    <style>
+        /* 🌟 MAQUETACIÓN RAÍZ DE CONTROL DE MÁRGENES (Sincronizado al 100% con tu imagen) */
+        .cns-contenedor-ajuste-pagina {
+            padding-left: 3mm;
+            padding-right: 3mm;
+            width: 97%;
+        }
+        
+        .cns-cabecera-master { 
+            font-family: helvetica, arial, sans-serif; 
+            color: #1e293b; 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: fixed; /* Forzado geométrico de celdas */
+        }
+        
+        .cns-txt-title { font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase; }
+        .cns-txt-sub { font-size: 7.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px; }
+        
+        /* Línea Verde Institucional Sincronizada */
+        .cns-linea-verde { 
+            height: 2px; 
+            background: #000000; 
+            width: 100%; 
+            margin-top: 3px;
+            margin-bottom: 5px; 
+        }
+        
+        /* Bloque Maestro de Datos POA */
+        .cns-tbl-ident { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 10px 0 5px 0; 
+            table-layout: fixed; 
+        }
+        .cns-tbl-ident td { padding: 4px 6px; font-size: 7.5px; border: 0.9px solid #C2C2C2; vertical-align: middle; color: #000000; }
+        .cns-tbl-ident td.cns-lbl { background: #EBEBEB; font-weight: bold; color: #000000; width: 22%; height:1.3%; text-transform: uppercase; }
+        .cns-tbl-ident td.cns-val { background: #ffffff; font-weight: 600; color: #000000; width: 78%; }
+    </style>';
+
+    return $tabla;
+    }
+
+    //// Cabecera Reporte POA
+    public function cabecera($datos_poa, $tp_rep) {
     /// datos_poa: informacion desde componente -> proy -> apertura
     /// tp_rep : 3 (Foda), 4 (Actividades), 5 (requerimientos), 0 (consolidado ppto)
     $comp = '';
@@ -1190,51 +1271,8 @@ class Programacionpoa extends CI_Controller{
     }
 
     $tabla = '';
-    $tabla .= '
-    <style>
-        /* 🌟 MAQUETACIÓN RAÍZ DE CONTROL DE MÁRGENES (Sincronizado al 100% con tu imagen) */
-        .cns-contenedor-ajuste-pagina {
-            padding-left: 3mm;
-            padding-right: 3mm;
-            width: 97%;
-        }
-        
-        .cns-cabecera-master { 
-            font-family: helvetica, arial, sans-serif; 
-            color: #1e293b; 
-            width: 100%; 
-            border-collapse: collapse; 
-            table-layout: fixed; /* Forzado geométrico de celdas */
-        }
-        
-        .cns-txt-title { font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase; }
-        .cns-txt-sub { font-size: 7.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px; }
-        
-        /* Línea Verde Institucional Sincronizada */
-        .cns-linea-verde { 
-            height: 2px; 
-            background: #000000; 
-            width: 100%; 
-            margin-top: 3px;
-            margin-bottom: 5px; 
-        }
-        
-        /* Bloque Maestro de Datos POA */
-        .cns-tbl-ident { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 10px 0 5px 0; 
-            table-layout: fixed; 
-        }
-        .cns-tbl-ident td { padding: 4px 6px; font-size: 7.5px; border: 0.9px solid #cbd5e1; vertical-align: middle; color: #000000; }
-        .cns-tbl-ident td.cns-lbl { background: #EBEBEB; font-weight: bold; color: #000000; width: 22%; height:1.3%; text-transform: uppercase; }
-        .cns-tbl-ident td.cns-val { background: #ffffff; font-weight: 600; color: #000000; width: 78%; }
-    </style>
-
-    <!-- 🌟 ENCAPSULAMIENTO PERIMETRAL HORIZONTAL -->
+    $tabla .= ''.$this->stylo_cabecera().'
     <div class="cns-contenedor-ajuste-pagina">
-
-        <!-- 1. CINTILLO INICIAL INSTITUCIONAL -->
         <table class="cns-cabecera-master">
             <tr>
                 <td style="width: 65%; text-align: left; vertical-align: bottom; padding-bottom: 2px; font-size:8px;">
@@ -1299,12 +1337,7 @@ class Programacionpoa extends CI_Controller{
             $tabla .= '
             </tr>
             ' . $comp . '
-        </table><br>
-
-        <!-- 4. APERTURA COMPACTA DEL ÁREA DE REGISTROS -->
-        <div class="cns-linea-verde"></div>
-        <div style="font-size: 8px; font-weight: bold; color: #1e293b; text-transform: uppercase; font-family: helvetica;">DETALLE :</div>
-
+        </table>
     </div>';
     
     return $tabla;
@@ -1314,160 +1347,90 @@ class Programacionpoa extends CI_Controller{
 
   //// Cabecera Reporte BOLSA
   public function cabecera_bolsa($datos_prog_bolsa,$datos_uniresp){
-    $estado='';
-      if($datos_prog_bolsa[0]['aper_proy_estado']==1){
-        $estado='<b>(ANTEPROYECTO)</b>';
-      } 
-      $titulo_rep='REQUERIMIENTOS '.$estado;
+    $titulo_rep = '';
+    $titulo_form = '';
+    $estado = '';
+        if ($datos_poa[0]['aper_proy_estado'] == 1) {
+            $estado = '(ANTEPROYECTO)';
+        } 
+        $titulo_rep  = 'REQUERIMIENTOS ' . $estado;
+        $titulo_form = 'FORMULARIO SPO N° 5';
 
     $tabla='';
-    $tabla.='
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px;">              
-            <td style="width:70%;height: 2%">
-                <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 13px;font-family: Arial;">
-                        <td style="width:40%;height: 20%;">&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
-                    </tr>
-                    <tr>
-                        <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-              '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </td>
-        </tr>
-      </table>
-      <hr>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px black; text-align: center;">
-          <td style="width:12%; text-align:center;">';
-          if($datos_prog_bolsa[0]['proy_estado']==4 && $this->gestion>2021){
-            $tabla.='<qrcode value="'.$this->session->userdata('rd_poa').'" style="border: none; width: 14mm; color: #1c7368"></qrcode><br><b>POA APROBADO</b>';
-          }
-          $tabla.='
-          </td>
-          <td style="width:80%; height: 5%">
-            <table align="center" border="0" style="width:100%;">
-              <tr style="font-size: 23px;font-family: Arial;">
-                  <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
-              </tr>
-              <tr style="font-size: 20px;font-family: Arial;">
-                <td style="height: 5%;">'.$titulo_rep.'</td>
-              </tr>
-            </table>
-          </td>
-          <td style="width:10%; text-align:center;">
-          </td>
-        </tr>
-      </table>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-          <tr style="border: solid 0px;">              
-              <td style="width:70%;">
-              </td>
-              <td style="width:30%; height: 3%">
-                  <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 15px;font-family: Arial;">
-                      <td align=center style="width:100%;height: 40%;"><b>FORMULARIO SPO N° 5</b></td>
-                    </tr>
-                </table>
-              </td>
-          </tr>
-      </table>
-      
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-         <tr>
-            <td style="width:1.5%;"></td>
-            <td style="width:97%;height: 1%;">
-              <hr style="border:1px;">
-            </td>
-            <td style="width:1.5%;"></td>
-        </tr>
-        <tr>
-            <td style="width:1.5%;"></td>
-            <td style="width:97%;height: 3%;">
-             
-              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                <tr>
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;REGIONAL / DEPARTAMENTO</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$datos_prog_bolsa[0]['dep_cod'].' '.strtoupper ($datos_prog_bolsa[0]['dep_departamento']).'</td></tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;UNIDAD EJECUTORA</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$datos_prog_bolsa[0]['dist_cod'].' '.strtoupper ($datos_prog_bolsa[0]['dist_distrital']).'</td></tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                  <td style="width:20%;">
-                      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                          <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;CAT. PROGRAMATICA '.$this->gestion.'</b></td><td style="width:5%;"></td></tr>
-                      </table>
-                  </td>
-                  <td style="width:80%;">
-                      <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                          <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;<b>'.$datos_prog_bolsa[0]['aper_programa'].''.$datos_prog_bolsa[0]['aper_proyecto'].''.$datos_prog_bolsa[0]['aper_actividad'].' - '.strtoupper ($datos_prog_bolsa[0]['proy_nombre']).' '.$datos_prog_bolsa[0]['abrev'].'</b></td></tr>
-                      </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="width:20%;">
-                    <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                      <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>&nbsp;UNIDAD RESPONSABLE</b></td><td style="width:5%;"></td></tr>
+    $tabla .= ''.$this->stylo_cabecera().'
+    <div class="cns-contenedor-ajuste-pagina">
+        <table class="cns-cabecera-master">
+            <tr>
+                <td style="width: 65%; text-align: left; vertical-align: bottom; padding-bottom: 2px; font-size:8px;">
+                    <span class="cns-txt-title">&nbsp;&nbsp;' . strtoupper($this->session->userdata('entidad')) . '</span><br>
+                    <span class="cns-txt-sub">DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</span>
+                </td>
+                <td style="width: 35%; text-align: right; vertical-align: bottom; font-size: 8px; color: #475569; font-family: courier; font-weight: bold; padding-bottom: 2px;">
+                    ' . date("d") . ' de ' . $this->mes[ltrim(date("m"), "0")] . ' de ' . date("Y") . '
+                </td>
+            </tr>
+        </table>
+
+        <!-- 🌟 REPARADO: La línea verde ahora se confina de forma exacta a los 3mm laterales -->
+        <div class="cns-linea-verde"></div>
+
+        <!-- 2. NÚCLEO DE TÍTULOS Y CÓDIGO QR -->
+        <table class="cns-cabecera-master" style="margin-top: 5px;">
+            <tr>
+                <td style="width: 15%; text-align: center; vertical-align: middle;">';
+                if ($datos_prog_bolsa[0]['proy_estado'] == 4 && $this->gestion > 2025) {
+                    $tabla .= '<qrcode value="' . $this->session->userdata('rd_poa') . '" style="border: none; width: 11mm; color: #475569;"></qrcode><br>
+                               <span style="font-size: 5.5px; font-weight: bold; color: #475569; display: block; margin-top: 2px;">POA APROBADO</span>';
+                }
+                $tabla .= '
+                </td>
+                <td style="width: 70%; text-align: center; vertical-align: middle; padding: 0 5px;">
+                    <span style="font-size: 17px; font-weight: bold; color: #0f172a; display: block; text-transform: uppercase; letter-spacing: 0.3px;">PLAN OPERATIVO ANUAL GESTIÓN - ' . $this->gestion . '</span><br>
+                    <span style="font-size: 13px; font-weight: 500; color: #475569; display: block; margin-top: 3px; letter-spacing: 0.2px;">' . strtoupper($titulo_rep) . '</span>
+                </td>
+                <td style="width: 15%; text-align: right; vertical-align: middle;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 4px 5px; background: #000000; color: #ffffff; font-weight: bold; font-size: 8px; text-align: center; border: 0.5px solid #475569; text-transform: uppercase;">
+                                ' . strtoupper($titulo_form) . '
+                            </td>
+                        </tr>
                     </table>
-                  </td>
-                  <td style="width:80%;">
-                    <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                      <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;<b>'.$datos_uniresp[0]['serv_cod'].' '.$datos_uniresp[0]['tipo_subactividad'].' '.$datos_uniresp[0]['serv_descripcion'].'</b></td></tr>
-                    </table>
-                  </td>
-                </tr>
-            </table>
-          </td>
-          <td style="width:1.5%;"></td>
-        </tr>
-        <tr>
-          <td style="width:1.5%;"></td>
-          <td style="width:97%;height: 1%;">
-            <hr style="border:1px;">
-            <br><b style="font-size: 8px;font-family: Arial;">DETALLE : </b>
-          </td>
-          <td style="width:1.5%;"></td>
-        </tr>
-      </table>';
+                </td>
+            </tr>
+        </table>
+
+        <!-- 3. CUADRO FORMAL DE IDENTIFICACIÓN RELACIONAL POA -->
+        <table class="cns-tbl-ident">
+            <tr>
+                <td class="cns-lbl">REGIONAL / DEPARTAMENTO</td>
+                <td class="cns-val">'.$datos_prog_bolsa[0]['dep_cod'].' '.strtoupper ($datos_prog_bolsa[0]['dep_departamento']).'</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">UNIDAD EJECUTORA</td>
+                <td class="cns-val">'.$datos_prog_bolsa[0]['dist_cod'].' '.strtoupper ($datos_prog_bolsa[0]['dist_distrital']).'</td>
+            </tr>
+          
+            <tr>
+                <td class="cns-lbl">CAT. PROGRAMÁTICA ' . $this->gestion . '</td>
+                <td class="cns-val"><b>'.$datos_prog_bolsa[0]['aper_programa'].''.$datos_prog_bolsa[0]['aper_proyecto'].''.$datos_prog_bolsa[0]['aper_actividad'].' - '.strtoupper ($datos_prog_bolsa[0]['proy_nombre']).' '.$datos_prog_bolsa[0]['abrev'].'</b></td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">UNIDAD RESPONSABLE</td>
+                <td class="cns-val"><b>'.$datos_uniresp[0]['serv_cod'].' '.$datos_uniresp[0]['tipo_subactividad'].' '.$datos_uniresp[0]['serv_descripcion'].'</b></td>
+            </tr>
+        
+        </table>
+    </div>';
+
+
     return $tabla;
   }
-  /*------ PIE FODA - REPORTE -----*/
+
+/*------ PIE FODA - REPORTE -----*/
 public function pie_foda(){
     $tabla = '';
     $tabla .= '    
-      <style>
-      .cns-linea-verde { 
-            height: 2px; 
-            background: #1c7368; 
-            width: 100%; 
-            margin-top: 3px;
-            margin-bottom: 5px; 
-        }
-      </style>
-
-      <div class="cns-linea-verde"></div>
-      
       <!-- 🌟 SE CONSERVA TU LÓGICA DE DISTRIBUCIÓN: Estructura original al 97% de ancho horizontal -->
       <table border="0" cellpadding="0" cellspacing="0" style="width: 97%; border-collapse: collapse; font-family: helvetica, arial, sans-serif;" align="center">
         <tr>
@@ -1477,14 +1440,14 @@ public function pie_foda(){
               <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
                   <tr>
                       <!-- Cabecera de caja formal idéntica a .cns-lbl (Fondo plomo claro, letra plomo oscuro) -->
-                      <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
+                      <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
                           ELABORADO POR:
                       </td>
                   </tr>
                   <tr>
                       <!-- Espacio de rúbrica idéntico a .cns-val (Despejado con línea de guía fina) -->
                       <td align="center" style="height: 40px; vertical-align: bottom; padding-bottom: 6px; background: #ffffff;">
-                          <span style="font-size: 6.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
+                          <span style="font-size: 6.5px; font-weight: 600; color: #000000; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
                       </td>
                   </tr>
               </table>
@@ -1495,14 +1458,14 @@ public function pie_foda(){
               <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
                   <tr>
                       <!-- Cabecera de caja formal idéntica a .cns-lbl -->
-                      <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #E3F0FA; color: #475569; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
+                      <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
                           APROBADO POR:
                       </td>
                   </tr>
                   <tr>
                       <!-- Espacio de rúbrica idéntico a .cns-val (Despejado con línea de guía fina) -->
                       <td align="center" style="height: 40px; vertical-align: bottom; padding-bottom: 6px; background: #ffffff;">
-                          <span style="font-size: 6.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
+                          <span style="font-size: 6.5px; font-weight: 600; color: #000000; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
                       </td>
                   </tr>
               </table>
@@ -1799,8 +1762,83 @@ public function pie_foda(){
       return $tabla;
   }
 
+   /*------ LISTA DE FODA - REPORTE 2027 -----*/
+    public function reporte_datos_foda($proy_id){
+        // 1. Recuperamos el pool de problemas autorizados del proyecto
+        $problemas = $this->model_analisis_situacion->list_analisis_problemas_reporte($proy_id); 
+        $tabla = '';
+        $tabla .= '
+          <table cellpadding="0" cellspacing="0" class="tabla" border=0.05 style="width:100%;">
+            <thead>
+              <tr style="font-size: 6px;" bgcolor="#eceaea" align=center>
+                <th style="width: 2%;height:18px;">#</th>
+                <th style="width: 33.5%;">PROBLEMAS IDENTIFICADOS</th>
+                <th style="width: 32%;">CAUSAS DE LOS PROBLEMAS</th>
+                <th style="width: 32%;">ACCIONES RECOMENDADAS (SOLUCIONES)</th>
+              </tr>
+            </thead>
+            <tbody>';
+            
+            $nro = 0;
+            if(!empty($problemas)) {
+                foreach($problemas as $row){
+                    $nro++;
+                    // Extracción asíncrona de la subtabla relacional (Causas - Acciones)
+                    $causas = $this->model_analisis_situacion->lista_causas_acciones($row['prob_id']);
+                    // Formateo seguro para evitar Notice de strings vacíos en PHP 5.6
+                    $txt_problema = !empty($row['problema']) ? trim(strtoupper($this->security->xss_clean($row['problema']))) : '';
+                    
+                    // 🌟 CONTROL DE INTEGRIDAD: Evaluamos si registra causas indexadas
+                    if(!empty($causas) && count($causas) > 0) {
+                        
+                        $txt_causas  = '';
+                        $txt_acciones = '';
+                        $sub_item = 0;
+                        
+                        // Si hay múltiples causas por problema, las listamos limpiamente con viñetas numéricas
+                        foreach($causas as $rowc) {
+                            $sub_item++;
+                            $c_desc = !empty($rowc['causas']) ? trim(strtoupper($this->security->xss_clean($rowc['causas']))) : '';
+                            $a_desc = !empty($rowc['acciones']) ? trim(strtoupper($this->security->xss_clean($rowc['acciones']))) : '';
+                            
+                            $prefix = (count($causas) > 1) ? $sub_item . ". " : "";
+                            
+                            $txt_causas   .= $prefix . $c_desc . "<br>";
+                            $txt_acciones .= $prefix . $a_desc . "<br>";
+                        }
+                    } else {
+                        // Hilera de protección por si el analista dejó el problema sin causas registradas
+                        $txt_causas  = '<span >📋 SIN REGISTRO DE CAUSAS</span>';
+                        $txt_acciones = '<span >📋 SIN ACCIONES RECOMENDADAS</span>';
+                    }
 
-  /*----- REPORTE FORMULARIO 4 (2026 - Gasto Corriente) ----*/
+                    $tabla .= '
+                    <tr>
+                        <td style="height: 15px;width: 2%; text-align:center;"><b>' . $nro . '</b></td>
+                        <td style="text-align: justify; font-weight: 500;width: 33.5%;">' . $txt_problema . '</td>
+                        <td style="text-align: justify;width: 32%;">' . $txt_causas . '</td>
+                        <td style="text-align: justify; font-weight: 600; color: #1e3a8a;width: 32%;">' . $txt_acciones . '</td>
+                    </tr>';
+                }
+            } else {
+                // Alerta formal por si toda la matriz FODA de la distrital viene vacía
+                $tabla .= '
+                <tr>
+                    <td class="cns-col-nro-foda">-</td>
+                    <td colspan="3" style="text-align: center; color: #94a3b8; font-style: italic; padding: 15px 0;">
+                        No se identificaron problemas operacionales o análisis de situación registrados para la presente gestión.
+                    </td>
+                </tr>';
+            }
+            
+            $tabla .= '
+            </tbody>
+        </table>';
+
+        return $tabla;
+    }
+
+  /*----- REPORTE FORMULARIO 4 (2027 - Gasto Corriente) ----*/
   public function rep_formulario_N4_Uresponsable($componente){
     if($componente[0]['por_id']==0){
       $lista_form4_uresp=$this->model_producto->get_lista_form4_uresp_consolidado($componente[0]['com_id']); //// lista form4 + bolsas
@@ -1811,49 +1849,11 @@ public function pie_foda(){
     
     $tabla='';
     $tabla .= '
-      <style>
-          /* Replicación de Gobernanza Visual de la Cabecera en el Formulario N° 4 */
-          .cns-tbl-form4-report { 
-              width: 100%; 
-              border-collapse: collapse; 
-              table-layout: fixed; /* Forzado absoluto para no desbordar los 3mm del <page> */
-              font-family: helvetica, arial, sans-serif;
-              margin-top: 5px;
-          }
-          
-          /* Encabezados compactos de alta densidad alineados al ras de la cabecera */
-          .cns-tbl-form4-report th { 
-              background: #6E6E6E; 
-              color: #ffffff; 
-              font-weight: bold; 
-              font-size: 6.5px; /* Tamaño micro-contable comprimido para 22 columnas */
-              text-align: center; 
-              vertical-align: middle; 
-              border: 0.7px solid #000000; 
-              padding: 4px 1px;
-              text-transform: uppercase;
-          }
-          
-          /* Celdas de datos con filetes plomo claro ultra finos (.cns-tbl-ident) */
-          .cns-tbl-form4-report td { 
-              font-size: 6px; 
-              vertical-align: middle; 
-              border: 0.5px solid #000000; 
-              padding: 3px 2px; 
-              color: #000000;
-              line-height: 1.2;
-          }
-          
-          /* Estilos semánticos para columnas de códigos (Estilo .cns-lbl) */
-          .cns-td-bold-code { font-weight: bold; font-size: 7px !important; text-align: center; color: #000000; }
-          .cns-td-bold-meta { font-weight: bold; font-size: 7.5px !important; text-align: center; color: #1e3a8a; }
-      </style>
-
-      <!-- 🌟 ENCAPSULAMIENTO HORIZONTAL EN CUADRÍCULA ESTRICTA AL 100% -->
-      <table class="cns-tbl-form4-report" align="center">
+        <div style="font-size: 8px; font-weight: bold; color: #1e293b; text-transform: uppercase; font-family: helvetica;">DETALLE :</div>
+      <table cellpadding="0" cellspacing="0" class="tabla" border=0.05 style="width:100%;">
         <thead>
-          <tr>
-            <th style="width: 2.5%; height: 12px;">PROG.</th>
+          <tr style="font-size: 6px;" bgcolor="#eceaea" align=center>
+            <th style="width:2.5%;height:18px;">PROG.</th>
             <th style="width: 2.5%;">COD.<br>ACP.</th>
             <th style="width: 2.5%;">COD.<br>OPE.</th>
             <th style="width: 2.5%;">COD.<br>ACT.</th> 
@@ -1874,7 +1874,7 @@ public function pie_foda(){
             <th style="width: 2.3%;">OCT.</th>
             <th style="width: 2.3%;">NOV.</th>
             <th style="width: 2.3%;">DIC.</th>
-            <th style="width: 9%;">MEDIO DE VERIFICACIÓN</th> 
+            <th style="width: 8.7%;">MEDIO DE VERIFICACIÓN</th> 
           </tr>
         </thead>
         <tbody>';
@@ -1882,7 +1882,6 @@ public function pie_foda(){
         $nro = 0;
         if (!empty($lista_form4_uresp)) {
             foreach ($lista_form4_uresp as $rowp) {
-                
                 $color = ''; 
                 $tp = ''; 
                 $color_uni = '';
@@ -1914,26 +1913,25 @@ public function pie_foda(){
                 $nro++;
                 $tabla .= '
                 <tr style="' . $estilo_fila . ' height: 15px;">
-                  <!-- 🔄 AJUSTADO: Celdas del cuerpo ahora con porcentajes idénticos a la cabecera (2.5%) -->
-                  <td class="cns-td-bold-code" style="width: 2.5%; font-size: 9px; ' . $color_or . ' height: 14px;">' . $rowp['aper_programa'] . '</td>
-                  <td class="cns-td-bold-code" style="width: 2.5%; font-size: 9px;' . $color_or . '">' . $rowp['og_codigo'] . '</td>
-                  <td class="cns-td-bold-code" style="width: 2.5%; font-size: 9px;' . $color_or . '">' . $rowp['or_codigo'] . '</td>
-                  <td style="width: 2.5%; text-align: center; font-size: 9px; font-weight: 600;' . $color_uni . '">' . $rowp['prod_cod'] . '</td>
+                  <td style="width: 2.5%; font-size: 8px; text-align:center; height: 14px;' . $color_uni . '"><b>'.$rowp['aper_programa'].'</b></td>
+                  <td style="width: 2.5%; font-size: 8px; text-align:center;' . $color_uni . '"><b>' . $rowp['og_codigo'] . '</b></td>
+                  <td style="width: 2.5%; font-size: 8px; text-align:center;' . $color_uni . '"><b>' . $rowp['or_codigo'] . '</b></td>
+                  <td style="width: 2.5%; text-align: center; font-size: 8px; font-weight: 600;' . $color_uni . '"><b>' . $rowp['prod_cod'] . '</b></td>
                   
                   <td style="width: 15%; text-align: justify; font-size: 6.5px; !important;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_producto']))) . '</td>
-                  <td style="width: 12.5%; text-align: justify;font-size: 6.5px;  ' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_resultado']))) . '</td>
+                  <td style="width: 12.5%; text-align: justify;font-size: 6.5px;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_resultado']))) . '</td>
                   <td style="width: 10%; text-align: left; font-weight: bold; font-size: 6.5px; !important;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_unidades']))) . '</td>
                   <td style="width: 12%; font-size: 6.5px; text-align: justify;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_indicador']))) . '</td>
                   
-                  <td class="cns-td-bold-meta" style="width: 3.5%;font-size: 7.5px; ' . $color_uni . '">' . round($rowp['prod_meta'], 2) . $tp . '</td>';
+                  <td style="width: 3.5%;font-size: 6.5px; text-align:right;' . $color_uni . '"><b>' . round($rowp['prod_meta'], 2) . $tp . '</b></td>';
                   
                   // 🔄 AJUSTADO: Columnas mensuales con porcentajes idénticos a la cabecera (2.3%)
                   for ($i = 1; $i <= 12; $i++) { 
-                      $tabla .= '<td style="width: 2.3%; font-size: 7.5px; text-align: center;' . $color_uni . '">' . round($rowp['m' . $i], 2) . $tp . '</td>';
+                      $tabla .= '<td style="width: 2.3%; font-size: 6.5px; text-align: center;' . $color_uni . '">' . round($rowp['m' . $i], 2) . $tp . '</td>';
                   }
 
                   $tabla .= '
-                  <td style="width: 9%; font-size: 6.5px; text-align: left;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_fuente_verificacion']))) . '</td>
+                  <td style="width: 8.7%; font-size: 6px; text-align: left;' . $color_uni . '">' . trim(strtoupper($this->security->xss_clean($rowp['prod_fuente_verificacion']))) . '</td>
                 </tr>';
             }
         } else {
@@ -1951,20 +1949,21 @@ public function pie_foda(){
     return $tabla;
   }
 
-
+    /// reporte Formulario N° 5 - Requerimientos 2027
     public function rep_formulario_N5_Uresponsable($lista_insumos){
       $tabla='';
-      $tabla.=' 
-          <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;">
+      $tabla.='
+            <div style="font-size: 8px; font-weight: bold; color: #1e293b; text-transform: uppercase; font-family: helvetica;">DETALLE :</div>
+          <table cellpadding="0" cellspacing="0" class="tabla" border=0.05 style="width:100%;">
               <thead>
-              <tr style="font-size: 7px;" bgcolor="#eceaea" align=center>
-                <th style="width:1%;height:15px;">#</th>
+              <tr style="font-size: 6px;" bgcolor="#eceaea" align=center>
+                <th style="width:1%;height:18px;">#</th>
                 <th style="width:2%;">COD.<br>ACT.</th> 
                 <th style="width:4%;">PARTIDA</th>
                 <th style="width:15%;">DETALLE REQUERIMIENTO</th>
                 <th style="width:3%;">UNIDAD</th>
-                <th style="width:2%;">CANT.</th>
-                <th style="width:5%;">UNITARIO</th>
+                <th style="width:2.5%;">CANT.</th>
+                <th style="width:5%;">PRECIO</th>
                 <th style="width:5%;">TOTAL</th>
                 <th style="width:5%;">TOTAL CERT.</th>
                 <th style="width:4%;">ENE.</th>
@@ -1979,7 +1978,7 @@ public function pie_foda(){
                 <th style="width:4%;">OCT.</th>
                 <th style="width:4%;">NOV.</th>
                 <th style="width:4%;">DIC.</th>
-                <th style="width:8%;">OBSERVACI&Oacute;N</th>
+                <th style="width:7%;">OBSERVACI&Oacute;N</th>
               </tr>
               </thead>
               <tbody>';
@@ -1991,20 +1990,20 @@ public function pie_foda(){
               $color='';
               $tabla.=
               '<tr style="font-size: 6.5px;" >
-                  <td style="width: 1%; font-size: 4.5px; text-align: center;height:13px;">'.$cont.'</td>
-                  <td style="width: 2%; text-align: center; font-size: 8px;"><b>'.$row['prod_cod'].'</b></td>
+                  <td style="width: 1%; font-size: 4.5px; text-align: center;height:14px;">'.$cont.'</td>
+                  <td style="width: 2%; text-align: center; font-size: 9px;"><b>'.$row['prod_cod'].'</b></td>
                   <td style="width: 4%; text-align: center;font-size: 8px;"><b>'.$row['par_codigo'].'</b></td>
-                  <td style="width: 15%; text-align: left;font-size: 5px;">'.strtoupper($row['ins_detalle']).'</td>
-                  <td style="width: 5%; text-align: left">'.strtoupper($row['ins_unidad_medida']).'</td>
-                  <td style="width: 2%; text-align: right">'.round($row['ins_cant_requerida'],2).'</td>
-                  <td style="width: 5%; text-align: right;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
-                  <td style="width: 5%; text-align: right;font-size: 7.5px;"><b>'.number_format($row['ins_costo_total'], 2, ',', '.').'</b></td>
-                  <td style="width: 5%; text-align: right;font-size: 7.5px;" bgcolor="#ecfbf9"><b>'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</b></td>';
+                  <td style="width: 15%; text-align: left;font-size: 6.6px;">'.strtoupper($row['ins_detalle']).'</td>
+                  <td style="width: 5%; text-align: left;font-size: 6.6px;">'.strtoupper($row['ins_unidad_medida']).'</td>
+                  <td style="width: 2.5%; text-align: right;font-size: 6.6px;">'.round($row['ins_cant_requerida'],2).'</td>
+                  <td style="width: 5%; text-align: right;font-size: 6.6px;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
+                  <td style="width: 5%; text-align: right;font-size: 6.6px;"><b>'.number_format($row['ins_costo_total'], 2, ',', '.').'</b></td>
+                  <td style="width: 5%; text-align: right;font-size: 6.6px;" bgcolor="#ecfbf9"><b>'.number_format($row['ins_monto_certificado'], 2, ',', '.').'</b></td>';
                   for ($i=1; $i <=12 ; $i++) { 
-                    $tabla.='<td style="width: 4%; text-align: right;">'.number_format($row['mes_'.$i], 2, ',', '.').'</td>';
+                    $tabla.='<td style="width: 4%; text-align: right;font-size: 6.6px;">'.number_format($row['mes_'.$i], 2, ',', '.').'</td>';
                   }
               $tabla.='
-                  <td style="width: 8%; text-align: left;">'.$row['ins_observacion'].'</td>
+                  <td style="width: 7%; text-align: left;font-size: 6px;">'.$row['ins_observacion'].'</td>
                   
               </tr>';
               }
@@ -2013,8 +2012,8 @@ public function pie_foda(){
               </tbody>
               <tr class="modo1" bgcolor="#eceaea">
                   <td colspan="7" style="height:10px;" ><b>TOTAL PROGRAMADO </b></td>
-                  <td style="width: 4%; text-align: right; font-size: 7px;"><b>'.number_format($total, 2, ',', '.').'</b></td>
-                  <td style="width: 4%; text-align: right; font-size: 7px;"><b>'.number_format($total_cert, 2, ',', '.').'</b></td>
+                  <td style="width: 4%; text-align: right; font-size: 6px;"><b>'.number_format($total, 2, ',', '.').'</b></td>
+                  <td style="width: 4%; text-align: right; font-size: 6px;"><b>'.number_format($total_cert, 2, ',', '.').'</b></td>
                   <td colspan="13"></td>
               </tr>
           </table><br>';

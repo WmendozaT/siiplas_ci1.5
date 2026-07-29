@@ -343,17 +343,17 @@ class Canalisis_situacion extends CI_Controller {
 
     /*----- Reporte Lista de Problemas (FODA) 2026 -----*/
     public function reporte_form3_Unidad_organizacional($proy_id){
-      $unidad_organizacional = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+      $unidad_organizacional = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
     
         if(count($unidad_organizacional) != 0){ 
           $cabecera = $this->programacionpoa->cabecera($unidad_organizacional,3);
-          $items = $this->reporte_datos_foda($proy_id);
+          $items = $this->programacionpoa->reporte_datos_foda($proy_id); /// Lista FODA 2027
           $pie_mod = $this->programacionpoa->pie_foda();;
           $data['pie_rep'] = 'FORM_N3' . $unidad_organizacional[0]['tipo'] . ' ' . $unidad_organizacional[0]['act_descripcion'] . ' ' . $unidad_organizacional[0]['abrev'] . '/' . $this->gestion;
 
           // Configuración de la página en orientación horizontal (paysage) como solicita tu etiqueta <page>
           $data['informacion'] = '
-          <page orientation="portrait" backtop="57mm" backbottom="50mm" backleft="4mm" backright="4mm" pagegroup="new">
+          <page orientation="portrait" backtop="61.5mm" backbottom="50mm" backleft="4mm" backright="4mm" pagegroup="new">
             <!-- Cabecera Institucional Inalterada -->
             <page_header>
                 <br><div class="verde"></div>
@@ -363,7 +363,7 @@ class Canalisis_situacion extends CI_Controller {
             <!-- Pie de Página Fijo en la Base de la Hoja -->
             <page_footer>
                 <div style="width: 100%; display: block;">
-                    ' . $pie_mod . '
+                  ' . $pie_mod . '
                 </div>
             </page_footer>
             ' . $items . '
@@ -371,13 +371,10 @@ class Canalisis_situacion extends CI_Controller {
 
           // 1. Capturamos el HTML estructurado de la vista en una variable
           $html_reporte = $this->load->view('admin/programacion/foda/reporte_foda', $data, true); 
-
           // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
           if (ob_get_length()) ob_clean();
-
           // 3. Importación segura del motor conversor usando la ruta física del servidor
           require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
-          
           try {
               // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
               $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
@@ -397,133 +394,7 @@ class Canalisis_situacion extends CI_Controller {
 
     }
 
-    /*------ LISTA DE FODA - REPORTE -----*/
-    public function reporte_datos_foda($proy_id){
-        // 1. Recuperamos el pool de problemas autorizados del proyecto
-        $problemas = $this->model_analisis_situacion->list_analisis_problemas_reporte($proy_id); 
-        
-        $tabla = '';
-        $tabla .= '
-        <style>
-            /* Replicación de Gobernanza Visual de la Cabecera en el Cuerpo */
-            .cns-tbl-foda-report { 
-                width: 100%; 
-                border-collapse: collapse; 
-                table-layout: fixed; /* Forzado absoluto para no desbordar los márgenes */
-                font-family: helvetica, arial, sans-serif;
-                margin-top: 5px;
-            }
-            
-            /* Encabezados alineados a los títulos técnicos del Formulario */
-            .cns-tbl-foda-report th { 
-                background: #475569; 
-                color: #ffffff; 
-                font-weight: bold; 
-                font-size: 7px; 
-                text-align: center; 
-                vertical-align: middle; 
-                border: 0.5px solid #64748b; 
-                padding: 5px 3px;
-                text-transform: uppercase;
-                letter-spacing: 0.2px;
-            }
-            
-            /* Celdas de datos con filetes plomo claro ultra finos (.cns-tbl-ident) */
-            .cns-tbl-foda-report td { 
-                font-size: 6.5px; 
-                vertical-align: top; /* Lectura descendente prolija para textos largos */
-                border: 0.5px solid #cbd5e1; 
-                padding: 5px 6px; 
-                color: #334155;
-                line-height: 1.3;
-            }
-            
-            /* Columna incremental idéntica a .cns-lbl */
-            .cns-col-nro-foda { 
-                text-align: center; 
-                font-weight: bold; 
-                background: #f1f5f9; 
-                color: #475569; 
-                vertical-align: middle !important;
-            }
-            
-            .cns-txt-vacio {
-                color: #94a3b8;
-                font-style: italic;
-                font-size: 6.5px;
-            }
-        </style>
-
-        <!-- 🌟 ENCAPSULAMIENTO HORIZONTAL EN CUADRÍCULA ESTRICTA -->
-        <table class="cns-tbl-foda-report">
-            <thead>
-                <tr>
-                    <th style="width: 4%; height: 8px;">#</th>
-                    <th style="width: 33.5%;">PROBLEMAS IDENTIFICADOS</th>
-                    <th style="width: 31%;">CAUSAS DE LOS PROBLEMAS</th>
-                    <th style="width: 31%;">ACCIONES RECOMENDADAS (SOLUCIONES)</th>
-                </tr>
-            </thead>
-            <tbody>';
-            
-            $nro = 0;
-            if(!empty($problemas)) {
-                foreach($problemas as $row){
-                    $nro++;
-                    // Extracción asíncrona de la subtabla relacional (Causas - Acciones)
-                    $causas = $this->model_analisis_situacion->lista_causas_acciones($row['prob_id']);
-                    // Formateo seguro para evitar Notice de strings vacíos en PHP 5.6
-                    $txt_problema = !empty($row['problema']) ? trim(strtoupper($this->security->xss_clean($row['problema']))) : '';
-                    
-                    // 🌟 CONTROL DE INTEGRIDAD: Evaluamos si registra causas indexadas
-                    if(!empty($causas) && count($causas) > 0) {
-                        
-                        $txt_causas  = '';
-                        $txt_acciones = '';
-                        $sub_item = 0;
-                        
-                        // Si hay múltiples causas por problema, las listamos limpiamente con viñetas numéricas
-                        foreach($causas as $rowc) {
-                            $sub_item++;
-                            $c_desc = !empty($rowc['causas']) ? trim(strtoupper($this->security->xss_clean($rowc['causas']))) : '';
-                            $a_desc = !empty($rowc['acciones']) ? trim(strtoupper($this->security->xss_clean($rowc['acciones']))) : '';
-                            
-                            $prefix = (count($causas) > 1) ? $sub_item . ". " : "";
-                            
-                            $txt_causas   .= $prefix . $c_desc . "<br>";
-                            $txt_acciones .= $prefix . $a_desc . "<br>";
-                        }
-                    } else {
-                        // Hilera de protección por si el analista dejó el problema sin causas registradas
-                        $txt_causas  = '<span class="cns-txt-vacio">📋 SIN REGISTRO DE CAUSAS</span>';
-                        $txt_acciones = '<span class="cns-txt-vacio">📋 SIN ACCIONES RECOMENDADAS</span>';
-                    }
-
-                    $tabla .= '
-                    <tr>
-                        <td class="cns-col-nro-foda" style="height: 10px;width: 4%;">' . $nro . '</td>
-                        <td style="text-align: justify; font-weight: 500;width: 33.5%;">' . $txt_problema . '</td>
-                        <td style="text-align: justify;width: 31%;">' . $txt_causas . '</td>
-                        <td style="text-align: justify; font-weight: 600; color: #1e3a8a;width: 31%;">' . $txt_acciones . '</td>
-                    </tr>';
-                }
-            } else {
-                // Alerta formal por si toda la matriz FODA de la distrital viene vacía
-                $tabla .= '
-                <tr>
-                    <td class="cns-col-nro-foda">-</td>
-                    <td colspan="3" style="text-align: center; color: #94a3b8; font-style: italic; padding: 15px 0;">
-                        No se identificaron problemas operacionales o análisis de situación registrados para la presente gestión.
-                    </td>
-                </tr>';
-            }
-            
-            $tabla .= '
-            </tbody>
-        </table>';
-
-        return $tabla;
-    }
+   
 
 
     /*------ NOMBRE MES -------*/

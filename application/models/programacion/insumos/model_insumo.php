@@ -424,56 +424,7 @@ class Model_insumo extends CI_Model{
 
 
 
-    // lista de requerimientos alineados a la Unidad Responsable (Componente) 2027
-    function list_requerimientos_uresponsable($com_id){
-        $sql = '
-            SELECT 
-                p.com_id,
-                p.prod_cod,
-                i.ins_id,
-                i.ins_codigo,
-                i.ins_cant_requerida,
-                i.ins_costo_unitario,
-                i.ins_costo_total,
-                i.ins_detalle,
-                i.ins_unidad_medida,
-                i.ins_gestion,
-                i.ins_observacion,
-                i.ins_monto_certificado,
-                i.ins_tipo_modificacion,
-                i.aper_id,
-                par.par_id,
-                par.par_codigo,
-                par.par_nombre,
-                apg.aper_programa,
-                COALESCE(prog.mes1, 0) AS mes_1,
-                COALESCE(prog.mes2, 0) AS mes_2,
-                COALESCE(prog.mes3, 0) AS mes_3,
-                COALESCE(prog.mes4, 0) AS mes_4,
-                COALESCE(prog.mes5, 0) AS mes_5,
-                COALESCE(prog.mes6, 0) AS mes_6,
-                COALESCE(prog.mes7, 0) AS mes_7,
-                COALESCE(prog.mes8, 0) AS mes_8,
-                COALESCE(prog.mes9, 0) AS mes_9,
-                COALESCE(prog.mes10, 0) AS mes_10,
-                COALESCE(prog.mes11, 0) AS mes_11,
-                COALESCE(prog.mes12, 0) AS mes_12
-            FROM _productos p
-            INNER JOIN _insumoproducto AS ip ON p.prod_id = ip.prod_id
-            INNER JOIN insumos AS i ON i.ins_id = ip.ins_id
-            INNER JOIN partidas AS par ON par.par_id = i.par_id
-            INNER JOIN aperturaprogramatica AS apg ON apg.aper_id = i.aper_id
-            LEFT JOIN vista_temporalidad_insumo2 AS prog ON prog.ins_id = i.ins_id 
-            WHERE p.com_id = '.$com_id.'
-              AND p.estado != 3 
-              AND i.ins_estado != 3 
-              AND i.aper_id != 0 
-              AND i.ins_gestion = '.$this->gestion.'
-            ORDER BY p.prod_cod, par.par_codigo, i.ins_id ASC;';
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    
 
 
 
@@ -565,7 +516,7 @@ class Model_insumo extends CI_Model{
                   AND p.estado != 3 
                   AND i.ins_estado != 3
                   AND i.aper_id != 0
-                  AND i.ins_gestion = '.$this->gestion.'
+                 
                 GROUP BY par.par_id, par.par_codigo, par.par_nombre
                 ORDER BY par.par_codigo ASC';
 
@@ -574,7 +525,7 @@ class Model_insumo extends CI_Model{
     }
 
 
-    /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2026 -----*/
+    /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2027 -----*/
     function list_consolidado_partidas_uResponsable($com_id){
             $sql = 'SELECT 
                         c.com_id, 
@@ -587,7 +538,7 @@ class Model_insumo extends CI_Model{
                     INNER JOIN insumos i ON i.com_id = c.com_id
                     INNER JOIN partidas par ON par.par_id = i.par_id
                     WHERE c.com_id = '.$com_id.' 
-                      AND i.ins_gestion = '.$this->gestion.'
+                     
                       AND i.ins_estado != 3 
                       AND i.aper_id != 0 
                     GROUP BY c.com_id, c.pfec_id, par.par_id, par.par_codigo, par.par_nombre
@@ -707,7 +658,7 @@ class Model_insumo extends CI_Model{
     }
 
     /// lista de requerimientos por cada (Componente) Unidad Responsable Con Temporalidad 2027
-    function lista_insumos_x_uresponsable($com_id){
+/*    function lista_insumos_x_uresponsable($com_id){
         $sql = 'SELECT 
                 prod.prod_id, 
                 prod.prod_cod,
@@ -739,8 +690,60 @@ class Model_insumo extends CI_Model{
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
+
+// lista de requerimientos alineados a la Unidad Responsable (Componente) 2027
+    function list_requerimientos_uresponsable($com_id){
+        $sql = '
+            SELECT 
+                p.prod_id, 
+                p.prod_cod,
+                p.prod_producto,
+                i.ins_id,
+                i.ins_codigo,
+                i.ins_cant_requerida,
+                i.ins_costo_unitario,
+                i.ins_costo_total,
+                i.ins_detalle,
+                i.ins_unidad_medida,
+                i.ins_gestion,
+                i.ins_observacion,
+                i.ins_monto_certificado,
+                i.ins_tipo_modificacion,
+                i.aper_id,
+                par.par_id,
+                par.par_codigo,
+                par.par_nombre,
+                apg.aper_programa,
+                COALESCE(prog.mes1, 0) AS mes_1,
+                COALESCE(prog.mes2, 0) AS mes_2,
+                COALESCE(prog.mes3, 0) AS mes_3,
+                COALESCE(prog.mes4, 0) AS mes_4,
+                COALESCE(prog.mes5, 0) AS mes_5,
+                COALESCE(prog.mes6, 0) AS mes_6,
+                COALESCE(prog.mes7, 0) AS mes_7,
+                COALESCE(prog.mes8, 0) AS mes_8,
+                COALESCE(prog.mes9, 0) AS mes_9,
+                COALESCE(prog.mes10, 0) AS mes_10,
+                COALESCE(prog.mes11, 0) AS mes_11,
+                COALESCE(prog.mes12, 0) AS mes_12
+            FROM _productos p
+            INNER JOIN _insumoproducto AS ip ON p.prod_id = ip.prod_id
+            INNER JOIN insumos AS i ON i.ins_id = ip.ins_id
+            INNER JOIN partidas AS par ON par.par_id = i.par_id
+            INNER JOIN aperturaprogramatica AS apg ON apg.aper_id = i.aper_id
+            LEFT JOIN vista_temporalidad_insumo2 AS prog ON prog.ins_id = i.ins_id 
+            WHERE p.com_id = '.$com_id.'
+              AND p.estado != 3 
+              AND i.ins_estado != 3 
+              AND i.aper_id != 0 
+       
+            ORDER BY p.prod_cod, par.par_codigo, i.ins_id ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     ////insumos con estado 3 (eliminados)
     function lista_insumos_prod_eliminados($prod_id){
@@ -945,26 +948,6 @@ class Model_insumo extends CI_Model{
         $query = $this->db->query($sql);
         return $query->result_array();
     }
-
-
-
-    //// ---- LISTA DE REQUERIMIENTOS POR UNIDAD ORGANIZACIONAL
-/*    function get_lista_requerimientos_unidad_partida($aper_id,$tp_id,$par_id,$dep_id){
-        if($aper_id==0){ /// consolidado Regional
-            $sql = 'select *
-                    from lista_requerimientos_institucional_directo('.$tp_id.','.$this->gestion.')
-                    where dep_id='.$dep_id.'';
-
-        }
-        else{ /// detallado por unidad programa
-
-
-        }
-
-
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
 
 
     /// =================================== INSTITUCIONAL ============================================

@@ -222,9 +222,8 @@ class Creporte extends CI_Controller {
     /*----- REPORTE - CONSOLIDADO PARTIDAS X UNIDAD RESPONSABLE (2020 - 2022) -----*/
     public function consolidado_partida_reporte($partidas){
         $tabla='';
-        //$partidas=$this->model_insumo->list_consolidado_partidas_componentes($com_id);
-
         $tabla.='
+            <div style="font-size: 8px; font-weight: bold; color: #1e293b; text-transform: uppercase; font-family: helvetica;">DETALLE :</div>
             <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:70%;" align=center>
                 <thead>
                     <tr style="font-size: 7px;height:12px;" bgcolor="#eceaea" align=center>
@@ -258,8 +257,14 @@ class Creporte extends CI_Controller {
     }
 
 
-    //// REPORTE FORMULARIO POA N 4 PDF 2026 - Unidad Responsable
+    //// REPORTE FORMULARIO POA N 4 PDF 2027 - Unidad Responsable
     public function reporte_formulario4_unidadResponsable($com_id){
+        // 1. Ampliación y control de recursos de hardware en el servidor
+        ini_set('memory_limit', '2048M'); 
+        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        
+        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        if (ob_get_length()) ob_clean();
         $componente=$this->model_componente->get_componente($com_id,$this->gestion); /// GET COMP -> PROY -> APER
         if(count($componente)!=0){
             if($componente[0]['tp_id']==1){
@@ -273,8 +278,8 @@ class Creporte extends CI_Controller {
             $cabecera=$this->programacionpoa->cabecera($componente,4);
             $pie=$this->programacionpoa->pie_form($componente);
             
-            $data['informacion'] = '
-              <page orientation="landscape" backtop="67mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
+            $data['lista'] = '
+              <page orientation="landscape" backtop="62.5mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
                 <!-- Cabecera Institucional Inalterada -->
                 <page_header>
                     <br><div class="verde"></div>
@@ -290,15 +295,12 @@ class Creporte extends CI_Controller {
                     '.$listado.'
               </page>';
 
-              // 1. Capturamos el HTML estructurado de la vista en una variable
-          $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4', $data, true); 
-
+          // 1. Capturamos el HTML estructurado de la vista en una variable
+          $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
           // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
           if (ob_get_length()) ob_clean();
-
           // 3. Importación segura del motor conversor usando la ruta física del servidor
           require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
-          
           try {
               // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
               $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
@@ -319,6 +321,87 @@ class Creporte extends CI_Controller {
     }
 
 
+
+    //// REPORTE FORMULARIO POA N 5 ( REQUERIMIENTOS NORMAL) 2027
+    public function reporte_formulario5_unidadResponsable($com_id){
+        // 1. Ampliación y control de recursos de hardware en el servidor
+        ini_set('memory_limit', '2048M'); 
+        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        
+        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        if (ob_get_length()) ob_clean();
+        $componente=$this->model_componente->get_componente($com_id,$this->gestion);
+        if(count($componente)!=0){
+            if($componente[0]['tp_id']==1){
+                $pie_report='FORM_SPO_N5_'.$componente[0]['proy_nombre'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+            }
+            else{
+                $pie_report='FORM_SPO_N5_'.$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+            }
+
+            $cabecera=$this->programacionpoa->cabecera($componente,5);
+            
+            $lista_partidas=$this->model_insumo->list_consolidado_partidas_uResponsable($com_id);
+            $partidas=$this->consolidado_partida_reporte($lista_partidas);
+            $pie=$this->programacionpoa->pie_form($componente);
+
+            $requerimientos='<b>SIN REQUERIMIENTOS PROGRAMADOS .</b>';
+            $items=$this->model_insumo->list_requerimientos_uresponsable($com_id); //// nuevo
+            if(count($items)!=0){
+                $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($items); /// lista Requerimientos
+            }
+
+            $tabla='';
+            $tabla.='
+                <page orientation="landscape" backtop="62.5mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
+                    <page_header>
+                        <br><div class="verde"></div>
+                        '.$cabecera.'
+                    </page_header>
+                    <page_footer>
+                        '.$pie.'
+                    </page_footer>
+                    '.$requerimientos.'
+                </page>
+
+                <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
+                    <page_header>
+                        <br><div class="verde"></div>
+                        '.$cabecera.'
+                    </page_header>
+                    <page_footer>
+                        '.$pie.'
+                    </page_footer>
+                    '.$partidas.'
+                </page>';
+
+            $data['lista']=$tabla;
+            $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
+              // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+            if (ob_get_length()) ob_clean();
+              // 3. Importación segura del motor conversor usando la ruta física del servidor
+            require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+            try {
+                  // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+                  $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+                  $html2pdf->pdf->SetDisplayMode('fullpage');
+                  $html2pdf->writeHTML($html_reporte);
+                  
+                  // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+                  $html2pdf->Output($pie_report. '.pdf', 'I');
+              }
+              catch(HTML2PDF_exception $e) {
+                  echo "Error al compilar el reporte: " . $e;
+              }
+              exit;
+        }
+        else{
+            echo "Error !!!";
+        }
+    }
+
+
+    //// Reporte Consolidado POA 2027
     public function reporte_formulario4_consolidado($proy_id){
         // 1. Ampliación y control de recursos de hardware en el servidor
         ini_set('memory_limit', '2048M'); 
@@ -328,8 +411,8 @@ class Creporte extends CI_Controller {
         if (ob_get_length()) ob_clean();
 
         $tabla = '';
-        $data['mes'] = $this->mes_nombre();
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); 
+        //$data['mes'] = $this->mes_nombre();
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); 
 
         if (count($proyecto) != 0) {
             $unidades_responsables = $this->model_componente->lista_UnidadesResponsables($proy_id); 
@@ -359,7 +442,7 @@ class Creporte extends CI_Controller {
                     $requerimientos = $this->programacionpoa->rep_formulario_N5_Uresponsable($list_insumos);
 
                     $tabla .= '
-                    <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
+                    <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
                         <page_header>
                             <br><div class="verde"></div>
                             ' . $cabecera . '
@@ -372,7 +455,7 @@ class Creporte extends CI_Controller {
 
                     if (count($list_insumos) != 0) {
                         $tabla .= '
-                        <page backtop="75mm" backbottom="29mm" backleft="5mm" backright="5mm" pagegroup="new">
+                        <page backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
                             <page_header>
                                 <br><div class="verde"></div>
                                 ' . $cabecera_f5 . '
@@ -382,7 +465,7 @@ class Creporte extends CI_Controller {
                             </page_footer>
                             ' . $requerimientos . '
                         </page>
-                        <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
+                        <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
                             <page_header>
                                 <br><div class="verde"></div>
                                 ' . $cabecera_f5 . '
@@ -409,7 +492,7 @@ class Creporte extends CI_Controller {
                                 $cabecera_bolsa = $this->programacionpoa->cabecera_bolsa($get_prog_bolsa, $componente);
 
                                 $tabla .= '
-                                <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
+                                <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
                                     <page_header>
                                         <br><div class="verde"></div>
                                         ' . $cabecera_bolsa . '
@@ -419,7 +502,7 @@ class Creporte extends CI_Controller {
                                     </page_footer>
                                     ' . $requerimientos_bolsa . '
                                 </page>
-                                <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
+                                <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
                                     <page_header>
                                         <br><div class="verde"></div>
                                         ' . $cabecera_bolsa . '
@@ -436,16 +519,10 @@ class Creporte extends CI_Controller {
             }
 
             $data['lista'] = $tabla;
-
             // 2. CAPTURA ASÍNCRONA: Guardamos la estructuración HTML en una variable
             $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
-
-            // 3. Vaciamos buffers internos remanentes de CodeIgniter para blindar el binario
             if (ob_get_length()) ob_clean();
-
-            // 4. INSTANCIACIÓN DE COMPILACIÓN DESDE LA RUTA FÍSICA CORPORATIVA FCPATH
             require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
-            
             try {
                 // Inicializamos por defecto en formato horizontal ('L') y hoja Carta (Letter)
                 $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
@@ -464,74 +541,16 @@ class Creporte extends CI_Controller {
         }
     }
 
-
-    //// REPORTE FORMULARIO POA N 5 ( REQUERIMIENTOS NORMAL) 2026
-    public function reporte_formulario5($com_id){
-        $componente=$this->model_componente->get_componente($com_id,$this->gestion);
-        if(count($componente)!=0){
-            //$proyecto = $this->model_proyecto->get_id_proyecto($componente[0]['proy_id']); //// DATOS PROYECTO
-            $data['pie_rep']=$componente[0]['proy_nombre'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
-            if($componente[0]['tp_id']==4){
-                $data['pie_rep']=$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
-            }
-
-            $cabecera=$this->programacionpoa->cabecera($componente,5);
-            
-            $lista_partidas=$this->model_insumo->list_consolidado_partidas_uResponsable($com_id);
-            $partidas=$this->consolidado_partida_reporte($lista_partidas);
-            $pie=$this->programacionpoa->pie_form($componente);
-
-            $requerimientos='<b>SIN REQUERIMIENTOS PROGRAMADOS .</b>';
-            $items=$this->model_insumo->list_requerimientos_uresponsable($com_id); //// nuevo
-            if(count($items)!=0){
-                $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($items);
-            }
-
-            $tabla='';
-            $tabla.='
-                <page backtop="75mm" backbottom="22mm" backleft="5mm" backright="5mm" pagegroup="new">
-                    <page_header>
-                        <br><div class="verde"></div>
-                        '.$cabecera.'
-                    </page_header>
-                    <page_footer>
-                        '.$pie.'
-                    </page_footer>
-                    '.$requerimientos.'
-                </page>
-
-                <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
-                    <page_header>
-                        <br><div class="verde"></div>
-                        '.$cabecera.'
-                    </page_header>
-                    <page_footer>
-                        '.$pie.'
-                    </page_footer>
-                    '.$partidas.'
-                </page>';
-
-            $data['informacion']=$tabla;
-            $this->load->view('admin/programacion/reportes/reporte_form5', $data);
-        }
-        else{
-            echo "Error !!!";
-        }
-    }
-
-
-    //// REPORTE FORMULARIO POA N 5 PARA PROGRAMAS BIENES Y SERVICIOS Y FORTALECIMIENTO BOLSA 2026 POR SEPARADADO
+    //// REPORTE FORMULARIO POA N 5 PARA PROGRAMAS BIENES Y SERVICIOS Y FORTALECIMIENTO BOLSA 2027 POR SEPARADADO
     public function reporte_prog_bolsa_formulario5($aper_id,$com_id){
         $get_programa=$this->model_proyecto->get_aper_programa($aper_id);
         $componente = $this->model_componente->get_componente($com_id,$this->gestion); /// datos de la unidad responsable
-        $tabla='';
-
-                $data['pie_rep']= $get_programa[0]['proy_nombre'].' '.$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+        if(count($get_programa)!=0 && count($componente)!=0){
+            $tabla='';
+                $pie_report= $get_programa[0]['proy_nombre'].' '.$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
                 $pie=$this->programacionpoa->pie_form($componente);
-
-
-                    $cabecera=$this->programacionpoa->cabecera_bolsa($get_programa,$componente);
-                    $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($aper_id,$com_id);
+                $cabecera=$this->programacionpoa->cabecera_bolsa($get_programa,$componente);
+                $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($aper_id,$com_id);
 
                     if(count($lista_insumos)!=0){
                         $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($lista_insumos);
@@ -539,7 +558,7 @@ class Creporte extends CI_Controller {
                         $partidas=$this->consolidado_partida_reporte($lista_partidas);
                         
                         $tabla.='
-                        <page orientation="paysage" backtop="75mm" backbottom="22mm" backleft="5mm" backright="5mm" pagegroup="new">
+                        <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
                             <page_header>
                                 <br><div class="verde"></div>
                                 '.$cabecera.'
@@ -550,7 +569,7 @@ class Creporte extends CI_Controller {
                             '.$requerimientos.'
                         </page>
 
-                        <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
+                        <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
                             <page_header>
                                 <br><div class="verde"></div>
                                 '.$cabecera.'
@@ -563,11 +582,29 @@ class Creporte extends CI_Controller {
                         </page>';
                     }
 
-
-                $data['informacion']=$tabla;
-               // echo $data['informacion'];
-                $this->load->view('admin/programacion/reportes/reporte_form5', $data);
-
+                $data['lista']=$tabla;
+                $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
+                // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+                if (ob_get_length()) ob_clean();
+                  // 3. Importación segura del motor conversor usando la ruta física del servidor
+                require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+                try {
+                      // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+                      $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+                      $html2pdf->pdf->SetDisplayMode('fullpage');
+                      $html2pdf->writeHTML($html_reporte);
+                      
+                      // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+                      $html2pdf->Output($pie_report. '.pdf', 'I');
+                  }
+                  catch(HTML2PDF_exception $e) {
+                      echo "Error al compilar el reporte: " . $e;
+                  }
+                  exit;
+        }
+        else{
+            echo "Error !!! El código de unidad o proyecto especificado no registra datos activos.";
+        }
     }
 
 
@@ -575,93 +612,74 @@ class Creporte extends CI_Controller {
     public function reporte_formulario5_bolsas_consolidado($com_id){
         $componente=$this->model_componente->get_componente($com_id,$this->gestion);
         $programas_bolsas=$this->model_proyecto->lista_programas_bolsas_distrital($componente[0]['dist_id']);
-        $pie=$this->programacionpoa->pie_form($componente);
-        $data['pie_rep']='BOLSAS '.$this->gestion;
+        if(count($programas_bolsas)!=0 && count($componente)!=0){
+            $pie=$this->programacionpoa->pie_form($componente);
+            $pie_report='BOLSAS '.$this->gestion;
 
-        $tabla='';
-        if(count($programas_bolsas)!=0){
-            foreach($programas_bolsas as $row){
-                $get_prog_bolsa=[];
-                $get_prog_bolsa[]=$row;
-                $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($row['aper_id'],$com_id); /// lista de requerimientos
+            $tabla='';
+            if(count($programas_bolsas)!=0){
+                foreach($programas_bolsas as $row){
+                    $get_prog_bolsa=[];
+                    $get_prog_bolsa[]=$row;
+                    $lista_insumos=$this->model_insumo->lista_requerimientos_inscritos_en_programas_bosas($row['aper_id'],$com_id); /// lista de requerimientos
 
-                if(count($lista_insumos)!=0){
-                    $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($lista_insumos);
-                    $lista_partidas=$this->model_insumo->list_consolidado_partidas_programas_boLsas_uresponsable($row['aper_id'],$com_id);
-                    $partidas=$this->consolidado_partida_reporte($lista_partidas);
-                    $cabecera=$this->programacionpoa->cabecera_bolsa($get_prog_bolsa,$componente);
+                    if(count($lista_insumos)!=0){
+                        $requerimientos=$this->programacionpoa->rep_formulario_N5_Uresponsable($lista_insumos);
+                        $lista_partidas=$this->model_insumo->list_consolidado_partidas_programas_boLsas_uresponsable($row['aper_id'],$com_id);
+                        $partidas=$this->consolidado_partida_reporte($lista_partidas);
+                        $cabecera=$this->programacionpoa->cabecera_bolsa($get_prog_bolsa,$componente);
 
-                    $tabla.='
-                    <page orientation="paysage" backtop="75mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
-                        <page_header>
-                        <br><div class="verde"></div>
-                        '.$cabecera.'
-                        </page_header>
-                        <page_footer>
-                        '.$pie.'
-                        </page_footer>
-                        '.$requerimientos.'
-                    </page>
-                    <page orientation="portrait" backtop="80mm" backbottom="33mm" backleft="5mm" backright="5mm" pagegroup="new">
-                        <page_header>
-                        <br><div class="verde"></div>
-                        '.$cabecera.'
-                        </page_header>
-                        <page_footer>
-                        '.$pie.'
-                        </page_footer>
-                        '.$partidas.'
-                    </page>';
-                } 
-            }                      
+                        $tabla.='
+                        <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                            <page_header>
+                            <br><div class="verde"></div>
+                            '.$cabecera.'
+                            </page_header>
+                            <page_footer>
+                            '.$pie.'
+                            </page_footer>
+                            '.$requerimientos.'
+                        </page>
+                        <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                            <page_header>
+                            <br><div class="verde"></div>
+                            '.$cabecera.'
+                            </page_header>
+                            <page_footer>
+                            '.$pie.'
+                            </page_footer>
+                            '.$partidas.'
+                        </page>';
+                    } 
+                }                      
+            }
+
+            $data['lista']=$tabla;
+            $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
+            // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+            if (ob_get_length()) ob_clean();
+              // 3. Importación segura del motor conversor usando la ruta física del servidor
+            require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+            try {
+                  // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+                  $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+                  $html2pdf->pdf->SetDisplayMode('fullpage');
+                  $html2pdf->writeHTML($html_reporte);
+                  
+                  // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+                  $html2pdf->Output($pie_report. '.pdf', 'I');
+              }
+              catch(HTML2PDF_exception $e) {
+                  echo "Error al compilar el reporte: " . $e;
+              }
+              exit;
         }
-
-        $data['informacion']=$tabla;
-        $this->load->view('admin/programacion/reportes/reporte_form5', $data);
+        else{
+            echo "Error !!! El código de unidad o proyecto especificado no registra datos activos.";
+        }
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*------- REPORTE CONSOLIDADO PRESUPUESTO POR PARTIDAS (2020) ------*/
-/*    public function reporte_presupuesto_consolidado($proy_id){
-        $data['mes'] = $this->mes_nombre();
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
-        if(count($proyecto)!=0){
-            $data['pie_rep']=$proyecto[0]['proy_nombre'].' '.$this->gestion;
-            if($proyecto[0]['tp_id']==4){
-                $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
-                $data['pie_rep']=$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'].' '.$this->gestion;
-                $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);    
-            }
-            
-            $data['cabecera']=$this->programacionpoa->cabecera($proyecto[0]['tp_id'],0,$proyecto,0);
-            $data['consolidado']=$this->consolidado_ptto_reporte($proyecto);
-            $data['pie']=$this->programacionpoa->pie_form($proyecto);
-            $this->load->view('admin/programacion/reportes/reporte_consolidado_presupuesto', $data);
-        }
-        else{
-            echo "<b>ERROR !!!!!</b>";
-        }
-    }*/
 
 
     function mes_nombre(){

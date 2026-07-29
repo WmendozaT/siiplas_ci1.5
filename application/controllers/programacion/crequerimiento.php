@@ -33,7 +33,7 @@ class crequerimiento extends CI_Controller {
     }
 
     
-    /*------- LISTA DE FORM 5 x Unidad Responsable (Componentes) ----------*/
+    /*------- LISTA DE FORM 5 x Unidad Responsable (Componentes) 2027----------*/
     public function list_requerimientos_x_unidadresponsable($com_id){
         $tabla='';
         $data['stylo'] = $this->programacionpoa->estilo_tabla_form5();
@@ -44,11 +44,12 @@ class crequerimiento extends CI_Controller {
             $data['titulo']=$this->cabecera_f5_uresponsable($get_componente); //// Cabecera 
         
             // Recuperamos la colección base de requerimientos vinculados (Form 5)
-            $lista_insumos = $this->model_insumo->lista_insumos_x_uresponsable($com_id);
+            $lista_insumos = $this->model_insumo->list_requerimientos_uresponsable($com_id);
             $lista_form4=$this->model_producto->lista_productos($com_id);
             $base='<input type="hidden" name="com_id" id="com_id" value="' . $com_id . '">';
-            $tabla.=$this->vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$this->button_opciones_componente());
+            $tabla.=$this->vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$this->button_opciones_componente($get_componente));
             $tabla.=$this->programacionpoa->modal_migracion_form5x_componente($get_componente);
+            $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_responsable($get_componente);
 
             $data['tabla']=$tabla;
             $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
@@ -202,7 +203,7 @@ class crequerimiento extends CI_Controller {
                 $tabla .= '<td style="text-align: right; padding: 6px; width: 5%; vertical-align: middle;">' . number_format($row['ins_costo_unitario'], 2, '.', ',') . '</td>';
                 $tabla .= '<td style="text-align: right; font-weight: width: 5%; bold; background: #f8fafc; color: #0f172a; padding: 6px; vertical-align: middle;">' . number_format($row['ins_costo_total'], 2, '.', ',') . '</td>';
                 for ($m = 1; $m <= 12; $m++) {
-                    $monto_mes_real = isset($row['mes' . $m]) ? floatval($row['mes' . $m]) : 0.00;
+                    $monto_mes_real = isset($row['mes_' . $m]) ? floatval($row['mes_' . $m]) : 0.00;
                     $style_celda_mes = ($monto_mes_real > 0) ? 'style="text-align: right; width: 4.5%; background: #f0fdf4; color: #16a34a; font-weight: bold; padding: 6px; vertical-align: middle;"' : 'style="text-align: right; color: #cbd5e1; padding: 6px; vertical-align: middle;"';
                     $tabla .= '<td ' . $style_celda_mes . '>' . ($monto_mes_real > 0 ? number_format($monto_mes_real, 2, '.', ',') : '0.00') . '</td>';
                     $total_meses[$m] += $monto_mes_real;
@@ -509,15 +510,76 @@ class crequerimiento extends CI_Controller {
     }
 
 
-    //// Opciones formulario 5 x Componente
-    public function button_opciones_componente(){
+    //// Opciones formulario 5 x Unidad Responsable
+    public function button_opciones_componente($componente){
       $tabla='';
       if($this->tp_adm==1 || $this->conf_form5==1){
-            $tabla.='
-            <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-success importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-              <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>Subir Archivo Requerimientos.xls</b>
-            </a>
-            <button type="button" id="btn_eliminar_masivo_f5" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Eliminar Items Seleccionados</button>';
+            $tabla .= '
+            <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                
+                <!-- Bloque Izquierdo: Operaciones y Acciones sobre la Grilla -->
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <!-- 📥 Botón Importar Excel Global -->
+                    <a href="#" 
+                       data-toggle="modal" 
+                       data-target="#modal_importar_f5" 
+                       class="btn btn-sm btn-success importar_f5" 
+                       title="IMPORTAR ARCHIVO EXCEL DE REQUERIMIENTOS (GLOBAL)" 
+                       style="font-weight: bold; background: #16a34a; border-color: #16a34a; color: #ffffff; padding: 6px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s ease;"
+                       onmouseover="this.style.background=\'#15803d\'; this.style.borderColor=\'#15803d\';"
+                       onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#16a34a\';">
+                        <i class="fa fa-upload" style="font-size: 13px;"></i> Subir Requerimientos (.xls)
+                    </a>
+
+                    <!-- 🚨 Botón Eliminar Items Seleccionados (Lotes) -->
+                    <button type="button" 
+                            id="btn_eliminar_masivo_f5" 
+                            class="btn btn-sm btn-danger" 
+                            title="ELIMINAR DEFINITIVAMENTE LOS REQUERIMIENTOS SELECCIONADOS POR CHECKBOX"
+                            style="font-weight: bold; background: #dc2626; border-color: #dc2626; color: #ffffff; padding: 6px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;"
+                            onmouseover="this.style.background=\'#b91c1c\'; this.style.borderColor=\'#b91c1c\';"
+                            onmouseout="this.style.background=\'#dc2626\'; this.style.borderColor=\'#dc2626\';">
+                        <i class="fa fa-trash-o" style="font-size: 13px;"></i> Eliminar Items Seleccionados
+                    </button>
+                </div>
+
+                <button type="button" 
+                        class="btn btn-xs btn-default btn-ver-partidas-unidad" 
+                        data-id="' . $componente[0]['com_id']. '" 
+                        data-codigo="' . $componente[0]['serv_cod'] . '" 
+                        data-nombre="' . htmlspecialchars($componente[0]['serv_descripcion'], ENT_QUOTES, 'UTF-8') . '" 
+                        data-toggle="modal" 
+                        data-target="#modal_desglose_partidas_unidad"
+                        title="VER MATRIZ DE REQUERIMIENTOS POR PARTIDA" 
+                        style="font-weight: bold; padding: 5px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius:3px; color:#334155;">
+                    <i class="fa fa-table text-info"></i> Ver Detalle de Partidas
+                </button>
+
+                <!-- Bloque Derecho: Reportes Oficiales en PDF (Salidas de Auditoría) -->
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <!-- 🖨️ Reporte POA Estándar de la Unidad -->
+                    <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $componente[0]['com_id']) . '\');" 
+                       title="GENERAR REPORTE POA FORMULARIO N° 5 ESTÁNDAR (PDF)" 
+                       class="btn btn-sm btn-default" 
+                       style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; padding: 6px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s ease;"
+                       onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
+                       onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
+                        <i class="fa fa-file-pdf-o text-danger" style="font-size: 13px;"></i> Form. N° 5 (Requerimientos)
+                    </a>
+
+                    <!-- 🖨️ Reporte POA Consolidado Programa Bolsa -->
+                    <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable_programa_bolsa_consoldado/" . $componente[0]['com_id']) . '\');" 
+                       title="GENERAR REPORTE CONSOLIDADO FORMULARIO N° 5 - PROGRAMA BOLSA (PDF)" 
+                       class="btn btn-sm btn-default" 
+                       style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; padding: 6px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s ease;"
+                       onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
+                       onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
+                        <i class="fa fa-file-pdf-o text-danger" style="font-size: 13px;"></i> Form. N° 5 (Consolidado de Bolsas)
+                    </a>
+                </div>
+
+            </div>';
+
           }
       return $tabla;
     }

@@ -9,7 +9,13 @@ class Model_componente extends CI_Model{
         $this->dist = $this->session->userData('dist'); /// dist-> id de la distrital
         $this->dist_tp = $this->session->userData('dist_tp'); /// dist_tp->1 Regional, dist_tp->0 Distritales
     }
-    //lista de organismo financiador
+    //lista de organismo financiador (VIGENTE PARA MANTENIMIENTO)
+    function lista_unidades($dist_id){
+        $sql = 'select * 
+                from lista_poa_gastocorriente_distrital('.$dist_id.','.$this->gestion.')'; 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     /*------------ Relacion Proyecto Componente -------*/
     function proyecto_componente($proy_id){
@@ -81,7 +87,7 @@ class Model_componente extends CI_Model{
                 /* 1. Filtros directos de la tabla principal y su relación inmediata */
                 INNER JOIN _proyectofaseetapacomponente pfe ON pfe.pfec_id = c.pfec_id AND pfe.pfec_estado = 1
                 INNER JOIN aperturaprogramatica apg ON apg.aper_id = pfe.aper_id 
-                    AND apg.aper_gestion = '.$this->gestion.' 
+                   
                     AND apg.aper_estado != 3
                 /* 2. Relaciones de catálogo y descripción */
                 INNER JOIN servicios_actividad sa ON sa.serv_id = c.serv_id
