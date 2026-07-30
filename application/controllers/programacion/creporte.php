@@ -34,7 +34,7 @@ class Creporte extends CI_Controller {
 
     /*------ REPORTE - CARATULA ------*/
     public function presentacion_poa($proy_id){
-        $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $data['oregional']=$this->verif_oregional($proy_id);
@@ -50,7 +50,7 @@ class Creporte extends CI_Controller {
 
     /*------ REPORTE - IDENTIFICACION ------*/
     public function datos_generales($proy_id){
-        $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $data['oregional']=$this->verif_oregional($proy_id);
@@ -66,7 +66,7 @@ class Creporte extends CI_Controller {
 
     /*------ REPORTE - PROGRAMACION FISICA ------*/
     public function programacion_fisica($proy_id){
-        $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $data['oregional']=$this->verif_oregional($proy_id);
@@ -186,7 +186,7 @@ class Creporte extends CI_Controller {
 
     /*------ REPORTE - PROGRAMACION FINANCIERA ------*/
     public function programacion_financiera($proy_id){
-        $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         if(count($data['proyecto'])!=0){
             $data['menu']=$this->genera_menu($proy_id);
             $data['oregional']=$this->verif_oregional($proy_id);

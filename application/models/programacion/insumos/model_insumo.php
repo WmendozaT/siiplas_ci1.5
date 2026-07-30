@@ -525,24 +525,35 @@ class Model_insumo extends CI_Model{
     }
 
 
-    /*---- LISTA CONSOLIDADO DE PRODUCTOS PARTIDAS POR SUB ACTIVIDADES (COMPONENTES) 2027 -----*/
+    /*---- LISTA CONSOLIDADO DE PARTIDAS POR UNIDAD RESPONSABLE (COMPONENTES) 2027 -----*/
     function list_consolidado_partidas_uResponsable($com_id){
             $sql = 'SELECT 
-                        c.com_id, 
-                        c.pfec_id, 
-                        par.par_id, 
-                        par.par_codigo, 
-                        par.par_nombre, 
-                        SUM(i.ins_costo_total) AS monto
-                    FROM _componentes c
-                    INNER JOIN insumos i ON i.com_id = c.com_id
-                    INNER JOIN partidas par ON par.par_id = i.par_id
-                    WHERE c.com_id = '.$com_id.' 
-                     
-                      AND i.ins_estado != 3 
-                      AND i.aper_id != 0 
-                    GROUP BY c.com_id, c.pfec_id, par.par_id, par.par_codigo, par.par_nombre
-                    ORDER BY par.par_codigo ASC';
+                    i.com_id, 
+                    -- Extraemos el pfec_id directamente cruzando con la apertura para no usar la tabla _componentes
+                    apg.aper_id, 
+                    par.par_id, 
+                    par.par_codigo, 
+                    par.par_nombre, 
+                    
+                    -- Montos financieros con tipado explícito y redondeo contable de centavos
+                    COALESCE(SUM(i.ins_costo_total), 0.00)::numeric(18,2) AS monto,
+                    COALESCE(SUM(i.ins_monto_certificado), 0.00)::numeric(18,2) AS monto_certificado,
+                    
+                    -- 🌟 REPARADO CORE: Ecuación aritmética legal repitiendo los agregadores matemáticos
+                    (COALESCE(SUM(i.ins_costo_total), 0.00) - COALESCE(SUM(i.ins_monto_certificado), SUM(i.ins_monto_certificado), 0.00))::numeric(18,2) AS saldo
+
+                FROM public.insumos i
+                INNER JOIN public.partidas par ON par.par_id = i.par_id
+                INNER JOIN public.aperturaprogramatica apg ON apg.aper_id = i.aper_id
+
+                -- 🌟 OPTIMIZACIÓN: Trasladamos los filtros numéricos directos a las claves primarias indexadas
+                WHERE i.com_id = '.$com_id.'
+                  AND i.ins_estado != 3 
+                  AND i.aper_id != 0 
+                  AND apg.aper_gestion = '.$this->gestion.' -- 🌟 Elástico: Pasar el año de sesión activa de la CNS (ej. 2026)
+
+                GROUP BY i.com_id, apg.aper_id, par.par_id, par.par_codigo, par.par_nombre
+                ORDER BY par.par_codigo ASC;';
 
 
         $query = $this->db->query($sql);

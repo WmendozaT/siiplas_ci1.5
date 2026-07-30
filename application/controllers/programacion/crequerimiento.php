@@ -49,7 +49,7 @@ class crequerimiento extends CI_Controller {
             $base='<input type="hidden" name="com_id" id="com_id" value="' . $com_id . '">';
             $tabla.=$this->vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$this->button_opciones_componente($get_componente));
             $tabla.=$this->programacionpoa->modal_migracion_form5x_componente($get_componente);
-            $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_responsable($get_componente);
+            $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_responsable();
 
             $data['tabla']=$tabla;
             $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
@@ -546,7 +546,7 @@ class crequerimiento extends CI_Controller {
                 <button type="button" 
                         class="btn btn-xs btn-default btn-ver-partidas-unidad" 
                         data-id="' . $componente[0]['com_id']. '" 
-                        data-codigo="' . $componente[0]['serv_cod'] . '" 
+                        data-codigo="' . $componente[0]['serv_cod'] . ' ' . $componente[0]['tipo_subactividad'] . '" 
                         data-nombre="' . htmlspecialchars($componente[0]['serv_descripcion'], ENT_QUOTES, 'UTF-8') . '" 
                         data-toggle="modal" 
                         data-target="#modal_desglose_partidas_unidad"
@@ -988,6 +988,75 @@ class crequerimiento extends CI_Controller {
 
         } else {
             show_404();
+        }
+    }
+
+
+    /// Get listado de partidas programadas por Unidad Responsable / Componente
+    public function get_desglose_partidas_unidad_ajax() {
+        if ($this->input->is_ajax_request() && $this->input->post()) {
+            
+            $com_id = intval($this->input->post('com_id'));
+            $g_id   = intval($this->gestion);
+
+            $list_partidas=$this->model_insumo->list_consolidado_partidas_uResponsable($com_id);
+
+            $html = '
+            <div style="margin-bottom: 12px; text-align: right;">
+                <button type="button" class="btn btn-xs btn-default" onclick="imprimirDetallePartidasModal();" style="font-family: Arial, sans-serif; font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; padding: 5px 14px; font-size:11px; color:#334155; border-radius:3px; cursor:pointer; transition: all 0.15s ease;">
+                    <i class="fa fa-print text-primary" style="font-size:12px;"></i> Imprimir Detalle
+                </button>
+            </div>';
+
+            // ==========================================================================
+            // 📊 SUPERESTRUCTURA DE LA TABLA EJECUTIVA FORMAL
+            // ==========================================================================
+            $html .= '
+            <div id="area_impresion_detalle_partidas" class="table-responsive" style="border: 1px solid #cbd5e1; border-radius: 4px;">
+                <table class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11.5px; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #334155; color: #ffffff; text-transform: uppercase; font-size: 10px; height: 34px; letter-spacing:0.3px;">
+                            <th style="padding: 8px; text-align: left; background: #1e293b; vertical-align: middle;">PARTIDA PRESUPUESTARIA Clasificadora</th>
+                            <th style="padding: 8px; text-align: right; width: 22%; background: #1e3a8a; vertical-align: middle;">PROGRAMADO (Bs.)</th>
+                            <th style="padding: 8px; text-align: right; width: 22%; background: #0aa699; vertical-align: middle;">CERTIFICADO (Bs.)</th>
+                            <th style="padding: 8px; text-align: right; width: 22%; background: #475569; vertical-align: middle;">SALDO DISPONIBLE (Bs.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+            
+            // 🛠️ REPARADO: Se ajusta el colspan a 4 para cubrir la estructura simétrica real
+            if(empty($list_partidas)) {
+                $html .= '<tr><td colspan="4" class="text-center" style="padding: 15px; font-weight: bold; color: #64748b;"><i class="fa fa-info-circle"></i> Sin requerimientos presupuestarios asignados en esta unidad.</td></tr>';
+            } else {
+                foreach($list_partidas as $row) {
+                    $saldo_item = floatval($row['saldo']);
+                    
+                    // Alerta visual cromática formal si la partida registra sobregiro (Monto menor a cero)
+                    $style_saldo = ($saldo_item < 0) ? 'background: #fef2f2; color: #dc2626; font-weight: bold;' : 'background: #f8fafc; color: #334155; font-weight: bold;';
+
+                    $html .= '<tr style="height: 28px; vertical-align: middle;">';
+                    $html .= '<td style="font-weight: bold; color: #0f172a; padding-left: 8px;">' . $row['par_codigo'] . ' - ' . strtoupper($row['par_nombre']) . '</td>';
+                    
+                    // 🌟 CÓDIGO CROMÁTICO REPARADO: Colores independientes y coherentes por columna
+                    $html .= '<td style="text-align: right; padding-right: 8px; font-weight: bold; color: #1e40af;">' . number_format($row['monto'], 2, '.', ',') . '</td>';
+                    $html .= '<td style="text-align: right; padding-right: 8px; font-weight: bold; color: #16a34a;">' . number_format($row['monto_certificado'], 2, '.', ',') . '</td>';
+                    $html .= '<td style="text-align: right; padding-right: 8px; ' . $style_saldo . '">' . number_format($saldo_item, 2, '.', ',') . '</td>';
+                    $html .= '</tr>';
+                }
+            }
+            $html .= '</tbody></table></div>';
+
+            // Blindaje contra errores de token '<': Vacíamos buffers intermedios de PHP
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+
+            // Despachamos el payload hacia el done del form5.js
+            echo json_encode(array(
+                'status' => 'success',
+                'respuesta' => 'correcto',
+                'html_reporte' => $html
+            ));
+            exit;
         }
     }
 

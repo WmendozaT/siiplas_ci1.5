@@ -905,7 +905,7 @@ class Cmod_presupuestario extends CI_Controller {
           <h1> PROYECTO DE INVERSI&Oacute;N : <small>'.$data['proyecto'][0]['proy_sisin'].' - '.$data['proyecto'][0]['proy_nombre'].'</small>';
         }
         else{
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
           $titulo='
           <h1> <b>'.$data['proyecto'][0]['tipo_adm'].' : </b><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' '.$data['proyecto'][0]['abrev'].'</small>';
         }
@@ -1126,7 +1126,7 @@ class Cmod_presupuestario extends CI_Controller {
           <h1> PROYECTO DE INVERSI&Oacute;N : <small>'.$data['proyecto'][0]['proy_sisin'].' - '.$data['proyecto'][0]['proy_nombre'].'</small>';
         }
         else{
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['cite'][0]['proy_id']);
+          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['cite'][0]['proy_id']);
           $titulo='
           <h1> <b>'.$data['proyecto'][0]['tipo_adm'].' : </b><small>'.$data['proyecto'][0]['aper_programa'].' '.$data['proyecto'][0]['aper_proyecto'].' '.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['act_descripcion'].' '.$data['proyecto'][0]['abrev'].'</small>';
         }

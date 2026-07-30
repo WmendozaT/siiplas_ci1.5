@@ -43,7 +43,7 @@ class cajuste_crequerimiento extends CI_Controller{
       if(count($data['componente'])!=0){
         $data['menu']=$this->genera_menu($data['componente'][0]['proy_id']);
         $fase = $this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']);
-        $data['proyecto']=$this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
+        $data['proyecto']=$this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);
         $data['titulo']=$this->programacionpoa->titulo_ajuste($data['proyecto'],$data['componente']);
         $data['part_padres'] = $this->model_partidas->lista_padres();//partidas padres
         $data['part_hijos'] = $this->model_partidas->lista_partidas();//partidas hijos

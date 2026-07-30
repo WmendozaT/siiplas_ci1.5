@@ -110,6 +110,17 @@ class Model_objetivogestion extends CI_Model{
         return $query->result_array();
     }
 
+    /*---- Verif Codigo de ACP vigente ----*/
+    public function verif_get_objetivosgestion($codigo){
+        $sql = 'SELECT *
+                from objetivo_gestion og
+                Inner Join indicador as tp On og.indi_id=tp.indi_id
+                where og_codigo='.$codigo.' and g_id='.$this->gestion.' AND og.estado!=3';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     /*---------- GET OBJETIVOS DE GESTION --------------*/
     public function get_objetivosgestion($og_id){
         if($this->gestion>2023){

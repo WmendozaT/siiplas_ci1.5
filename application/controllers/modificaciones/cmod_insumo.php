@@ -1154,7 +1154,7 @@ class Cmod_insumo extends CI_Controller {
           return;
       }
 
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cites_mod5[0]['proy_id']); 
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cites_mod5[0]['proy_id']); 
       
       // Configuración del pie de reporte unificado
       $data['pie_rep'] = $get_mes[0]['m_descripcion'] . ' ' . $this->gestion . ' - CONSOLIDADO_MOD_POA_FORM5 - ' . $proyecto[0]['tipo_adm'] . ' ' . $proyecto[0]['act_descripcion'] . ' ' . $proyecto[0]['abrev'];
@@ -1214,48 +1214,6 @@ class Cmod_insumo extends CI_Controller {
       }
       exit; // Forzamos el cierre estricto del proceso
   }
-
-
-    /*public function consolidado_form5_mensual2($proy_id,$mes){
-      $tabla='';
-      $get_mes=$this->model_modrequerimiento->get_mes($mes);
-
-      $cites_mod5=$this->model_modrequerimiento->list_cites_requerimientos_proy_x_mes($proy_id,$mes);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cites_mod5[0]['proy_id']); /// PROYECTO
-      $data['pie_rep']=$get_mes[0]['m_descripcion'].' '.$this->gestion.' - MOD_POA_FORM5 -'.$proyecto[0]['tipo_adm'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'];
-      
-      $tabla='';
-      foreach ($cites_mod5 as $row){
-        $cite=$this->model_modrequerimiento->get_cite_insumo($row['cite_id']);
-        if(count($cite)!=0){
-            $cabecera_modpoa=$this->modificacionpoa->cabecera_modpoa($cite,2);
-            if($cite[0]['tp_reporte']==0){ /// rep anterior
-              $items_modificados=$this->modificacionpoa->items_modificados_form5($row['cite_id']); /// anterior reporte
-            }
-            else{
-              $items_modificados=$this->modificacionpoa->items_modificados_form5_historial($row['cite_id'],1); //// Nuevo Reporte
-            }
-
-            $pie_mod=$this->modificacionpoa->pie_modpoa($cite,$row['cite_codigo']);
-        
-            $tabla.='
-            <page orientation="paysage"  backtop="73mm" backbottom="30mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
-              <page_header>
-              <br><div class="verde"></div>
-                  '.$cabecera_modpoa.'
-              </page_header>
-
-              <page_footer>
-               '.$pie_mod.'
-              </page_footer>
-              '.$items_modificados.'
-            </page> ';
-        }
-      }
-
-      $data['informacion']=$tabla;
-      $this->load->view('admin/modificacion/moperaciones/reporte_modificacion_poa_form4', $data); 
-    }*/
 
 
 
@@ -2394,7 +2352,7 @@ class Cmod_insumo extends CI_Controller {
             $unidad=$this->model_componente->get_componente($row['uni_resp'],$this->gestion);
             $uresp=$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'];
             if(count($unidad)!=0){
-              $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
+              $proy = $this->model_proyecto->get_UnidadOrganizacional($unidad[0]['proy_id']);
               $uresp=$row['or_codigo'].'/'.$row['prod_cod'].'.- ('.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].') -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</b></font>';
             }
 

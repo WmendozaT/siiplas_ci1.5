@@ -245,7 +245,7 @@ class model_producto extends CI_Model {
           OR 
           (p.uni_resp = ".$com_id."  AND prog.g_id = ".$this->gestion.") -- Caso Bolsas
       )
-    ORDER BY 1, p.prod_cod ASC;"; 
+    ORDER BY p.prod_id,p.prod_cod ASC;"; 
         
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -298,7 +298,7 @@ class model_producto extends CI_Model {
 
         WHERE p.com_id = ".$com_id." 
           AND p.estado != 3
-        ORDER BY 1, p.prod_cod ASC;"; 
+        ORDER BY p.prod_id,p.prod_cod ASC;"; 
         
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -352,7 +352,7 @@ class model_producto extends CI_Model {
             Inner Join indicador as tp On p.indi_id=tp.indi_id
             Inner Join meta_relativo as mt On mt.mt_id=p.mt_id
             where p.com_id='.$com_id.' and p.estado!=\'3\' 
-            ORDER BY p.prod_cod asc'; 
+            ORDER BY p.prod_id,p.prod_cod asc'; 
         $query = $this->db->query($sql);
         return $query->result_array();
     }

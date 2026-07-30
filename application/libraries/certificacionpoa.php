@@ -8,7 +8,7 @@ class Certificacionpoa extends CI_Controller{
       $this->load->model('mantenimiento/model_partidas');
       $this->load->model('mantenimiento/model_ptto_sigep');
       $this->load->model('modificacion/model_modrequerimiento');
-      $this->load->model('programacion/insumos/minsumos');
+      //$this->load->model('programacion/insumos/minsumos');
       $this->load->model('ejecucion/model_seguimientopoa');
       $this->load->model('programacion/model_componente');
       $this->load->model('ejecucion/model_notificacion');
@@ -274,7 +274,7 @@ class Certificacionpoa extends CI_Controller{
 
   /*------ GET FORMULARIOS N° 4 -----*/
     public function mis_formulariosN4($proy_id){
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
       $productos = $this->model_certificacion->list_operaciones_x_subactividad_ppto($proy_id); /// PRODUCTOS
       $tabla='';
       $tabla.='

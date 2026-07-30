@@ -1056,7 +1056,7 @@ class Cmod_fisica extends CI_Controller {
                                  </tr>';
 
               if($data['cite'][0]['tp_id']==4){
-                $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['cite'][0]['proy_id']);
+                $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['cite'][0]['proy_id']);
                 $data['titulo']='
                                 <tr style="font-size: 8pt;">
                                   <td style="height: 1.2%"><b>'.$data['proyecto'][0]['tipo_adm'].' </b></td>

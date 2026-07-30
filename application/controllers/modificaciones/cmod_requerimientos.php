@@ -219,7 +219,7 @@ class Cmod_requerimientos extends CI_Controller {
       $data['datos_proyecto']='<h1> PROYECTO : <small> '.$proyecto[0]['aper_programa'].' '.$proyecto[0]['proy_sisin'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['proy_nombre'].'</small></h1>';
       
       if($proyecto[0]['tp_id']==4){
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         $data['datos_proyecto']='<h1> '.$proyecto[0]['establecimiento'].' : <small> '.$proyecto[0]['aper_programa'].' '.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</small></h1>';
       }
 
@@ -679,7 +679,7 @@ class Cmod_requerimientos extends CI_Controller {
       if(count($cite)!=0){
         $proyecto=$this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// PROY INVERSION
         if($proyecto[0]['tp_id']==4){
-          $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cite[0]['proy_id']); /// GASTO CORRIENTE
+          $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// GASTO CORRIENTE
         }
 
         $data['cabecera']=$this->cabecera($proyecto,$cite);  

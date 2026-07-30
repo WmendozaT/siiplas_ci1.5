@@ -13,7 +13,7 @@ class Ccertificacion_poa extends CI_Controller {
       $this->load->model('programacion/model_mantenimiento');
       $this->load->model('ejecucion/model_certificacion');
       $this->load->model('ejecucion/model_ejecucion');
-      $this->load->model('programacion/insumos/minsumos');
+     // $this->load->model('programacion/insumos/minsumos');
       $this->load->model('mestrategico/model_mestrategico');
       $this->load->model('mantenimiento/model_partidas');
       $this->load->model('mantenimiento/model_ptto_sigep');
@@ -64,6 +64,31 @@ class Ccertificacion_poa extends CI_Controller {
         $data['operacion']=$this->certificacionpoa->list_unidades_es(4); /// Gasto Corriente
 
         $this->load->view('admin/ejecucion/certificacion_poa/form_cpoa/list_poas_aprobados', $data);
+/*         $proy_id = 3922;
+        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
+        
+        if($proyecto[0]['tp_id']==1){
+          $tabla=$this->certificacionpoa->mis_formulariosN4($proy_id); /// Mis operaciones por Unidad Responsable
+        }
+        else{
+          $presupuesto=$this->model_certificacion->saldo_presupuesto_unidad($proy_id);
+
+          if((($presupuesto[0]['saldo']>0 || $presupuesto[0]['saldo']==0) & count($presupuesto)!=0)){
+            $tabla=$this->certificacionpoa->mis_formulariosN4($proy_id); /// Mis Formularios n° 4 por Unidad Responsable
+          }
+          else{
+            $tabla='<div class="alert alert-danger" role="alert">
+                      SE DEBE AJUSTAR EL PRESUPUESTO POA DEBIDO A QUE EXISTE UN SOBREGIRO NEGATIVO : '.number_format($presupuesto[0]['saldo'], 2, ',', '.').' Bs.
+                    </div>';
+          }
+        }
+
+        $result = array(
+          'respuesta' => 'correcto',
+          'tabla'=>$tabla,
+        );
+          
+        echo json_encode($result);*/
       }
       else{
         redirect('admin/dashboard');
@@ -341,7 +366,7 @@ class Ccertificacion_poa extends CI_Controller {
   public function lista_requerimientos_cpoa_cert_rapida($cpoa_id){
     $cpoa=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id);
     if(count($cpoa)!=0){
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cpoa[0]['proy_id']); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cpoa[0]['proy_id']); /// PROYECTO
         //$data['base']='<input name="base" type="text" value="'.base_url().'">';
         $data['menu']=$this->certificacionpoa->menu(4);
         $data['titulo']='
@@ -381,7 +406,7 @@ class Ccertificacion_poa extends CI_Controller {
   public function lista_requerimientos_cpoa2($cpoa_id){
     $cpoa=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id);
     if(count($cpoa)!=0){
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cpoa[0]['proy_id']); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cpoa[0]['proy_id']); /// PROYECTO
         //$data['base']='<input name="base" type="text" value="'.base_url().'">';
         $data['menu']=$this->certificacionpoa->menu(4);
         $data['titulo']='
@@ -964,7 +989,7 @@ class Ccertificacion_poa extends CI_Controller {
 
   /*--- ACTUALIZA EL MONTO CERTIFICADO A CADA REQUERIMIENTO (NUEVO 2021) ---*/
   public function actualizar_monto_certificado_por_insumo($proy_id){
-    $proyecto = $this->model_proyecto->get_id_proyecto($proy_id);
+    $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
     if(count($proyecto)!=0){
         $insumos=$this->model_insumo->insumos_por_unidad($proyecto[0]['aper_id']);
         foreach ($insumos as $ins){
@@ -1526,7 +1551,7 @@ class Ccertificacion_poa extends CI_Controller {
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
         
         if($proyecto[0]['tp_id']==1){
           $tabla=$this->certificacionpoa->mis_formulariosN4($proy_id); /// Mis operaciones por Unidad Responsable
@@ -1762,7 +1787,7 @@ class Ccertificacion_poa extends CI_Controller {
     if(count($componente)!=0){
 
       $data['menu'] = $this->certificacionpoa->menu_segpoa($com_id,2);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($componente[0]['proy_id']);
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($componente[0]['proy_id']);
       $titulo='<div style="font-family: new times roman;">'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'].' / '.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</div>';
       
       $presupuesto=$this->model_certificacion->saldo_presupuesto_unidad($componente[0]['proy_id']);
@@ -1828,7 +1853,7 @@ class Ccertificacion_poa extends CI_Controller {
     if(count($componente)!=0){
 
       $data['menu'] = $this->certificacionpoa->menu_segpoa($com_id,2);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad(2651);/// ID PROG 72 (GESTION 2022)
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional(2651);/// ID PROG 72 (GESTION 2022)
       $titulo='<div style="font-family: new times roman;">PROGRAMA '.$proyecto[0]['aper_programa'].' : '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' '.$proyecto[0]['abrev'].' / '.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</div>';
       
       $presupuesto=$this->model_certificacion->saldo_presupuesto_unidad($componente[0]['proy_id']);

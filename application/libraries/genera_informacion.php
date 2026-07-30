@@ -1306,7 +1306,7 @@ class Genera_informacion extends CI_Controller{
 
     /*--------- Mis Servicios -------------*/
     public function mis_servicios($tp_rep,$proy_id){
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); 
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); 
       $componentes=$this->model_componente->proyecto_componente($proy_id);           
       $tabla='';
       // 1 : normal, 2 : Impresion

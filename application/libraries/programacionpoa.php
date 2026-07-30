@@ -319,11 +319,11 @@ class Programacionpoa extends CI_Controller{
 
 
     //// Modal lista de partidas programados por Unidad Responsable
-    public function modal_partidas_programadas_unidad_responsable($com_id){
+    public function modal_partidas_programadas_unidad_responsable(){
         $tabla='';
         $tabla.='
         <div class="modal fade" id="modal_desglose_partidas_unidad" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
-            <div class="modal-dialog modal-lg" style="width: 40% !important; max-width: 95%; margin: 25px auto;">
+            <div class="modal-dialog modal-lg" style="width: 50% !important; max-width: 95%; margin: 25px auto;">
                 <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
                     
                     <!-- CABECERA DEL MODAL CORPORATIVA -->
@@ -331,6 +331,7 @@ class Programacionpoa extends CI_Controller{
                         <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
                             <i class="fa fa-folder-open text-primary"></i> Desglose de Presupuesto Programado por Partidas
                         </h4>
+                        <!-- 🛠️ REPARADO: Añadido data-dismiss para que la "x" superior limpie los flujos y cierre la ventana -->
                         <button type="button" class="close" data-dismiss="modal" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer;">&times;</button>
                     </div>
 

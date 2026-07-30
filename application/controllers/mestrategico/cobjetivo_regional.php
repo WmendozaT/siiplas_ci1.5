@@ -538,8 +538,231 @@ class Cobjetivo_regional extends CI_Controller {
   }
 
 
-  //////// MIGRAR OPERACIONES REGIONALES
-    function valida_add_operaciones_regionales(){
+  //////// MIGRAR OPERACIONES REGIONALES (Archivo Excel)
+  public function valida_add_operaciones_regionales() {
+        ini_set('max_execution_time', 300); // 5 minutos
+        ini_set('memory_limit', '512M');    // Aumentar memoria
+
+        $this->load->library('excel'); 
+        //$com_id = $this->input->post('com_id');
+        //$get_unidad = $this->model_componente->get_componente($com_id, $this->gestion);
+        
+        // Carga de catálogo relacional de validación de los Objetivos Regionales
+       // $list_oregional = $this->model_objetivoregion->list_proyecto_oregional($get_unidad[0]['proy_id']);
+
+        if (empty($get_unidad)) {
+            echo json_encode(array('status' => 'error', 'errors' => array('No se encontró información de la Unidad Organizacional. Verifique su sesión.')));
+            return;
+        }
+
+        if (!isset($_FILES['archivo']) || empty($_FILES['archivo']['tmp_name'])) {
+            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
+            return;
+        }
+
+        $archivo = $_FILES['archivo']['tmp_name'];
+        $errores = array();
+        $data_insertar = array();
+
+        try {
+            $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+            $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
+            
+            // OPTIMIZACIÓN DE MEMORIA: Ignoramos estilos gráficos pesados para no colapsar la RAM
+            $lector->setReadDataOnly(true);
+            
+            $phpExcel    = $lector->load($archivo);
+            $hoja        = $phpExcel->getSheet(0);
+            $filasMax    = $hoja->getHighestRow();
+            
+            // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
+            $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+            $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+            $limitePermitido = 22; 
+
+            if ($totalColumnas != $limitePermitido) {
+                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'V').")));
+                return;
+            }
+
+            // --- 2. VALIDACIÓN FILA POR FILA ---
+            for ($i = 2; $i <= $filasMax; $i++) {
+                //$com_id = 0;
+                $acc_id  = 0;
+
+                // Extraer valores básicos de la fila activa
+                $cod_acp          = trim($hoja->getCell('A' . $i)->getValue());
+                $cod_ope            = trim($hoja->getCell('B' . $i)->getValue());
+                $operacion            = trim($hoja->getCell('C' . $i)->getValue());
+                $producto            = trim($hoja->getCell('D' . $i)->getValue());
+
+                $resultado          = trim($hoja->getCell('E' . $i)->getValue());
+                $indicador          = trim($hoja->getCell('F' . $i)->getValue());
+                $medio_verificacion = trim($hoja->getCell('G' . $i)->getValue());
+                $observacion          = trim($hoja->getCell('H' . $i)->getValue());
+
+
+                // 🌟 BLINDAJE ANTIFALLA: Filtra y salta las filas vacías inferiores del Excel
+                if (empty($cod_acp) && empty($cod_ope) && empty($operacion)) {
+                    continue;
+                }
+
+                /*if (!empty($cod_uresp)) {
+                    if (strlen($cod_uresp) != 4) {
+                        $errores[] = "Fila $i: El código de 'UNIDAD RESPONSABLE' ($cod_uresp) debe tener exactamente 4 caracteres.";
+                    } 
+                    else {
+                      if($get_unidad[0]['serv_cod']!=$cod_uresp){
+                        $errores[] = "Fila $i: Error en la 'UNIDAD RESPONSABLE' ($cod_uresp). debe exluir del archivo a migrar, ya que corresponde a otra Unidad Responsable.";
+                      }
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO DE UNIDAD RESPONSABLE' es obligatoria.";
+                }*/
+
+                // Verificando códigos ACP y Operación
+                /*if (!empty($cod_acp) && is_numeric($cod_acp) && !empty($cod_ope) && is_numeric($cod_ope)) {
+                    if (count($list_oregional) != 0) {
+                        $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
+                        if (count($get_acc) != 0) {
+                            $or_id = $get_acc[0]['or_id'];
+                        } else {
+                            $errores[] = "Fila $i: La combinación ACP ($cod_acp) y OPERACIÓN ($cod_ope) no guarda relación con los Objetivos Regionales.";
+                        }
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO ACP Y OPERACION' son obligatorios y deben ser numéricos.";
+                }*/
+
+                if (!is_numeric($cod_acp) <= 0) {
+                    $errores[] = "Fila $i: Codigo de ACP debe ser un número válido mayor a cero.";
+                }
+                else{
+                  $get_acp=$this->model_objetivogestion->verif_get_objetivosgestion($cod_acp); /// verif acp
+                  if(count($get_acp)==0){
+                    $errores[] = "Fila $i: No existe el ACP vigente";
+                  }
+                  else{
+                    $acp_id=$get_acp[0]['acp_id'];
+                  }
+                }
+
+
+
+
+
+
+                // Validación C: Cronograma Mensualizado Saneado (J al U)
+                $suma_meses = 0;
+                $columnas_meses = array('J','K','L','M','N','O','P','Q','R','S','T','U');
+                $meses_valores = array();
+                $m_index = 1;
+                
+                foreach ($columnas_meses as $col) {
+                    $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                    $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+
+                    if (!is_numeric($val_mes)) {
+                        $errores[] = "Fila $i: Valor no numérico detectado en el mes de la columna '$col'.";
+                        break;
+                    }
+                    $monto_mes = floatval($val_mes);
+                    $suma_meses += $monto_mes;
+                    $meses_valores[$m_index] = $monto_mes; // Guardamos en el array indexado temporal de la fila
+                    $m_index++;
+                }
+
+                // Validación de Coincidencia Física Matemática
+                if (abs($suma_meses - floatval($meta)) > 0.01) {
+                    $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con la meta ($meta).";
+                }
+
+                if (empty($errores)) {
+                    // 🌟 SOLUCIÓN RAÍZ: Agrupamos el Maestro y su Detalle mensual correspondiente en paralelo
+                    $data_insertar[] = array(
+                        'maestro' => array(
+                            'com_id'                   => $com_id,
+                            'prod_cod'                 => intval($cod_act),
+                            'prod_producto'            => strtoupper($actividad),
+                            'prod_resultado'           => strtoupper($resultado),
+                            'indi_id'                  => 1,
+                            'prod_indicador'           => strtoupper($indicador),
+                            'prod_fuente_verificacion' => strtoupper($medioverificacion), 
+                            'prod_linea_base'          => 0,
+                            'prod_meta'                => floatval($meta),
+                            'uni_resp'                 => 0, 
+                            'prod_unidades'            => strtoupper($unidad_responsable),
+                            'acc_id'                   => 0,
+                            'prod_ppto'                => 1,
+                            'fecha'                    => date("d/m/Y H:i:s"),
+                            'or_id'                    => $or_id,
+                            'fun_id'                   => intval($this->session->userdata('fun_id')),
+                            'num_ip'                   => $this->input->ip_address(), 
+                            'nom_ip'                   => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                        ),
+                        'meses_lote' => $meses_valores // Queda amarrado en paralelo
+                    );
+                }
+                
+                if (count($errores) > 15) break; 
+            } // Fin del bucle general FOR por fila
+
+            if (ob_get_length()) ob_clean(); 
+            header('Content-Type: application/json');
+
+            if (empty($errores) && !empty($data_insertar)) {
+                $this->db->trans_start(); // Iniciar transacción atómica en Postgres
+                
+                foreach ($data_insertar as $fila) {
+                    // Inserción A: Registro maestro del Producto en tu tabla '_productos'
+                    $this->db->insert('_productos', $fila['maestro']);
+                    $prod_id = $this->db->insert_id(); // Capturamos el ID de la base de datos
+                    
+                    /*------------ REGISTRO DE LA TEMPORALIDAD EN TU TABLA REAL ---------*/
+                    for ($m = 1; $m <= 12; $m++) {
+                        $pfin = $this->security->xss_clean($fila['meses_lote'][$m]);
+                        
+                        if ($pfin != 0) {
+                            $data_to_store4 = array( 
+                                'prod_id' => $prod_id,
+                                'm_id'    => $m, 
+                                'pg_fis'  => $pfin, 
+                                'g_id'    => intval($this->gestion), 
+                            );
+                            $this->db->insert('prod_programado_mensual', $data_to_store4);
+                        }
+                    }
+                    /*-------------------------------------------------------------------*/
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos (Transacción fallida en Postgres).')));
+                } else {
+                    echo json_encode(array(
+                        'status' => 'success', 
+                        'msj'    => 'Importación finalizada con éxito.',
+                        'conteo' => count($data_insertar) 
+                    ));
+                }
+            } else {
+                echo json_encode(array(
+                    'status' => 'error', 
+                    'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no tiene datos válidos para procesar.')
+                ));
+            }
+            exit; 
+
+        } catch (Exception $e) {
+            if (ob_get_length()) ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
+        }
+    }
+
+
+    function valida_add_operaciones_regionales2(){
       if ($this->input->post()) {
           $post = $this->input->post();
 

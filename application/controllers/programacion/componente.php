@@ -8,8 +8,6 @@ class Componente extends CI_Controller {
             $this->load->model('programacion/model_faseetapa');
             $this->load->model('programacion/model_componente');
             $this->load->model('programacion/model_producto');
-           // $this->load->model('programacion/model_actividad');
-           // $this->load->model('programacion/insumos/minsumos');
             $this->load->model('programacion/insumos/model_insumo');
             $this->load->model('mantenimiento/model_estructura_org');
             $this->load->model('mestrategico/model_objetivoregion');
@@ -153,16 +151,6 @@ class Componente extends CI_Controller {
             $data['menu']=$this->genera_menu($proy_id);
             $listado='';
             $listado.='
-            <div class="row">
-                    <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                        <section id="widget-grid" class="well">
-                            <ul class="nav nav-pills">
-                              <li class="active"><a href="#">MIS COMPONENTES</a></li>
-                              <li><a href="#">MIS ACTIVIDADES</a></li>
-                            </ul>
-                        </section>
-                    </article>
-                </div>
             <input type="hidden" name="base" value="'.base_url().'">
             <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
               <section id="widget-grid" class="well" style="background: #ffffff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -252,7 +240,7 @@ class Componente extends CI_Controller {
           $codigo = $this->security->xss_clean($post['cod']); /// Codigo
           $pfec_id = $this->security->xss_clean($post['pfec_id']); /// pfec id
           $fase = $this->model_faseetapa->get_fase($pfec_id);
-          $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']); 
+          $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']); 
 
           $variable= $this->model_componente->get_fase_componente_nro($pfec_id,$codigo,1);
           if(count($variable)==0){
@@ -269,7 +257,6 @@ class Componente extends CI_Controller {
 
   /*---- UNIDADES RESPONSABLES / COMPONENTES ---------*/
   function unidades_resp($proyecto){
-    //$proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
     $componente=$this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
     $unidad=$this->model_componente->list_subactividades_pi(); /// lista de unidades
     $tabla='';
@@ -284,15 +271,13 @@ class Componente extends CI_Controller {
                       <th style="width:15%; text-align:center;">DESCRIPCI&Oacute;N COMPONENTE</th>
                       <th style="width:5%; text-align:center;">NRO. ACT.</th>
                       <th style="width:5%; text-align:center;">MIS ACTIVIDADES</th>
-                      <th style="width:5%; text-align:center;">MIS ACTIVIDADES</th>
                       <th style="width:5%; text-align:center;">FORM. POA N 4</th>
                       <th style="width:5%; text-align:center;">FORM. POA N 5</th>
-                      <th style="width:5%; text-align:center;">EXCEL ACTIVIDADES</th>
-                      <th style="width:5%; text-align:center;">ELIMINAR ACTIVIDADES </th>
+                      <th style="width:5%; text-align:center;">ELIMINAR</th>
                     </tr>
                 </thead>
                 <tbody>';
-                $num=0; $ponderacion=0; $sum=0;
+                $num=0;
                 foreach($componente as $row){
                     $num++;
                     $tabla.='
@@ -313,7 +298,7 @@ class Componente extends CI_Controller {
                         </td>
                         <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 4" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
                         <td align="center"><a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$row['com_id'].'\');" title="REPORTE POA FORM 5" class="btn btn-default"><img src="'.base_url().'assets/ifinal/pdf.png" WIDTH="35" HEIGHT="35"/></a></td>
-                        <td align="center"></td>
+                
                         <td align="center">';
                         if(count($this->model_producto->lista_productos($row['com_id']))!=0 & $this->tp_adm==1){
                             $tabla.='<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default del_ff" title="ELIMINAR TODAS LAS ACTIVIDADES DE LA UNIDAD"  name="'.$row['com_id'].'" id="'.count($this->model_producto->lista_productos($row['com_id'])).'" ><img src="' . base_url() . 'assets/ifinal/eliminar.png" WIDTH="35" HEIGHT="35"/></a>';
@@ -321,8 +306,6 @@ class Componente extends CI_Controller {
                         $tabla.='
                         </td>
                     </tr>';
-                    $sum=$sum+count($this->model_producto->lista_productos($row['com_id']));
-                    $ponderacion=$ponderacion+$row['com_ponderacion'];
                 }
                 $tabla.='    
                 </tbody>
@@ -349,9 +332,6 @@ class Componente extends CI_Controller {
             </div>
         </div>';
 
-        // ==========================================================================
-        // 📊 GRID MÁSTER: LISTADO DE UNIDADES RESPONSABLES E INSUMOS COMPILADOS
-        // ==========================================================================
         $tabla .= '
         <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px;">
             <table id="dt_basic4" class="table table-striped table-bordered table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11.5px; border-collapse: collapse;">
@@ -360,25 +340,22 @@ class Componente extends CI_Controller {
                         <th style="width: 2%; text-align:center; vertical-align: middle;">'.$proyecto[0]['aper_id'].'</th>
                         <th style="width: 4%; text-align:center; vertical-align: middle;">ACCIONES</th>
                         <th style="width: 8%; text-align:center; vertical-align: middle;">CÓDIGO UNIDAD</th>
-                        <th style="width: 30%; text-align:left; vertical-align: middle; padding-left:10px;">UNIDAD RESPONSABLE</th>
+                        <th style="width: 20%; text-align:left; vertical-align: middle; padding-left:10px;">UNIDAD RESPONSABLE</th>
                         <th style="width: 6%; text-align:center; vertical-align: middle;">NRO. ACT.</th>
-                        <th style="width: 15%; text-align:center; vertical-align: middle;">FORM. POA N° 4 (ACTIVIDADES)</th>
-                        <th style="width: 15%; text-align:center; vertical-align: middle;">FORM. POA N° 5 (REQUERIMIENTOS)</th>
+                        <th style="width: 18%; text-align:center; vertical-align: middle;">FORM. POA N° 4 (ACTIVIDADES)</th>
+                        <th style="width: 18%; text-align:center; vertical-align: middle;">FORM. POA N° 5 (REQUERIMIENTOS)</th>
                         <th style="width: 10%; text-align:center; vertical-align: middle;">EXPORTAR POA.</th>
                         <th style="width: 10%; text-align:center; vertical-align: middle;">PPTO. POA.</th>
                     </tr>
                 </thead>
                 <tbody>';
-
                 $num = 0;
                 foreach($componente as $row) {
                     $num++;
                     $com_id_actual = intval($row['com_id']);
                     $productos_unidad = $this->model_producto->lista_productos($com_id_actual);
                     $conteo_actividades = count($productos_unidad);
-
                     $tabla .= '<tr>';
-                    
                     // COLUMNA 1: Correlativo numérico
                     $tabla .= '<td style="text-align: center; font-weight: bold; color: #64748b; vertical-align: middle;" title="'.$row['com_id'].'">' . $num . '</td>';
                     
@@ -408,51 +385,100 @@ class Componente extends CI_Controller {
                     // Columnas de Datos Identificadores de la Unidad Organizacional
                     $tabla .= '<td style="text-align: center; font-weight: bold; background-color: #fef08a; color: #1e3a8a; vertical-align: middle; font-size: 12.5px;">' . $row['serv_cod'] . '</td>';
                     $tabla .= '<td style="text-align: left; vertical-align: middle; font-weight: 500; color: #1e293b; padding-left:10px;">' . strtoupper($row['serv_descripcion']) . '</td>';
-                    
-                    // Conteo Dinámico de Actividades con resalte cromático azul CNS
                     $tabla .= '<td style="text-align: center; font-weight: bold; background-color: #e0f2fe; color: #0369a1; vertical-align: middle; font-size:12px;">' . $conteo_actividades . '</td>';
                     
                     // 🌟 COLUMNA: FORMULARIO N° 4 - GESTIÓN DE ACTIVIDADES Y EXPORTACIÓN INDIVIDUAL
                     $tabla .= '
-                    <td style="text-align: center; vertical-align: middle;">
-                      <div style="display: inline-flex; gap: 4px;">
-                        <a href="' . site_url("admin/prog/list_prod/" . $com_id_actual) . '" title="VER MIS ACTIVIDADES (FORM 4)" class="btn btn-xs btn-default" target=_black style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-list text-primary" style="font-size:15px;"><br>Act.</i></a>
-                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 4 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger"><br>Form N° 4</i></a>
+                    <td style="text-align: center; vertical-align: middle; white-space: nowrap; background: #ffffff; border: 1px solid #cbd5e1;">
+                      <div style="display: inline-flex; gap: 4px; justify-content: center; width: 100%;">
+                        <!-- 👁️ Abrir Actividades -->
+                        <a href="' . site_url("admin/prog/list_prod/" . $com_id_actual) . '" 
+                           title="VER MIS ACTIVIDADES (FORM 4)" 
+                           class="btn btn-sm" 
+                           target="_blank" 
+                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\'; this.style.color=\'#0f172a\';"
+                           onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\'; this.style.color=\'#334155\';">
+                            <i class="fa fa-list text-muted" style="font-size: 12px;"></i> Actividades
+                        </a>
+                        
+                        <!-- 🖨️ Exportar PDF Form 4 - AZUL AUDITORÍA -->
+                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $com_id_actual) . '\');" 
+                           title="GENERAR REPORTE POA FORMULARIO N° 4 (PDF)" 
+                           class="btn btn-sm" 
+                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           onmouseover="this.style.background=\'#dbeafe\'; this.style.borderColor=\'#3b82f6\';"
+                           onmouseout="this.style.background=\'#eff6ff\'; this.style.borderColor=\'#bfdbfe\';">
+                            <i class="fa fa-file-pdf-o" style="font-size: 12px; color: #1d4ed8;"></i> PDF F4
+                        </a>
                       </div>
-                    </td>';
-                    
-                    // 🌟 COLUMNA: FORMULARIO N° 5 - GESTIÓN DE INSUMOS Y EXPORTACIÓN INDIVIDUAL
-                    $tabla .= '
-                    <td style="text-align: center; vertical-align: middle;">
-                      <div style="display: inline-flex; gap: 4px;">
-                        <a href="' . site_url("prog/requerimiento_x_uresponsable/" . $com_id_actual) . '" title="REQUERIMIENTOS DE LA UNIDAD (FORM 5)" class="btn btn-xs btn-default" target=_black  style="padding: 15px 20px; background:#f1f5f9;"><i class="fa fa-usd text-primary" style=" font-weight: bold;"><br>Req.</i></a>
-                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $com_id_actual) . '\');" title="REPORTE POA FORM 5 (PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger"><br>Form N° 5</i></a>
-                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable_programa_bolsa_consoldado/" . $com_id_actual) . '\');" title="REPORTE POA FORM 5 - PROGRAMA BOLSA(PDF)" class="btn btn-xs btn-default" style="padding: 15px 20px; background:#fff1f2;"><i class="fa fa-file-pdf-o text-danger"><br>Form N° 5</i></a>
+                    </td>
+                    <td style="text-align: center; vertical-align: middle; white-space: nowrap; background: #ffffff; border: 1px solid #cbd5e1;">
+                      <div style="display: inline-flex; flex-wrap: wrap; gap: 4px; justify-content: center; align-items: center;">
+                        
+                        <!-- 💵 Abrir Requerimientos -->
+                        <a href="' . site_url("prog/requerimiento_x_uresponsable/" . $com_id_actual) . '" 
+                           title="REQUERIMIENTOS DE LA UNIDAD (FORM 5)" 
+                           class="btn btn-sm" 
+                           target="_blank"  
+                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\'; this.style.color=\'#0f172a\';"
+                           onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\'; this.style.color=\'#334155\';">
+                            <i class="fa fa-money text-muted" style="font-size: 12px;"></i> Requerimientos
+                        </a>
+                        
+                        <!-- 🖨️ PDF Requerimientos Estándar - AZUL AUDITORÍA -->
+                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $com_id_actual) . '\');" 
+                           title="GENERAR REPORTE POA FORMULARIO N° 5 ESTÁNDAR (PDF)" 
+                           class="btn btn-sm" 
+                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           onmouseover="this.style.background=\'#dbeafe\'; this.style.borderColor=\'#3b82f6\';"
+                           onmouseout="this.style.background=\'#eff6ff\'; this.style.borderColor=\'#bfdbfe\';">
+                            <i class="fa fa-file-pdf-o" style="font-size: 12px; color: #1d4ed8;"></i> PDF F5
+                        </a>
+                        
+                        <!-- 🖨️ PDF Requerimientos Consolidado Bolsa - AZUL AUDITORÍA -->
+                        <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable_programa_bolsa_consoldado/" . $com_id_actual) . '\');" 
+                           title="GENERAR REPORTE CONSOLIDADO FORMULARIO N° 5 - PROGRAMA 720-771 (PDF)" 
+                           class="btn btn-sm" 
+                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           onmouseover="this.style.background=\'#dbeafe\'; this.style.borderColor=\'#3b82f6\';"
+                           onmouseout="this.style.background=\'#eff6ff\'; this.style.borderColor=\'#bfdbfe\';">
+                            <i class="fa fa-file-pdf-o" style="font-size: 12px; color: #1d4ed8;"></i> PDF Bolsa 720-771
+                        </a>
                       </div>
-                    </td>';
-                    
-                    $tabla.='
-                    <td style="text-align: center; vertical-align: middle;">
+                      </td>
+                      <td style="text-align: center; vertical-align: middle; white-space: nowrap; background: #ffffff; border: 1px solid #cbd5e1;">
+                      <div style="display: inline-flex; gap: 4px; justify-content: center; width: 100%;">
                         <button type="button" 
-                                 class="btn btn-xs btn-default btn-exportar-excel-fila" 
-                                 onclick="exportarExcelConLoading(this, ' . $com_id_actual . ')" 
-                                 style="padding: 15px 20px; background:#f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px;" 
-                                 title="EXPORTAR CONSOLIDADO EN EXCEL">
-                              <span class="txt-btn-excel-fila">
-                                  <i class="fa fa-file-excel-o text-success" style="font-size:14px;"></i>
-                              </span>
+                                class="btn btn-sm btn-exportar-excel-fila" 
+                                onclick="exportarExcelConLoading(this, ' . $com_id_actual . ')" 
+                                title="EXPORTAR CONSOLIDADO DE LA UNIDAD EN EXCEL"
+                                style="padding: 5px 11px; background: #16a34a; border: 1px solid #15803d; color: #ffffff; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; height: 25px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; transition: all 0.15s ease;"
+                                onmouseover="this.style.background=\'#15803d\'; this.style.borderColor=\'#166534\';"
+                                onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
+                            <span class="txt-btn-excel-fila" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fa fa-file-excel-o" style="font-size: 12px; color: #ffffff;"></i> Xls Exportar
+                            </span>
                         </button>
-                    </td>';
-                    // 🌟 COLUMNA 8: DISPARADOR INDIVIDUAL DEL MODAL DE PRESUPUESTO POA
-                    $tabla .= '
-                    <td style="text-align: center; vertical-align: middle;">
-                        <button type="button" class="btn btn-xs btn-info btn-ver-presupuesto" data-id="' . $com_id_actual . '" data-codigo="' . $row['serv_cod'] . '" data-nombre="' . htmlspecialchars($row['serv_descripcion'], ENT_QUOTES, 'UTF-8') . '" title="VER RESUMEN DE TECHOS PRESUPUESTARIOS" style="font-weight: bold; padding: 5px 10px; background: #0284c7; border-color:#0284c7;">
-                            <i class="fa fa-eye"></i> Techo F5
-                            </button>
-                    </td>';
-                    
-                    // Cierre simétrico de la hilera activa de la Unidad Responsable
-                    $tabla .= '</tr>';
+                      </div>
+                      </td>
+                      <td style="text-align: center; vertical-align: middle; white-space: nowrap; background: #ffffff; border: 1px solid #cbd5e1;">
+                      <div style="display: inline-flex; gap: 4px; justify-content: center; width: 100%;">
+                        <button type="button" 
+                                class="btn btn-xs btn-default btn-ver-partidas-unidad" 
+                                data-id="' . $row['com_id']. '" 
+                                data-codigo="' . $row['serv_cod'] . ' ' . $row['tipo_subactividad'] . '" 
+                                data-nombre="' . htmlspecialchars($row['serv_descripcion'], ENT_QUOTES, 'UTF-8') . '" 
+                                data-toggle="modal" 
+                                data-target="#modal_desglose_partidas_unidad"
+                                title="VER MATRIZ DE REQUERIMIENTOS POR PARTIDA" 
+                                style="font-weight: bold; padding: 5px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius:3px; color:#334155;">
+                            <i class="fa fa-table text-info"></i> Ver Detalle de Partidas
+                        </button>
+                      </div>
+                    </td>
+                  </tr>';
                 }
         $tabla .= '    
                 </tbody>
@@ -460,35 +486,8 @@ class Componente extends CI_Controller {
         </div>';
     }
    
-      //// modal para mostrar la programacion de partidas por cada componente
-      $tabla.='
-      <div class="modal fade" id="modal_techos_resumen_global" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
-          <div class="modal-dialog" style="width: 70% !important; margin: 30px auto;">
-              <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
-                  
-                  <!-- CABECERA DEL MODAL -->
-                  <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
-                      <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
-                          <i class="fa fa-calculator text-primary"></i> RESUMEN PRESUPUESTARIO
-                      </h4>
-                      <button type="button" class="close" data-dismiss="modal" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer;">&times;</button>
-                  </div>
-
-                  <!-- CUERPO RECEPTOR DINÁMICO AJAX -->
-                  <div class="modal-body" id="contenedor_techo_dinamico_cns" style="padding: 25px; background: #ffffff;">
-                      <!-- Aquí el JS estampará el spinner y luego la tabla analítica de saldos -->
-                  </div>
-                  
-                  <!-- PIE DE VENTANA -->
-                  <div class="modal-header" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 20px; text-align: right;">
-                      <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold; font-size: 11.5px; padding: 5px 14px; border-radius: 3px;">CERRAR PANEL</button>
-                  </div>
-
-              </div>
-          </div>
-      </div>';
-
-
+      //// modal para mostrar la programacion de partidas por cada Unidad Responsable
+            $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_responsable();
 
             $tabla.='
             <div class="modal fade" id="modal_nuevo_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -1152,7 +1151,7 @@ $tabla .= '
 
           if(isset($pfec_id) & isset($descripcion) & isset($serv_id)){
                 $fase = $this->model_faseetapa->get_fase($pfec_id);
-                $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
+                $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);
                 $reponsable=$this->model_proyecto->responsable_proy($fase[0]['proy_id'],2);
                 /*--------- COMPONENTE ----------*/
                 $data = array(
@@ -1194,7 +1193,7 @@ $tabla .= '
           $comp = $this->security->xss_clean($post['mcomponente']); //// Codigo
           $componente=$this->model_componente->get_componente($com_id,$this->gestion);
             $fase = $this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-            $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
+            $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);
 
           if(isset($com_id) & isset($serv_id) & isset($componente)){
               
@@ -1222,187 +1221,6 @@ $tabla .= '
       }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*---- CONSOLIDADO DE OPERACIONES POR SUB ACTIVIDADES, COMPONENTES (2019)----*/
-/*    public function reporte_consolidado_operaciones_componentes($proy_id){
-        $data['proyecto']=$this->model_proyecto->get_id_proyecto($proy_id);
-        if(count($data['proyecto'])!=0){
-            $data['mes'] = $this->mes_nombre();
-            $data['componente_operaciones']=$this->get_proceso_consolidado($proy_id);
-            $this->load->view('admin/programacion/componente/reporte_operaciones_componentes', $data);
-        }
-        else{
-            echo "<center><b>ERROR!!!! AL GENERAR REPORTE</b></center>";
-        }
-    }*/
-
-    /*------- LISTA DE OPERACIONES POR SUB ACTIVIDADES (2019) ------*/
-    // public function get_proceso_consolidado($proy_id){
-    //   $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); //// DATOS DEL PROYECTO
-    //   $fase = $this->model_faseetapa->get_id_fase($proy_id); //// DATOS FASE ACTIVA
-    //   $componentes=$this->model_componente->componentes_id($fase[0]['id'],$proyecto[0]['tp_id']); /// COMPONENTES/PROCESOS  
-        
-    //     $tabla ='';
-    //     if(count($componentes)!=0){
-    //         foreach ($componentes as $rowc){
-    //             $productos = $this->model_producto->list_prod($rowc['com_id']);
-    //             if(count($productos)!=0){
-    //                 $tabla .='
-    //                 <table>
-    //                     <tr><td><font size="1"> '.$rowc['serv_cod'].'.- '.$rowc['com_componente'].'</font></td></tr>
-    //                 </table>';
-    //                 $nro_p=0;
-    //                 $tabla .='<table border="0" cellpadding="0" cellspacing="0" class="tabla">';
-    //                     $tabla.='<thead>
-    //                             <tr class="modo1" style="height:45px;">
-    //                             <th style="width:1%;" bgcolor="#1c7368"><font color="#ffffff">#</font></th>';
-    //                             if($this->gestion==2018){
-    //                               $tabla.='<th style="width:7%;" bgcolor="#1c7368"><font color="#ffffff">PRODUCTO</font></th>';
-    //                             }
-    //                             else{
-    //                               $tabla.='
-    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">OBJETIVO ESTRATEGICO</font></th>
-    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">ACCI&Oacute;N ESTRATEGICA</font></th>
-    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">OPERACI&Oacute;N</font></th>
-    //                                   <th style="width:9%;" bgcolor="#1c7368"><font color="#ffffff">RESULTADO</font></th>';
-    //                             }
-    //                             $tabla.='
-    //                             <th style="width:2%;" bgcolor="#1c7368"><font color="#ffffff">TIP.</font></th>
-    //                             <th style="width:8%;" bgcolor="#1c7368"><font color="#ffffff">INDICADOR</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">LINEA BASE</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">META</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">ENE.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">FEB.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">MAR.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">ABR.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">MAY.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">JUN.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">JUL.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">AGO.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">SEP.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">OCT.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">NOV.</font></th>
-    //                             <th style="width:3%;" bgcolor="#1c7368"><font color="#ffffff">DIC.</font></th>
-    //                             <th style="width:8%;" bgcolor="#1c7368"><font color="#ffffff">VERIFICACI&Oacute;N</font></th>
-    //                         </tr>
-    //                         </thead>
-    //                     <tbody>';
-    //                     $nro=0;
-    //                     foreach($productos as $rowp){
-    //                       $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-    //                       $color='';
-    //                         if(($sum[0]['meta_gest']+$rowp['prod_linea_base'])!=$rowp['prod_meta']){
-    //                           $color='#fbd5d5';
-    //                         }
-    //                         $nro++;
-    //                         $tabla.='<tr class="modo1" bgcolor="'.$color.'" style="height:45px;">';
-    //                         $tabla.='<td style="width: 1%; text-align: center" style="height:14px;">'.$nro.'</td>';
-    //                           if($this->gestion==2018){
-    //                            $tabla.='<td style="width: 7%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_producto'].'', 'cp1252', 'UTF-8').'</td>'; 
-    //                           }
-    //                           else{
-    //                             if($rowp['acc_id']!=null){
-    //                               $alineacion=$this->model_producto->operacion_accion($rowp['acc_id']);
-    //                               if(count($alineacion)!=0){
-    //                                 $tabla.=' <td style="width: 9%; text-align: left">'.$alineacion[0]['obj_codigo'].'-'.$alineacion[0]['obj_descripcion'].'</td>
-    //                                           <td style="width: 9%; text-align: left">'.$alineacion[0]['acc_codigo'].'-'.$alineacion[0]['acc_descripcion'].'</td>';
-    //                               }
-    //                               else{
-    //                                 $tabla.=' <td style="width: 9%; text-align: left"></td>
-    //                                           <td style="width: 9%; text-align: left"><font color="red">'.$rowp['acc_id'].'</font></td>';
-    //                               }
-    //                             }
-    //                             else{
-    //                               $tabla.=' <td style="width: 9%; text-align: left"></td>
-    //                                         <td style="width: 9%; text-align: left"><font color="red"></font></td>';
-    //                             }
-    //                             $tabla.='<td style="width: 9%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_producto'].'', 'cp1252', 'UTF-8').'</td>
-    //                                      <td style="width: 9%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_resultado'].'', 'cp1252', 'UTF-8').'</td>';
-    //                           }
-                              
-                              
-    //                           $tabla.='
-    //                                    <td style="width: 2%; text-align: left">'.mb_convert_encoding(''.$rowp['indi_abreviacion'].'', 'cp1252', 'UTF-8').'</td>
-    //                                    <td style="width: 8%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_indicador'].'', 'cp1252', 'UTF-8').'</td>
-    //                                    <td style="width: 3%; text-align: left">'.$rowp['prod_linea_base'].'</td>
-    //                                    <td style="width: 3%; text-align: left">'.$rowp['prod_meta'].'</td>';
-    //                                    $tabla.=''.$this->temporalizacion_prod($rowp['prod_id'],$this->gestion).'';
-    //                           $tabla .='<td style="width: 8%; text-align: left">'.mb_convert_encoding(''.$rowp['prod_fuente_verificacion'].'', 'cp1252', 'UTF-8').'</td>';         
-    //                         $tabla.='</tr>';
-    //                     }
-    //                     $tabla.='
-    //                     </tbody>
-    //                 </table>'; 
-    //             }
-    //         }
-    //     }
-
-    //   return $tabla;
-    // }
-
-     /*--------- TEMPORALIDAD PROGRAMACION FISICA (2019)---------*/
-// /*    public function temporalizacion_prod($prod_id,$gestion){
-//         $prod=$this->model_producto->get_producto_id($prod_id); /// Producto Id
-//         $programado=$this->model_producto->producto_programado($prod_id,$gestion); /// Producto Programado
-//         $tp='';
-//         if($prod[0]['indi_id']==2){$tp='%';};
-//         $m[0]='g_id';
-//         $m[1]='enero';
-//         $m[2]='febrero';
-//         $m[3]='marzo';
-//         $m[4]='abril';
-//         $m[5]='mayo';
-//         $m[6]='junio';
-//         $m[7]='julio';
-//         $m[8]='agosto';
-//         $m[9]='septiembre';
-//         $m[10]='octubre';
-//         $m[11]='noviembre';
-//         $m[12]='diciembre';
-
-//         for ($i=1; $i <=12 ; $i++) { 
-//             $prog[1][$i]=0;
-//             $prog[2][$i]=0;
-//             $prog[3][$i]=0;
-//         }
-
-//         $pa=0;
-//         if(count($programado)!=0){
-//             for ($i=1; $i <=12 ; $i++) { 
-//                 $prog[1][$i]=$programado[0][$m[$i]];
-// /*                $pa=$pa+$prog[1][$i];
-//                 $prog[2][$i]=$pa+$prod[0]['prod_linea_base'];
-
-//               if($prod[0]['prod_meta']!=0){
-//                 $prog[3][$i]=round(((($pa+$prod[0]['prod_linea_base'])/$prod[0]['prod_meta'])*100),1);
-//               } */ 
-//             } 
-//         }
-//         $tr_return = '';
-//           for($i = 1 ;$i<=12 ;$i++){
-//             $tr_return .= '<td bgcolor="#d2f5d2" style="width: 3%; text-align: right" title="'.$m[$i].'"><b>'.$prog[1][$i].''.$tp.'</b></td>';
-//           }
-                                 
-//         return $tr_return;
-//     }*/
 
 
     function mes_nombre(){

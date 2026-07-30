@@ -539,7 +539,7 @@ class C_consultas extends CI_Controller {
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
 
         $titulo_poa=$proyecto[0]['aper_programa'].' '.$proyecto[0]['proy_sisin'].' 000 - '.$proyecto[0]['proy_nombre'];
         if($proyecto[0]['tp_id']==4){
@@ -724,7 +724,7 @@ class C_consultas extends CI_Controller {
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
 
         $titulo_poa=$proyecto[0]['aper_programa'].' '.$proyecto[0]['proy_sisin'].' 000 - '.$proyecto[0]['proy_nombre'];
         if($proyecto[0]['tp_id']==4){
@@ -754,7 +754,7 @@ class C_consultas extends CI_Controller {
         $com_id = $this->security->xss_clean($post['com_id']);
         $componente=$this->model_componente->get_componente($com_id,$this->gestion);
         $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']); /// PROYECTO
 
         $titulo_poa=$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'];
         
@@ -780,7 +780,7 @@ class C_consultas extends CI_Controller {
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
 
         $titulo_poa=$proyecto[0]['aper_programa'].' '.$proyecto[0]['proy_sisin'].' 000 - '.$proyecto[0]['proy_nombre'];
         if($proyecto[0]['tp_id']==4){

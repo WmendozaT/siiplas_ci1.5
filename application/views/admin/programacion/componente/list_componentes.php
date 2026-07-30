@@ -127,6 +127,7 @@
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
 		<script src="<?php echo base_url(); ?>mis_js/programacionpoa/componente.js"></script> 
+		<script src="<?php echo base_url(); ?>mis_js/programacionpoa/form5.js"></script> 
 		<script src = "<?php echo base_url(); ?>mis_js/programacion/programacion/tablas.js"></script>
 	</body>
 </html>

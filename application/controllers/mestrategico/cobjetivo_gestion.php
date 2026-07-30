@@ -38,8 +38,80 @@ class Cobjetivo_gestion extends CI_Controller {
       $data['indi']= $this->model_proyecto->indicador(); /// indicador
       $data['programas']=$this->model_proyecto->list_prog(); /// Aperturas Programatica
       $data['ogestion']=$this->acortoplazo->mis_ogestion_gral();
+      $data['modal_migracion']=$this->modal_migracion_form2();
       $this->load->view('admin/mestrategico/objetivos_gestion/list_ogestion_general', $data);
     }
+
+    /// modal de migracion
+    public function modal_migracion_form2(){
+      $tabla='';
+        $tabla.= '
+        <div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
+            <div class="modal-dialog" id="dialog_subirr">
+                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+                    <!-- CABECERA DEL COMPONENTE -->
+                    <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                        <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                            <i class="fa fa-upload text-primary"></i> Importar Actividades
+                        </h4>
+                    </div>
+
+                    <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
+                    <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                        
+                        <!-- Título e Instrucción -->
+                        <div class="text-center" style="margin-bottom: 20px;">
+                            <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Excel (.xls, .xlsx)</h5>
+                            <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                        </div>
+
+                        <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
+                        <form action="' . site_url('mestrategico/cobjetivo_regional/valida_add_operaciones_regionales') . '" method="post" enctype="multipart/form-data" id="form_subir_form2" autocomplete="off" style="padding:0; background:transparent;">
+                            <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                            <i class="fa fa-folder-open"></i> Examinar...
+                                        </button>
+                                        
+                                        <input id="archivo" accept=".xlsx, .xls" name="archivo" 
+                                               onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                               style="display: none;" type="file" required>
+                                    </span>
+                                    <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                </div>
+                            </div>
+
+                            <div id="mensaje" style="margin: 10px 0; font-size: 11px;"></div>
+
+                            <!-- Botón de Envío y Validación Masiva -->
+                            <div style="margin-top: 25px;">
+                                <button type="button" id="btn_subir" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                    <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                </button>
+                            </div>
+
+                            <!-- Animación Pre-Loader de la Planilla -->
+                            <div id="loads" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                            </div>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>';
+        return $tabla;
+    }
+
+
+
 
     /*----- REPORTE DE ACCION CORTO PLAZO 2022 ----*/
     public function reporte_ogestion($tp){
