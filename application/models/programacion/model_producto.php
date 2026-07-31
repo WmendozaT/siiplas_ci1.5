@@ -232,7 +232,7 @@ class model_producto extends CI_Model {
             SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
         ) opm ON ore.pog_id = opm.pog_id
         INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-        INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
+        LEFT JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
         LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id
         LEFT JOIN _componentes c ON p.com_id = c.com_id
@@ -286,7 +286,7 @@ class model_producto extends CI_Model {
             SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
         ) opm ON ore.pog_id = opm.pog_id
         INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-        INNER JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
+        LEFT JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
         LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id
         LEFT JOIN _componentes c ON p.com_id = c.com_id
@@ -298,7 +298,7 @@ class model_producto extends CI_Model {
 
         WHERE p.com_id = ".$com_id." 
           AND p.estado != 3
-        ORDER BY p.prod_id,p.prod_cod ASC;"; 
+        ORDER BY p.prod_cod,p.prod_id ASC;"; 
         
         $query = $this->db->query($sql);
         return $query->result_array();

@@ -1722,7 +1722,7 @@ function numerosDecimales(evt) {
 
 
 
-
+    ///// MODULO DE MODIFICACION POA
     /// ------ Editar Datos de Modificacion POA (Formulario N° 4)
     $(".mod_form4").on("click", function (e) {
         prod_id = $(this).attr('name');
@@ -1760,8 +1760,6 @@ function numerosDecimales(evt) {
 
             $('#resp').html(response.uresponsable);
             $('#alineacion_form2').html(response.alineacion_form2);
-           // $('#indi').html(response.indicador);
-           // $('#tp_meta').html(response.tp_meta);
 
            if(response.trimestre==1){
             document.getElementById("mtipo_i").disabled = false;
@@ -1794,7 +1792,7 @@ function numerosDecimales(evt) {
            else{ //// META ACUMULADO
 
             for (var i = 1; i <=12; i++) {
-              document.getElementById("mm"+i).value = parseInt(response.producto[0]['mes'+i]);
+              document.getElementById("mm"+i).value = parseInt(response.producto[0]['m'+i]);
             }
 
             $('[name="mtotal"]').val((parseInt(response.producto[0]['total_anual'])).toFixed(0));

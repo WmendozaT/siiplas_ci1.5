@@ -1438,7 +1438,7 @@ class Seguimientopoa extends CI_Controller{
     //// Cabecera Notificacion
     public function cuerpo_nota_notificacion($proy_id){
       $mes = $this->mes_nombre();//    $this->mes_nombre();
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
       $tabla='';
       $tabla.='
       <page backtop="40mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
@@ -2211,7 +2211,7 @@ class Seguimientopoa extends CI_Controller{
     public function get_notificacion_subactividad($com_id){
       $componente=$this->model_componente->get_componente($com_id,$this->gestion);
       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']); /// PROYECTO
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']); /// PROYECTO
       $mes = $this->mes_nombre();
 
       $tabla='';

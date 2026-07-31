@@ -32,7 +32,7 @@ class Seguimientopoa extends CI_Controller{
       $tabla='';
       $trimestre=$this->model_evaluacion->trimestre();
       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);
       $tabla.=
       '<h1 title='.$proyecto[0]['aper_id'].'><small>PROGRAMA : </small>'.$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['proy_nombre'].' - '.$proyecto[0]['abrev'].'</h1>
       <h1><small>UNIDAD RESPONSABLE : </small> '.$componente[0]['serv_cod'].' '.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</h1>
@@ -1367,7 +1367,7 @@ class Seguimientopoa extends CI_Controller{
     //// Cabecera Notificacion
     public function cuerpo_nota_notificacion($proy_id){
       $mes = $this->mes_nombre();//    $this->mes_nombre();
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
       $tabla='';
       $tabla.='
       <page backtop="40mm" backbottom="35.5mm" backleft="5mm" backright="5mm" pagegroup="new">
@@ -2000,7 +2000,7 @@ class Seguimientopoa extends CI_Controller{
                   
                   $uresp='';
                   if(count($unidad)!=0){
-                    $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
+                    $proy = $this->model_proyecto->get_UnidadOrganizacional($unidad[0]['proy_id']);
                     $uresp='<font size=1.5px;><b>'.strtoupper($proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion']).'</b></font>';
                   }
                 }
@@ -2146,7 +2146,7 @@ class Seguimientopoa extends CI_Controller{
     public function get_notificacion_subactividad($com_id){
       $componente=$this->model_componente->get_componente($com_id,$this->gestion);
       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']); /// PROYECTO
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']); /// PROYECTO
       $mes = $this->mes_nombre();
 
       $titulo1=strtoupper($componente[0]['tipo_subactividad']).' '.strtoupper($componente[0]['serv_descripcion']).' - '.$proyecto[0]['abrev'];

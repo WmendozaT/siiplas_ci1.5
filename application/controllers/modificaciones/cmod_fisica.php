@@ -285,7 +285,7 @@ class Cmod_fisica extends CI_Controller {
     }
 
 
-    /*---- GET DATOS FORM 4 PARA MODIFICAR ----*/
+    /*---- GET DATOS FORM 4 PARA MODIFICAR 2027 ----*/
     public function get_form4_mod(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
@@ -306,7 +306,7 @@ class Cmod_fisica extends CI_Controller {
           $uresponsable.='
               <section class="col col-4">
                 <label class="label"><b>UNIDAD RESPONSABLE</b></label>
-                <select class="form-control" id="um_resp" name="um_resp" title="SELECCIONE UNIDAD RESPONSABLE">
+                <select class="form-control" id="um_resp" name="um_resp" title="SELECCIONE UNIDAD RESPONSABLE" required>
                   <option value="">Seleccione Unidad Responsable</option>';
                   foreach($unidades as $row){
                     if($row['com_id']==$producto[0]['uni_resp']){
@@ -357,8 +357,6 @@ class Cmod_fisica extends CI_Controller {
             'producto'=>$producto,
             'uresponsable'=>$uresponsable,
             'alineacion_form2'=>$alineacion_form2,
-           // 'indicador'=>$indicador,
-           // 'tp_meta'=>$tp_meta,
             'mes'=>$this->temp,
             'mes_actual'=>$this->verif_mes[1],
             'trimestre'=>$this->tmes,
@@ -419,8 +417,15 @@ class Cmod_fisica extends CI_Controller {
           $mverificacion = $this->security->xss_clean($post['mverificacion']); /// Medio de Verificacion
           $resultado = $this->security->xss_clean($post['mresultado']); /// Resultado
           $indicador = $this->security->xss_clean($post['mindicador']); /// Indicador
-          $unidad = $this->security->xss_clean($post['munidad']); /// Unidad Responsable
-          $uni_resp = $this->security->xss_clean($post['um_resp']); /// unidad responsable
+          if($producto[0]['por_id']==1){
+            $unidad = ''; /// Unidad Responsable
+            $uni_resp = $this->security->xss_clean($post['um_resp']); /// unidad responsable
+          }
+          else{
+            $unidad = $this->security->xss_clean($post['munidad']); /// Unidad Responsable
+            $uni_resp = 0; /// unidad responsable
+          }
+
           $meta = $this->security->xss_clean($post['mmeta']); /// Meta
           $presupuesto = $this->security->xss_clean($post['mppto']); /// Presupuesto
           $or_id = $this->security->xss_clean($post['mor_id']); /// Objetivo Regional
@@ -721,7 +726,7 @@ class Cmod_fisica extends CI_Controller {
             'prod_resultado' => $form4[0]['prod_resultado'],
             'or_id' => $form4[0]['or_id'],
             'prod_cod' => $form4[0]['prod_cod'],
-            'prod_observacion' => $form4[0]['prod_observacion'],
+            //'prod_observacion' => $form4[0]['prod_observacion'],
             'mt_id' => $form4[0]['mt_id'],
             'uni_resp' => $form4[0]['uni_resp'],
           );

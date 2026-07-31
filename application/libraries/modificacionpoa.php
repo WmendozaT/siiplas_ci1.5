@@ -554,7 +554,7 @@ class Modificacionpoa extends CI_Controller{
                   
                   $uresp='';
                   if(count($unidad)!=0){
-                    $proy = $this->model_proyecto->get_datos_proyecto_unidad($unidad[0]['proy_id']);
+                    $proy = $this->model_proyecto->get_UnidadOrganizacional($unidad[0]['proy_id']);
                     $uresp='<font size=1.5><b>'.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</b></font>';
                   }
                 }
@@ -1132,7 +1132,7 @@ class Modificacionpoa extends CI_Controller{
 
     /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE AUXILIAR (2026) en casos de que sean muchos requerimientos ------*/
     public function formN5_mod_lista_requerimientos_SinTemporalidad($cite){
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cite[0]['proy_id']); /// PROYECTO
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// PROYECTO
       if($proyecto[0]['por_id']==0){
         $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']); /// Listado normal
       }
