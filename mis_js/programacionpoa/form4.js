@@ -1722,161 +1722,242 @@ function numerosDecimales(evt) {
 
 
 
-    ///// MODULO DE MODIFICACION POA
+    ///// MODULO DE MODIFICACION POA 2027
     /// ------ Editar Datos de Modificacion POA (Formulario N° 4)
-    $(".mod_form4").on("click", function (e) {
-        prod_id = $(this).attr('name');
+$(document).ready(function() {
+    
+    // 🌟 CONTROL DE CONTEXTO GLOBAL DE RED (FUERA DE LOS EVENTOS)
+    var request_mod_f4 = null;
+    var xhr_guardar_f4 = null;
 
-        document.getElementById("prod_id").value=prod_id;
-        //alert(prod_id)
-        var url = base+"index.php/modificaciones/cmod_fisica/get_form4_mod";
-        var request;
-        if (request) {
-            request.abort();
+    /* ==========================================================================
+       1. EVENTO: APERTURA Y RECUPERACIÓN ASÍNCRONA DE LA ACTIVIDAD (.mod_form4)
+       ========================================================================== */
+    $(document).on("click", ".mod_form4", function (e) {
+        e.preventDefault();
+        
+        var prod_id = $(this).attr('name');
+        document.getElementById("prod_id").value = prod_id;
+
+        var url = base + "index.php/modificaciones/cmod_fisica/get_form4_mod";
+
+        // Limpieza preventiva de alertas y ocultamiento de botones de guardado
+        $('#matit').html('');
+        $('#mbut').hide();
+
+        // INYECCIÓN DE PRELOADER VECTORIAL AZUL INSTITUCIONAL MIENTRAS RESPONDEN LAS TABLAS
+        $('#matit').html(
+            '<div id="loading_modal_f4" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; padding: 20px; background: #ffffff;">' +
+                '<div style="position: relative; width: 45px; height: 45px; margin-bottom: 15px;">' +
+                    '<div style="box-sizing: border-box; display: block; position: absolute; width: 40px; height: 40px; border: 4px solid #e2e8f0; border-radius: 50%;"></div>' +
+                    '<div style="box-sizing: border-box; display: block; position: absolute; width: 40px; height: 40px; border: 4px solid transparent; border-top-color: #2563eb; border-radius: 50%; animation: spin_f4_mod 0.8s linear infinite;"></div>' +
+                '</div>' +
+                '<h5 style="font-family: Arial, sans-serif; font-weight: 700; color: #1e293b; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Buscando Actividad</h5>' +
+                '<p style="font-family: Arial, sans-serif; font-size: 11px; color: #64748b; margin: 0; font-weight: 500;">' +
+                    '<i class="fa fa-database text-warning" style="animation: pulse_f4_mod 1.5s infinite; margin-right: 4px;"></i> Extrayendo metas y cronograma físico desde PostgreSQL...' +
+                '</p>' +
+                '<style>' +
+                    '@keyframes spin_f4_mod { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }' +
+                    '@keyframes pulse_f4_mod { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }' +
+                '</style>' +
+            '</div>'
+        );
+
+        // Abortamos solicitudes simultáneas previas en cola de red
+        if (request_mod_f4 && request_mod_f4.readyState !== 4) {
+            request_mod_f4.abort();
         }
-        request = $.ajax({
+
+        request_mod_f4 = $.ajax({
             url: url,
             type: "POST",
             dataType: 'json',
-            data: "prod_id="+prod_id
+            data: "prod_id=" + prod_id
         });
 
-        request.done(function (response, textStatus, jqXHR) {
-        if (response.respuesta == 'correcto') {
-        //  alert(response.alineacion_form2)
+        request_mod_f4.done(function (response, textStatus, jqXHR) {
+            // Limpiamos el loader de espera
+            $('#matit').html('');
 
-            document.getElementById("mcod").value = response.producto[0]['prod_cod']; 
-            document.getElementById("mprod").value = response.producto[0]['prod_producto']; 
-            document.getElementById("mresultado").value = response.producto[0]['prod_resultado'];
-            document.getElementById("mverificacion").value = response.producto[0]['prod_fuente_verificacion'];
-            document.getElementById("mmeta").value = parseInt(response.producto[0]['prod_meta']);
+            if (response.respuesta == 'correcto' || response.status == 'success') {
+                // Mostramos la botonera de guardado al cargar con éxito
+                $('#mbut').show();
 
-            document.getElementById("mtipo_i").value = response.producto[0]['indi_id'];
-            document.getElementById("mlbase").value = parseInt(response.producto[0]['prod_linea_base']);
-            document.getElementById("mmeta").value = parseInt(response.producto[0]['prod_meta']);
-            document.getElementById("mtp_met").value = response.producto[0]['mt_id'];
+                // 🌟 REPARADO: Mapeo directo de propiedades sin el índice [0] gracias al ajuste del backend
+                document.getElementById("mcod").value = response.producto.prod_cod; 
+                document.getElementById("mprod").value = response.producto.prod_producto; 
+                document.getElementById("mresultado").value = response.producto.prod_resultado;
+                document.getElementById("mverificacion").value = response.producto.prod_fuente_verificacion;
+                
+                var meta_maestra = parseInt(response.producto.prod_meta) || 0;
+                document.getElementById("mmeta").value = meta_maestra;
 
-            document.getElementById("mindicador").value = response.producto[0]['prod_indicador'];
+                document.getElementById("mtipo_i").value = response.producto.indi_id;
+                document.getElementById("mlbase").value = parseInt(response.producto.prod_linea_base) || 0;
+                document.getElementById("mtp_met").value = response.producto.mt_id;
+                document.getElementById("mindicador").value = response.producto.prod_indicador;
 
-            $('#resp').html(response.uresponsable);
-            $('#alineacion_form2').html(response.alineacion_form2);
+                $('#resp').html(response.uresponsable);
+                $('#alineacion_form2').html(response.alineacion_form2);
 
-           if(response.trimestre==1){
-            document.getElementById("mtipo_i").disabled = false;
-            document.getElementById("mlbase").disabled = false;
-            document.getElementById("mtp_met").disabled = false;
-           }
-           else{ 
+                // Control de edición condicional según el trimestre vigente
+                var es_editable_trimestre = (parseInt(response.trimestre) === 1);
+                document.getElementById("mtipo_i").disabled = !es_editable_trimestre;
+                document.getElementById("mlbase").disabled  = !es_editable_trimestre;
+                document.getElementById("mtp_met").disabled = !es_editable_trimestre;
+               
+                // --- EVALUACIÓN DE LA TEMPORALIDAD CONTABLE DE LA ACTIVIDAD ---
+                if (parseInt(response.producto.indi_id) === 2 && (parseInt(response.producto.mt_id) === 1 || parseInt(response.producto.mt_id) === 5)) { 
+                    // CASO A: Meta Recurrente Mensual o trimestral
+                    for (var i = 1; i <= 12; i++) {
+                        var input_mes = document.getElementById("mm" + i);
+                        var $label_mes = $('#e' + i);
+                        var texto_mes = (response.mes[i]) ? response.mes[i].toUpperCase() : '';
 
-            document.getElementById("mtipo_i").disabled = true;
-            document.getElementById("mlbase").disabled = true;
-            document.getElementById("mtp_met").disabled = true;
-           }
-           
-           //// MOUESTRA LOS MESES YA EVALUADOS
-           for (var i = 1; i <=12; i++) {
-             document.getElementById("mm"+i).disabled = false;
-                $('#e'+i).html('<font color=green><b>'+(response.mes[i].toUpperCase())+'</b></font>');
-           }
-
-           /// MUESTYRA LA TEMPORALIDAD
-           if(response.producto[0]['indi_id']==2 && response.producto[0]['mt_id']==1){ /// META RECURRENTE
-            for (var i = 1; i <=12; i++) {
-              document.getElementById("mm"+i).value = parseInt(response.producto[0]['prod_meta']);
-              document.getElementById("mm"+i).disabled = true;
-            }
-
-            $('[name="mtotal"]').val((parseInt(response.producto[0]['prod_meta'])).toFixed(0));
-            document.getElementById("mtrep").style.display = 'block';
-           }
-           else{ //// META ACUMULADO
-
-            for (var i = 1; i <=12; i++) {
-              document.getElementById("mm"+i).value = parseInt(response.producto[0]['m'+i]);
-            }
-
-            $('[name="mtotal"]').val((parseInt(response.producto[0]['total_anual'])).toFixed(0));
-            document.getElementById("mtrep").style.display = 'none';
-            
-            prog = parseFloat($('[name="mtotal"]').val());
-            meta = parseFloat($('[name="mmeta"]').val());
-
-
-            if(prog==meta){
-              $('#matit').html('');
-              $('#mbut').slideDown();
-            }
-            else{
-              $('#matit').html('<center><div class="alert alert-danger alert-block">LA SUMA PROGRAMADA NO COINCIDE CON LA META DE LA ACTIVIDAD</div></center>');
-              $('#mbut').slideUp();
-            }
-           }
-
-        }
-        else{
-            alertify.error("ERROR AL RECUPERAR DATOS DE LA ACTIVIDAD");
-        }
-
-        });
-        request.fail(function (jqXHR, textStatus, thrown) {
-            console.log("ERROR: " + textStatus);
-        });
-        request.always(function () {
-            //console.log("termino la ejecuicion de ajax");
-        });
-        e.preventDefault();
-        // =============================VALIDAR EL FORMULARIO DE MODIFICACION
-        $("#subir_mform4").on("click", function (e) {
-            // 1. Configuración de validación
-            var $validator = $("#form_mod").validate({
-                rules: {
-                    prod_id: { required: true },
-                    mprod: { required: true },
-                    mresultado: { required: true },
-                    mtipo_i: { required: true },
-                    mindicador: { required: true },
-                    munidad: { required: true },
-                    mlbase: { required: true },
-                    mmeta: { required: true },
-                    mor_id: { required: true }
-                },
-                // ... (mantén tus mensajes y estilos de error igual)
-                errorElement: 'span',
-                errorClass: 'help-block'
-            });
-
-            // 2. Si el formulario es válido
-            if ($("#form_mod").valid()) {
-                alertify.confirm("¿MODIFICAR DATOS DE LA ACTIVIDAD?", function (a) {
-                    if (a) {
-                        // --- PROCESO DE LOADING PERSONALIZADO ---
-                        
-                        // Activa tu overlay con el estilo flex para centrar el contenido
-                        $("#loading-overlay").css("display", "flex"); 
-                        
-                        // Ocultamos también los botones del modal por si el overlay es traslúcido
-                        $("#mbut footer").hide(); 
-                        
-                        // Deshabilitamos el botón para evitar doble clic accidental
-                        $("#subir_mform4").prop("disabled", true).text("PROCESANDO...");
-
-                        // 3. Enviamos el formulario
-                        document.getElementById("form_mod").submit();
-
-                    } else {
-                        alertify.error("OPCI\u00D3N CANCELADA");
+                        if(input_mes) input_mes.disabled = true;
+                        $label_mes.html('<span style="color: #dc2626; font-weight: bold;"><i class="fa fa-lock"></i> ' + texto_mes + '</span>');
                     }
-                });
+                    for (var i = 1; i <= 12; i++) {
+                        var input_mes = document.getElementById("mm" + i);
+                        if(input_mes) {
+                            input_mes.value = parseInt(response.producto['m' + i]) || 0;
+                            input_mes.disabled = true;
+                        }
+                    }
+                    $('[name="mtotal"]').val(meta_maestra.toFixed(0));
+                    document.getElementById("mtrep").style.display = 'block';
+                } else { 
+                    // CASO B: Meta Acumulada
+                    for (var i = 1; i <= 12; i++) {
+                        var input_mes = document.getElementById("mm" + i);
+                        var $label_mes = $('#e' + i);
+                        var texto_mes = (response.mes[i]) ? response.mes[i].toUpperCase() : '';
+
+                        if (i <= parseInt(response.mes_actual)) {
+                            if(input_mes) input_mes.disabled = true;
+                            $label_mes.html('<span style="color: #dc2626; font-weight: bold;"><i class="fa fa-lock"></i> ' + texto_mes + '</span>');
+                        } else {
+                            if(input_mes) input_mes.disabled = false;
+                            $label_mes.html('<span style="color: #16a34a; font-weight: bold;"><i class="fa fa-unlock"></i> ' + texto_mes + '</span>');
+                        }
+                    }
+
+                    for (var i = 1; i <= 12; i++) {
+                        var input_mes = document.getElementById("mm" + i);
+                        if(input_mes) input_mes.value = parseInt(response.producto['m' + i]) || 0;
+                    }
+
+                    var total_anual_acumulado = parseInt(response.producto.total_anual) || 0;
+                    $('[name="mtotal"]').val(total_anual_acumulado.toFixed(0));
+                    document.getElementById("mtrep").style.display = 'none';
+                    
+                    var prog = parseFloat($('[name="mtotal"]').val()) || 0;
+                    var meta = parseFloat($('[name="mmeta"]').val()) || 0;
+
+                    // Validación de concordancia horizontal antes del guardado
+                    if (prog === meta) {
+                        $('#matit').html('');
+                        $('#mbut').show();
+                    } else {
+                        $('#matit').html('<center><div class="alert alert-danger alert-block" style="font-weight:bold; margin-top:10px;">⚠️ LA SUMA PROGRAMADA DE LOS MESES ('+prog+') NO COINCIDE CON LA META DE LA ACTIVIDAD ('+meta+')</div></center>');
+                        $('#mbut').hide();
+                    }
+                }
             } else {
-                $validator.focusInvalid();
+                if (typeof alertify !== "undefined") alertify.error("ERROR AL RECUPERAR DATOS DE LA ACTIVIDAD");
+            }
+        });
+
+        request_mod_f4.fail(function (jqXHR, textStatus) {
+            if (textStatus !== 'abort') {
+                $('#matit').html('<div class="alert alert-danger text-center" style="font-weight:bold;">❌ Error de comunicación con el servidor CNS.</div>');
             }
         });
     });
-    
+
+    /* ==========================================================================
+       2. EVENTO INDEPENDIENTE: PERSISTENCIA Y GUARDADO ASÍNCRONO DEL SMART-FORM
+       ========================================================================== */
+    $(document).on("click", "#subir_form4", function (e) {
+        e.preventDefault();
+
+        // Configuración de jQuery Validate sobre el formulario
+        var $validator = $("#form_mod").validate({
+            rules: {
+                prod_id: { required: true },
+                mprod: { required: true },
+                mresultado: { required: true },
+                mtipo_i: { required: true },
+                mindicador: { required: true },
+                mlbase: { required: true, number: true },
+                mmeta: { required: true, digits: true }
+            },
+            highlight: function (element) {
+                $(element).closest('section').removeClass('has-success').addClass('has-error');
+            },
+            unhighlight: function (element) {
+                $(element).closest('section').removeClass('has-error').addClass('has-success');
+            },
+            errorElement: 'span',
+            errorClass: 'help-block'
+        });
+
+        if (!$("#form_mod").valid()) {
+            $validator.focusInvalid();
+            return false;
+        }
+
+        // Control horizontal estricto antes de consumir red
+        var prog_total = parseFloat($('[name="mtotal"]').val()) || 0;
+        var meta_total = parseFloat($('[name="mmeta"]').val()) || 0;
+        var tipo_ind    = parseInt($("#mtipo_i").val()) || 0;
+        var tipo_meta   = parseInt($("#mtp_met").val()) || 0;
+
+        if (!(tipo_ind === 2 && tipo_meta === 1)) {
+        if (prog_total !== meta_total) {
+            if (typeof alertify !== "undefined") {
+                alertify.error("🚨 Descuadre Físico: La suma de mensualidades no coincide con la Meta de la actividad.");
+                }
+                return false;
+            }}
+        if (typeof alertify !== "undefined") {   
+        alertify.confirm("🚨 ¿CONFIRMA LA ACTUALIZACIÓN EN CALIENTE DE ESTA ACTIVIDAD?", function (a) {
+        if (a) {
+            $("#loading-overlay").css("display", "flex");
+            $("#mbut").hide();
+            $("#subir_form4").prop("disabled", true).text("PROCESANDO...");
+            var formElement = document.getElementById('form_mod');
+            var data_multipart = new FormData(formElement);
+            var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+            var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+            if (csrf_name !== '') { 
+            data_multipart.append(csrf_name, csrf_hash); }
+            if (xhr_guardar_f4 && xhr_guardar_f4.readyState !== 4) {
+                xhr_guardar_f4.abort();}
+                xhr_guardar_f4 = $.ajax({
+                    type: "POST",url: $("#form_mod").attr('action'),data: data_multipart,processData: false,contentType: false,success: function (res) { $("#loading-overlay").hide();$("#subir_form4").prop("disabled", false).html(' Guardar Modificación');var response = (typeof res === 'object') ? res : JSON.parse(res);if (response.respuesta === 'correcto' || response.status === 'success') {alertify.success("✔ " + (response.message || "Actividad modificada correctamente."));$('#modal_mod_form4').modal('hide');$('.modal-backdrop').remove();$('body').removeClass('modal-open');
+                    var com_id_global = $('#com_id').val();
+                    if (typeof recargar_listado_actividades_cns_ajax === "function") {
+                        recargar_listado_actividades_cns_ajax(com_id_global);
+                    } else {
+                        location.reload();}
+                    } else {
+                        $("#mbut").show();
+                        alertify.error("🚨 Rechazo: " + response.message);}
+                    },error: function (xhr, textStatus) {
+                        $("#loading-overlay").hide();
+                        $("#mbut").show();
+                        $("#subir_form4").prop("disabled", false).html(' Guardar Modificación');
+                        if (textStatus !== 'abort') {
+                            alertify.error("❌ Falla crítica de red. PostgreSQL abortó la modificación.");}
+                        }
+                    });
+                }
+            });
+        }});
+    });
 
     /// Tipo de indicador (Modificacion POA)
-
-
     $(document).ready(function () {
       $("#mtipo_i").change(function () { 
 
@@ -1978,93 +2059,139 @@ function numerosDecimales(evt) {
     });
 
   /// ---- Suma Programado Modificado
-    function suma_programado_modificado(){ 
-      sum=0;
-      linea = parseFloat($('[name="mlbase"]').val()); //// linea base
-      codigo = parseFloat($('[name="mcod"]').val()); //// codigo
-      for (var i = 1; i<=12; i++) {
-        sum=parseFloat(sum)+parseFloat($('[name="mm'+i+'"]').val());
-      }
-
-      $('[name="mtotal"]').val((sum+linea).toFixed(2));
-      programado = parseFloat($('[name="mtotal"]').val()); //// programado total
-      meta = parseFloat($('[name="mmeta"]').val()); //// Meta
-
-      if(programado!='' || programado!=0){
-        if(programado!=meta){
-          $('#matit').html('<center><div class="alert alert-danger alert-block">LA SUMA PROGRAMADA NO COINCIDE CON LA META DE LA ACTIVIDAD</div></center>');
-          $('#mbut').slideUp();
+    function suma_programado_modificado() { 
+        var sum = 0;
+        
+        // 🛠️ REPARADO CORE: La Línea Base NO se suma a la programación actual (Es solo histórico)
+        // El bucle lee las 12 cajas del DOM de forma ágil
+        for (var i = 1; i <= 12; i++) {
+            var valor_mes = parseFloat($('[name="mm' + i + '"]').val()) || 0;
+            sum += valor_mes;
         }
-        else{
 
-          if(codigo==0){
-            $('#mbut').slideUp();
-          }
-          else{
-            $('#matit').html('');
-            $ ('#mbut').slideDown();
-          }
+        // Estampamos la sumatoria pura de los 12 meses en la caja deshabilitada
+        $('[name="mtotal"]').val(sum.toFixed(0)); // Las metas físicas de actividades son enteros nativos
+
+        var programado = sum; 
+        var meta = parseFloat($('[name="mmeta"]').val()) || 0;
+        var codigo = parseInt($('[name="mcod"]').val()) || 0;
+
+        // 🛠️ REPARADO: Operador lógico estricto && para descartar vacíos o ceros reales
+        if (programado > 0 && meta > 0) {
+            
+            // --- ESCENARIO A: DESCUADRE FÍSICO HORIZONTAL ---
+            if (programado !== meta) {
+                $('#matit').html(
+                    '<div style="text-align:center; margin-top:10px;">' +
+                        '<div class="alert alert-danger alert-block" style="font-weight:bold; padding:8px; margin:0;">' +
+                            '⚠️ LA SUMA PROGRAMADA DE LOS MESES (' + programado + ') NO COINCIDE CON LA META DE LA ACTIVIDAD (' + meta + ')' +
+                        '</div>' +
+                    '</div>'
+                );
+                $('#mbut').slideUp(130);
+            } 
+            // --- ESCENARIO B: CUADRE COHERENTE DE METAS ---
+            else {
+                // Candado de validación institucional: Código de actividad no puede ser cero
+                if (codigo <= 0) {
+                    $('#matit').html(
+                        '<div style="text-align:center; margin-top:10px;">' +
+                            '<div class="alert alert-warning alert-block" style="font-weight:bold; padding:8px; margin:0;">' +
+                                '⚠️ EL CÓDIGO CORRELATIVO DE LA ACTIVIDAD DEBE SER MAYOR A CERO.' +
+                            '</div>' +
+                        '</div>'
+                    );
+                    $('#mbut').slideUp(130);
+                } else {
+                    // Si todo está perfectamente cuadrado, limpiamos advertencias y liberamos el botón "Guardar"
+                    $('#matit').html('');
+                    $('#mbut').slideDown(130);
+                }
+            }
+        } else {
+            // Si el formulario está vacío o en cero, ocultamos el panel de persistencia
+            $('#mbut').slideUp(130);
         }
-      }
-      else{
-        $('#mbut').slideUp();
-      }
     }
 
 
-    //// VERIF META (Modificado)
-    function verif_meta_mod(){ /// meta
-      meta = document.getElementById("mmeta").value;
+    function verif_meta_mod() {
+        // 🛠️ REPARADO: Declaración de variables con ámbito local seguro (let / var)
+        var meta_input = document.getElementById("mmeta").value;
+        var meta = parseInt(meta_input);
 
-      if(meta!='' & meta!=0){
-          total = parseFloat($('[name="mtotal"]').val()); //// linea base
-          indicador = parseFloat($('[name="mtipo_i"]').val()); //// Indicador
-          tipo_meta = parseFloat($('[name="mtp_met"]').val()); //// tipo Meta
+        // 🛠️ REPARADO: Reemplazados los operadores binarios & por operadores lógicos &&
+        if (meta_input !== "" && meta > 0) {
+          
+            var total = parseFloat($('[name="mtotal"]').val()) || 0;
+            var indicador = parseInt($('[name="mtipo_i"]').val()) || 0;
+            var tipo_meta = parseInt($('[name="mtp_met"]').val()) || 0;
 
-            if(indicador==2 & tipo_meta==1){
-              for (var i = 1; i <=12; i++) {
-                document.getElementById("mm"+i).value = parseInt(meta);
-              }
-              document.getElementById("mtotal").value = parseInt(meta);
-              document.getElementById("mmeta").value = parseInt(meta);
-              $('#mbut').slideDown();
-            }
-            else{
-              if(indicador==2 & tipo_meta==5){
-                  for (var i = 1; i <=12; i++) {
-                    if(i==3 || i==6 || i==9 || i==12){
-                      document.getElementById("mm"+i).value = parseInt(meta);
-                    }
-                    else{
-                      document.getElementById("mm"+i).value = parseInt(0);
-                    }
-                    
-                  }
-                  document.getElementById("mtotal").value = parseInt(meta);
-                  document.getElementById("mmeta").value = parseInt(meta);
-                  $('#mbut').slideDown();
-              }
-              else{
-                if(meta==total){
-                  $('#matit').html('');
-                  $('#mbut').slideDown();
+            // --- CASO 1: INDICADOR PORCENTUAL (2) Y META RECURRENTE (1) ---
+            if (indicador === 2 && tipo_meta === 1) {
+                for (var i = 1; i <= 12; i++) {
+                    var input_mes = document.getElementById("mm" + i);
+                    if (input_mes) input_mes.value = meta;
                 }
-                else{
-                  $('#matit').html('<center><div class="alert alert-danger alert-block">LA SUMA PROGRAMADA NO COINCIDE CON LA META DE LA ACTIVIDAD</div></center>');
-                  $('#mbut').slideUp();
-                }
-              }
-
+                // 🛠️ REPARADO: Inyección forzada por jQuery para inputs deshabilitados (disabled)
+                $('[name="mtotal"]').val(meta.toFixed(0));
+                document.getElementById("mmeta").value = meta;
+                
+                $('#matit').html('');
+                $('#mbut').slideDown(150);
             }
-      }
-      else{
-        $('#mbut').slideUp();
-      }
+            // --- CASO 2: INDICADOR PORCENTUAL (2) Y META TRIMESTRAL (5) ---
+            else if (indicador === 2 && tipo_meta === 5) {
+                for (var i = 1; i <= 12; i++) {
+                    var input_mes = document.getElementById("mm" + i);
+                    if (input_mes) {
+                        if (i === 3 || i === 6 || i === 9 || i === 12) {
+                            input_mes.value = meta;
+                        } else {
+                            input_mes.value = 0;
+                        }
+                    }
+                }
+                // 🛠️ REPARADO: Inyección por jQuery para evitar bloqueos del DOM
+                $('[name="mtotal"]').val(meta.toFixed(0));
+                document.getElementById("mmeta").value = meta;
+                
+                $('#matit').html('');
+                $('#mbut').slideDown(150);
+            }
+            // --- CASO 3: METAS ACUMULADAS / ABSOLUTAS (Validación Horizontal Estricta) ---
+            else {
+                if (meta === total) {
+                    $('#matit').html('');
+                    $('#mbut').slideDown(150);
+                } else {
+                    // Alerta elástica de descuadre financiero regional
+                    $('#matit').html(
+                        '<div style="text-align:center; margin-top:10px;">' +
+                            '<div class="alert alert-danger alert-block" style="font-weight:bold; padding:8px; margin:0;">' +
+                                '⚠️ LA SUMA PROGRAMADA DE LOS MESES (' + total + ') NO COINCIDE CON LA NUEVA META DE LA ACTIVIDAD (' + meta + ')' +
+                            '</div>' +
+                        '</div>'
+                    );
+                    $('#mbut').slideUp(150);
+                }
+            }
+        } else {
+            $('#matit').html(
+                        '<div style="text-align:center; margin-top:10px;">' +
+                            '<div class="alert alert-danger alert-block" style="font-weight:bold; padding:8px; margin:0;">' +
+                                '⚠️ Registre Meta' +
+                            '</div>' +
+                        '</div>'
+                    );
+            // Si el campo se vacía o se pone en cero, escondemos el botón de guardar inmediatamente
+            $('#mbut').slideUp(150);
+        }
     }
 
 
     //// Elimina Actividades Seleccionados
-    function valida_eliminar(){
+/*    function valida_eliminar(){
       if (document.del_req.tot.value=="" || document.del_req.tot.value==0){
         alertify.error("SELECCIONE ACTIVIDADES A ELIMINAR");
       }
@@ -2080,142 +2207,115 @@ function numerosDecimales(evt) {
           }
         });
       }
-    }
+    }*/
 
-
-    //// ELiminar Actividad
-/*  $(function () {
-      function reset() {
-        $("#toggleCSS").attr("href", base+"/assets/themes_alerta/alertify.default.css");
-        alertify.set({
-            labels: {
-                ok: "ACEPTAR",
-                cancel: "CANCELAR"
-            },
-            delay: 5000,
-            buttonReverse: false,
-            buttonFocus: "ok"
-        });
-      }
-
-      // =====================================================================
-    $(".del_ff").on("click", function (e) {
-        reset();
-        var prod_id = $(this).attr('name');
-        var request;
-        // confirm dialog
-        alertify.confirm("DESEA ELIMINAR ACTIVIDAD ?", function (a) {
-          if (a) { 
-            var url = base+"index.php/programacion/producto/desactiva_producto";
-            if (request) {
-              request.abort();
-            }
-            request = $.ajax({
-              url: url,
-              type: "POST",
-              dataType: "json",
-              data: "prod_id="+prod_id
-            });
-
-            request.done(function (response, textStatus, jqXHR) { 
-              reset();
-            //  alert(response.verif)
-              if (response.respuesta == 'correcto') {
-                alertify.alert("LA ACTIVIDAD SE ELIMINO CORRECTAMENTE ", function (e) {
-                  if (e) {
-                    window.location.reload(true);
-                  }
-                });
-              } else {
-                alertify.alert("ERROR AL ELIMINAR LA ACTIVIDAD !!!", function (e) {
-                  if (e) {
-                    window.location.reload(true);
-                  }
-                });
-              }
-            });
-              request.fail(function (jqXHR, textStatus, thrown) {
-                console.log("ERROR: " + textStatus);
-              });
-              request.always(function () {
-                  //console.log("termino la ejecuicion de ajax");
-              });
-
-              e.preventDefault();
-
-          } else {
-              // user clicked "cancel"
-              alertify.error("OPERACION CANCELADA");
-          }
-        });
-      return false;
-    });
-  });*/
 
 
   //// MODIFICACION POA (ELIMINAR FORM 4)
-    $(function () {
-          function reset() {
-            $("#toggleCSS").attr("href", base+"/assets/themes_alerta/alertify.default.css");
+    $(document).ready(function() {
+    
+    // Variable global de contexto de red para el aborto seguro de colas
+    var xhr_eliminar_actividad = null;
+
+    // Inicializador higiénico de las propiedades de alertas Alertify
+    function reset_alertify_config() {
+        if (typeof alertify !== "undefined") {
             alertify.set({
-                labels: {
-                    ok: "ACEPTAR",
-                    cancel: "CANCELAR"
-                },
+                labels: { ok: "ACEPTAR", cancel: "CANCELAR" },
                 delay: 5000,
                 buttonReverse: false,
                 buttonFocus: "ok"
             });
-          }
+        }
+    }
 
-          // =====================================================================
-          $(".mdel_ff").on("click", function (e) {
-              reset();
-              var prod_id = $(this).attr('name');
-              var cite_id = $(this).attr('id');
+    // =====================================================================
+    // 🚨 MÓDULO CNS: ELIMINACIÓN FÍSICA ASÍNCRONA DE ACTIVIDAD (FORM 4)
+    // =====================================================================
+    $(document).on("click", ".mdel_ff", function (e) {
+        e.preventDefault();
+        reset_alertify_config();
 
-            //  alert(prod_id+'--'+cite_id)
-              var request;
-              // confirm dialog
-              alertify.confirm("DESEA ELIMINAR ACTIVIDAD ?", function (a) {
+        var $btn = $(this);
+        var $fila_dom = $btn.closest('tr'); // Capturamos el nodo de la hilera en la grilla HTML
+        
+        var prod_id = $btn.attr('name') || $btn.data('prod');
+        var cite_id = $btn.attr('id') || $btn.data('cite');
+
+        if (!prod_id || !cite_id) {
+            if (typeof alertify !== "undefined") alertify.error("⚠️ Error: Identificadores corruptos en la fila.");
+            return false;
+        }
+
+        if (typeof alertify !== "undefined") {
+            alertify.confirm("🚨 <b>¿ESTÁ SEGURO DE ELIMINAR ESTA ACTIVIDAD DEFINITIVAMENTE?</b><br><br><i>El motor del SIIPLAS v2.0 purgará de forma física el registro, su cronograma de metas programadas de Enero a Diciembre y sus ejecuciones de PostgreSQL. Esta acción no se puede deshacer.</i>", function (a) {
                 if (a) {
+                    
+                    // Bloqueamos la interfaz visual e inyectamos el preloader de red
                     $("#loading-overlay").css("display", "flex");
 
-                    // Construcción segura de la URL para evitar el 404
-                    var url = base+"index.php/modificaciones/cmod_fisica/delete_modFormN4";
+                    var url = base + "index.php/modificaciones/cmod_fisica/delete_modFormN4";
 
-                    $.ajax({
+                    // Mapeo e Inyección automática del Token CSRF de seguridad de la CNS
+                    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                    
+                    var datos_post = { prod_id: prod_id, cite_id: cite_id };
+                    if (csrf_name !== '') { datos_post[csrf_name] = csrf_hash; }
+
+                    // Abortamos hilos de red huérfanos concurrentes en cola
+                    if (xhr_eliminar_actividad && xhr_eliminar_actividad.readyState !== 4) {
+                        xhr_eliminar_actividad.abort();
+                    }
+
+                    // Despachamos la ráfaga asíncrona hacia CodeIgniter
+                    xhr_eliminar_actividad = $.ajax({
                         url: url,
                         type: "POST",
                         dataType: "json",
-                        data: { prod_id: prod_id, cite_id: cite_id },
+                        data: datos_post,
                         success: function (response) {
-                            if (response.respuesta == 'correcto') {
-                                window.location.reload(true);
-                                alertify.success("correcto !!!.");
+                            $("#loading-overlay").hide();
+
+                            if (response.respuesta === 'correcto' || response.status === 'success') {
+                                
+                                // 🌟 REPARADO CORE: Eliminación reactiva del nodo en el DOM con desvanecimiento sutil
+                                // Evita el reload total y la descarga masiva de megabytes redundantes de Apache
+                                $fila_dom.fadeOut(350, function() {
+                                    $(this).remove();
+                                    
+                                    // Re-enumeramos dinámicamente los correlativos numéricos de la primera columna
+                                    $('table#dt_basic4 tbody tr').each(function(index) {
+                                        $(this).find('td:first').text(index + 1);
+                                    });
+                                });
+
+                                alertify.success("✔ La actividad se eliminó físicamente de PostgreSQL con éxito.");
+
                             } else {
-                                $("#loading-overlay").hide(); // Liberar pantalla si hay error lógico
-                                alertify.error("Error en la base de datos.");
+                                alertify.error("🚨 Rechazo: " + (response.message || "PostgreSQL denegó la purga del registro."));
                             }
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
-                            // AQUÍ CAPTURAMOS EL 404 O CUALQUIER OTRO ERROR DE RED
-                            $("#loading-overlay").hide(); // ¡IMPORTANTE! Ocultar el loading para que no bloquee
+                            if (textStatus === 'abort') return;
+                            $("#loading-overlay").hide();
                             
                             if (jqXHR.status === 404) {
-                                alertify.error("Error 404: No se encontró la ruta del controlador.");
+                                alertify.error("❌ Error 404: Ruta de destino del controlador no localizada.");
                             } else {
-                                alertify.error("Error de red: " + textStatus);
+                                alertify.error("❌ Error de comunicación: " + textStatus);
                             }
-                            console.error("Detalle:", errorThrown);
+                            console.error("CNS EXCEPTION DELETE ->", errorThrown);
                         }
                     });
+                } else {
+                    alertify.log("Operación de purga abortada. El registro permanece intacto.");
                 }
-              });
-
-            return false;
-          });
-      });
+            });
+        }
+        return false;
+    });
+});
 
 
 
@@ -2272,3 +2372,87 @@ function numerosDecimales(evt) {
 
      
   });
+
+
+  //// nuevo registro formulario N | 4
+  $(function () {
+    const $form = $("#form_nuevo");
+    const $btnSubir = $("#subir_ope");
+
+    // 1. Configuración de Reglas Básicas
+    const validator = $form.validate({
+        rules: {
+            cod: "required", prod: "required", resultado: "required",
+            tipo_i: "required", indicador: "required", unidad: "required",
+            meta: { required: true, number: true },
+            lbase: { required: true, number: true }
+        },
+        errorElement: 'span',
+        errorClass: 'help-block text-danger',
+        highlight: e => $(e).closest('section').addClass('has-error'),
+        unhighlight: e => $(e).closest('section').removeClass('has-error'),
+        errorPlacement: (error, element) => {
+            error.css({"color": "red", "font-size": "11px"});
+            element.parent().after(error);
+        }
+    });
+
+    // 2. Función para validar que todos los meses tengan datos
+    function validarMeses() {
+        let faltanDatos = false;
+        for (let i = 1; i <= 12; i++) {
+            let valor = $(`input[name="m${i}"]`).val();
+            if (valor === "" || isNaN(valor)) {
+                $(`input[name="m${i}"]`).closest('section').addClass('has-error');
+                faltanDatos = true;
+            }
+        }
+        return !faltanDatos;
+    }
+
+    $btnSubir.on("click", function (e) {
+        e.preventDefault();
+
+        // Validar campos generales
+        if (!$form.valid()) {
+            validator.focusInvalid();
+            return false;
+        }
+
+        // Validar que los meses m1...m12 estén llenos
+        if (!validarMeses()) {
+            alertify.error("POR FAVOR, COMPLETE TODOS LOS MESES (USE 0 SI NO HAY PROGRAMACIÓN)");
+            return false;
+        }
+
+        // Lógica de Metas
+        const tipoI = $("#tipo_i").val();
+        const tpMet = $("#tp_met").val();
+        const meta = parseFloat($("#meta").val()) || 0;
+        const totalProgramado = parseFloat($("#total").val()) || 0;
+
+        // Validación de suma vs meta
+        if (tipoI == 1 || (tipoI == 2 && tpMet == 3)) {
+            if (Math.abs(meta - totalProgramado) > 0.01) { // Uso de margen pequeño por decimales
+                alertify.error(`ERROR: META (${meta}) NO COINCIDE CON TOTAL PROGRAMADO (${totalProgramado})`);
+                $("#meta").focus();
+                return false;
+            }
+        } 
+
+        if (tipoI != 1 && (tpMet == "" || tpMet == 0)) {
+            alertify.error("SELECCIONE TIPO DE META");
+            $("#tp_met").focus();
+            return false;
+        }
+
+        // Confirmación y Bloqueo de pantalla
+        alertify.confirm("¿CONFIRMA GUARDAR ESTA ACTIVIDAD?", function (ok) {
+            if (ok) {
+                $("#loading-overlay").css("display", "flex"); // Mostrar Loading
+                $btnSubir.prop('disabled', true).text("Procesando...");
+                $form.submit();
+            }
+        });
+    });
+});

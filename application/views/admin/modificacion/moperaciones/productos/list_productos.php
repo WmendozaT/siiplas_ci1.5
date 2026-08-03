@@ -440,236 +440,216 @@
 	  <!--  =====================================================  -->
 
 	<!-- ============ Modal Modificar formulario N4 ========= -->
-    <div class="modal fade" id="modal_mod_form4" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-      <div class="modal-dialog" id="mdialTamanio">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+    <div class="modal fade" id="modal_mod_form4" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
+    <div class="modal-dialog modal-lg" id="mdialTamanio" style="width: 80% !important; max-width: 95%; margin: 25px auto;">
+        <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
+          
+          <!-- CABECERA DEL MODAL -->
+          <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+              <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
+                  <i class="fa fa-pencil-square-o text-primary"></i> Modificar Registro Form N° 4 - Actividad
+              </h4>
+              <button class="close" data-dismiss="modal" id="amcl" title="SALIR SIN GUARDAR CAMBIOS" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer;">&times; <b>Salir Formulario</b></button>
           </div>
-          <div class="modal-body">
-            <h2 class="alert alert-info"><center>MODIFICAR REGISTRO FORM N°4 - ACTIVIDAD</center></h2>
-            <form action="<?php echo site_url().'/modificaciones/cmod_fisica/valida_update_form4'?>" method="post" id="form_mod" name="form_mod" class="smart-form">
-            <input type="hidden" name="prod_id" id="prod_id">
-            <input type="hidden" name="mcite_id" id="mcite_id" value="<?php echo $cite[0]['cite_id'];?>"> 
-	        
-              <header><b>DATOS GENERALES DE LA ACTIVIDAD</b></header>
-              <fieldset>
-                <div class="row">
-                  <section class="col col-1">
-                    <label class="label"><b>C&Oacute;DIGO</b></label>
-                    <label class="input">
-                      <i class="icon-append fa fa-tag"></i>
-                      <input type="number" name="mcod" id="mcod">
-                    </label>
-                  </section>
-                  <section class="col col-5">
-                    <label class="label"><b>DESCRIPCI&Oacute;N DE LA ACTIVIDAD</b></label>
-                    <label class="textarea">
-                      <i class="icon-append fa fa-tag"></i>
-                      <textarea rows="3" name="mprod" id="mprod" title="REGISTRAR ACTIVIDAD"></textarea>
-                    </label>
-                  </section>
-                  <section class="col col-4">
-                    <label class="label"><b>RESULTADO</b></label>
-                    <label class="textarea">
-                      <i class="icon-append fa fa-tag"></i>
-                      <textarea rows="3" name="mresultado" id="mresultado" title="REGISTRAR RESULTADO"></textarea>
-                    </label>
-                  </section>
-                  <section class="col col-2">
-                    <label class="label"><b>TIPO DE INDICADOR</b></label>
-                    <select class="form-control" id="mtipo_i" name="mtipo_i" title="SELECCIONE TIPO DE INDICADOR">
-                        <option value="">Seleccione Tipo de Indicador</option>
-                        <?php 
-                          foreach($indi as $row){ ?>
-                          <option value="<?php echo $row['indi_id'];?>"><?php echo $row['indi_descripcion'];?></option>
-                        <?php } ?>        
-                    </select>
-                  </section>
 
-                 <!--  <section class="col col-2">
-                    <div id="indi"></div>
-                  </section> -->
-                </div>
-
-                <div class="row">
-                  <section class="col col-4">
-                    <label class="label"><b>INDICADOR</b></label>
-                    <label class="textarea">
-                      <i class="icon-append fa fa-tag"></i>
-                      <textarea rows="2" name="mindicador" id="mindicador" title="REGISTRE DESCRIPCIÓN INDICADOR"></textarea>
-                    </label>
-                  </section>
-                  <section class="col col-4">
-                    <label class="label"><b>MEDIO DE VERIFICACI&Oacute;N</b></label>
-                    <label class="textarea">
-                      <i class="icon-append fa fa-tag"></i>
-                      <textarea rows="2" name="mverificacion" id="mverificacion" title="REGISTRE MEDIO DE VERIFICACIÓN"></textarea>
-                    </label>
-                  </section>
-                  <div id="resp"></div>
-                </div>
-
-                <div class="row">
-                    <section class="col col-2">
-                      <label class="label"><b>LINEA BASE</b></label>
-                      <label class="input">
-                        <i class="icon-append fa fa-tag"></i>
-                        <input type="text" name="mlbase" id="mlbase" value="0" title="REGISTRE LINEA BASE" onkeyup="suma_programado()">
-                      </label>
-                    </section>
-                    <section class="col col-2">
-                      <label class="label"><b>META</b></label>
-                      <label class="input">
-                        <i class="icon-append fa fa-tag"></i>
-                        <input type="text" name="mmeta" id="mmeta" value="0" onkeyup="verif_meta_mod()" title="REGISTRE META">
-                      </label>
-                    </section>
-                    <section class="col col-2">
-                      <label class="label"><b>NECESITA PRESUPUESTO ?</b></label>
-                      <select class="form-control" id="mppto" name="mppto" title="NECESITA PRESUPUESTO">
-                        <option value="1">SI</option>
-                        <option value="0">NO</option>       
-                      </select>
-                    </section>
-
-                    <section class="col col-2">
-                      <div id="alineacion_form2"></div>
-                    </section>
-
-                    <div id="mtrep" style="display:none;" >
-                      <section class="col col-3">
-                        <label class="label"><b>TIPO DE META</b></label>
-                          <select class="form-control" id="mtp_met" name="mtp_met" title="SELECCIONE TIPO DE META">
-                            <option value="">Seleccione Tipo de Meta</option>
-                              <?php 
-                                foreach($metas as $row){ ?>
-                                  <option value="<?php echo $row['mt_id']; ?>"><?php echo $row['mt_tipo']; ?></option>
-                                  <?php
-                                }
-                              ?>
-                        </select>
-                      </section><br>  
-                    </div>
-                  </div>
-              <br>
-              <div id="matit"></div>
-              <header><b>DISTRIBUCI&Oacute;N POA - <?php echo $this->session->userdata('gestion')?></b><br>
-              <label class="label"><div id="ff"></div></label>
-              </header>
-              <br>
-              <div class="row">
-                <section class="col col-2">
-                  <label class="label"><b>PROGRAMADO TOTAL</b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mtotal" id="mtotal" value="0" disabled="true">
-                  </label>
-                </section>
-              </div>
-              <div class="row">
-                <section class="col col-2">
-                  <label class="label"><b><div id="e1"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm1" id="mm1" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="ENERO - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e2"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm2" id="mm2" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="FEBRERO - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e3"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm3" id="mm3" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="MARZO - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e4"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm4" id="mm4" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="ABRIL - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e5"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm5" id="mm5" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="MAYO - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e6"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm6" id="mm6" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="JUNIO - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-              </div>
-              <div class="row">
-                <section class="col col-2">
-                  <label class="label"><b><div id="e7"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm7" id="mm7" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="JULIO - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e8"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm8" id="mm8" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE AGOSTO - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e9"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm9" id="mm9" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE SEPTIEMBRE - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e10"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm10" id="mm10" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE OCTUBRE - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e11"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm11" id="mm11" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE NOVIEMBRE - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-                <section class="col col-2">
-                  <label class="label"><b><div id="e12"></div></b></label>
-                  <label class="input">
-                    <i class="icon-append fa fa-money"></i>
-                    <input type="text" name="mm12" id="mm12" value="0" onkeyup="suma_programado_modificado()" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false" required="true" title="PROGRAMACION FINANCIERA MES DE DICIEMBRE - <?php echo $this->session->userdata('gestion')?>">
-                  </label>
-                </section>
-              </div>
-
-            </fieldset>
+          <!-- CUERPO TRANSACCIONAL SMART-FORM -->
+          <div class="modal-body" style="padding: 20px 25px; background: #ffffff;">
             
-            <div id="mbut">
-              <footer>
-                <button type="button" name="subir_mform4" id="subir_mform4" class="btn btn-info" >MODIFICAR ACTIVIDAD</button>
-                <button class="btn btn-default" data-dismiss="modal" title="CANCELAR">CANCELAR</button>
-              </footer>
-              <center><img id="loadm" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="45" height="45"></center>
-            </div>
-          </form>
-            </div>
-          </div>
-        </div>
-    </div>
+            <form action="<?php echo site_url().'/modificaciones/cmod_fisica/valida_update_form4'?>" method="post" id="form_mod" name="form_mod" class="smart-form" style="margin:0; padding:0;">
+                
+                <!-- 🔒 REPARADO CORE: Inputs de control obligatorios ocultados correctamente para no romper la UI -->
+                <input type="hidden" name="prod_id" id="prod_id">
+                <input type="hidden" name="mcite_id" id="mcite_id" value="<?php echo (isset($cite[0]['cite_id'])) ? $cite[0]['cite_id'] : ''; ?>"> 
+	        
+                <header style="border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; margin-bottom: 15px; font-weight: bold; color: #1e293b; font-size: 12px; text-transform: uppercase;">
+                    <b>Datos Generales de la Actividad</b>
+                </header>
+
+                <fieldset style="padding:0; background:transparent;">
+                    <!-- FILA 1: Identificación y Clasificación -->
+                    <div class="row">
+                      <section class="col col-1">
+                        <label class="label"><b>CÓDIGO</b></label>
+                        <label class="input">
+                          <i class="icon-append fa fa-tag"></i>
+                          <input type="number" name="mcod" id="mcod" style="font-weight: bold; text-align: center;">
+                        </label>
+                      </section>
+                      <section class="col col-5">
+                        <label class="label"><b>DESCRIPCIÓN DE LA ACTIVIDAD</b></label>
+                        <label class="textarea">
+                          <i class="icon-append fa fa-tag"></i>
+                          <textarea rows="3" name="mprod" id="mprod" title="REGISTRAR ACTIVIDAD"></textarea>
+                        </label>
+                      </section>
+                      <section class="col col-4">
+                        <label class="label"><b>RESULTADO</b></label>
+                        <label class="textarea">
+                          <i class="icon-append fa fa-tag"></i>
+                          <textarea rows="3" name="mresultado" id="mresultado" title="REGISTRAR RESULTADO"></textarea>
+                        </label>
+                      </section>
+                      <section class="col col-2">
+                        <label class="label"><b>TIPO DE INDICADOR</b></label>
+                        <select class="form-control" id="mtipo_i" name="mtipo_i" title="SELECCIONE TIPO DE INDICADOR" style="height: 32px; font-size: 11.5px;">
+                            <option value="">Seleccione Tipo de Indicador</option>
+                            <?php 
+                              if(!empty($indi)) {
+                                foreach($indi as $row){ ?>
+                                  <option value="<?php echo $row['indi_id'];?>"><?php echo $row['indi_descripcion'];?></option>
+                                <?php } 
+                              } ?>        
+                        </select>
+                      </section>
+                    </div>
+
+                    <!-- FILA 2: Verificación e Indicadores -->
+                    <div class="row">
+                      <section class="col col-4">
+                        <label class="label"><b>INDICADOR</b></label>
+                        <label class="textarea">
+                          <i class="icon-append fa fa-tag"></i>
+                          <textarea rows="2" name="mindicador" id="mindicador" title="REGISTRE DESCRIPCIÓN INDICADOR"></textarea>
+                        </label>
+                      </section>
+                      <section class="col col-4">
+                        <label class="label"><b>MEDIO DE VERIFICACIÓN</b></label>
+                        <label class="textarea">
+                          <i class="icon-append fa fa-tag"></i>
+                          <textarea rows="2" name="mverificacion" id="mverificacion" title="REGISTRE MEDIO DE VERIFICACIÓN"></textarea>
+                        </label>
+                      </section>
+                      <div id="resp"></div>
+                    </div>
+
+                    <!-- FILA 3: Métricas y Presupuestos -->
+                    <div class="row">
+                        <section class="col col-2">
+                          <label class="label"><b>LINEA BASE</b></label>
+                          <label class="input">
+                            <i class="icon-append fa fa-tag"></i>
+                            <input type="text" name="mlbase" id="mlbase" value="0" title="REGISTRE LINEA BASE" onkeyup="suma_programado()">
+                          </label>
+                        </section>
+                        <section class="col col-2">
+                          <label class="label"><b>META</b></label>
+                          <label class="input">
+                            <i class="icon-append fa fa-tag"></i>
+                            <input type="text" name="mmeta" id="mmeta" value="0" onkeyup="verif_meta_mod()" title="REGISTRE META">
+                          </label>
+                        </section>
+                        <section class="col col-2">
+                          <label class="label"><b>NECESITA PRESUPUESTO ?</b></label>
+                          <select class="form-control" id="mppto" name="mppto" title="NECESITA PRESUPUESTO" style="height: 32px; font-size: 11.5px;">
+                            <option value="1">SI</option>
+                            <option value="0">NO</option>       
+                          </select>
+                        </section>
+
+                        <section class="col col-2">
+                          <div id="alineacion_form2" style="margin-top: 24px;"></div>
+                        </section>
+
+                        <div id="mtrep" style="display:none;" >
+                          <section class="col col-3">
+                            <label class="label"><b>TIPO DE META</b></label>
+                              <select class="form-control" id="mtp_met" name="mtp_met" title="SELECCIONE TIPO DE META" style="height: 32px; font-size: 11.5px;">
+                                <option value="">Seleccione Tipo de Meta</option>
+                                  <?php 
+                                    if(!empty($metas)) {
+                                      foreach($metas as $row){ ?>
+                                        <option value="<?php echo $row['mt_id']; ?>"><?php echo $row['mt_tipo']; ?></option>
+                                      <?php }
+                                    } ?>
+                            </select>
+                          </section>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <br>
+                <div id="matit"></div>
+                
+                <header style="border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; margin-bottom: 15px; font-weight: bold; color: #1e293b; font-size: 12px; text-transform: uppercase;">
+                    <b>Distribución POA - <?php echo $this->session->userdata('gestion'); ?></b><br>
+                    <label class="label"><div id="ff"></div></label>
+                </header>
+                
+                <fieldset style="padding:0; background:transparent;">
+                    <div class="row" style="margin-bottom: 15px;">
+                        <section class="col col-2">
+                            <label class="label"><b>PROGRAMADO TOTAL</b></label>
+                            <label class="input">
+                                <i class="icon-append fa fa-money"></i>
+                                <input type="text" name="mtotal" id="mtotal" value="0" disabled="true" style="font-weight: bold; background: #f8fafc; color: #1e40af; text-align: right;">
+                            </label>
+                        </section>
+                    </div>
+
+                    <?php 
+                    $meses_nombres = array(
+                        1  => "ENERO", 2 => "FEBRERO", 3 => "MARZO", 4 => "ABRIL", 
+                        5  => "MAYO", 6 => "JUNIO", 7 => "JULIO", 
+                        8  => "AGOSTO", 9  => "SEPTIEMBRE", 10 => "OCTUBRE", 11 => "NOVIEMBRE", 12 => "DICIEMBRE"
+                    );
+
+                    // 🛠️ REPARADO CORE: Generación modular elástica de las hileras de Enero a Diciembre
+                     for ($fila = 1; $fila <= 2; $fila++) {
+                        echo '<div class="row">';
+                        $inicio = ($fila == 1) ? 1 : 7;
+                        $fin    = ($fila == 1) ? 6 : 12;
+
+                        for ($i = $inicio; $i <= $fin; $i++) { 
+                            $titulo_completo = "PROGRAMACION FINANCIERA MES DE " . $meses_nombres[$i] . " - " . $this->session->userdata('gestion');
+                            ?>
+                            <section class="col col-2">
+                                <label class="label"><b><div id="e<?php echo $i; ?>"></div></b></label>
+                                <label class="input">
+                                    <i class="icon-append fa fa-money"></i>
+                                    <input type="text" 
+                                           name="mm<?php echo $i; ?>" 
+                                           id="mm<?php echo $i; ?>" 
+                                           value="0" 
+                                           onkeyup="suma_programado_modificado()" 
+                                           onkeypress="if (this.value.length < 10) { return numerosDecimales(event); } else { return false; }" 
+                                           onpaste="return false" 
+                                           required="true" 
+                                           title="<?php echo $titulo_completo; ?>"
+                                           style="text-align: right; font-weight: 500;">
+                                </label>
+                            </section>
+                            <?php 
+                        }
+                        echo '</div>'; // Cierre de la hilera activa (.row)
+                    } 
+                    ?>
+                </fieldset>
+
+                <!-- ==========================================================================
+                     🌟 BOTONERA DE PERSISTENCIA INSTITUCIONAL (PIE DEL MODAL)
+                     ========================================================================== -->
+                <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 20px; text-align: right; margin: 20px -25px -20px -25px;">
+                    <!-- Botón de Salida Neutro -->
+                    <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11.5px; padding: 6px 16px; border-radius: 3px; background: #64748b; color: #ffffff; border: 1px solid #475569; transition: all 0.15s ease;"
+                            onmouseover="this.style.background='#475569';"
+                            onmouseout="this.style.background='#64748b';">
+                        <i class="fa fa-arrow-circle-left"></i> Cancelar
+                    </button>
+                    
+                    <!-- Botón Guardar Cambios Ejecutivo -->
+                    <button type="button" name="subir_form4" id="subir_form4" class="btn btn-sm" style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11.5px; padding: 6px 18px; background: #334155; border: 1px solid #334155; color: #ffffff; border-radius: 3px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                            onmouseover="this.style.background='#0f172a'; this.style.borderColor='#0f172a';"
+                            onmouseout="this.style.background='#334155'; this.style.borderColor='#334155';">
+                        <i class="fa fa-save" style="color: #94a3b8;"></i> Guardar Modificación
+                    </button>
+                </div>
+
+            </form> 
+          </div> <!-- Fin .modal-body -->
+
+        </div> <!-- Fin .modal-content -->
+    </div> <!-- Fin .modal-dialog -->
+</div> <!-- Fin .modal -->
     <!-- ======================================================== -->
 
 		<!-- MODAL CERRAR   -->

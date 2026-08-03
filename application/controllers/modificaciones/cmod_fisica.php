@@ -108,52 +108,6 @@ class Cmod_fisica extends CI_Controller {
               </tbody>
             </table>';        
 
-        // $data['loading']='<div id="loading-overlay">
-        //                       <div class="loader-content">
-        //                           <div class="spinner-custom"></div>
-        //                           <h2 style="color: white;">INGRESANDO A FORMULARIO DE MODIFICACIÓN POA</h2>
-        //                           <p style="color: white;">Por favor, no cierre la ventana...</p>
-        //                       </div>
-        //                   </div>
-
-        //                     <style>
-        //                     #loading-overlay {
-        //                         position: fixed; /* Se mantiene fijo aunque hagas scroll */
-        //                         top: 0;
-        //                         left: 0;
-        //                         width: 125vw;    /* 120% del ancho de la ventana */
-        //                         height: 125vh;   /* 120% del alto de la ventana */
-        //                         background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
-        //                         z-index: 999999; /* Valor extremadamente alto para estar sobre todo */
-        //                         display: none;   /* Se activa con JS */
-        //                         justify-content: center;
-        //                         align-items: center;
-        //                         color: white;
-        //                         text-align: center;
-        //                         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        //                     }
-
-        //                     .loader-content h2 {
-        //                         margin-top: 20px;
-        //                         letter-spacing: 2px;
-        //                         font-weight: bold;
-        //                     }
-
-        //                     .spinner-custom {
-        //                         width: 80px;
-        //                         height: 80px;
-        //                         border: 8px solid rgba(255, 255, 255, 0.1);
-        //                         border-top: 8px solid #3276b1; /* Color azul de SmartAdmin */
-        //                         border-radius: 50%;
-        //                         animation: spin-loading 1s linear infinite;
-        //                         display: inline-block;
-        //                     }
-
-        //                     @keyframes spin-loading {
-        //                         0% { transform: rotate(0deg); }
-        //                         100% { transform: rotate(360deg); }
-        //                     }
-        //                     </style>';
         $data['componentes']=$tabla;
         $this->load->view('admin/modificacion/moperaciones/cite_modfis', $data);  
       }
@@ -286,267 +240,330 @@ class Cmod_fisica extends CI_Controller {
 
 
     /*---- GET DATOS FORM 4 PARA MODIFICAR 2027 ----*/
-    public function get_form4_mod(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $prod_id = $this->security->xss_clean($post['prod_id']);
-        $producto=$this->model_producto->get_producto_id($prod_id); /// Get producto
+       public function get_form4_mod(){
+        // Validamos la legitimidad de la ráfaga asíncrona de red (Evita accesos directos por URL)
+        if($this->input->is_ajax_request() && $this->input->post()){
+            
+            $post = $this->input->post();
+            $prod_id = intval($this->security->xss_clean($post['prod_id']));
 
-        for ($i=1; $i <=12 ; $i++) { 
-          if($i<$this->verif_mes[1]){ /// Meses ejecutados
-          //if($i<2){ /// Meses ejecutados
-            $this->prog_mes_eval[$i]=1;
-          }
-        }
+            if ($prod_id <= 0) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error'));
+                exit;
+            }
 
+            // Recuperamos la ficha máster de la actividad desde PostgreSQL
+            $producto = $this->model_producto->get_producto_id($prod_id); 
 
-        $uresponsable='';
-        if($producto[0]['por_id']==1){
-          $unidades=$this->model_producto->list_uresponsables_regional_alineacion_prog_bolsas($producto[0]['dist_id']);
-          $uresponsable.='
-              <section class="col col-4">
-                <label class="label"><b>UNIDAD RESPONSABLE</b></label>
-                <select class="form-control" id="um_resp" name="um_resp" title="SELECCIONE UNIDAD RESPONSABLE" required>
-                  <option value="">Seleccione Unidad Responsable</option>';
-                  foreach($unidades as $row){
-                    if($row['com_id']==$producto[0]['uni_resp']){
-                      $uresponsable.='<option value="'.$row['com_id'].'" selected>'.$row['aper_programa'].' '.$row['proy_nombre'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['com_componente'].'</option>';
-                    }
-                    else{
-                      $uresponsable.='<option value="'.$row['com_id'].'" >'.$row['aper_programa'].' '.$row['proy_nombre'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['com_componente'].'</option>';
-                    }
-                  }       
-                $uresponsable.='
-                </select>
-              </section>';
-        }
-        else{
-          $uresponsable.='
-                <input type="text" name="um_resp" id="um_resp" value="0">
+            if (empty($producto)) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error'));
+                exit;
+            }
+
+            // Inicializador del mapa de control del historial de meses evaluados
+            $this->prog_mes_eval = array_fill(1, 12, 0);
+            for ($i = 1; $i <= 12; $i++) { 
+                if ($i < intval($this->verif_mes[1])) { 
+                    $this->prog_mes_eval[$i] = 1; // Bloqueado por auditoría de mes vencido
+                }
+            }
+
+            // ==========================================================================
+            // 📁 CONSTRUCTOR: PANEL ELÁSTICO DE LA UNIDAD RESPONSABLE (MANTENIENDO TU LÓGICA)
+            // ==========================================================================
+            $uresponsable = '';
+            if(intval($producto[0]['por_id']) === 1) { // Caso Proyectos Bolsa
+                $unidades = $this->model_producto->list_uresponsables_regional_alineacion_prog_bolsas($producto[0]['dist_id']);
+                
+                $uresponsable .= '
+                <section class="col col-4">
+                    <label class="label"><b>UNIDAD RESPONSABLE *</b></label>
+                    <select class="form-control" id="um_resp" name="um_resp" title="SELECCIONE UNIDAD RESPONSABLE" required style="height:32px; font-size:11.5px;">
+                        <option value="">Seleccione Unidad Responsable</option>';
+                        foreach($unidades as $row){
+                            $selected = ($row['com_id'] == $producto[0]['uni_resp']) ? 'selected' : '';
+                            $uresponsable .= '<option value="'.$row['com_id'].'" '.$selected.'>'.$row['aper_programa'].' '.$row['proy_nombre'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['com_componente'].'</option>';
+                        }       
+                $uresponsable .= '
+                    </select>
+                </section>';
+            }
+            else { // Caso Estructura Normal
+                // 🌟 REPARADO: Ocultado con hidden legítimo para no romper el layout simétrico de SmartAdmin
+                $uresponsable .= '
+                <input type="hidden" name="um_resp" id="um_resp" value="0">
                 <section class="col col-4">
                   <label class="label"><b>UNIDAD / SERVICIO RESPONSABLE</b></label>
                   <label class="textarea">
                     <i class="icon-append fa fa-tag"></i>
-                    <textarea rows="2" name="munidad" id="munidad" title="REGISTRE UNIDAD RESPONSABLE">'.$producto[0]['prod_unidades'].'</textarea>
+                    <textarea rows="2" name="munidad" id="munidad" title="REGISTRE UNIDAD RESPONSABLE" style="font-family:Arial, sans-serif; font-size:11.5px;">'.htmlspecialchars($producto[0]['prod_unidades'], ENT_QUOTES, 'UTF-8').'</textarea>
                   </label>
                 </section>';
+            }
+
+            // ==========================================================================
+            // 📁 CONSTRUCTOR: SELECT ELÁSTICO DE ALINEACIÓN OPERACIÓN REGIONAL (PDES)
+            // ==========================================================================
+            $form2 = $this->model_objetivoregion->list_proyecto_oregional($producto[0]['proy_id']);
+            
+            $alineacion_form2 = '';
+            $alineacion_form2 .= '
+            <label class="label"><b>ALINEACIÓN OPERACIÓN REGIONAL</b></label>
+            <select class="form-control" id="mor_id" name="mor_id" title="SELECCIONE ALINEACIÓN REGIONAL" style="height:32px; font-size:11.5px;">
+                <option value="">SELECCIONE ALINEACIÓN OPERACIÓN</option>';
+                foreach($form2 as $row){ 
+                    $selected_or = ($row['or_id'] == $producto[0]['or_id']) ? 'selected' : '';
+                    $alineacion_form2 .= '<option value="'.$row['or_id'].'" '.$selected_or.'>'.$row['og_codigo'].'.'.$row['or_codigo'].' .- '.strtoupper($row['or_objetivo']).'</option>';
+                }
+            $alineacion_form2 .= '
+            </select>';
+
+            // ==========================================================================
+            // 🌟 ENSAMBLE DEL PAYLOAD RESPUESTA COMPATIBLE CON TU NUEVO JS (form4_mod.js)
+            // ==========================================================================
+            // Encojemos el vector inyectando de forma directa el índice [0] del producto
+            // Esto erradica por completo la necesidad de escribir el molesto [0] en el JS del cliente
+            $result = array(
+                'respuesta'       => 'correcto',
+                'status'          => 'success',
+                'producto'        => $producto[0], 
+                'uresponsable'    => $uresponsable,
+                'alineacion_form2'=> $alineacion_form2,
+                'mes'             => $this->temp,
+                'mes_actual'      => intval($this->verif_mes[1]),
+                'trimestre'       => intval($this->tmes),
+                'temp_eval'       => $this->prog_mes_eval,
+            );
+
+            // Saneamiento máster: Purgamos buffers intermedios de PHP para una salida JSON pura
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+            
+            echo json_encode($result);
+            exit; // Congela el hilo de red impidiendo layouts extras de CodeIgniter al cierre
+
+        } else {
+            show_404();
         }
-
-
-        $form2=$this->model_objetivoregion->list_proyecto_oregional($producto[0]['proy_id']);
-        $alineacion_form2='';
-        $alineacion_form2.='
-                <label class="label"><b>ALINEACIÓN OPERACIÓN REGIONAL</b></label>
-                <select class="form-control" id="mor_id" name="mor_id" title="SELECCIONE ALINEACIÓN REGIONAL">
-                    <option value="">SELECCIONE ALINEACIÓN OPERACIÓN</option>';
-                    foreach($form2 as $row){ 
-                      if($row['or_id']==$producto[0]['or_id']){
-                        $alineacion_form2.=' <option value='.$row['or_id'].' selected>'.$row['og_codigo'].'.'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';
-                      }
-                      else{
-                        $alineacion_form2.=' <option value='.$row['or_id'].'>'.$row['og_codigo'].'.'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';
-                      }
-                     
-                  }
-                $alineacion_form2.='
-                </select>';
-
-        if(count($producto)!=0){
-          $result = array(
-            'respuesta' => 'correcto',
-            'producto'=>$producto,
-            'uresponsable'=>$uresponsable,
-            'alineacion_form2'=>$alineacion_form2,
-            'mes'=>$this->temp,
-            'mes_actual'=>$this->verif_mes[1],
-            'trimestre'=>$this->tmes,
-            'temp_eval'=>$this->prog_mes_eval,
-          );
-        }
-        else{
-          $result = array(
-            'respuesta' => 'error',
-          );
-        }
-
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
     }
 
 
     /*----- VALIDAR UPDATE MOD FORM 4 ----*/
         public function valida_update_form4(){
-      if($this->input->post()) {
-        $post = $this->input->post();
-        $prod_id = $this->security->xss_clean($post['prod_id']); /// prod id
-        $producto=$this->model_producto->get_producto_id($prod_id);
-        $cite_id = $this->security->xss_clean($post['mcite_id']); /// Cite id
-        $cite=$this->model_modfisica->get_cite_fis($cite_id); /// Datos cite
+        // Validamos la legitimidad de la solicitud asíncrona post
+        if($this->input->post()) {
+            
+            $post = $this->input->post();
+            $prod_id = intval($this->security->xss_clean($post['prod_id'])); 
+            
+            // Recuperamos la ficha máster original de la actividad en PostgreSQL
+            $producto = $this->model_producto->get_producto_id($prod_id);
+            $cite_id  = intval($this->security->xss_clean($post['mcite_id'])); 
+            $cite     = $this->model_modfisica->get_cite_fis($cite_id); 
 
-/*        if($this->verif_mes==3){
-          $prod = $this->security->xss_clean($post['mprod']); /// detalle producto
-          $resultado = $this->security->xss_clean($post['mresultado']); /// Resultado
-          $mverificacion = $this->security->xss_clean($post['mverificacion']); /// Medio de Verificacion
-        }
-        else{
-          $prod = $producto[0]['prod_producto']; /// detalle producto
-          $resultado = $producto[0]['prod_resultado']; /// Resultado
-          $mverificacion = $producto[0]['prod_fuente_verificacion']; /// Medio de Verificacion
-        }*/
+            if(empty($producto) || empty($cite)){
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Restricción: Datos del CITE o de la Actividad no localizados en el sistema.'));
+                exit;
+            }
 
-        if($this->tmes==1){
-          $indi_id = $this->security->xss_clean($post['mtipo_i']); /// Tipo de Indicador
-          $linea_base = $this->security->xss_clean($post['mlbase']); /// Linea Base
-          $tp_meta = $this->security->xss_clean($post['mtp_met']); /// Tipo de Meta
-         // $prod = $this->security->xss_clean($post['mprod']); /// detalle producto
-          //$resultado = $this->security->xss_clean($post['mresultado']); /// Resultado
-          //$mverificacion = $this->security->xss_clean($post['mverificacion']); /// Medio de Verificacion
-        }
-        else{
-          $indi_id = $producto[0]['indi_id']; /// Tipo de Indicador
-          $linea_base = $producto[0]['prod_linea_base']; /// Linea Base
-          $tp_meta = $producto[0]['mt_id']; /// Tipo de Meta
-          //$prod = $producto[0]['prod_producto']; /// detalle producto
-          //$resultado = $producto[0]['prod_resultado']; /// Resultado
-          //$mverificacion = $producto[0]['prod_fuente_verificacion']; /// Medio de Verificacion
-        }
+            // 1. Evaluación condicional elástica según el Trimestre vigente consolidado
+            if(intval($this->tmes) === 1){
+                $indi_id    = intval($this->security->xss_clean($post['mtipo_i'])); 
+                $linea_base = floatval($this->security->xss_clean($post['mlbase'])); 
+                $tp_meta    = intval($this->security->xss_clean($post['mtp_met'])); 
+            } else {
+                // Si el trimestre ya pasó, se bloquea la mutación y hereda el valor histórico
+                $indi_id    = intval($producto[0]['indi_id']); 
+                $linea_base = floatval($producto[0]['prod_linea_base']); 
+                $tp_meta    = intval($producto[0]['mt_id']); 
+            }
 
-          $prod = $this->security->xss_clean($post['mprod']); /// detalle producto
-          $mverificacion = $this->security->xss_clean($post['mverificacion']); /// Medio de Verificacion
-          $resultado = $this->security->xss_clean($post['mresultado']); /// Resultado
-          $indicador = $this->security->xss_clean($post['mindicador']); /// Indicador
-          if($producto[0]['por_id']==1){
-            $unidad = ''; /// Unidad Responsable
-            $uni_resp = $this->security->xss_clean($post['um_resp']); /// unidad responsable
-          }
-          else{
-            $unidad = $this->security->xss_clean($post['munidad']); /// Unidad Responsable
-            $uni_resp = 0; /// unidad responsable
-          }
+            $prod          = trim($this->security->xss_clean($post['mprod'])); 
+            $mverificacion = trim($this->security->xss_clean($post['mverificacion'])); 
+            $resultado     = trim($this->security->xss_clean($post['mresultado'])); 
+            $indicador     = trim($this->security->xss_clean($post['mindicador'])); 
 
-          $meta = $this->security->xss_clean($post['mmeta']); /// Meta
-          $presupuesto = $this->security->xss_clean($post['mppto']); /// Presupuesto
-          $or_id = $this->security->xss_clean($post['mor_id']); /// Objetivo Regional
+            // Tratamiento condicional formal según tipo de estructura (Normal / Bolsa)
+            if(intval($producto[0]['por_id']) === 1){
+                $unidad   = ''; 
+                $uni_resp = intval($this->security->xss_clean($post['um_resp'])); 
+            } else {
+                $unidad   = trim($this->security->xss_clean($post['munidad'])); 
+                $uni_resp = 0; 
+            }
 
-          $ae=0;
-          /*$get_acc=$this->model_objetivoregion->get_objetivosregional($or_id);
-          if(count($get_acc)!=0){
-            $ae=$get_acc[0]['ae'];
-          }*/
-//echo $indi_id.'----'.$tp_meta.'<br>';
-//echo $cite_id.'-'.$indi_id.'-'.$linea_base.'-'.$tp_meta.'-'.$prod.'-'.$resultado.'-'.$mverificacion.'-'.$indicador.'-'.$unidad.'-'.$meta.'-'.$presupuesto.'-'.$or_id.'--'.count($producto);
-        if($this->registra_form4_original($cite,$producto)){
+            $meta        = intval($this->security->xss_clean($post['mmeta'])); 
+            $presupuesto = intval($this->security->xss_clean($post['mppto'])); 
+            $or_id       = intval($this->security->xss_clean($post['mor_id'])); 
+            $ae          = 0;
+         
+            // 2. Ejecución del candado de respaldo histórico original de auditoría
+            if($this->registra_form4_original($cite, $producto)){
 
-          /*--------- Update Producto --------*/
-          $update_prod = array(
-          //  'com_id' => $com_id, // com id
-            'prod_cod' => $this->security->xss_clean($post['mcod']), // Producto
-            'prod_producto' => strtoupper($prod), // Producto
-            'prod_resultado' => strtoupper($resultado),
-            'indi_id' => $indi_id,
-            'prod_indicador' => strtoupper($indicador),
-            'prod_unidades' => strtoupper($unidad),
-            'uni_resp' => $uni_resp,
-            'prod_linea_base' => $linea_base,
-            'prod_meta' => $meta,
-            'prod_fuente_verificacion' => strtoupper($mverificacion),
-            'estado' => 2,
-            'acc_id' => $ae,
-            'fecha' => date("d/m/Y H:i:s"),
-            'mt_id' => $tp_meta,
-            'prod_mod' => 2,
-            'or_id' => $or_id,
-            'fun_id' => $this->fun_id,
-          );
-          $this->db->where('prod_id', $prod_id);
-          $this->db->update('_productos', $update_prod);
-          /*----------------------------------*/
+                // ==========================================================================
+                // 🌟 INICIO DE ENTORNO TRANSACCIONAL ATÓMICO EN POSTGRESQL
+                // ==========================================================================
+                $this->db->trans_start();
 
-          $mes=0; 
-          // $this->verif_mes[1]
-          if($indi_id==1){
-            for ($i=1; $i <=12 ; $i++) {
-              if(count($this->model_seguimientopoa->get_seguimiento_poa_mes($prod_id,$i))==0){
-              
+                /*--------- PASO A: UPDATE CABECERA DE LA ACTIVIDAD PRODUCTO --------*/
+                $update_prod = array(
+                    'prod_cod'                 => intval($this->security->xss_clean($post['mcod'])), 
+                    'prod_producto'            => strtoupper($prod), 
+                    'prod_resultado'           => strtoupper($resultado),
+                    'indi_id'                  => $indi_id,
+                    'prod_indicador'           => strtoupper($indicador),
+                    'prod_unidades'            => strtoupper($unidad),
+                    'uni_resp'                 => $uni_resp,
+                    'prod_linea_base'          => $linea_base,
+                    'prod_meta'                => $meta,
+                    'prod_fuente_verificacion' => strtoupper($mverificacion),
+                    'estado'                   => 2,
+                    'fecha'                    => date("d/m/Y H:i:s"),
+                    'mt_id'                    => $tp_meta,
+                    'prod_mod'                 => 2,
+                    'or_id'                    => $or_id,
+                    'fun_id'                   => $this->fun_id,
+                );
                 $this->db->where('prod_id', $prod_id);
-                $this->db->where('m_id', $i);
-                $this->db->delete('prod_programado_mensual'); 
+                $this->db->update('_productos', $update_prod);
 
-                if($post['mm'.$i]!=0){
-                  $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$post['mm'.$i]);
-                }
-              }
-            }
-          }
-
-          if($indi_id==2){
-            if($tp_meta==3){
-              for ($i=1; $i <=12 ; $i++) { 
-                if(count($this->model_seguimientopoa->get_seguimiento_poa_mes($prod_id,$i))==0){
-                 
-                  $this->db->where('prod_id', $prod_id);
-                  $this->db->where('m_id', $i);
-                  $this->db->delete('prod_programado_mensual'); 
-
-                  if($post['mm'.$i]!=0){
-                    $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$post['mm'.$i]);
-                  }
-                }
-              }
-            }
-            elseif($tp_meta==1){
-             // if(count($this->model_producto->prod_prog_mensual($prod_id,$this->gestion))!=0){
-                $this->db->where('prod_id', $prod_id);
-                $this->db->delete('prod_programado_mensual'); 
-                
-                for ($i=1; $i <=12 ; $i++) { 
+                /*--------- PASO B: REDISTRIBUCIÓN Y PURGA DE METAS MENSUALES --------*/
+                // CASO 1: INDICADOR DE TIPO ABSOLUTO
+                 if (intval($indi_id) === 1) {
                     
-                 // if(count($this->model_seguimientopoa->get_seguimiento_poa_mes($prod_id,$i))==0){
-          
+                    // 📋 PRECARGA: Bajamos el cronograma físico actual de la actividad antes de borrar nada
+                    $cronograma_actual = $this->db->get_where('prod_programado_mensual', array('prod_id' => $prod_id))->result_array();
+                    $valores_historicos = array_fill(1, 12, 0);
                     
-              $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
-                   /* if($post['mm'.$i]!=0){
-                      $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
-                    }*/
-                  //}
+                    foreach ($cronograma_actual as $c) {
+                        // 🛠️ REPARADO PARA PHP 5.6: Reemplazado el ?? por operador ternario compatible con XAMPP clásico
+                        $valor_final = 0;
+                        if (isset($c['valor_programado'])) {
+                            $valor_final = intval($c['valor_programado']);
+                        } elseif (isset($c['pg_fis'])) {
+                            $valor_final = intval($c['pg_fis']);
+                        }
+                        
+                        $valores_historicos[intval($c['m_id'])] = $valor_final;
+                    }
+
+                    for ($i = 1; $i <= 12; $i++) {
+                        
+                        // 🔒 ESCENARIO A: MESES BLOQUEADOS (Menores al mes del sistema)
+                        if ($i <= intval($this->verif_mes[1])) {
+                            
+                            $this->db->where('prod_id', $prod_id);
+                            $this->db->where('m_id', $i);
+                            $this->db->delete('prod_programado_mensual'); 
+
+                            // Forzamos la reinserción del valor histórico inalterado para cuadrar el Total Anual
+                            if ($valores_historicos[$i] != 0) {
+                                $this->model_producto->add_prod_gest($prod_id, $this->gestion, $i, $valores_historicos[$i]);
+                            }
+                        }
+                        
+                        // 🔓 ESCENARIO B: MESES LIBRES (Vigentes para modificación en el POA)
+                        else {
+                            // Verificamos por auditoría que el mes no cuente con seguimientos consolidados en el SIGEP
+                            if (count($this->model_seguimientopoa->get_seguimiento_poa_mes($prod_id, $i)) == 0) {
+                                
+                                $this->db->where('prod_id', $prod_id);
+                                $this->db->where('m_id', $i);
+                                $this->db->delete('prod_programado_mensual'); 
+
+                                $valor_mes = isset($post['mm' . $i]) ? intval($post['mm' . $i]) : 0;
+                                if ($valor_mes != 0) {
+                                    $this->model_producto->add_prod_gest($prod_id, $this->gestion, $i, $valor_mes);
+                                }
+                            }
+                        }
+                    }
                 }
-              /*}
-              else{
-                for ($i=1; $i <=12 ; $i++) { 
-                  $this->model_producto->add_prod_gest($prod_id,$this->gestion,$i,$meta);
 
+                // CASO 2: INDICADOR DE TIPO PORCENTUAL
+                if($indi_id === 2){
+                    if($tp_meta === 3){ // Meta de comportamiento Variable
+                        for ($i = 1; $i <= 12; $i++) { 
+                            if(count($this->model_seguimientopoa->get_seguimiento_poa_mes($prod_id, $i)) == 0){
+                                $this->db->where('prod_id', $prod_id);
+                                $this->db->where('m_id', $i);
+                                $this->db->delete('prod_programado_mensual'); 
+
+                                $valor_mes = isset($post['mm'.$i]) ? intval($post['mm'.$i]) : 0;
+                                if($valor_mes != 0){
+                                    $this->model_producto->add_prod_gest($prod_id, $this->gestion, $i, $valor_mes);
+                                }
+                            }
+                        }
+                    }
+                    elseif($tp_meta === 1){ // 🛠️ REPARADO SINTAXIS: Meta de tipo Recurrente
+                        $this->db->where('prod_id', $prod_id);
+                        $this->db->delete('prod_programado_mensual'); 
+                        
+                        for ($i = 1; $i <= 12; $i++) { 
+                            $this->model_producto->add_prod_gest($prod_id, $this->gestion, $i, $meta);
+                        }
+                    }
+                    elseif($tp_meta === 5){ // 🛠️ REPARADO SINTAXIS: Meta de tipo Trimestral
+                        $this->db->where('prod_id', $prod_id);
+                        $this->db->delete('prod_programado_mensual'); 
+
+                        for ($i = 1; $i <= 4; $i++) { 
+                            $this->model_producto->add_prod_gest($prod_id, $this->gestion, ($i * 3), $meta);
+                        }
+                    }
+                } 
+
+                // Guardado de respaldo histórico para reportes formales consolidado
+                $this->copia_operacion($cite, $prod_id, 2); 
+                $this->update_activo_modificacion($cite_id);
+
+                $this->db->trans_complete();
+                // ==========================================================================
+
+                // Purgamos búferes intermedios ocultos para asegurar un flujo JSON puro libre de layouts HTML
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+
+                if ($this->db->trans_status() !== FALSE) {
+                    echo json_encode(array(
+                        'status'    => 'success',
+                        'respuesta' => 'correcto', // Engancha perfecto con tu done de form4_mod.js
+                        'message'   => '✔ La actividad contable y su cronograma de metas físicas se modificaron correctamente en el SIIPLAS.'
+                    ));
+                } else {
+                    echo json_encode(array(
+                        'status'    => 'error',
+                        'respuesta' => 'error',
+                        'message'   => 'PostgreSQL rechazó el compromiso debido a un conflicto de restricciones relacionales externas.'
+                    ));
                 }
-              }*/
+                exit;
+
+            } else {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Error de auditoría: No se pudo generar la copia de respaldo histórica del formulario.'));
+                exit;
             }
-            elseif($tp_meta==5){
-              $this->db->where('prod_id', $prod_id);
-              $this->db->delete('prod_programado_mensual'); 
 
-              for ($i=1; $i <=4 ; $i++) { 
-                $this->model_producto->add_prod_gest($prod_id,$this->gestion,($i*3),$meta);
-              }
-                
-            }
-          } 
-
-            $this->copia_operacion($cite,$prod_id,2); /// historial de modificaciones para el reporte
-
-            /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
-            $this->update_activo_modificacion($cite_id);
-            /*--------------------------------------*/
-
-
-          /*-------------- Redireccionando a lista de Operaciones -------*/
-          $this->session->set_flashdata('success','LA ACTIVIDAD SE MODIFICO CORRECTAMENTE :)');
-          redirect(site_url("").'/mod/lista_mod_form4/'.$cite_id.'');
+        } else {
+            show_404();
         }
-
-      } else {
-          show_404();
-      }
     }
+
+
+
+
+
+       
+
     public function valida_update_form4_2(){
       if($this->input->post()) {
         $post = $this->input->post();
@@ -855,6 +872,11 @@ class Cmod_fisica extends CI_Controller {
       }
     }
 
+
+
+
+
+
     /*----- UPDATE ESTADO ACTIVO DE LA MODIFICACION ------*/
     function update_activo_modificacion($cite_id){
       $update_cite= array(
@@ -868,46 +890,91 @@ class Cmod_fisica extends CI_Controller {
 
 
 
-    /*---- ELIMINAR FORM 4 2026---*/
-      function delete_modFormN4(){
-      if ($this->input->is_ajax_request() && $this->input->post()) {
-          $post = $this->input->post();
-          $cite_id = $post['cite_id']; /// Cite Id
-          $prod_id = $post['prod_id']; /// Prod Id
-          $cite=$this->model_modfisica->get_cite_fis($cite_id); /// Datos cite
-          $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// Datos del Proyecto
+    /*---- ELIMINAR FORM 4 2027 ---*/
+      public function delete_modFormN4(){
+        // Validamos la legitimidad de la solicitud asíncrona de JQuery (Evita ejecuciones directas por URL)
+        if ($this->input->is_ajax_request() && $this->input->post()) {
+            
+            $post    = $this->input->post();
+            $cite_id = intval($this->security->xss_clean($post['cite_id'])); 
+            $prod_id = intval($this->security->xss_clean($post['prod_id'])); 
 
+            if ($cite_id <= 0 || $prod_id <= 0) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificadores numéricos vacíos o corruptos.'));
+                exit;
+            }
 
-          if($this->copia_operacion($cite,$prod_id,3)){
-            $update_prod = array(
-              'prod_mod' => 2,
-              'estado' => 3,
-              'num_ip' => $this->input->ip_address(), 
-              'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-              'fun_id' => $this->fun_id,
-              );
-            $this->db->where('prod_id', $prod_id);
-            $this->db->update('_productos', $update_prod);
+            // Recuperamos la ficha máster del CITE y del Proyecto del SIIPLAS
+            $cite = $this->model_modfisica->get_cite_fis($cite_id); 
 
+            if (empty($cite)) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'El CITE de modificación física no se encuentra registrado en el sistema.'));
+                exit;
+            }
 
-            /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
-              $this->update_activo_modificacion($cite_id);
-            /*--------------------------------------*/
+            // 1. Ejecución del candado obligatorio de copia de respaldo histórica de auditoría (Tipo de Acción: 3 = Eliminación)
+            if($this->copia_operacion($cite, $prod_id, 3)){
 
-            $result = array(
-              'respuesta' => 'correcto'
-            );
-          }
-          else{
-            $result = array(
-              'respuesta' => 'error'
-            );
-          }
+                // ==========================================================================
+                // 🌟 INICIO DE ENTORNO TRANSACCIONAL ATÓMICA EN POSTGRESQL (CNS STANDARD)
+                // Si cualquiera de los delete falla o colisiona, se revierte todo de golpe
+                // ==========================================================================
+                $this->db->trans_start();
 
-          echo json_encode($result);
-      } else {
-          echo 'DATOS ERRONEOS';
-      }
+                $this->db->where('prod_id', $prod_id);
+                $this->db->delete('_productos_trimestral');
+
+                $this->db->where('prod_id', $prod_id);
+                $this->db->delete('prod_ejecutado_mensual');
+
+                $this->db->where('prod_id', $prod_id);
+                $this->db->delete('prod_programado_mensual');
+
+                $this->db->where('prod_id', $prod_id);
+                $this->db->delete('_productos');
+
+                // Inyección del logger de auditoría de modificaciones financieras de insumos
+                $this->update_activo_modificacion($cite_id);
+
+                $this->db->trans_complete();
+                // ==========================================================================
+
+                // Purgamos búferes intermedios ocultos de PHP para asegurar un payload JSON limpio
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array(
+                        'status'    => 'error',
+                        'respuesta' => 'error',
+                        'message'   => 'PostgreSQL denegó la purga del registro debido a un conflicto de clave foránea activa en las subtablas del SIGEP.'
+                    ));
+                } else {
+                    echo json_encode(array(
+                        'status'    => 'success',
+                        'respuesta' => 'correcto' // Sincronizado al 100% con tu validador success de form4_mod.js
+                    ));
+                }
+                exit; // Congela la ejecución física impidiendo layouts o filtraciones del framework
+            }
+            else{
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'message'   => 'Falla de Resguardo: El motor de auditoría no pudo generar la copia de respaldo histórica de la actividad.'
+                ));
+                exit;
+            }
+        } else {
+            // Si intentan forzar la entrada por URL de navegador, despacha un error perimetral formal de Apache
+            show_404();
+        }
     }
 
 

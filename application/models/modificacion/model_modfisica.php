@@ -58,74 +58,6 @@ class Model_modfisica extends CI_Model{
 
     /*--- LISTA MODIFICADOS ITEMS 2023---*/
     public function list_form4_historial_modificados($cite_id,$tipo_mod){
-        ///ih.historial_activo : 0 (no se muestra)
-        ///ih.historial_activo : 1 (se muestra)
-
-// /*        if($tipo_mod==2){
-//             $sql = 'SELECT DISTINCT
-//                 ae.acc_codigo,
-//                 og.og_codigo,
-//                 ore.or_codigo,
-//                 ph.prodh_producto,
-//                 ph.prodh_indicador,
-//                 ph.prodh_linea_base,
-//                 ph.prodh_meta,
-//                 ph.prod_fuente_verificacion,
-//                 ph.prod_resultado,
-//                 ph.prod_cod,
-//                 ph.prod_id,
-//                 ph.prodh_unidades,
-//                 ph.huni_resp,
-//                 ph.indi_id,
-//                 ph.acc_id,
-//                 ph.mt_id,
-//                 ph.or_id,
-//                 prog.*
-//             FROM _producto_historial ph
-//             INNER JOIN objetivos_regionales ore ON ore.or_id = ph.or_id
-//             INNER JOIN vista_temporalidad_form4_programado_uresp prog ON ph.prod_id = prog.prod_id
-//             INNER JOIN indicador i ON i.indi_id = ph.indi_id
-//             -- Nota: Si opm tiene varios registros por objetivo, esto causa duplicados
-//             INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
-//             INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
-//             INNER JOIN _acciones_estrategicas ae ON ae.acc_id = og.acc_id
-//             -- WHERE con paso de parámetros seguro (Bindings ?)
-//             WHERE ph.cite_id = '.$cite_id.' 
-//               AND ph.tipo_mod = '.$tipo_mod.'
-//               AND ph.historial_activo != 0
-//             ORDER BY ph.prod_cod ASC';
-
-// /*select ae.acc_codigo,og.og_codigo,ore.or_codigo,ph.prodh_producto,ph.indi_id,ph.prodh_indicador,ph.prodh_linea_base,ph.prodh_meta,ph.prod_fuente_verificacion,ph.prod_resultado,ph.acc_id,ph.prod_cod,ph.mt_id,ph.or_id,ph.prod_id,ph.prodh_unidades,ph.huni_resp
-//                 from _producto_historial ph
-//                 Inner Join indicador as i On i.indi_id=ph.indi_id
-//                 Inner Join objetivos_regionales as ore On ore.or_id=ph.or_id
-
-//                 Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-//                 Inner Join objetivo_gestion as og On og.og_id=opm.og_id
-//                 Inner Join _acciones_estrategicas as ae On ae.acc_id=og.acc_id
-//                 Inner Join _objetivos_estrategicos as oe On oe.obj_id=ae.obj_id
-//                 where ph.cite_id='.$cite_id.' and ph.tipo_mod='.$tipo_mod.' and ph.historial_activo!=\'0\'
-//                 group by ae.acc_codigo,og.og_codigo,ore.or_codigo,ph.prodh_producto,ph.indi_id,ph.prodh_indicador,ph.prodh_linea_base,ph.prodh_meta,ph.prod_fuente_verificacion,ph.prod_resultado,ph.acc_id,ph.prod_cod,ph.mt_id,ph.or_id,ph.prod_id,ph.prodh_unidades,ph.huni_resp
-//                 order by ph.prod_cod asc';*/
-
-
-
-//         }
-//         else{
-//             $sql = 'select *,ph.indi_id
-//                 from _producto_historial ph
-//                 Inner Join indicador as i On i.indi_id=ph.indi_id
-//                 Inner Join objetivos_regionales as ore On ore.or_id=ph.or_id
-
-//                 Inner Join objetivo_programado_mensual as opm On ore.pog_id=opm.pog_id
-//                 Inner Join objetivo_gestion as og On og.og_id=opm.og_id
-//                 Inner Join _acciones_estrategicas as ae On ae.acc_id=og.acc_id
-//                 Inner Join _objetivos_estrategicos as oe On oe.obj_id=ae.obj_id
-//                 where ph.cite_id='.$cite_id.' and ph.tipo_mod='.$tipo_mod.' and ph.historial_activo!=\'0\'
-//                 order by ph.prodh_id, ph.prod_cod asc';
-//         }*/
-
-
         $sql = 'SELECT DISTINCT
                 ae.acc_codigo,
                 og.og_codigo,
@@ -144,11 +76,12 @@ class Model_modfisica extends CI_Model{
                 ph.acc_id,
                 ph.mt_id,
                 ph.or_id,
-                prog.*
+                prog.*,
+                COALESCE(prog.total_anual, 0.00) AS total_anual
             FROM _producto_historial ph
             Inner Join indicador as i On i.indi_id=ph.indi_id
             Inner Join objetivos_regionales as ore On ore.or_id=ph.or_id
-            INNER JOIN vista_temporalidad_form4_programado_uresp prog ON ph.prod_id = prog.prod_id
+            left JOIN vista_temporalidad_form4_programado_historial prog ON ph.prodh_id = prog.prodh_id
             -- Nota: Si opm tiene varios registros por objetivo, esto causa duplicados
             INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
             INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
