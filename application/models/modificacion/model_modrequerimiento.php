@@ -58,24 +58,8 @@ class Model_modrequerimiento extends CI_Model{
                         Inner Join funcionario as f On ci.fun_id=f.fun_id
                         Inner Join _componentes as c On ci.com_id=c.com_id
                         Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                INNER JOIN fnlista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
+                INNER JOIN fn_lista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
                 where ci.cite_id = '.$cite_id.'' ;
-
-
-/*        $sql = 'select *
-                from cite_mod_requerimientos ci
-                Inner Join funcionario as f On ci.fun_id=f.fun_id
-                Inner Join _componentes as c On ci.com_id=c.com_id
-                Inner Join servicios_actividad as sa On sa.serv_id=c.serv_id
-                Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-                Inner Join _proyectos as p On p.proy_id=pfe.proy_id
-                Inner Join unidad_actividad as ua On ua.act_id=p.act_id
-                Inner Join v_tp_establecimiento as te On te.te_id=ua.te_id
-                Inner Join _distritales as d On d.dist_id=p.dist_id
-                Inner Join _departamentos as dep On dep.dep_id=p.dep_id
-                where ci.cite_id='.$cite_id.' and pfe.pfec_estado=\'1\' and pfe.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'' ;*/
         $query = $this->db->query($sql);
         return $query->result_array();
     }
@@ -96,6 +80,35 @@ class Model_modrequerimiento extends CI_Model{
                 INNER JOIN _productos p ON p.prod_id = ip.prod_id
                 INNER JOIN partidas par ON par.par_id = i.par_id
                 INNER JOIN aperturaprogramatica apg ON apg.aper_id = i.aper_id
+                WHERE i.com_id = '.$com_id.' 
+                  AND i.ins_estado != 3 
+                  AND i.ins_activo = 0 
+                  AND i.ins_tipo_modificacion = '.$tp_mod.'
+                  AND apg.aper_gestion = '.$this->gestion.'
+                ORDER BY i.form4_cod, par.par_codigo, i.ins_id ASC';
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    /*---- LISTA DE REQUERIMIENTOS x UNIDAD RESPONSABLE (CON TEMPORALIDAD) ----*/
+    function lista_requerimientos_con_temporalidad($com_id,$tp_mod){
+        $sql = 'SELECT 
+                    i.*, 
+                    p.prod_id, 
+                    p.prod_cod,
+                    par.par_codigo, 
+                    par.par_nombre,
+                    apg.aper_programa,
+                    apg.aper_proyecto,
+                    apg.aper_actividad,
+                    prog.*
+                FROM insumos i
+                INNER JOIN _insumoproducto ip ON i.ins_id = ip.ins_id
+                INNER JOIN _productos p ON p.prod_id = ip.prod_id
+                INNER JOIN partidas par ON par.par_id = i.par_id
+                INNER JOIN aperturaprogramatica apg ON apg.aper_id = i.aper_id
+                LEFT JOIN vista_temporalidad_insumo2 prog ON prog.ins_id = i.ins_id
                 WHERE i.com_id = '.$com_id.' 
                   AND i.ins_estado != 3 
                   AND i.ins_activo = 0 

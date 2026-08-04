@@ -346,13 +346,21 @@ class model_producto extends CI_Model {
 
     //// lista de productos sin Temporalidad
     function lista_productos($com_id){
-        $sql = 'SELECT *
-            from _productos as p
-            Inner Join objetivos_regionales as ore On ore.or_id=p.or_id
-            Inner Join indicador as tp On p.indi_id=tp.indi_id
-            Inner Join meta_relativo as mt On mt.mt_id=p.mt_id
-            where p.com_id='.$com_id.' and p.estado!=\'3\' 
-            ORDER BY p.prod_id,p.prod_cod asc'; 
+       $sql = 'SELECT p.*, ore.*, tp.*, mt.*,
+            COALESCE(
+                CASE 
+                    WHEN uresp.com_id IS NOT NULL THEN CONCAT(ore.or_codigo, \'/\',p.prod_cod, \' .- \',p.prod_producto, \'-> ( \',uresp.tipo_subactividad, \' \', uresp.com_componente, \' - \', uresp.proy_nombre, \' \', uresp.abrev, \' ) \')
+                    ELSE \'0\'
+                END, 
+                \'0\'
+            ) AS unidad_responsable
+        FROM public._productos AS p
+        INNER JOIN public.objetivos_regionales AS ore ON ore.or_id = p.or_id
+        INNER JOIN public.indicador AS tp ON p.indi_id = tp.indi_id
+        INNER JOIN public.meta_relativo AS mt ON mt.mt_id = p.mt_id
+        LEFT JOIN public.vista_ver_uresp_proyecto AS uresp ON uresp.com_id = p.uni_resp
+        WHERE p.com_id = ' . intval($com_id) . ' AND p.estado != 3
+        ORDER BY p.prod_id, p.prod_cod ASC'; 
         $query = $this->db->query($sql);
         return $query->result_array();
     }

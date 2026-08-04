@@ -137,7 +137,7 @@ class Cmod_insumo extends CI_Controller {
       }
     }
 
-    /*----- LISTA REQUERIMIENTOS 2026 ------*/
+    /*----- LISTA REQUERIMIENTOS 2027 ------*/
     public function mis_requerimientos($cite_id){
       $data['menu']=$this->menu(3); //// genera menu
       $data['cite'] = $this->model_modrequerimiento->get_cite_insumo($cite_id);
@@ -153,9 +153,6 @@ class Cmod_insumo extends CI_Controller {
           if(count($this->model_modrequerimiento->lista_requerimientos($data['cite'][0]['com_id'],$data['cite'][0]['tipo_modificacion']))>150){
             
             $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_SinTemporalidad($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
-            /*if($this->fun_id==598){ /// exclusivo doctor muruchi
-              $data['tabla']=$this->modificacionpoa->modificar_requerimientos($data['cite']);  /// 2023
-            }*/
           }
           else{
             $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_ConTemporalidad($data['cite']);  /// 2026
@@ -169,7 +166,6 @@ class Cmod_insumo extends CI_Controller {
 
           $data['lista']=$this->tipo_lista_ope_act($data['cite']); /// ALINEADO A ACTIVIDAD (FORM 4)
           $this->load->view('admin/modificacion/requerimientos/list_requerimientos', $data);
-
       }
       else{
         redirect('mod/list_top');
@@ -280,7 +276,17 @@ class Cmod_insumo extends CI_Controller {
       <section id="widget-grid" class="well" title="'.$proyecto[0]['proy_id'].'">
           '.$this->modificacionpoa->titulo_cabecera($cite,1).'';
           $tabla.='
-          <a href="'.site_url("").'/rep/exportar_requerimientos_servicio/'.$cite[0]['com_id'].'" target=_blank class="btn btn-default" title="EXPORTAR FORM. N5"><img src="'.base_url().'assets/Iconos/page_excel.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>DESCARGAR INFORMACION (EXCEL)</b></a>
+          <button type="button" 
+                                class="btn btn-sm btn-exportar-excel-fila" 
+                                onclick="exportarExcelConLoading(this, ' . $cite[0]['com_id'] . ')" 
+                                title="EXPORTAR CONSOLIDADO DE LA UNIDAD EN EXCEL"
+                                style="padding: 5px 11px; background: #16a34a; border: 1px solid #15803d; color: #ffffff; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; height: 35px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; transition: all 0.15s ease;"
+                                onmouseover="this.style.background=\'#15803d\'; this.style.borderColor=\'#166534\';"
+                                onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
+                            <span class="txt-btn-excel-fila" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fa fa-file-excel-o" style="font-size: 12px; color: #ffffff;"></i> Extraer POA en Archivo Excel
+                            </span>
+                        </button>
       </section>';
     return $tabla;
   }
@@ -471,14 +477,13 @@ class Cmod_insumo extends CI_Controller {
 
     /*---- tipo lista : Operacion-Actividad ----*/
     public function tipo_lista_ope_act($cite){
+      $form4=$this->model_producto->lista_productos($cite[0]['com_id']);
       $tabla='';
-      //$operaciones=$this->model_producto->lista_productos($cite[0]['com_id']); /// listado sin temporalidad
         $tabla.='
           <section class="col col-3">
             <label class="label"><b>ALINEACI&Oacute;N FORM 4 (ACTIVIDAD) '.$this->gestion.'</b> (prod id: '.$cite[0]['prod_id'].')</label>
             <label class="input">';
               if($cite[0]['por_id']==0){ /// Programas Normales
-                $form4=$this->model_producto->lista_productos($cite[0]['com_id']);
                 $tabla.='
                 <select class="form-control" id="dato_id" name="dato_id" title="SELECCIONE ACTIVIDAD">
                   <option value="">Seleccione Actividad</option>';
@@ -489,12 +494,10 @@ class Cmod_insumo extends CI_Controller {
                 </select>';
               }
               else{ /// Programas Bolsas
-                $form4=$this->model_producto->get_lista_form4_uresp_consolidado_programa_bolsas($cite[0]['com_id']);
                 $tabla.='
                 <select class="form-control" id="dato_id" name="dato_id" title="SELECCIONE ACTIVIDAD">';
-                  //$tabla.='<option value="">Seleccione Actividad</option>';
                   foreach($form4 as $row){
-                    $tabla.='<option value="'.$row['prod_id'].'">'.$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'].' -> ('.$row['prod_unidades'].')</option>';
+                    $tabla.='<option value="'.$row['prod_id'].'">'.$row['unidad_responsable'].')</option>';
                   } 
                   $tabla.='      
                 </select>';
@@ -2233,25 +2236,24 @@ class Cmod_insumo extends CI_Controller {
     }
 
 
-    /*---- GET DATOS REQUERIMIENTO 2026 ----*/
+    /*---- GET DATOS REQUERIMIENTO 2027 ----*/
     public function get_requerimiento(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $ins_id = $this->security->xss_clean($post['ins_id']);
         $cite_id = $this->security->xss_clean($post['cite_id']);
         $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); /// Datos Cite
-        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); ////// DATOS DEL PROYECTO
-
+        
         $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos Get requerimientos 
-        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($proyecto[0]['aper_id'],$insumo[0]['par_id']);
+        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],$insumo[0]['par_id']);
 
         if($insumo[0]['ins_tipo_modificacion']==0){ /// Poa Normal
           $saldo=$ppto_partida[0]['saldo_poa'];
-          $partida_padres = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);// Lista partidas padres          
+          $partida_padres = $this->model_modificacion->list_part_padres_asig($cite[0]['aper_id']);// Lista partidas padres          
         }
         else{ /// Poa Revertido
           $saldo=$ppto_partida[0]['saldo_revertido'];
-          $partida_padres = $this->model_ptto_sigep->lista_partidas_padres_revertidos($proyecto[0]['aper_id']);// Lista partidas padres REVERTIDO
+          $partida_padres = $this->model_ptto_sigep->lista_partidas_padres_revertidos($cite[0]['aper_id']);// Lista partidas padres REVERTIDO
         }
 
           /// ------ Partidas padres ------------
@@ -2270,7 +2272,7 @@ class Cmod_insumo extends CI_Controller {
 
           $lista_partidas=$this->partidas_dependientes($insumo); /// Lista de Insumos dependientes
           $lista_prod_act=$this->lista_form4_x_unidadresponsable($cite,$insumo); /// Lista de Actividades (Form 4)
-
+//$lista_prod_act='';
           /// --------------
           $update_insumo= array(
             'ins_monto_certificado' => $insumo[0]['certificado_total']
@@ -2278,7 +2280,6 @@ class Cmod_insumo extends CI_Controller {
           $this->db->where('ins_id', $ins_id);
           $this->db->update('insumos', $this->security->xss_clean($update_insumo));
           /// --------------
-
 
 
           if(count($insumo)!=0){
@@ -2348,19 +2349,12 @@ class Cmod_insumo extends CI_Controller {
           } 
         }
         else{
-          foreach($form4 as $row){ //// alineacion de actividades del programa bolsa
-            $unidad=$this->model_componente->get_componente($row['uni_resp'],$this->gestion);
-            $uresp=$row['or_codigo'].'/'.$row['prod_cod'].'.- '.$row['prod_producto'];
-            if(count($unidad)!=0){
-              $proy = $this->model_proyecto->get_UnidadOrganizacional($unidad[0]['proy_id']);
-              $uresp=$row['or_codigo'].'/'.$row['prod_cod'].'.- ('.$proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].') -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion'].'</b></font>';
-            }
-
+          foreach($form4 as $row){
             if($row['prod_id']==$insumo[0]['prod_id']){
-              $tabla.='<option value="'.$row['prod_id'].'" selected>'.$uresp.'</option>';
+              $tabla.='<option value="'.$row['prod_id'].'" selected>'.$row['unidad_responsable'].'</option>';
             }
             else{
-              $tabla.='<option value="'.$row['prod_id'].'">'.$uresp.'</option>';
+              $tabla.='<option value="'.$row['prod_id'].'">'.$row['unidad_responsable'].'</option>';
             }
           } 
         }

@@ -586,7 +586,7 @@ class Model_insumo extends CI_Model{
 
 
     /*---- GET REQUERIMIENTO + temporalidad 2027 -----*/
-    function get_requerimiento($ins_id){
+        function get_requerimiento($ins_id){
         $sql = 'SELECT ip.*, 
                 i.*, 
                 par.*, 
@@ -604,6 +604,25 @@ class Model_insumo extends CI_Model{
         $query = $this->db->query($sql);
         return $query->result_array();
     }
+    
+/*    function get_requerimiento($ins_id){
+        $sql = 'SELECT ip.*, 
+                i.*, 
+                par.*, 
+                prog.*, 
+                COALESCE(cert.certificado, 0) AS certificado_total,
+                mes_cert.*
+                from _insumoproducto ip
+                Inner Join insumos as i On i.ins_id=ip.ins_id
+                Inner Join partidas as par On par.par_id=i.par_id
+                left Join vista_temporalidad_insumo2 as prog On prog.ins_id=i.ins_id
+                left Join vmonto_certificado_insumo as cert On cert.ins_id=i.ins_id
+                left Join vista_verif_certificacion_mensual_requerimiento as mes_cert On mes_cert.ins_id=i.ins_id
+                where i.ins_id='.$ins_id.' and ins_estado!=3 and i.aper_id!=0';
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }*/
 
     /// lista de requerimientos por cada formulario N° 4 para Programas Bolsas Vigente 2027 Sin Temporalidad
     function lista_insumos_prod($prod_id){
@@ -667,42 +686,6 @@ class Model_insumo extends CI_Model{
         $query = $this->db->query($sql);
         return $query->result_array();
     }
-
-    /// lista de requerimientos por cada (Componente) Unidad Responsable Con Temporalidad 2027
-/*    function lista_insumos_x_uresponsable($com_id){
-        $sql = 'SELECT 
-                prod.prod_id, 
-                prod.prod_cod,
-                prod.prod_producto, 
-                par.par_codigo, 
-                i.ins_id, 
-                i.ins_detalle, 
-                i.ins_unidad_medida, 
-                i.ins_cant_requerida, 
-                i.ins_costo_unitario, 
-                i.ins_costo_total, 
-                i.ins_monto_certificado, 
-                i.ins_observacion, 
-                i.ins_tipo_modificacion, 
-                i.ins_ejec_cpoa,
-                prog.programado_total, -- 🌟 OPTIMIZACIÓN: Selecciona explícitamente las columnas necesarias de la vista
-                prog.mes1, prog.mes2, prog.mes3, prog.mes4, prog.mes5, prog.mes6, 
-                prog.mes7, prog.mes8, prog.mes9, prog.mes10, prog.mes11, prog.mes12
-            FROM public._productos prod
-            INNER JOIN public._insumoproducto ip ON ip.prod_id = prod.prod_id
-            INNER JOIN public.insumos i ON i.ins_id = ip.ins_id
-            INNER JOIN public.partidas par ON par.par_id = i.par_id
-            -- 🌟 REPARADO: Unión compuesta acoplada al índice de gestión del año actual de sesión
-            LEFT JOIN public.vista_temporalidad_insumo2 prog ON prog.ins_id = i.ins_id
-            WHERE prod.com_id = '.$com_id.'
-              AND i.ins_estado != 3 
-              AND i.aper_id != 0
-            ORDER BY prod.prod_cod,prod.prod_id,par.par_codigo, i.ins_id ASC;';
-        
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }*/
-
 
 // lista de requerimientos alineados a la Unidad Responsable (Componente) 2027
     function list_requerimientos_uresponsable($com_id){
