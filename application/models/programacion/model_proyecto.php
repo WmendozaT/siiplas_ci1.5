@@ -54,6 +54,31 @@ class Model_proyecto extends CI_Model{
     }
 
 
+    /*---- LISTA POA SEGUN EL TIPO DE ESTABLECIMIENTO PARA LA MIGRACION INSITUCIONAL DE FOMR 4----*/
+    public function get_tp_UnidadOrganizacional($tn_id){
+        $sql = '
+            SELECT poa.*,c.com_id
+            from fn_lista_poa_nacional('.$this->gestion.') poa
+            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+            where poa.tn_id='.$tn_id.'
+            order by poa.dep_id,poa.dist_id asc';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*---- LISTA POA SEGUN EL TIPO DE ESTABLECIMIENTO PARA LA MIGRACION INSITUCIONAL DE FOMR 4----*/
+    public function get_tp_UnidadOrganizacional_prog_bolsa($aper_programa){
+        $sql = '
+            SELECT *
+            from fn_lista_poa_nacional('.$this->gestion.') poa
+            where aper_programa='.$aper_programa.'
+            order by poa.dep_id,poa.dist_id asc';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
     /*--------------- GET UNIDAD ORGANIZACIONAL 2027 ----------*/
     public function get_UnidadOrganizacional($proy_id){
         $sql = '

@@ -38,7 +38,7 @@ class Cajustes extends CI_Controller {
 
     /*--------- AJUSTES AL POA ------------*/
     public function menu_ajustes2(){
-      $api_url = 'http://planificacion.cns.gob.bo:8081/index.php/mnt/presentacion_poa';
+     // $api_url = 'http://planificacion.cns.gob.bo:8081/index.php/mnt/presentacion_poa';
 
 
         // Si tu API requiere una clave (como explicamos antes), añádela aquí:
@@ -125,7 +125,7 @@ class Cajustes extends CI_Controller {
       echo $tabla;*/
       //$data['certificado']='';
 
-      $listado_form4_sigep=$this->model_configuracion->form4_sigep();
+      /*$listado_form4_sigep=$this->model_configuracion->form4_sigep();
       $tabla='';
       $tabla.='
       <table border="1" cellpadding="0" cellspacing="0" class="tabla" style="width:20%;" align="center">';
@@ -153,7 +153,7 @@ class Cajustes extends CI_Controller {
         </tr>';
       }
       $tabla.='</table>';
-      $data['certificado']=$tabla;
+      $data['certificado']=$tabla;*/
       $this->load->view('admin/mantenimiento/ajustes_siiplas/menu_ajustes', $data);
     }
     ////--------------------------

@@ -111,6 +111,7 @@
 			<!-- END MAIN CONTENT -->
 		</div>
 
+		<?php echo $modal_form4; ?>
 	<!-- MODAL POA   -->
 	    <div class="modal fade" id="modal_nuevo_ff" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	        <div class="modal-dialog" id="mdialTamanio">

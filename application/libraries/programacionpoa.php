@@ -39,7 +39,81 @@ class Programacionpoa extends CI_Controller{
       $this->conf_poa_estado = $this->session->userData('conf_poa_estado'); /// Ajuste POA 1: Inicial, 2 : Ajuste, 3 : aprobado
     }
 
+    /// modal de migracion del form 4 para todos los establecimientos 1, 2 3 nivel a nivel institucional
+    public function modal_migracion_form4_institucional(){
+        $tabla='';
+        $tabla .= '
+                <!-- 🌟 MODAL MÁSTER DE MIGRACIÓN: IMPORTADOR DE ACTIVIDADES INSTITUCIONALES (SIIPLAS v2.0) -->
+                <div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
+                    <div class="modal-dialog" id="dialog_subirr" style="width: 36% !important; max-width: 95%; margin: 50px auto;">
+                        <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
+                            
+                            <!-- CABECERA INSTITUCIONAL REPARADA -->
+                            <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+                                <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
+                                    <i class="fa fa-upload text-primary"></i> Migrar Actividades Institucional
+                                </h4>
+                                <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer; margin:0;">&times;</button>
+                            </div>
 
+                            <!-- CUERPO TRANSACCIONAL SMART-FORM -->
+                            <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                                
+                                <!-- Directriz de Control de Calidad Fiscal de la CNS -->
+                                <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 10px 12px; margin-bottom: 18px; border-radius: 4px;">
+                                    <span style="display:block; font-size:11px; font-weight:bold; color:#15803d; text-transform:uppercase;"><i class="fa fa-info-circle"></i> Directriz de Migración:</span>
+                                    <p style="margin:2px 0 0 0; font-size:11px; color:#334155; line-height:1.4;">Seleccione el nivel correspondiente e importe la planilla estructurada oficial en formato <b>Microsoft Excel (.xls / .xlsx)</b> para la carga de partidas.</p>
+                                </div>
+
+                                <form action="' . site_url('programacion/proyecto/valida_add_form4_insitucional') . '" method="post" enctype="multipart/form-data" id="form_subir_form4_institucional" autocomplete="off" style="padding:0; background:transparent;">
+                                            <div class="form-group" style="margin-bottom: 15px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 6px; color: #475569; font-size: 11px; text-transform: uppercase;">NIVEL DE ESTABLECIMIENTO *</label>
+                                                <select class="form-control" id="tn_id" name="tn_id" title="SELECCIONE EL TIPO DE NIVEL" style="height: 32px; font-size: 11.5px; border-color: #cbd5e1; box-shadow: none; width: 100%;">
+                                                    <option value="1">PRIMER NIVEL (Establecimiento)</option>
+                                                    <option value="2">SEGUNDO NIVEL (Establecimiento)</option> 
+                                                    <option value="3">TERCER NIVEL (Establecimiento)</option>
+                                                    <option value="4">FORTALECIMIENTO (Programa)</option>
+                                                    <option value="5">BIENES Y SERVICIOS (Programa)</option>       
+                                                </select>
+                                            </div>
+                                            <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                                            <i class="fa fa-folder-open"></i> Examinar...
+                                                        </button>
+                                                        
+                                                        <input id="archivo" accept=".xlsx, .xls" name="archivo" 
+                                                               onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                                               style="display: none;" type="file" required>
+                                                    </span>
+                                                    <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                                </div>
+                                            </div>
+
+                                            <div id="mensaje" style="margin: 10px 0; font-size: 11px;"></div>
+
+                                            <!-- Botón de Envío y Validación Masiva -->
+                                            <div style="margin-top: 25px;">
+                                                <button type="button" id="btn_subir" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                                    <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                                </button>
+                                            </div>
+
+                                            <!-- Animación Pre-Loader de la Planilla -->
+                                            <div id="loads" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                                <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                                <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                                            </div>
+                                        </form>
+                                
+                            </div> <!-- Fin .modal-body -->
+                        </div> <!-- Fin .modal-content -->
+                    </div> <!-- Fin .modal-dialog -->
+                </div> <!-- Fin .modal -->';
+        return $tabla;
+    }
 
   /*--- Modal Para Migrar Requerimientos x Componente 2027 ---*/
   public function modal_migracion_form5x_componente($componente){
@@ -1511,7 +1585,7 @@ public function pie_foda(){
           <tr>
             <!-- 1. BLOQUE JEFATURA DE UNIDAD O ÁREA (33%) -->
             <td style="width: 33%; padding-right: 5px; vertical-align: top;">
-                <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
+                <table border="0.5" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
                         <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                             <b>'.$firma1.'</b>
@@ -1527,7 +1601,7 @@ public function pie_foda(){
             
             <!-- 2. BLOQUE JEFATURA DE DEPARTAMENTOS (34% Ajustado por simetría de margen) -->
             <td style="width: 34%; padding-right: 5px; vertical-align: top;">
-                <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
+                <table border="0.5" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
                       <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                           <b>'.$firma2.'</b>
@@ -1543,7 +1617,7 @@ public function pie_foda(){
             
             <!-- 3. BLOQUE GERENCIA GENERAL (33%) -->
             <td style="width: 33%; vertical-align: top;">
-                <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
+                <table border="0.5" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
                       <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                           <b>'.$firma3.'</b>
