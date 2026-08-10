@@ -245,7 +245,7 @@ class model_producto extends CI_Model {
           OR 
           (p.uni_resp = ".$com_id."  AND prog.g_id = ".$this->gestion.") -- Caso Bolsas
       )
-    ORDER BY p.prod_id,p.prod_cod ASC;"; 
+    ORDER BY p.uni_resp,p.prod_id,p.prod_cod ASC;"; 
         
         $query = $this->db->query($sql);
         return $query->result_array();

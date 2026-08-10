@@ -370,6 +370,16 @@ class Model_seguimientopoa extends CI_Model{
         return $query->result_array();
     }
 
+    /*-- GET Establecimiento para la siguiente gestion --*/
+    public function get_unidad_programado_gestion_siguiente($act_id,$gestion){
+        $sql = '
+                select *
+                from get_establecimiento_de_salud_gestion('.$act_id.','.$gestion.')';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     //// EVALUACION POA COMVINADO A SEGUIMIENTO POA
     /*------------- Rango Trimestre para los valores pendientes por trimestre 2020 -----------------*/
     public function rango_programado_trimestral_productos($prod_id,$trimestre){

@@ -4,17 +4,17 @@ class Proyecto extends CI_Controller {
       parent::__construct();
       if($this->session->userdata('fun_id')!=null){
       $this->load->library('pdf2');
-      $this->load->model('menu_modelo');
-      $this->load->model('Users_model','',true);
+      //$this->load->model('menu_modelo');
+      //$this->load->model('Users_model','',true);
       $this->load->model('programacion/model_faseetapa');
       $this->load->model('programacion/model_proyecto');
       $this->load->model('programacion/model_componente');
       $this->load->model('programacion/model_producto');
       $this->load->model('analisis_situacion/model_analisis_situacion');
       $this->load->model('mantenimiento/mapertura_programatica');
-      $this->load->model('mantenimiento/munidad_organizacional');
+      //$this->load->model('mantenimiento/munidad_organizacional');
       $this->load->model('mantenimiento/model_estructura_org');
-      $this->load->model('programacion/insumos/minsumos');
+      //$this->load->model('programacion/insumos/minsumos');
       $this->load->model('programacion/insumos/model_insumo');
       $this->load->model('mestrategico/model_objetivoregion');
       $this->load->model('mantenimiento/model_ptto_sigep');
@@ -51,165 +51,159 @@ class Proyecto extends CI_Controller {
         $titulo_btn_prog='PROG. FORM. N 4 - 5';
       }
       $tabla .= $this->programacionpoa->tp_resp();
-$tabla .= '<input name="base" type="hidden" value="'.base_url().'">
+      $tabla .= '<input name="base" type="hidden" value="'.base_url().'">
 
-<div id="tabs" style="border: none; background: transparent;">
-    <!-- 📌 MENÚ DE PESTAÑAS PRINCIPALES (TABS) -->
-    <ul style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; padding: 0; border-radius: 4px 4px 0 0;">
-        <li style="margin-bottom: -2px;">
-            <a href="#tabs-c" style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11.5px; color: #1e293b; text-transform: uppercase; padding: 10px 16px;"><i class="fa fa-folder-open text-primary"></i> Gasto Corriente</a>
-        </li>
-        <li style="margin-bottom: -2px;">
-            <a href="#tabs-a" style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11.5px; color: #1e293b; text-transform: uppercase; padding: 10px 16px;"><i class="fa fa-university text-success"></i> Proyectos de Inversión Pública</a>
-        </li>
-    </ul>
+    <div id="tabs" style="border: none; background: transparent;">
+        <!-- 📌 MENÚ DE PESTAÑAS PRINCIPALES (TABS) -->
+        <ul style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; padding: 0; border-radius: 4px 4px 0 0;">
+            <li style="margin-bottom: -2px;">
+                <a href="#tabs-c" style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11.5px; color: #1e293b; text-transform: uppercase; padding: 10px 16px;"><i class="fa fa-folder-open text-primary"></i> Gasto Corriente</a>
+            </li>
+            <li style="margin-bottom: -2px;">
+                <a href="#tabs-a" style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11.5px; color: #1e293b; text-transform: uppercase; padding: 10px 16px;"><i class="fa fa-university text-success"></i> Proyectos de Inversión Pública</a>
+            </li>
+        </ul>
 
-    <!-- ==========================================================================
-         PANEL A: GASTO CORRIENTE
-         ========================================================================== -->
-    <div id="tabs-c" style="padding: 15px 0 0 0; background: transparent;">
-        <div class="row">
-            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                <div class="jarviswidget jarviswidget-color-darken" style="margin-bottom: 15px;">
-                    <header style="background: #334155; color: #ffffff; height: 38px; display: flex; align-items: center; padding: 0 10px; border-radius: 4px 4px 0 0;">
-                        <span class="widget-icon" style="margin-right: 8px;"> <i class="fa fa-arrows-v text-muted"></i> </span>
-                        <h2 class="font-md" style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px;"><strong>Gasto Corriente - Gestión Regular</strong></h2>  
-                    </header>
-                    <div>
-                        <div class="widget-body no-padding" style="background: #ffffff; padding: 15px !important; border: 1px solid #cbd5e1; border-top: none; border-radius: 0 0 4px 4px;">
-                            
-                            <!-- 🛠️ BARRA DE ACCIONES SUPERIOR: GASTO CORRIENTE -->
-                            <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 6px; background: #f8fafc; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 4px;">
-                                <!-- Botón Agregar Unidad -->
-                                <a href="'.site_url("proy/add_unidad").'" 
-                                   class="btn btn-sm btn-default" 
-                                   title="AGREGAR NUEVA UNIDAD ORGANIZACIONAL" 
-                                   target="_blank" rel="noopener noreferrer"
-                                   style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
-                                   onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
-                                   onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
-                                    <i class="fa fa-plus text-primary" style="font-size: 12px;"></i> Agregar Unidad
-                                </a>';
-                                
-                                if($this->fun_id == 399) {
-                                    // Botón Importar Excel Saneado en Verde Institucional
-                                    $tabla .= '
-                                    <a href="#" 
-                                       data-toggle="modal" 
-                                       data-target="#modal_importar" 
-                                       class="btn btn-sm btn-default importar_ff" 
-                                       title="MIGRAR PLANILLA EXCEL DE OPERACIONES REGIONALES"
-                                       style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #16a34a; border: 1px solid #15803d; color: #ffffff; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
-                                       onmouseover="this.style.background=\'#15803d\'; this.style.borderColor=\'#166534\';"
-                                       onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
-                                        <i class="fa fa-cloud-upload" style="font-size: 12px; color: #ffffff;"></i> Subir Formulario N° 4 (.xls)
-                                    </a>';
-                                }
-                                
-                            $tabla .= '
-                            </div>
-
-                            <!-- 🌟 REPARADO: Contenedor elástico responsivo con scrolling horizontal controlado -->
-                            <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px;">
-                                <table id="dt_basic3" class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; min-width: 1500px; font-size: 11px; border-collapse: collapse;">
-                                    <thead>
-                                        <tr style="height: 42px; background: #475569; color: #ffffff; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px;">
-                                            <th style="width:1%; text-align: center; vertical-align: middle;">#</th>
-                                            <th style="width:5%; text-align: center; vertical-align: middle;">VALIDAR POA</th>
-                                            <th style="width:5%; text-align: center; vertical-align: middle;">REPORTE POA</th>
-                                            <th style="width:5%; text-align: center; vertical-align: middle;">CONSOLIDADO</th>
-                                            <th style="width:5%; text-align: center; vertical-align: middle;">FORM. N° 3</th>
-                                            <th style="width:5%; text-align: center; vertical-align: middle;">PROG. POA</th>
-                                            <th style="width:5%; text-align: center; vertical-align: middle;">MODIFICAR</th>
-                                            <th style="width:5%; text-align: center; vertical-align: middle;">ELIMINAR</th>
-                                            <th style="width:10%; text-align: left; vertical-align: middle;">CATEGORIA PROGRAMÁTICA '.$this->gestion.'</th>
-                                            <th style="width:20%; text-align: left; vertical-align: middle;">GASTO CORRIENTE DESCRIPCIÓN</th>
-                                            <th style="width:8%; text-align: left; vertical-align: middle;">DISTRITAL</th>
-                                            <th style="width:9%; text-align: right; vertical-align: middle; background-color: #1e3a8a;">PPTO. ASIGNADO</th>
-                                            <th style="width:9%; text-align: right; vertical-align: middle; background-color: #d97706;">PPTO. POA</th>
-                                            <th style="width:9%; text-align: right; vertical-align: middle;">SALDO REMANENTE</th>
-                                            <th style="width:4%; text-align: center; vertical-align: middle;">ESTADO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        '.$this->list_unidades_es(1).'
-                                    </tbody>
-                                </table>
-                            </div> <!-- Fin .table-responsive -->
-
-                        </div>
-                    </div>
-                </div>
-            </article>
-        </div>
-    </div>
-
-    <!-- ==========================================================================
-         PANEL B: PROYECTOS DE INVERSIÓN PÚBLICA
-         ========================================================================== -->
-    <div id="tabs-a" style="padding: 15px 0 0 0; background: transparent;">
-        <div class="row">';
-            if($this->session->userdata('rol_id') == 1) {
-                // Botón Aperturar Proyecto Saneado en Blanco Ejecutivo
-                $tabla .= ' 
-                <div style="margin-bottom: 15px; padding-left: 15px;">
-                    <a href="'.site_url("admin/proy/proyecto").'" 
-                       class="btn btn-sm btn-default" 
-                       title="APERTURAR NUEVO PROYECTO DE INVERSIÓN" 
-                       target="_blank" rel="noopener noreferrer"
-                       style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
-                       onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
-                       onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
-                        <i class="fa fa-plus text-success" style="font-size: 12px;"></i> Aperturar Proyecto PIP
-                    </a>
-                </div>';
-            }
-            
-            $tabla .= '
-            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                      <div class="jarviswidget jarviswidget-color-darken" >
-                        <header>
-                          <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-                            <h2 class="font-md"><strong>PROYECTOS DE INVERSI&Oacute;N PUBLICA </strong></h2>  
+        <div id="tabs-c" style="padding: 15px 0 0 0; background: transparent;">
+            <div class="row">
+                <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="jarviswidget jarviswidget-color-darken" style="margin-bottom: 15px;">
+                        <header style="background: #334155; color: #ffffff; height: 38px; display: flex; align-items: center; padding: 0 10px; border-radius: 4px 4px 0 0;">
+                            <span class="widget-icon" style="margin-right: 8px;"> <i class="fa fa-arrows-v text-muted"></i> </span>
+                            <h2 class="font-md" style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px;"><strong>Gasto Corriente - Gestión Regular</strong></h2>  
                         </header>
                         <div>
-                          <div class="widget-body no-padding">
-                            <table id="dt_basic" class="table table-bordered" style="width:100%;">
-                              <thead>
-                                <tr style="height:65px;">
-                                  <th style="width:4%;">VALIDAR</th>
-                                  <th style="width:4%;">PROG. POA</th>
-                                  <th style="width:4%;" title="REPORTE POA">REPORTE POA</th>
-                                  <th style="width:4%;" title="MODIFICAR">MODIFICAR</th>
-                                  <th style="width:4%;" title="FASE">FASE</th>
-                                  <th style="width:4%;" title="ELIMINAR">ELIMINAR</th>
-                                  <th style="width:10%;" title="APERTURA PROGRAM&Aacute;TICA">CATEGORIA PROGRAM&Aacute;TICA '.$this->gestion.'</th>
-                                  <th style="width:20%;" title="NOMBRE DEL PROYECTO DE INVERSI&Oacute;N">PROYECTO DE INVERSI&Oacute;N</th>
-                                  <th style="width:10%;" title="C&Oacute;DIGO SISIN">C&Oacute;DIGO SISIN</th>
-                                  <th style="width:10%;" title="UNIDAD ADMINISTRATIVA">UNIDAD_ADMINISTRATIVA</th>
-                                  <th style="width:10%;" title="UNIDAD EJECUTORA">UNIDAD_EJECUTORA</th>
-                                  <th style="width:10%;" title="FASE - ETAPA DE LA OPERACI&Oacute;N">FASE_ETAPA</th>
-                                  <th style="width:10%;" title="NUEVO - CONTINUO">NUEVO_CONTINUIDAD</th>
-                                  <th style="width:10%;" title="TIEMPO DE OPERACI&Oacute;N">ANUAL_PLURIANUAL</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                '.$this->list_pinversion(1).'
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                      </article>
-                    </div>
-                  </div>
-                </div>';
+                            <div class="widget-body no-padding" style="background: #ffffff; padding: 15px !important; border: 1px solid #cbd5e1; border-top: none; border-radius: 0 0 4px 4px;">
+                                
+                                <!-- 🛠️ BARRA DE ACCIONES SUPERIOR: GASTO CORRIENTE -->
+                                <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 6px; background: #f8fafc; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 4px;">
+                                    <!-- Botón Agregar Unidad -->
+                                    <a href="'.site_url("proy/add_unidad").'" 
+                                       class="btn btn-sm btn-default" 
+                                       title="AGREGAR NUEVA UNIDAD ORGANIZACIONAL" 
+                                       target="_blank" rel="noopener noreferrer"
+                                       style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                                       onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
+                                       onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
+                                        <i class="fa fa-plus text-primary" style="font-size: 12px;"></i> Agregar Unidad
+                                    </a>';
+                                    
+                                    if($this->fun_id == 399) {
+                                        // Botón Importar Excel Saneado en Verde Institucional
+                                        $tabla .= '
+                                        <a href="#" 
+                                           data-toggle="modal" 
+                                           data-target="#modal_importar" 
+                                           class="btn btn-sm btn-default importar_ff" 
+                                           title="MIGRAR PLANILLA EXCEL DE OPERACIONES REGIONALES"
+                                           style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #16a34a; border: 1px solid #15803d; color: #ffffff; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                                           onmouseover="this.style.background=\'#15803d\'; this.style.borderColor=\'#166534\';"
+                                           onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
+                                            <i class="fa fa-cloud-upload" style="font-size: 12px; color: #ffffff;"></i> Subir Formulario N° 4 (.xls)
+                                        </a>';
+                                    }
+                                    
+                                $tabla .= '
+                                </div>
 
-        $data['listado']=$tabla;
-      $this->load->view('admin/programacion/proy_anual/top/list_proy', $data);
+                                <!-- 🌟 REPARADO: Contenedor elástico responsivo con scrolling horizontal controlado -->
+                                <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px;">
+                                    <table id="dt_basic3" class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; min-width: 1500px; font-size: 11px; border-collapse: collapse;">
+                                        <thead>
+                                            <tr style="height: 42px; background: #475569; color: #ffffff; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px;">
+                                                <th style="width:1%; text-align: center; vertical-align: middle;">#</th>
+                                                <th style="width:5%; text-align: center; vertical-align: middle;">VALIDAR POA</th>
+                                                <th style="width:5%; text-align: center; vertical-align: middle;">REPORTE POA</th>
+                                                <th style="width:5%; text-align: center; vertical-align: middle;">CONSOLIDADO</th>
+                                                <th style="width:5%; text-align: center; vertical-align: middle;">FORM. N° 3</th>
+                                                <th style="width:5%; text-align: center; vertical-align: middle;">PROG. POA</th>
+                                                <th style="width:5%; text-align: center; vertical-align: middle;">MODIFICAR</th>
+                                                <th style="width:5%; text-align: center; vertical-align: middle;">ELIMINAR</th>
+                                                <th style="width:10%; text-align: left; vertical-align: middle;">CATEGORIA PROGRAMÁTICA '.$this->gestion.'</th>
+                                                <th style="width:20%; text-align: left; vertical-align: middle;">GASTO CORRIENTE DESCRIPCIÓN</th>
+                                                <th style="width:8%; text-align: left; vertical-align: middle;">DISTRITAL</th>
+                                                <th style="width:9%; text-align: right; vertical-align: middle; background-color: #1e3a8a;">PPTO. ASIGNADO</th>
+                                                <th style="width:9%; text-align: right; vertical-align: middle; background-color: #d97706;">PPTO. POA</th>
+                                                <th style="width:9%; text-align: right; vertical-align: middle;">SALDO REMANENTE</th>
+                                                <th style="width:4%; text-align: center; vertical-align: middle;">ESTADO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            '.$this->list_unidades_es(1).'
+                                        </tbody>
+                                    </table>
+                                </div> <!-- Fin .table-responsive -->
+
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <div id="tabs-a" style="padding: 15px 0 0 0; background: transparent;">
+            <div class="row">';
+                if($this->session->userdata('rol_id') == 1) {
+                    // Botón Aperturar Proyecto Saneado en Blanco Ejecutivo
+                    $tabla .= ' 
+                    <div style="margin-bottom: 15px; padding-left: 15px;">
+                        <a href="'.site_url("admin/proy/proyecto").'" 
+                           class="btn btn-sm btn-default" 
+                           title="APERTURAR NUEVO PROYECTO DE INVERSIÓN" 
+                           target="_blank" rel="noopener noreferrer"
+                           style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
+                           onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
+                            <i class="fa fa-plus text-success" style="font-size: 12px;"></i> Aperturar Proyecto PIP
+                        </a>
+                    </div>';
+                }
+                
+                $tabla .= '
+                <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                          <div class="jarviswidget jarviswidget-color-darken" >
+                            <header>
+                              <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
+                                <h2 class="font-md"><strong>PROYECTOS DE INVERSI&Oacute;N PUBLICA </strong></h2>  
+                            </header>
+                            <div>
+                              <div class="widget-body no-padding">
+                                <table id="dt_basic" class="table table-bordered" style="width:100%;">
+                                  <thead>
+                                    <tr style="height:65px;">
+                                      <th style="width:4%;">VALIDAR</th>
+                                      <th style="width:4%;">PROG. POA</th>
+                                      <th style="width:4%;" title="REPORTE POA">REPORTE POA</th>
+                                      <th style="width:4%;" title="MODIFICAR">MODIFICAR</th>
+                                      <th style="width:4%;" title="FASE">FASE</th>
+                                      <th style="width:4%;" title="ELIMINAR">ELIMINAR</th>
+                                      <th style="width:10%;" title="APERTURA PROGRAM&Aacute;TICA">CATEGORIA PROGRAM&Aacute;TICA '.$this->gestion.'</th>
+                                      <th style="width:20%;" title="NOMBRE DEL PROYECTO DE INVERSI&Oacute;N">PROYECTO DE INVERSI&Oacute;N</th>
+                                      <th style="width:10%;" title="C&Oacute;DIGO SISIN">C&Oacute;DIGO SISIN</th>
+                                      <th style="width:10%;" title="UNIDAD ADMINISTRATIVA">UNIDAD_ADMINISTRATIVA</th>
+                                      <th style="width:10%;" title="UNIDAD EJECUTORA">UNIDAD_EJECUTORA</th>
+                                      <th style="width:10%;" title="FASE - ETAPA DE LA OPERACI&Oacute;N">FASE_ETAPA</th>
+                                      <th style="width:10%;" title="NUEVO - CONTINUO">NUEVO_CONTINUIDAD</th>
+                                      <th style="width:10%;" title="TIEMPO DE OPERACI&Oacute;N">ANUAL_PLURIANUAL</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    '.$this->list_pinversion(1).'
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                </article>
+            </div>
+        </div>
+    </div>';
+
+    $data['listado']=$tabla;
+    $this->load->view('admin/programacion/proy_anual/top/list_proy', $data);
     }
 
- /*------ Programacion - POA APROBADO (2026) ------*/
+    /*--- Programacion - POA APROBADO (2027) ---*/
     public function list_proyectos_aprobados(){
       $data['menu']=$this->programacionpoa->menu(2);
       $data['estilo']=$this->programacionpoa->estilo_tabla();
@@ -1859,7 +1853,7 @@ $tabla .= '<input name="base" type="hidden" value="'.base_url().'">
     }
 
     //////// MIGRAR ACTIVIDADES A NIVEL INSITUCIONAL (Archivo Excel) 2027
-  public function valida_add_form4_insitucional() {
+    public function valida_add_form4_insitucional() {
         ini_set('max_execution_time', 300); // 5 minutos
         ini_set('memory_limit', '512M');    // Aumentar memoria
 
@@ -1895,7 +1889,7 @@ $tabla .= '<input name="base" type="hidden" value="'.base_url().'">
                 return;
             }
 
-            if($tn_id==1 || $tn_id==2 $tn_id==3){ /// Establecimiento de Salud
+            if($tn_id==1 || $tn_id==2 || $tn_id==3){ /// Establecimiento de Salud
               $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional($tn_id);
             }
             elseif($tn_id==4){ /// fortalecimiento

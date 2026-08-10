@@ -442,7 +442,7 @@ class Creporte extends CI_Controller {
                     $requerimientos = $this->programacionpoa->rep_formulario_N5_Uresponsable($list_insumos);
 
                     $tabla .= '
-                    <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                    <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="3.5mm" backright="3.5mm" pagegroup="new">
                         <page_header>
                             <br><div class="verde"></div>
                             ' . $cabecera . '
@@ -465,7 +465,7 @@ class Creporte extends CI_Controller {
                             </page_footer>
                             ' . $requerimientos . '
                         </page>
-                        <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                        <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="3.5mm" backright="3.5mm" pagegroup="new">
                             <page_header>
                                 <br><div class="verde"></div>
                                 ' . $cabecera_f5 . '
@@ -492,7 +492,7 @@ class Creporte extends CI_Controller {
                                 $cabecera_bolsa = $this->programacionpoa->cabecera_bolsa($get_prog_bolsa, $componente);
 
                                 $tabla .= '
-                                <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                                <page orientation="paysage" backtop="62.5mm" backbottom="35mm" backleft="3.5mm" backright="3.5mm" pagegroup="new">
                                     <page_header>
                                         <br><div class="verde"></div>
                                         ' . $cabecera_bolsa . '
@@ -502,7 +502,7 @@ class Creporte extends CI_Controller {
                                     </page_footer>
                                     ' . $requerimientos_bolsa . '
                                 </page>
-                                <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                                <page orientation="portrait" backtop="62.5mm" backbottom="35mm" backleft="3.5mm" backright="3.5mm" pagegroup="new">
                                     <page_header>
                                         <br><div class="verde"></div>
                                         ' . $cabecera_bolsa . '
@@ -678,6 +678,70 @@ class Creporte extends CI_Controller {
             echo "Error !!! El código de unidad o proyecto especificado no registra datos activos.";
         }
     }
+
+
+
+
+
+
+
+
+    //// REPORTE VISTA PREVIA DEL POA PARA EL SIGUIENTE AÑO PARA LOS ESTABLECIMIENTOS DE SALUD - Unidad Responsable
+    public function reporte_formulario4_unidadResponsable_siguiente_gestion($com_id){
+        // 1. Ampliación y control de recursos de hardware en el servidor
+        ini_set('memory_limit', '2048M'); 
+        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        
+        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        if (ob_get_length()) ob_clean();
+        $componente=$this->model_componente->get_componente($com_id,($this->gestion+1)); /// GET COMP -> PROY -> APER
+        if(count($componente)!=0){
+            if($componente[0]['tp_id']==1){
+                $pie_report='FORM_SPO_N4_'.$componente[0]['proy_nombre'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+            }
+            else{
+                $pie_report='FORM_SPO_N4_'.$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+            }
+            
+            $listado=$this->programacionpoa->rep_formulario_N4_Uresponsable($componente); /// 2026
+            $cabecera=$this->programacionpoa->cabecera_vista_previa($componente);
+            $pie=$this->programacionpoa->pie_form($componente);
+            
+            $data['lista'] = '
+              <page orientation="landscape" backtop="62.5mm" backbottom="15mm" backleft="4mm" backright="4mm" pagegroup="new">
+                <!-- Cabecera Institucional Inalterada -->
+                <page_header>
+                    <br><div class="verde"></div>
+                    '.$cabecera.'
+                </page_header>
+                    '.$listado.'
+              </page>';
+
+          // 1. Capturamos el HTML estructurado de la vista en una variable
+          $html_reporte = $this->load->view('admin/programacion/reportes/reporte_form4_consolidado', $data, true); 
+          // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+          if (ob_get_length()) ob_clean();
+          // 3. Importación segura del motor conversor usando la ruta física del servidor
+          require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+          try {
+              // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+              $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+              $html2pdf->pdf->SetDisplayMode('fullpage');
+              $html2pdf->writeHTML($html_reporte);
+              
+              // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+              $html2pdf->Output($pie_report. '.pdf', 'I');
+          }
+          catch(HTML2PDF_exception $e) {
+              echo "Error al compilar el reporte: " . $e;
+          }
+          exit;
+        }
+        else{
+            echo "Error !!!";
+        }
+    }
+
 
 
 

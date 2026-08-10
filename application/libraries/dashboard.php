@@ -523,19 +523,25 @@ class Dashboard extends CI_Controller{
     }
     
 
-    /*----- dashboard seguimiento Administracion/Establecimiento 2026-----*/
+    /*----- dashboard seguimiento Administracion/Establecimiento 2027-----*/
     public function dashboard_seguimientopoa(){
 
             if($this->session->userdata('tp_usuario')==0){ /// Unidad Administrativa
                 $responsable=$this->session->userdata('funcionario');
                 $link_form1='seguimiento_poa';
                 $com_id=$this->session->userData('com_id');
+                $com_siguiente=0;
             }
             else{ /// Establecimiento de Salud
                 $establecimiento=$this->model_seguimientopoa->get_unidad_programado_gestion($this->session->userData('act_id'));
                 $responsable=$establecimiento[0]['tipo'].' '.$establecimiento[0]['act_descripcion'].' '.$establecimiento[0]['abrev'];
                 $link_form1='seguimiento_establecimientos';
                 $com_id=$establecimiento[0]['com_id'];
+                $com_siguiente=0;
+                $get_establecimiento_siguiente=$this->model_seguimientopoa->get_unidad_programado_gestion_siguiente($this->session->userData('act_id'),($this->gestion+1));
+                if(count($get_establecimiento_siguiente)!=0){
+                    $com_siguiente=$get_establecimiento_siguiente[0]['com_id'];
+                }
             }
 
             $formulario='';
@@ -544,7 +550,7 @@ class Dashboard extends CI_Controller{
                 <div class="jumbotron fade-in-anim">
                 <div class="row box-green1">
                     <div class="col-md-8">
-                        <h2 class="no-margin"><b>BIENVENIDO: '.$responsable.'</b></h2>
+                        <h2 class="no-margin"><b>BIENVENIDO: '.$responsable.' '.$this->session->userData('act_id').'</b></h2>
                         <hr style="border-top: 1px solid rgba(255,255,255,0.2);">
                         <h4><i class="fa fa-user"></i> <b>PERFIL:</b> SEGUIMIENTO AL POA</h4>
                         <h4><i class="fa fa-calendar"></i> <b>MES / GESTI&Oacute;N:</b> '.$this->verif_mes[2].' / '.$this->session->userdata("gestion").'</h4>
@@ -642,8 +648,6 @@ class Dashboard extends CI_Controller{
             </div>
         </footer>
 
-
-
         <div class="modal fade" id="modal_pdf" data-backdrop="static" data-keyboard="false" tabindex="-1">
             <div class="modal-dialog modal-lg" style="width: 95%;">
                 <div class="modal-content">
@@ -683,6 +687,61 @@ class Dashboard extends CI_Controller{
                 </div>
             </div>
         </div>';
+
+        $formulario.='
+        <div class="modal fade" id="modal_reporte_poa2027" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45); white-space: normal;">
+            <div class="modal-dialog modal-lg" style="width: 95% !important; max-width: 98%; margin: 15px auto;">
+                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); border: none; overflow: hidden; background: #ffffff;">
+                    
+                    <!-- CABECERA INSTITUCIONAL SANEADA -->
+                    <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; height: 40px;">
+                        <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin:0; text-align: left;">
+                            <i class="fa fa-file-pdf-o text-danger"></i> Vista Previa POA 2027
+                        </h4>
+                        <!-- Botón Cerrar "X" Superior -->
+                        <button type="button" class="close" data-dismiss="modal" style="font-size: 22px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer; margin:0; padding:0;">&times;</button>
+                    </div>
+
+                    <!-- 🌟 ADICIONADO: ANUNCIO FORMAL DE ADVERTENCIA PARA VALIDACIÓN DEL PLANIFICADOR -->
+                    <div style="background: #fff7ed; border-bottom: 1px solid #ffedd5; padding: 10px 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa fa-exclamation-triangle" style="color: #ea580c; font-size: 14px; animation: pulse_anuncio_cns 2s infinite;"></i>
+                        <span style="font-family: Arial, sans-serif; font-size: 11px; color: #9a3412; font-weight: bold; text-transform: uppercase; line-height: 1.4; letter-spacing: 0.2px;">
+                            Vista Previa POA 2027: Debe revisar el contenido de actividades registradas correspondientes a su Establecimiento. Toda información debe ser verificada, revisada y validada estrictamente por su planificador regional, distrital asignado ante cualquier observación.
+                        </span>
+                    </div>
+
+                    <!-- CUERPO DEL MODAL ADAPTADO PARA VISUALIZACIÓN DIGITAL (Altura recalculada de forma elástica) -->
+                    <div class="modal-body" style="padding: 0; margin: 0; background: #475569; overflow: hidden; height: calc(100vh - 145px);">
+                        
+                        <!-- Marco de visualización digital del reporte -->
+                        <iframe src="'.base_url().'index.php/prog/reporte_form4_uresponsable_gestion_siguiente/'.intval($com_siguiente).'" 
+                                style="width: 100%; height: 100%; border: none; display: block; background: #475569;" 
+                                frameborder="0" 
+                                loading="lazy"
+                                allowfullscreen>
+                        </iframe>
+                        
+                    </div>
+
+                    <!-- PIE DE VENTANA ACCIONES COMPACTO -->
+                    <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 8px 20px; text-align: right; margin:0; height: 46px; display: flex; align-items: center; justify-content: flex-end;">
+                        <button type="button" class="btn btn-sm" data-dismiss="modal" style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 16px; border-radius: 3px; background: #64748b; color: #ffffff; border: 1px solid #475569; cursor: pointer; transition: all 0.15s ease;"
+                                onmouseover="this.style.background=\'#475569\';"
+                                onmouseout="this.style.background=\'#64748b\';">
+                            <i class="fa fa-arrow-circle-left"></i> Cerrar Reporte
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Micro-animación de alerta institucional -->
+        <style>
+            @keyframes pulse_anuncio_cns { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
+        </style>';
+
+        
 
         return $formulario;
     }

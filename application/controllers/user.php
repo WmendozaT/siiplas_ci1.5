@@ -4,7 +4,7 @@ class User extends CI_Controller{
         parent::__construct();
         $this->load->model('Users_model', '', true);
         $this->load->model('mantenimiento/model_funcionario');
-        $this->load->model('programacion/model_faseetapa');
+        //$this->load->model('programacion/model_faseetapa');
         $this->load->model('programacion/model_proyecto');
         $this->load->model('ejecucion/model_evaluacion');
         $this->load->model('mantenimiento/model_configuracion');
@@ -15,9 +15,9 @@ class User extends CI_Controller{
         $this->load->model('programacion/model_componente');
         $this->load->model('ejecucion/model_certificacion');
         $this->load->model('mantenimiento/model_ptto_sigep');
-        $this->load->model('reportes/mreporte_operaciones/mrep_operaciones');
+        //$this->load->model('reportes/mreporte_operaciones/mrep_operaciones');
         $this->load->model('programacion/insumos/model_insumo'); /// gestion 2020
-        $this->load->model('model_control_menus');
+        //$this->load->model('model_control_menus');
         $this->load->library('session');
         $this->load->library('encrypt');
         $this->load->library('security');

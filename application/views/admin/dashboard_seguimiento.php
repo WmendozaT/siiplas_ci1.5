@@ -27,24 +27,49 @@
           <a class="navbar-brand" href="#"><font color="#1c7368"><b><?php echo $this->session->userdata('name')?></b></font></a>
         </div>
         <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Descarga de Archivos / Documentos">Descargas <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li class="dropdown-header">Archivos/Tutoriales</li>
-                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_MOD_4_Y_5_2026.xlsx" style="cursor: pointer;" download>Formulario de Solicitud de Modificacion POA</a></li>
-                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_SOL_POA_5_2026.xlsx" style="cursor: pointer;" download>Formulario de Solicitud de Certificación POA</a></li>
-                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_JUST_SALDOS_CPOAS_2026.docx" style="cursor: pointer;" download>Formulario de Reversion de Saldos POA</a></li>
-                <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_JUST_EDICION_CPOAS_2026.docx" style="cursor: pointer;" download>Formulario de Modificación de Certificación POA</a></li>
-                <li class="divider"></li>
-              </ul>
-            </li>
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
-            <li class="active"><a href="<?php echo base_url(); ?>index.php/admin/logout" title="CERRAR SESI&Oacute;N"><b>SALIR</b></a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
+            <ul class="nav navbar-nav" style="display: flex; align-items: center;">
+                <li class="active"><a href="#">Home</a></li>
+                
+                <!-- DROPDOWN: DESCARGAS DE ARCHIVOS -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Descarga de Archivos / Documentos">Descargas <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-header">Archivos/Tutoriales</li>
+                        <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_MOD_4_Y_5_2026.xlsx" style="cursor: pointer;" download>Formulario de Solicitud de Modificacion POA</a></li>
+                        <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_SOL_POA_5_2026.xlsx" style="cursor: pointer;" download>Formulario de Solicitud de Certificación POA</a></li>
+                        <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_JUST_SALDOS_CPOAS_2026.docx" style="cursor: pointer;" download>Formulario de Reversion de Saldos POA</a></li>
+                        <li><a href="<?php echo base_url(); ?>assets/video/FORMULARIOSPOA/FORM_JUST_EDICION_CPOAS_2026.docx" style="cursor: pointer;" download>Formulario de Modificación de Certificación POA</a></li>
+                        <li class="divider"></li>
+                    </ul>
+                </li>
+                
+                <!-- 🌟 BOTÓN LLAMATIVO DESTACADO: VISTA PREVIA POA 2027 -->
+                <?php
+                    if($this->session->userdata('tp_usuario')!=0){
+                        ?>
+                        <li class="dropdown" style="margin-left: 5px;">
+                            <a href="#" 
+                               data-toggle="modal" 
+                               data-target="#modal_reporte_poa2027"
+                               title="AQUÍ: VER VISTA PREVIA Y ANTEPROYECTO DEL REPORTE POA GESTIÓN 2027" 
+                               style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; text-transform: uppercase; color: #ffffff !important; background: #b45309; border: 1px solid #92400e; padding: 6px 14px; border-radius: 4px; margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(180, 83, 9, 0.2); animation: pulso_alerta_poa2027 2s infinite ease-in-out; transition: all 0.2s ease-content; cursor: pointer; text-decoration: none;"
+                               onmouseover="this.style.background=\'#92400e\'; this.style.borderColor=\'#78350f\'; this.style.transform=\'scale(1.02)\';"
+                               onmouseout="this.style.background=\'#b45309\'; this.style.borderColor=\'#92400e\'; this.style.transform=\'scale(1)\';">
+                                <i class="fa fa-print" style="font-size: 13px; animation: flash_icono_poa2027 1.5s infinite;"></i> 
+                                Vista Previa POA 2027 
+                            </a>
+                        </li>
+                        <?php
+                    }
+                ?>
+            </ul>
+
+            <!-- LOTE DERECHO: ACCESO DE SEGURIDAD -->
+            <ul class="nav navbar-nav navbar-right">
+                <li class="active"><a href="<?php echo base_url(); ?>index.php/admin/logout" title="CERRAR SESIÓN INSTITUCIONAL SIIPLAS" style="font-weight: bold; color: #dc2626 !important;"><b>SALIR</b></a></li>
+            </ul>
+        </div>
+
       </div>
     </div>
 

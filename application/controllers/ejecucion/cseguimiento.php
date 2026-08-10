@@ -304,7 +304,7 @@ class Cseguimiento extends CI_Controller {
     if($this->input->is_ajax_request() && $this->input->post()){
       $post = $this->input->post();
       $proy_id = $this->security->xss_clean($post['proy_id']);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// DATOS DEL PROYECTO
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// DATOS DEL PROYECTO
       $ins_programado = $this->model_insumo->get_mes_programado_insumo_unidad_menos10000($proyecto[0]['aper_id']); /// INSUMO PROGRAMADO CONSOLIDADO
       $form4_programado = $this->model_proyecto->temporalidad_prog_form4_unidad($proyecto[0]['aper_id']); /// FORM4 PROGRAMADO CONSOLIDADO
 
@@ -965,7 +965,7 @@ class Cseguimiento extends CI_Controller {
       $trm_id = $this->security->xss_clean($post['trm_id']);
       $componente = $this->model_componente->get_componente($com_id,$this->gestion); ///// DATOS DEL COMPONENTE
       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);
 
       $matriz_regresion=$this->seguimientopoa->tabla_regresion_lineal_servicio($com_id,$trm_id); /// matriz regresion
       $matriz_gestion=$this->seguimientopoa->tabla_regresion_lineal_servicio_total($com_id); /// Matriz para el grafico Total Gestion
@@ -1012,7 +1012,7 @@ class Cseguimiento extends CI_Controller {
         $post = $this->input->post();
         $com_id = $this->security->xss_clean($post['com_id']);
         $componente = $this->model_componente->get_componente($com_id,$this->gestion); ///// DATOS DEL COMPONENTE
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($componente[0]['proy_id']);
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($componente[0]['proy_id']);
         $trimestre=$this->model_evaluacion->trimestre(); /// Datos del Trimestre
         $this->seguimientopoa->update_evaluacion_operaciones($com_id);
         $tabla='';
@@ -1231,7 +1231,7 @@ class Cseguimiento extends CI_Controller {
         $data['fase']=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']); /// DATOS FASE
         $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['fase'][0]['proy_id']); //// DATOS PROYECTO
         if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['fase'][0]['proy_id']); /// PROYECTO
+          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['fase'][0]['proy_id']); /// PROYECTO
         }
         $data['cabecera']=$this->seguimientopoa->cabecera($data['componente'],$data['proyecto']); /// Cabecera
         $data['verif_mes'] = $this->verif_mes;
@@ -1257,7 +1257,7 @@ class Cseguimiento extends CI_Controller {
         $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['fase'][0]['proy_id']); //// DATOS PROYECTO
         $trimestre=$this->model_evaluacion->get_trimestre($trm_id); /// Datos del Trimestre
         if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['fase'][0]['proy_id']); /// PROYECTO
+          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['fase'][0]['proy_id']); /// PROYECTO
         }
 
         $data['cabecera']=$this->seguimientopoa->cabecera_evaluacion_trimestral($data['componente'],$data['proyecto'],$trm_id);
@@ -1351,7 +1351,7 @@ class Cseguimiento extends CI_Controller {
         $data['fase']=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']); /// DATOS FASE
         $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['fase'][0]['proy_id']); //// DATOS PROYECTO
         if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['fase'][0]['proy_id']); /// PROYECTO
+          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['fase'][0]['proy_id']); /// PROYECTO
         }
         $data['cabecera']=$this->seguimientopoa->cabecera($data['componente'],$data['proyecto']); /// Cabecera
         $data['datos_mes'] = $this->verif_mes;
@@ -1484,7 +1484,7 @@ class Cseguimiento extends CI_Controller {
 
     /*----- REPORTE CONSOLIDADO SEGUIMIENTO POA POR GASTO CORRIENTE 2021 -----*/
     public function reporte_consolidadopoa_operaciones_mensual($proy_id,$mes_id){
-      $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
       if(count($data['proyecto'])!=0){
         $mes = $this->seguimientopoa->mes_nombre();
         $verif_mes=$this->seguimientopoa->update_mes_gestion($mes_id);
@@ -1906,11 +1906,10 @@ class Cseguimiento extends CI_Controller {
     }
 
   /*----- REPORTE NOTIFICACION 1 POA MENSUAL POR GASTO CORRIENTE POR UNIDAD -----*/
-  public function reporte_notificacion_operaciones_mensual($proy_id){
-    $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+  public function reporte_notificacion_UnidadOrganizacional_mensual($proy_id){
+    $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
     if(count($data['proyecto'])!=0){
-      //$unidades_responsables=$this->model_seguimientopoa->get_lista_subactividades_operaciones_programados($data['proyecto'][0]['dist_id'],$this->verif_mes[1],$this->gestion,$proy_id);
-      $unidades_responsables=$this->model_componente->lista_subactividad($proy_id);
+      $unidades_responsables=$this->model_componente->lista_UnidadesResponsables($proy_id);
       $data['verif_mes']=$this->verif_mes;
       $data['principal']='';
       if($data['proyecto'][0]['tp_id']==4){
@@ -1929,7 +1928,7 @@ class Cseguimiento extends CI_Controller {
     
   /*----- REPORTE NOTIFICACION 2 POA MENSUAL -----*/
   public function reporte_notificacion_operaciones_mensual2($proy_id){
-    $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); /// PROYECTO
+    $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
     if(count($data['proyecto'])!=0){
       //$unidades_responsables=$this->model_seguimientopoa->get_lista_subactividades_operaciones_programados($data['proyecto'][0]['dist_id'],$this->verif_mes[1],$this->gestion,$proy_id);
       $unidades_responsables=$this->model_componente->lista_subactividad($proy_id);
@@ -1996,7 +1995,7 @@ class Cseguimiento extends CI_Controller {
     $componente=$this->model_componente->get_componente($com_id,$this->gestion);
     if(count($componente)!=0){
       $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-      $data['proyecto']=$this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
+      $data['proyecto']=$this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);
       $data['verif_mes']=$this->verif_mes;
       $data['principal']='';
       $data['cuerpo']=$this->seguimientopoa->get_notificacion_subactividad($com_id); /// unidad operativa
@@ -2076,7 +2075,7 @@ class Cseguimiento extends CI_Controller {
         //// -----------------------------------------
 
         $this->seguimientopoa->update_evaluacion_operaciones($this->com_id); /// Update datos de Evaluacion
-        $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['componente'][0]['proy_id']); /// PROYECTO
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['componente'][0]['proy_id']); /// PROYECTO
         $data['titulo']='
         <h1 title='.$data['proyecto'][0]['aper_id'].'><small>'.$data['proyecto'][0]['tipo_adm'].' : </small>'.$data['proyecto'][0]['aper_programa'].''.$data['proyecto'][0]['aper_proyecto'].''.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['proy_nombre'].' - '.$data['proyecto'][0]['abrev'].'</h1>
         <h1><small>UNIDAD RESPONSABLE : </small> '.$data['componente'][0]['serv_cod'].' '.$data['componente'][0]['tipo_subactividad'].' '.$data['componente'][0]['serv_descripcion'].'</h1>
@@ -2200,7 +2199,7 @@ class Cseguimiento extends CI_Controller {
         $data['fase']=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']); /// DATOS FASE
         $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['fase'][0]['proy_id']); //// DATOS PROYECTO
         if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['fase'][0]['proy_id']); /// PROYECTO
+          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['fase'][0]['proy_id']); /// PROYECTO
         }
         $data['cabecera']=$this->seguimientopoa->cabecera($data['componente'],$data['proyecto']); /// Cabecera
         $data['titulo_formulario']='<b>FORMULARIO SEGUIMIENTO POA</b> - '.$data['verif_mes'][2].' / '.$this->gestion.'';

@@ -1420,6 +1420,73 @@ class Programacionpoa extends CI_Controller{
 
 
 
+    //// Cabecera Reporte POA
+    public function cabecera_vista_previa($datos_poa) {
+    $tabla = '';
+    $tabla .= ''.$this->stylo_cabecera().'
+    <div class="cns-contenedor-ajuste-pagina">
+        <table class="cns-cabecera-master">
+            <tr>
+                <td style="width: 65%; text-align: left; vertical-align: bottom; padding-bottom: 2px; font-size:8px;">
+                    <span class="cns-txt-title">&nbsp;&nbsp;' . strtoupper($this->session->userdata('entidad')) . '</span><br>
+                    <span class="cns-txt-sub">DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</span>
+                </td>
+                <td style="width: 35%; text-align: right; vertical-align: bottom; font-size: 8px; color: #475569; font-family: courier; font-weight: bold; padding-bottom: 2px;">
+                    ' . date("d") . ' de ' . $this->mes[ltrim(date("m"), "0")] . ' de ' . date("Y") . '
+                </td>
+            </tr>
+        </table>
+
+        <!-- 🌟 REPARADO: La línea verde ahora se confina de forma exacta a los 3mm laterales -->
+        <div class="cns-linea-verde"></div>
+
+        <!-- 2. NÚCLEO DE TÍTULOS Y CÓDIGO QR -->
+        <table class="cns-cabecera-master" style="margin-top: 5px;">
+            <tr>
+                <td style="width: 15%; text-align: center; vertical-align: middle;">
+                </td>
+                <td style="width: 70%; text-align: center; vertical-align: middle; padding: 0 5px;">
+                    <span style="font-size: 17px; font-weight: bold; color: #0f172a; display: block; text-transform: uppercase; letter-spacing: 0.3px; color:red;">PLAN OPERATIVO ANUAL GESTIÓN - ' . ($this->gestion+1) . '</span><br>
+                    <span style="font-size: 13px; font-weight: 500; color: #475569; display: block; margin-top: 3px; letter-spacing: 0.2px;">ACTIVIDADES (VISTA PREVIA)</span>
+                </td>
+                <td style="width: 15%; text-align: right; vertical-align: middle;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 4px 5px; background: #000000; color: #ffffff; font-weight: bold; font-size: 8px; text-align: center; border: 0.5px solid #475569; text-transform: uppercase;">
+                                FORMULARIO SPO N° 4
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- 3. CUADRO FORMAL DE IDENTIFICACIÓN RELACIONAL POA -->
+        <table class="cns-tbl-ident">
+            <tr>
+                <td class="cns-lbl">REGIONAL / DEPARTAMENTO</td>
+                <td class="cns-val">' . $datos_poa[0]['dep_cod'] . ' ' . strtoupper($datos_poa[0]['dep_departamento']) . '</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">UNIDAD EJECUTORA</td>
+                <td class="cns-val">' . $datos_poa[0]['dist_cod'] . ' ' . strtoupper($datos_poa[0]['dist_distrital']) . '</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">CAT. PROGRAMÁTICA ' . $this->gestion . '</td>
+                <td class="cns-val">' . $datos_poa[0]['aper_programa'] . ' ' . $datos_poa[0]['aper_proyecto'] . ' ' . $datos_poa[0]['aper_actividad'] . ' - ' . $datos_poa[0]['tipo'] . ' ' . strtoupper($datos_poa[0]['proy_nombre']) . ' [' . strtoupper($datos_poa[0]['abrev']) . ']</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">UNIDAD RESPONSABLE</td>
+                <td class="cns-val">' . $datos_poa[0]['serv_cod'] . ' ' . $datos_poa[0]['tipo_subactividad'] . ' ' . strtoupper($datos_poa[0]['serv_descripcion']) . '</td>
+            </tr>
+        </table>
+    </div>';
+    
+    return $tabla;
+  }
+
+
+
   //// Cabecera Reporte BOLSA
   public function cabecera_bolsa($datos_prog_bolsa,$datos_uniresp){
     $titulo_rep = '';
@@ -2068,8 +2135,8 @@ public function pie_foda(){
                   <td style="width: 1%; font-size: 4.5px; text-align: center;height:14px;">'.$cont.'</td>
                   <td style="width: 2%; text-align: center; font-size: 9px;"><b>'.$row['prod_cod'].'</b></td>
                   <td style="width: 4%; text-align: center;font-size: 8px;"><b>'.$row['par_codigo'].'</b></td>
-                  <td style="width: 15%; text-align: left;font-size: 6.6px;">'.strtoupper($row['ins_detalle']).'</td>
-                  <td style="width: 5%; text-align: left;font-size: 6.6px;">'.strtoupper($row['ins_unidad_medida']).'</td>
+                  <td style="width: 15%; text-align: justify; font-size: 6.6px;">'.strtoupper($row['ins_detalle']).'</td>
+                  <td style="width: 5%; text-align: justify; font-size: 6.6px;">'.strtoupper($row['ins_unidad_medida']).'</td>
                   <td style="width: 2.5%; text-align: right;font-size: 6.6px;">'.round($row['ins_cant_requerida'],2).'</td>
                   <td style="width: 5%; text-align: right;font-size: 6.6px;">'.number_format($row['ins_costo_unitario'], 2, ',', '.').'</td>
                   <td style="width: 5%; text-align: right;font-size: 6.6px;"><b>'.number_format($row['ins_costo_total'], 2, ',', '.').'</b></td>
@@ -2078,7 +2145,7 @@ public function pie_foda(){
                     $tabla.='<td style="width: 4%; text-align: right;font-size: 6.6px;">'.number_format($row['mes_'.$i], 2, ',', '.').'</td>';
                   }
               $tabla.='
-                  <td style="width: 7%; text-align: left;font-size: 6px;">'.$row['ins_observacion'].'</td>
+                  <td style="width: 7%; text-align: justify;font-size: 6px;">'.$row['ins_observacion'].'</td>
                   
               </tr>';
               }

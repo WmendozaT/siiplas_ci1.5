@@ -229,6 +229,7 @@ $route['prog/delete_act'] = 'programacion/actividades/delete_actividad';	//// El
 
 //// Reportes POA
 $route['prog/reporte_form4_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario4_unidadResponsable/$1';  //// Reporte Form 4 Unidad Responsable 2026
+$route['prog/reporte_form4_uresponsable_gestion_siguiente/(:any)'] = 'programacion/creporte/reporte_formulario4_unidadResponsable_siguiente_gestion/$1';  //// Reporte Form 4 Unidad Responsable - Vista Previa para el POA siguiente
 $route['prog/reporte_form5_uresponsable/(:any)'] = 'programacion/creporte/reporte_formulario5_unidadResponsable/$1';  //// Reporte requerimiento por Unidad Responsable
 $route['prog/reporte_form5_uresponsable_programa_bolsa/(:any)'] = 'programacion/creporte/reporte_prog_bolsa_formulario5/$1/$2';  //// Reporte requerimiento por ID PRODUCTO
 $route['prog/reporte_form5_uresponsable_programa_bolsa_consoldado/(:any)'] = 'programacion/creporte/reporte_formulario5_bolsas_consolidado/$1';  //// Reporte requerimiento consolidado Bolsas por Unidad Responsable
@@ -373,8 +374,7 @@ $route['seg/ver_reporte_seguimientopoa/(:any)'] = 'ejecucion/cseguimiento/ver_re
 $route['seg/ver_reporte_evaluacionpoa/(:any)'] = 'ejecucion/cseguimiento/ver_reporteevalpoa/$1/$2'; ///// Ver Reporte Evaluacion POA Trimestral
 $route['seg/ver_reporte_evaluacionpoa_temporalidad/(:any)'] = 'ejecucion/cseguimiento/ver_reporteevalpoa_consolidado_temporalidad/$1'; ///// Ver Reporte Evaluacion POA Consolidado de todos los meses
 
-$route['seg/notificacion_operaciones_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_operaciones_mensual/$1'; ///// Reporte Notificacion Seguimiento POA Mensual UNIDAD/PROY 1
-$route['seg/notificacion_operaciones_mensual2/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_operaciones_mensual/$1'; ///// Reporte Notificacion Seguimiento POA Mensual UNIDAD/PROY 2
+$route['seg/notificacion_operaciones_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_UnidadOrganizacional_mensual/$1'; ///// Reporte Notificacion Seguimiento POA Mensual UNIDAD/PROY 1
 $route['seg/notificacion_poa_componente_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_poa_mensual_componente/$1'; ///// Reporte Notificacion Seguimiento POA Mensual COMPONENTE
 $route['seg/reporte_consolidado_seguimientopoa_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_consolidadopoa_operaciones_mensual/$1/$2'; ///// Reporte formulario Seguimiento POA Mensual
 

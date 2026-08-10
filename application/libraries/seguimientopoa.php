@@ -368,7 +368,7 @@ class Seguimientopoa extends CI_Controller{
     public function tabla_form_seguimientopoa_subactividad($com_id,$mes_id){
       $verif_mes=$this->update_mes_gestion($mes_id);
       $tabla='';
-        $operaciones=$this->model_producto->list_operaciones_subactividad($com_id); /// lISTA DE FORM4
+        $operaciones=$this->model_producto->lista_productos($com_id); /// lISTA DE FORM4
         $tabla='';
         $tabla.='
             <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;" align=center>
@@ -465,7 +465,7 @@ class Seguimientopoa extends CI_Controller{
   /// Temporalidad de todas las operaciones de la Subactividad 2025 (Vista)
   public function temporalidad_operacion($com_id){
     $tabla='';
-    $operaciones=$this->model_producto->list_operaciones_subactividad($com_id);
+    $operaciones=$this->model_producto->lista_productos($com_id);
 
     $tabla.=' <div align="right">
                 <a href="javascript:abreVentana(\''.site_url("").'/seg/ver_reporte_evaluacionpoa_temporalidad/'.$com_id.'\');" class="btn btn-default" title="IMPRIMIR SEGUIMIENTO POA">
@@ -658,7 +658,7 @@ class Seguimientopoa extends CI_Controller{
 
   /// Temporalidad de todas las actividades para ver el avance de cumplimiento 
  public function tabla_reporte_consolidado_temporalidad($com_id){
-    $operaciones=$this->model_producto->list_operaciones_subactividad($com_id); /// lISTA DE OPERACIONES
+    $operaciones=$this->model_producto->lista_productos($com_id); /// lISTA DE OPERACIONES
     $tabla='';
     $tabla.=' 
           <table cellpadding="0" cellspacing="0" class="tabla" border=0.2 style="width:100%;" align=center>
@@ -768,7 +768,7 @@ class Seguimientopoa extends CI_Controller{
 
   /// Evaluación POA por Trimestre 2021 - Formulario 4 (Actividades)
   public function tabla_reporte_evaluacion_poa($com_id,$trimestre){
-    $operaciones=$this->model_producto->list_operaciones_subactividad($com_id); /// lISTA DE FORMULARIO 4
+    $operaciones=$this->model_producto->lista_productos($com_id); /// lISTA DE FORMULARIO 4
     $tabla='';
 
     $tabla.=' 
@@ -1482,7 +1482,7 @@ class Seguimientopoa extends CI_Controller{
 
   /*---- FUNCION PARA ACTUALIZAR EVALUACION POA POR UNIDAD RESPONSABLE ----*/
     public function update_evaluacion_operaciones($com_id){
-      $operaciones=$this->model_producto->list_operaciones_subactividad($com_id); /// lISTA DE OPERACIONES
+      $operaciones=$this->model_producto->lista_productos($com_id); /// lISTA DE OPERACIONES
 
       foreach($operaciones as $row){
         ///------- Eliminamos el registro anterior
@@ -1938,7 +1938,7 @@ class Seguimientopoa extends CI_Controller{
 
     /*--- LISTA DE FORMULARIO N 4 PROGRAMADOS AL MES ACTUAL 2021-2023 ---*/
     function lista_operaciones_programados($com_id,$mes_id){
-      $form4=$this->model_producto->list_operaciones_subactividad($com_id); /// lISTA DE FORM 4
+      $form4=$this->model_producto->lista_productos($com_id); /// lISTA DE FORM 4
       $tabla='';
       $tabla.=' 
       <form class="smart-form" method="post">
@@ -2130,7 +2130,7 @@ class Seguimientopoa extends CI_Controller{
 
 
 
-    ///// PARA LA NOTIFICACION POA POR PROYECTO
+    ///// PARA LA NOTIFICACION POA POR UNIDAD ORGANIZACIONAL
     public function lista_subactividades_a_notificar($subactividades){
       $tabla='';
       $nro_pag=0;
@@ -2222,7 +2222,7 @@ class Seguimientopoa extends CI_Controller{
         /// Formulario N 4
         //$form4=$this->model_seguimientopoa->operaciones_programados_x_mes($com_id,$this->verif_mes[1]); /// lISTA DE FORMULARIO 4 PROGRAMADO AL MES
         if($proyecto[0]['tp_id']==4){
-            $form4=$this->model_producto->list_operaciones_subactividad($com_id); /// lISTA DE ACTIVIDADES
+            $form4=$this->model_producto->lista_productos($com_id); /// lISTA DE ACTIVIDADES
             $tabla.='
                 <table border=0 style="width:99%;" align=center>  
                  <tr>
@@ -2300,93 +2300,6 @@ class Seguimientopoa extends CI_Controller{
                  </tr>
                </table>';
         }
-        // else{ /// notificacion anterior
-
-        //     $form4=$this->model_seguimientopoa->operaciones_programados_x_mes($com_id,$this->verif_mes[1]); /// lISTA DE FORMULARIO 4 PROGRAMADO AL MES
-        //     if(count($form4)!=0 & $proyecto[0]['tp_id']==4){
-        //       $tabla.='
-        //       <table border=0 style="width:99%;" align=center>  
-        //         <tr>
-        //             <td style="width:98%;text-align: justify;">
-        //             El Departamento Nacional de Planificaci&oacute;n en el marco de sus competencias viene fortaleciendo las tareas de monitoreo y supervisi&oacute;n 
-        //             a traves del Sistema de Planificaci&oacute;n <b>SIIPLAS</b>, en este sentido recordamos a usted efectuar el seguimiento al cumplimiento del POA <b>'.$this->verif_mes[2].'</b> '.$this->session->userdata('gestion').', de 
-        //             <b>'.$titulo2.'</b> a su cargo, haciendo enfasis en la programaci&oacute;n mensual y periodo de ejecuci&oacute;n de cada operaci&oacute;n.
-        //             </td>
-        //         </tr>
-        //       </table>
-        //       <br>';
-
-        //         $tabla.='
-        //         <table cellpadding="0" cellspacing="0" class="tabla" border=0.2 style="width:99%;" align=center>
-        //             <thead>
-        //               <tr style="font-size: 7px;" bgcolor=#f8f2f2 align=center>
-        //                 <th style="width:2%; height:18px;"></th>
-        //                 <th style="width:3%;"><b>COD. OPE.</b></th>
-        //                 <th style="width:3%;"><b>COD. ACT.</b></th>
-        //                 <th style="width:39%;">ACTIVIDAD</th>
-        //                 <th style="width:20%;">INDICADOR</th>
-        //                 <th style="width:25%;">MEDIO DE VERIFICACI&Oacute;N</th>
-        //                 <th style="width:5%;">PROG. '.$this->verif_mes[2].'</th>
-        //               </tr>
-        //             </thead>
-        //             <tbody>';
-        //             $nro_ope=0;
-        //             foreach ($form4 as $row) {
-        //               $indi_id='';
-        //               /*if($row['indi_id']==2){
-        //                 $indi_id='%';
-        //               }*/
-        //               $nro_ope++;
-        //               $tabla.= '
-        //                 <tr>
-        //                   <td align=center style="height:12px; width:2%;">'.$nro_ope.'</td>
-        //                   <td align=center style="font-size: 12px; width:3%;"><b>'.$row['or_codigo'].'</b></td>
-        //                   <td align=center style="font-size: 12px; width:3%;"><b>'.$row['prod_cod'].'</b></td>
-        //                   <td style="width:39%;">'.$row['prod_producto'].'</td>
-        //                   <td style="width:20%;">'.$row['prod_indicador'].'</td>
-        //                   <td style="width:25%;">'.$row['prod_fuente_verificacion'].'</td>
-        //                   <td style="width:5%;font-size: 10px; text-align:center"><b>'.round($row['pg_fis'],2).' '.$indi_id.'</b></td>
-        //                 </tr>';
-        //             }
-        //         $tabla.= '
-        //             </tbody>
-        //           </table>
-        //           ';
-        //     }
-        //     else{ /// cuando no hay actividades programadas
-                
-        //         if($proyecto[0]['tp_id']==1){ /// Proyectos de Inversion
-        //           $tabla.='
-        //           <table border=0 style="width:99%;" align=center>  
-        //             <tr>
-        //                 <td style="width:98%;text-align: justify;">
-        //                   El Departamento Nacional de Planificaci&oacute;n en el marco de sus competencias viene fortaleciendo las tareas de monitoreo y supervisi&oacute;n 
-        //                   a traves del Sistema de Planificaci&oacute;n <b>SIIPLAS</b>, en este sentido recordamos a usted efectuar las gestiones para la ejecuci&oacute;n del proyecto: <b>'.$proyecto[0]['proy_nombre'].'</b>, para el mes de 
-        //                   <b>'.$this->verif_mes[2].' '.$this->gestion.'</b>, de acuerdo a la programación inicial, recordar que para fines de control y gestión por resultados la 
-        //                   responsabilidad del cumplimiento corresponde a su autoridad.
-        //                 </td>
-        //             </tr>
-        //           </table>
-        //           <br>';
-        //         }
-        //         else{ /// Gasto Corriente
-        //           $tabla.='
-        //           <table border=0 style="width:99%;" align=center>  
-        //             <tr>
-        //                 <td style="width:98%;text-align: justify;">
-        //                 El Departamento Nacional de Planificaci&oacute;n en el marco de sus competencias viene fortaleciendo las tareas de monitoreo y supervisi&oacute;n 
-        //                 a traves del Sistema de Planificaci&oacute;n <b>SIIPLAS</b>, en este sentido recordamos a usted efectuar las gestiones en el plazo programado para la ejecuci&oacute;n de la Solicitud de CERTIFICACIÓN POA
-        //                 <b>'.$this->verif_mes[2].' '.$this->gestion.'</b>. Recordar que para fines de control y gestión por resultados la 
-        //                 responsabilidad del cumplimiento corresponde a su autoridad.
-        //                 </td>
-        //             </tr>
-        //           </table>
-        //           <br>
-        //           <div align=center>-------------- SIN ACTIVIDADES PROGRAMADAS --------------</div>';
-        //         }
-        //     }
-
-        // }
 
         //// ---- REQUERIMIENTOS
         $sw=0;
@@ -2578,7 +2491,7 @@ class Seguimientopoa extends CI_Controller{
       $titulo1=strtoupper($componente[0]['tipo_subactividad']).' '.strtoupper($componente[0]['serv_descripcion']).' - '.$componente[0]['abrev'];
       $tabla='';
         /// Formulario N 4
-            $form4=$this->model_producto->list_operaciones_subactividad($com_id); /// lISTA DE ACTIVIDADES
+            $form4=$this->model_producto->lista_productos($com_id); /// lISTA DE ACTIVIDADES
             
             if(count($form4)!=0 & $componente[0]['tp_id']==4){ /// 
               $nro=0;
