@@ -95,6 +95,40 @@ class Model_ptto_sigep extends CI_Model{
         return $query->result_array();
     }
 
+
+    /// VERIF VARIACION DE PPTO EN LAS PARTIDAS X UNIDAD ORGANIZACIONAL 2027
+    public function verif_variacion_ppto_x_UnidadOrganizacional($aper_id){
+        $sql = '
+        SELECT COUNT(*) AS total_variaciones
+        FROM (
+            -- 🌟 AQUÍ ADENTRO VA TU CONSULTA COMPLETA ORIGINAL SIN MODIFICAR 🌟
+            SELECT 
+                COALESCE(asig.par_id, prog.par_id) AS par_id,
+                (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) AS saldo_poa
+            FROM (
+                SELECT pg.par_id, pg.importe AS ppto_asignado1
+                FROM ptto_partidas_sigep pg
+                WHERE pg.aper_id = '.$aper_id.' AND pg.estado != 3 AND pg.g_id = '.$this->gestion.'
+            ) asig
+            FULL OUTER JOIN (
+                SELECT i.par_id, SUM(CASE WHEN i.ins_tipo_modificacion = 0 THEN i.ins_costo_total ELSE 0 END) AS ppto_programado1
+                FROM insumos i
+                WHERE i.aper_id = '.$aper_id.' AND i.aper_id != 0
+                GROUP BY i.par_id
+            ) prog ON asig.par_id = prog.par_id
+        ) balance
+        -- Filtramos estrictamente hileras donde exista saldo remanente a favor o en contra
+        WHERE ROUND(balance.saldo_poa::numeric, 2) != 0.00';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
+
+
+
     /// GET  seguimiento A LA PARTIDA ASIGNADOS Y PROGRAMADOS + (REVERTIDOS) 2026 (POR UNIDAD)
     public function vista_get_seguimiento_partida_UOrganizacional($aper_id,$par_id){
         $sql = '

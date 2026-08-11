@@ -387,7 +387,7 @@ function abreVentana_poa(url) {
   });*/
 
   /*------------ VERIFICANDO POA ----------------*/
-  $(function () {
+ /* $(function () {
       $(".verif_poa").on("click", function (e) {
         proy_id = $(this).attr('name');
 
@@ -459,7 +459,154 @@ function abreVentana_poa(url) {
               }
           });
       });
-  });
+  });*/
+
+
+$(document).ready(function() {
+    
+    // 🌟 REPARADO CORE 1: Variables perimetrales de red globales en la raíz del archivo
+    var xhr_verif_poa = null;
+    var xhr_validar_final = null;
+
+    /* ==========================================================================
+       A. ESCUCHA DE APERTURA: CONSULTA Y VERIFICACIÓN DE VARIACIONES
+       ========================================================================== */
+    $(document).on("click", ".verif_poa", function (e) {
+        e.preventDefault();
+        
+        var $btn = $(this);
+        var proy_id = $btn.attr('name');
+        var establecimiento = $btn.attr('id');
+
+        var input_proy = document.getElementById("proy_id");
+        if (input_proy) input_proy.value = proy_id;
+        
+        $('#titulo').html('<span style="font-size: 13px; font-weight: bold; color: #1e293b;">' + establecimiento + '</span>');
+        
+        // Inyección de preloader vectorial elástico limpio
+        $('#content_valida').html(
+            '<div style="text-align:center; padding: 35px 15px; color: #475569;">' +
+                '<i class="fa fa-refresh fa-spin fa-2x text-primary" style="margin-bottom:10px; display:block;"></i>' +
+                '<strong style="font-size:12px; display:block; text-transform:uppercase;">Analizando Balanza Presupuestaria ...</strong>' +
+                '<span style="font-size:11px; color:#64748b;">Verificando variaciones decimales para: ' + establecimiento + '</span>' +
+            '</div>'
+        );
+        $('#but').slideUp(100);
+
+        var url = base + "index.php/programacion/proyecto/verif_poa";
+
+        // Abortamos ráfagas simultáneas concurrentes en cola
+        if (xhr_verif_poa && xhr_verif_poa.readyState !== 4) {
+            xhr_verif_poa.abort();
+        }
+
+        xhr_verif_poa = $.ajax({
+            url: url,
+            type: "POST",
+            dataType: 'json',
+            data: "proy_id=" + proy_id
+        });
+
+        xhr_verif_poa.done(function (response) {
+            if (response.respuesta === 'correcto' || response.status === 'success') {
+                $('#content_valida').hide().html(response.tabla).fadeIn(250);
+                
+                // Si el valor es cero (0), significa que no existen variaciones y liberamos el botón "Enviar"
+                if (parseInt(response.valor) === 0) {
+                    $('#but').slideDown(150);
+                }
+            } else {
+                if (typeof alertify !== "undefined") alertify.error("❌ Error de consistencia al procesar la balanza.");
+                $('#content_valida').html('<div class="alert alert-danger">Error al recuperar balances de la base de datos.</div>');
+            }
+        });
+
+        xhr_verif_poa.fail(function (xhr, textStatus) {
+            if (textStatus !== 'abort') {
+                $('#content_valida').html('<div class="alert alert-danger">❌ Falla crítica de red al conectar con el servidor central.</div>');
+            }
+        });
+    });
+
+    /* ==========================================================================
+       B. ESCUCHA DE ENVÍO SEPARADA: COMPROMISO Y VALIDACIÓN FINAL DEL POA
+       ========================================================================== */
+    $(document).on("click", "#enviar_ff", function (e) {
+        e.preventDefault();
+        
+        var $btn_guardar = $(this);
+        var proy_id = $("#proy_id").val();
+
+        if (!proy_id || proy_id <= 0) {
+            if (typeof alertify !== "undefined") alertify.error("⚠️ Operación abortada: Hash correlativo no localizado.");
+            return false;
+        }
+
+        // Si usas jQuery Validate sobre tu contenedor de formulario
+        if ($("#form_vpoa").length > 0 && !$("#form_vpoa").valid()) {
+            return false;
+        }
+
+        if (typeof alertify !== "undefined") {
+            alertify.confirm("🚨 <b>¿CONFIRMA LA VALIDACIÓN DEFINITIVA DEL POA INSTITUCIONAL?</b><br><br><i>Al validar, la formulación se bloqueará y se enviará a la Dirección Nacional para su aprobación física. Esta acción no se puede deshacer. ¿Desea proceder?</i>", function (a) {
+                if (a) {
+                    
+                    // Bloqueo total de la botonera y disparo del overlay
+                    $("#loading-overlay").css("display", "flex");
+                    $("#but").hide();
+                    $btn_guardar.prop("disabled", true).text("PROCESANDO VALIDACIÓN...");
+
+                    var url = base + "index.php/programacion/proyecto/validar_poa";
+                    
+                    // Captura e inyección automática del Token CSRF perimetral
+                    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                    
+                    var datos_post = { proy_id: proy_id };
+                    if (csrf_name !== '') { datos_post[csrf_name] = csrf_hash; }
+
+                    if (xhr_validar_final && xhr_validar_final.readyState !== 4) {
+                        xhr_validar_final.abort();
+                    }
+
+                    xhr_validar_final = $.ajax({
+                        type: "POST",
+                        url: url,
+                        dataType: "json",
+                        data: datos_post,
+                        success: function (res) {
+                            $("#loading-overlay").hide();
+
+                            if (res.respuesta === 'correcto' || res.status === 'success') {
+                                alertify.success("✔ ¡POA VALIDADO OFICIALMENTE CON ÉXITO!...");
+                                setTimeout(function() {
+                                    window.location.reload(true);
+                                }, 1000);
+                            } else {
+                                $("#but").show();
+                                $btn_guardar.prop("disabled", false).html('<i class="fa fa-save"></i> Validar POA');
+                                alert("🚨 COMPILADOR POA RECHAZADO:\n\n" + res.message);
+                            }
+                        },
+                        error: function (xhr, textStatus) {
+                            $("#loading-overlay").hide();
+                            $("#but").show();
+                            $btn_guardar.prop("disabled", false).html('<i class="fa fa-save"></i> Validar POA');
+                            if (textStatus !== 'abort') {
+                                alertify.error("❌ Falla crítica de comunicación. PostgreSQL revocó el compromiso.");
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    });
+});
+
+
+
+
+
 
   $(function () {
       function reset() {

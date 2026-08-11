@@ -1175,37 +1175,6 @@ class Programacionpoa extends CI_Controller{
     }
     
 
-    /*--- BOTON ESTADO FORM 5 2027 ---*/
-/*    public function button_form5($com_id){
-      $tabla = '';
-      
-      // Filtro perimetral elástico: Solo Administradores Nacionales o Configuraciones Regionales activas
-      if($this->tp_adm == 1 || $this->conf_form5 == 1){
-        $tabla .= ' 
-          <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-            <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO REQUERIMIENTOS.Xls</b>
-          </a>';
-      }
-
-      // 🛠️ REPARADO: Corrección de rutas, nombres y cierre limpio de etiquetas HTML 
-      $tabla .= ' 
-        <a href="javascript:abreVentana_poa(\''.site_url("prog/reporte_form5_uresponsable/".$com_id).'\');" class="btn btn-primary" title="IMPRIMIR REPORTE CONSOLIDADO DE INSUMOS" style="font-weight:bold; margin-right:5px;"> 
-            <img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/>&nbsp;IMPRIMIR FORM N° 5
-        </a>
-        
-        <!-- 🛠️ REPARADO: Apunta al disparador específico de limpieza financiera de la Unidad sin borrar el Form 4 -->
-        <a onclick="eliminar_requerimientos_UnidadReponsable();" class="btn btn-danger" title="ELIMINAR TODOS LOS REQUERIMIENTOS E INSUMOS DE ESTA UNIDAD" style="font-weight:bold;">
-            <img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;ELIMINAR REQUERIMIENTOS (TODOS)
-        </a>
-
-        <a href="'.site_url("admin/proy/list_proy").'" class="btn btn-default" title="SALIR A MENU PRINCIPAL" style="font-weight:bold; background-color: #475569; color: #ffffff; border-color: #475569; transition: all 0.2s ease;">
-            <i class="fa fa-arrow-circle-left" style="font-size:14px; margin-right:4px;"></i> SALIR
-        </a>';
-        
-      $tabla .= '<br><br>';
-      
-      return $tabla;
-    }*/
 
     /*--- ESTILO FORM 5---*/
     public function estilo_tabla_form5(){
@@ -1579,7 +1548,7 @@ public function pie_foda(){
           <!-- 1. BLOQUE ELABORADO POR (50% DEL ANCHO DE LA HOJA) -->
           <td style="width: 50%; padding-right: 8px; vertical-align: top;">
               <!-- Réplica exacta del esqueleto de la tabla maestra .cns-tbl-ident -->
-              <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
+              <table border="0.3" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
                   <tr>
                       <!-- Cabecera de caja formal idéntica a .cns-lbl (Fondo plomo claro, letra plomo oscuro) -->
                       <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
@@ -1597,7 +1566,7 @@ public function pie_foda(){
           
           <!-- 2. BLOQUE APROBADO POR (50% DEL ANCHO DE LA HOJA) -->
           <td style="width: 50%; padding-left: 8px; vertical-align: top;">
-              <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
+              <table border="0.3" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 0.7px solid #cbd5e1; background: #ffffff;">
                   <tr>
                       <!-- Cabecera de caja formal idéntica a .cns-lbl -->
                       <td style="width: 100%; height: 8px; font-size: 7.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 6px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 0.7px solid #cbd5e1; text-align: left;">
@@ -1652,7 +1621,7 @@ public function pie_foda(){
           <tr>
             <!-- 1. BLOQUE JEFATURA DE UNIDAD O ÁREA (33%) -->
             <td style="width: 33%; padding-right: 5px; vertical-align: top;">
-                <table border="0.5" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
+                <table border="0.3" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
                         <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                             <b>'.$firma1.'</b>
@@ -1660,7 +1629,7 @@ public function pie_foda(){
                     </tr>
                     <tr>
                       <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #000000;">
-                          <b>FIRMA y SELLO</b>
+                          <span style="font-size: 6.5px; font-weight: 600; color: #000000; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
                       </td>
                     </tr>
                 </table>
@@ -1668,7 +1637,7 @@ public function pie_foda(){
             
             <!-- 2. BLOQUE JEFATURA DE DEPARTAMENTOS (34% Ajustado por simetría de margen) -->
             <td style="width: 34%; padding-right: 5px; vertical-align: top;">
-                <table border="0.5" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
+                <table border="0.3" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
                       <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                           <b>'.$firma2.'</b>
@@ -1676,7 +1645,7 @@ public function pie_foda(){
                     </tr>
                     <tr>
                       <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #000000;">
-                          <b>FIRMA y SELLO</b>
+                          <span style="font-size: 6.5px; font-weight: 600; color: #000000; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
                       </td>
                     </tr>
                 </table>
@@ -1684,7 +1653,7 @@ public function pie_foda(){
             
             <!-- 3. BLOQUE GERENCIA GENERAL (33%) -->
             <td style="width: 33%; vertical-align: top;">
-                <table border="0.5" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
+                <table border="0.3" cellpadding="0" cellspacing="0" style="width:100%; border-collapse: collapse; border: 0.5px solid #cbd5e1; background: #ffffff;">
                     <tr>
                       <td style="width:100%; height:9px; font-size: 6.5px; font-weight: bold; background: #EBEBEB; color: #000000; padding: 4px 3px; text-align: center; border-bottom: 0.5px solid #cbd5e1; text-transform: uppercase; line-height: 1.2; vertical-align: middle;">
                           <b>'.$firma3.'</b>
@@ -1692,7 +1661,7 @@ public function pie_foda(){
                     </tr>
                     <tr>
                       <td align="center" style="font-size: 6.5px; font-weight: bold; height: 50px; vertical-align: bottom; padding-bottom: 4px; color: #000000;">
-                          <b>FIRMA y SELLO</b>
+                          <span style="font-size: 6.5px; font-weight: 600; color: #000000; text-transform: uppercase; letter-spacing: 0.2px;">Firma y Sello Aclaratorio</span>
                       </td>
                     </tr>
                 </table>
@@ -1794,26 +1763,53 @@ public function pie_foda(){
                     </td>
                   </tr>
                 </table><br>';
-                 if($proyecto[0]['tn_id']==0){
-                    $UnidadesResponsables=$this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
-                     $tabla.="
-                      <table border=0 style='width:100%;' align=center>
-                        <tr>
-                          <td style='width:100%;'>
-                            <hr style='border:2px;'>
-                            <ul>";
-                            $cont=0;
-                              foreach($UnidadesResponsables as $row){
-                                if(count($this->model_producto->productos_nro($row['com_id']))!=0){
-                                  $tabla.="<li style='font-family: Arial;height: 12px; font-size: 12.2px; text-align:justify'>".$row['tipo_subactividad'].' '.$row['serv_descripcion']."</li>";
+                     if (intval($proyecto[0]['tn_id']) === 0) {
+                        $UnidadesResponsables = $this->model_componente->lista_UnidadesResponsables(intval($proyecto[0]['proy_id']));
+                        
+                        $tabla .= '
+                        <div style="width: 100%; margin-top: 25mm; font-family: Arial, sans-serif;">
+                            <!-- Marcadores formales divisores -->
+                            <div style="width: 100%; border-top: 1.5pt solid #475569; margin-bottom: 8px;"></div>
+                            
+                            <span style="font-size: 9pt; font-weight: bold; color: #475569; text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 0.3px;">
+                                <i class="fa fa-sitemap"></i> Estructura Organizacional / Unidades Asignadas:
+                            </span>
+                            
+                            <!-- 🛠️ REPARADO: Renderizado en tabla simétrica limpia en lugar de listas viñeteadas de alto desborde -->
+                            <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; font-size: 9pt; color: #334155; line-height: 1.4;">';
+                                $conteo_items = 0;
+                                foreach ($UnidadesResponsables as $row) {
+                                    if (count($this->model_producto->productos_nro(intval($row['com_id']))) != 0) {
+                                        $conteo_items++;
+                                        
+                                        // Cada dos ítems abrimos y cerramos hileras para formar 2 columnas perfectas
+                                        if ($conteo_items % 2 !== 0) {
+                                            $tabla .= '<tr>';
+                                        }
+                                        
+                                        $tabla .= '<td style="width: 50%; padding: 3px 5px; vertical-align: top;">
+                                                    <b>•</b> ' . htmlspecialchars($row['tipo_subactividad'], ENT_QUOTES, 'UTF-8') . ' ' . htmlspecialchars($row['serv_descripcion'], ENT_QUOTES, 'UTF-8') . '
+                                                   </td>';
+                                        
+                                        if ($conteo_items % 2 === 0) {
+                                            $tabla .= '</tr>';
+                                        }
+                                    }
                                 }
-                              }
-                    $tabla.="</ul>
-                            <hr style='border:2px;'>
-                          </td>
-                        </tr>
-                      </table>";
-                  }
+                                // Si el conteo final quedó impar, cerramos la etiqueta tr de seguridad del árbol DOM
+                                if ($conteo_items % 2 !== 0) {
+                                    $tabla .= '<td style="width: 50%;">&nbsp;</td></tr>';
+                                }
+                                
+                                if ($conteo_items === 0) {
+                                    $tabla .= '<tr><td style="width: 100%; color: #64748b; font-style: italic; padding: 5px 0;">No se registran desgloses de actividades físicas consolidadas en el periodo.</td></tr>';
+                                }
+                                
+                        $tabla .= '
+                            </table>
+                            <div style="width: 100%; border-top: 1.5pt solid #475569; margin-top: 8px;"></div>
+                        </div>';
+                    }
         $tabla.='
         </page>';
 

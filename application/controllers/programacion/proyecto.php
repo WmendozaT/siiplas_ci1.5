@@ -199,8 +199,8 @@ class Proyecto extends CI_Controller {
         </div>
     </div>';
 
-    $data['listado']=$tabla;
-    $this->load->view('admin/programacion/proy_anual/top/list_proy', $data);
+        $data['listado']=$tabla;
+        $this->load->view('admin/programacion/proy_anual/top/list_proy', $data);
     }
 
     /*--- Programacion - POA APROBADO (2027) ---*/
@@ -334,9 +334,20 @@ class Proyecto extends CI_Controller {
             $tabla.='<td bgcolor="#fafafa">';
               if($this->conf_form5==1){
                 $tabla.='
-                  <center>
-                    <a href="#" data-toggle="modal" data-target="#modal_verif_poa" class="btn btn-default verif_poa" name="'.$row['proy_id'].'" id="'.strtoupper($row['tipo']).' '.strtoupper($row['proy_nombre']).' - '.strtoupper($row['abrev']).'" title="VALIDAR POA" ><img src="'.base_url().'assets/img/ok1.jpg" WIDTH="30" HEIGHT="30"/></a>
-                  </center>';
+                  <div style="text-align: center;">
+                    <a href="#" 
+                       data-toggle="modal" 
+                       data-target="#modal_verif_poa" 
+                       class="btn btn-sm btn-default verif_poa" 
+                       name="' . $row['proy_id'] . '" 
+                       id="' . htmlspecialchars(strtoupper($row['tipo'] . " " . $row['proy_nombre'] . " - " . $row['abrev']), ENT_QUOTES, 'UTF-8') . '" 
+                       title="FISCALIZAR Y VALIDAR COMPROMISOS POA"
+                       style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 20px 25px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; height: 26px; transition: all 0.15s ease;"
+                       onmouseover="this.style.background=\'#f0fdf4\'; this.style.borderColor=\'#bbf7d0\';"
+                       onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
+                        <i class="fa fa-check text-success" style="font-size: 13px;"></i>
+                    </a>
+                </div>';
               }
             $tabla.='</td>';
             $tabla .='<td bgcolor="#fafafa">';
@@ -606,26 +617,103 @@ class Proyecto extends CI_Controller {
 
 
 
-    /*-------- GET VERIF POA --------*/
+    /*-------- GET VERIF POA para su APROBACION --------*/
     public function verif_poa(){
+        if($this->input->is_ajax_request() && $this->input->post()){
+            
+            $post = $this->input->post();
+            $proy_id = intval($this->security->xss_clean($post['proy_id']));
+
+            if ($proy_id <= 0) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error'));
+                exit;
+            }
+
+            $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); 
+            
+            // 🌟 REPARADO CORE 2: Declaración inicial explícita de la variable contra quiebres de tipos
+            $tabla = ''; 
+            $nro_dif = 1;
+
+            if (!empty($proyecto)) {
+                $partidas = $this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional(intval($proyecto[0]['aper_id'])); 
+                
+                $membrete_unidad = '<div style="background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid #334155; padding: 10px 14px; margin-bottom: 15px; border-radius: 3px; text-align: left;">
+                                        <span style="display:block; font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase; letter-spacing:0.3px;">Establecimiento / Unidad Evaluada:</span>
+                                        <strong style="color:#0f172a; font-size:12px; font-family:Arial, sans-serif; display:block; margin-top:2px;">'.htmlspecialchars(strtoupper($proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev']), ENT_QUOTES, 'UTF-8').'</strong>
+                                    </div>';
+
+                if(count($partidas) != 0){
+                    $ppto_variacion = $this->model_ptto_sigep->verif_variacion_ppto_x_UnidadOrganizacional(intval($proyecto[0]['aper_id']));
+                    
+                    // Evaluamos de manera matemática que la subconsulta agrupada RAM de PostgreSQL retorne cero variaciones
+                    if(intval($ppto_variacion[0]['total_variaciones']) === 0){
+                        $tabla .= $membrete_unidad . '
+                        <div class="alert alert-success text-center" style="border-left: 4px solid #16a34a; background-color: #f0fdf4; color: #15803d; padding: 15px; border-radius: 4px;">
+                            <i class="fa fa-check-circle fa-2x" style="margin-bottom:8px; display:block;"></i>
+                            <span style="font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; display:block;">Balanza Cuadrada al Centavo</span>
+                            <span style="font-family: Arial, sans-serif; font-size: 11.5px; font-weight: 500; display:block; margin-top:3px; color: #166534;">El presupuesto asignado  coincide con la programación física del POA ' . $this->gestion . '. Listo para ser validado.</span>
+                        </div>';
+                        $nro_dif = 0; // Liberador testigo para el slideDown del botón
+                    }
+                    else{
+                        $tabla .= $membrete_unidad . '
+                        <div class="alert alert-danger text-center" style="border-left: 4px solid #dc2626; background-color: #fef2f2; color: #991b1b; padding: 15px; border-radius: 4px;">
+                            <i class="fa fa-times-circle fa-2x" style="margin-bottom:8px; display:block;"></i>
+                            <span style="font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; display:block;">Variación Presupuestaria Detectada</span>
+                            <span style="font-family: Arial, sans-serif; font-size: 11.5px; font-weight: 500; display:block; margin-top:3px; color: #991b1b;">Operación Denegada: Existen partidas contables donde el techo asignado difiere de los insumos formulados. Corrija las celdas desalineadas en la grilla del Formulario N° 5.</span>
+                        </div>';
+                    }
+                }
+                else{
+                    $tabla .= $membrete_unidad . '
+                    <div class="alert alert-danger text-center" style="border-left: 4px solid #b91c1c; background-color: #fef2f2; color: #991b1b; padding: 15px; border-radius: 4px;">
+                        <i class="fa fa-exclamation-triangle fa-2x" style="margin-bottom:8px; display:block;"></i>
+                        <span style="font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; display:block;">Techo Inexistente</span>
+                        <span style="font-family: Arial, sans-serif; font-size: 11.5px; font-weight: 500; display:block; margin-top:3px; color: #991b1b;">Esta Unidad Organizacional no registra un techo presupuestario asignado por el Ministerio para la presente gestión fiscal ' . $this->gestion . '.</span>
+                    </div>';
+                }
+            }
+
+            // Saneamiento de buffers: barremos remanentes para garantizar salida JSON pura libre de codificaciones <
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+
+            echo json_encode(array(
+                'status'    => 'success',
+                'respuesta' => 'correcto',
+                'tabla'     => $tabla,
+                'proyecto'  => $proyecto,
+                'valor'     => $nro_dif,
+            ));
+            exit; // Detiene el hilo de ejecución resguardando la integridad del vector JSON
+        } else {
+            show_404();
+        }
+    }
+
+
+    /*public function verif_poa(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// PROYECTO
-        $tabla='';
-        
-        if(count($this->model_ptto_sigep->partidas_accion_region($proyecto[0]['dep_id'],$proyecto[0]['aper_id'],1))==0 || count($this->model_insumo->insumos_por_unidad($proyecto[0]['aper_id']))!=0){
-          $nro_dif=$this->verif_cuadro_comparativo($proyecto);
-
-          if($nro_dif==0){
-           $tabla.='
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// Unidad Organizacional
+        $partidas=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($proyecto[0]['aper_id']); /// Partidas
+        $nro_dif=1;
+        if(count($partidas)!=0){
+            $ppto_variacion=$this->model_ptto_sigep->verif_variacion_ppto_x_UnidadOrganizacional($proyecto[0]['aper_id']);
+            if($ppto_variacion[0]['total_variaciones']==0){
+                $tabla.='
               <hr><h3><b>&nbsp;&nbsp;'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</b></h3><hr>
               <div class="alert alert-success alert-block" align=center>
                 <h2> POA-PRESUPUESTO '.$this->gestion.' LISTO PARA SER VALIDADO</2> 
               </div>';
+              $nro_dif=0;
             }
             else{
-               $tabla.='
+                $tabla.='
                 <hr><h3><b>&nbsp;&nbsp;'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</b></h3><hr>
                 <div class="alert alert-danger alert-block" align=center>
                     <h2>POR CORREGIR PRESUPUESTO POA '.$this->gestion.'</h2>
@@ -633,11 +721,10 @@ class Proyecto extends CI_Controller {
             }
         }
         else{
-          $nro_dif=-1;
-          $tabla.='
+            $tabla.='
               <hr><h3><b>&nbsp;&nbsp;'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</b></h3><hr>
               <div class="alert alert-danger alert-block" align=center>
-                  <h2>SIN PROGRAMACI&Oacute;N FINANCIERA '.$this->gestion.'</h2>
+                  <h2>SIN PRESUPUESTO ASIGNADO '.$this->gestion.'</h2>
               </div>';
         }
         
@@ -652,10 +739,10 @@ class Proyecto extends CI_Controller {
       }else{
           show_404();
       }
-    }
+    }*/
 
     /*------ CUADRO COMPARATIVO PTTO. ASIG - PROG (Para aprobar)------*/
-    public function verif_cuadro_comparativo($proyecto){
+/*    public function verif_cuadro_comparativo($proyecto){
       $partidas_asig=$this->model_ptto_sigep->partidas_accion_region($proyecto[0]['dep_id'],$proyecto[0]['aper_id'],1); // Asig
       $partidas_prog=$this->model_ptto_sigep->partidas_accion_region($proyecto[0]['dep_id'],$proyecto[0]['aper_id'],2); // Prog
 
@@ -694,7 +781,7 @@ class Proyecto extends CI_Controller {
       }
 
       return $nro_dif;
-    }
+    }*/
 
 
    
@@ -1565,29 +1652,71 @@ class Proyecto extends CI_Controller {
 
     /*---- VALIDAR POA PARA SU APROBACION ------*/
     public function validar_poa(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); 
+        // Validamos la legitimidad asíncrona de la ráfaga de red (Evita accesos directos por URL)
+        if($this->input->is_ajax_request() && $this->input->post()){
+            
+            $post = $this->input->post();
+            $proy_id = intval($this->security->xss_clean($post['proy_id']));
 
-        /*--- UPDATE ESTADO APERTURA ---*/
-          $update_aper = array(
-            'aper_proy_estado' => 4,
-            'fun_id' => $this->fun_id
-          );
-          $this->db->where('aper_id', $proyecto[0]['aper_id']);
-          $this->db->update('aperturaprogramatica', $update_aper);
+            if ($proy_id <= 0) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificador numérico de proyecto inválido.'));
+                exit;
+            }
 
+            // Recuperamos el ID relacional de la Apertura Programática
+            $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); 
 
-          $result = array(
-            'respuesta' => 'correcto',
-          );
-          
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
+            if(empty($proyecto)){
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'No se localizó la Categoria Programática del proyecto consultado.'));
+                exit;
+            }
+
+            // ==========================================================================
+            // 🌟 INICIO DE ENTORNO TRANSACCIONAL ATÓMICO EN POSTGRESQL (CNS STANDARD)
+            // ==========================================================================
+            $this->db->trans_start();
+
+            /*--- PASO UNIQUE: UPDATE ESTADO APERTURA (Bloqueo por Aprobación = 4) ---*/
+            $update_aper = array(
+                'aper_proy_estado' => 4, // Estado oficial de cierre de formulación
+                'fun_id'           => $this->fun_id
+            );
+            
+            $this->db->where('aper_id', intval($proyecto[0]['aper_id']));
+            $this->db->update('aperturaprogramatica', $update_aper);
+
+            $this->db->trans_complete();
+            // ==========================================================================
+
+            // 📬 SANEAMIENTO MÁSTER: Purgamos buffers intermedios para una salida JSON pura
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+
+            if ($this->db->trans_status() === FALSE) {
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'message'   => 'PostgreSQL rechazó el cierre del POA debido a una restricción de integridad relacional en el clasificador.'
+                ));
+            } else {
+                echo json_encode(array(
+                    'status'    => 'success',
+                    'respuesta' => 'correcto' // Engancha perfecto con tu response.respuesta === 'correcto' del done en form5.js
+                ));
+            }
+            exit; // Congela el hilo de red impidiendo layouts extras de CodeIgniter al cierre
+
+        } else {
+            // Despacha un error formal de Apache si intentan ingresar por URL directa del navegador
+            show_404();
+        }
     }
+
+
 
     /*---- APROBAR POA ------*/
     public function aprobar_poa(){

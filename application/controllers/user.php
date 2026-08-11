@@ -570,47 +570,6 @@ class User extends CI_Controller{
     return $tabla;
 }
 
-
-
-
-
-
-
-    /*---- MENSAJE SISTEMA ----*/
-    // public function mensaje_sistema(){
-    //     $conf = $this->model_configuracion->get_configuracion_session();
-    //     $tabla = '';
-
-    //     if (!empty($conf)) {
-    //         // 1. Definimos los parámetros según el tipo de mensaje
-    //         $tipos = [
-    //             1 => ['clase' => 'danger',  'icono' => 'fa-ban',      'titulo' => 'ATENCIÓN'],
-    //             2 => ['clase' => 'warning', 'icono' => 'fa-warning',  'titulo' => 'ADVERTENCIA'],
-    //             3 => ['clase' => 'success', 'icono' => 'fa-check',    'titulo' => 'ÉXITO']
-    //         ];
-
-    //         $t = $conf[0]['tp_msn'];
-    //         // Si el tipo no existe en el array, usamos 'warning' por defecto
-    //         $config = isset($tipos[$t]) ? $tipos[$t] : $tipos[2];
-
-    //         // 2. Construimos un único bloque de HTML dinámico
-    //         $tabla .= '
-    //         <div class="alert-modern alert-modern-'.$config['clase'].' fade-in-alert">
-    //             <i class="fa '.$config['icono'].' alert-bg-icon"></i>
-    //             <div class="alert-content-wrapper">
-    //                 <div class="alert-icon-main">
-    //                     <i class="fa '.$config['icono'].' fa-2x"></i>
-    //                 </div>
-    //                 <div class="alert-text-container">
-    //                 <b>comunicado :</b><br>
-    //                     <a class="alert-link-modern"><b>'.$conf[0]['conf_mensaje'].'</b></a>
-    //                 </div>
-    //             </div>
-    //         </div>';
-    //     }
-    // }
-
-
     /// DASHBOARD SEGUIMIENTO POA (UNIDAD ADMINISTRATIVA / ESTABLECIMIENTO DE SALUD) 2026
     public function dashboard_seguimientopoa(){
         if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
