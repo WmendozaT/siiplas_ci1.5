@@ -61,6 +61,48 @@ class crequerimiento extends CI_Controller {
     }
 
 
+    /*--------- Lista Partidas Hijos Asignados-----------*/
+    public function combo_partidas_hijos_asignados(){
+        $salida = "";
+        $id_pais = $_POST["elegido"]; /// codigo Partida
+        $aper_id = $_POST["aper"]; /// aper id
+        $tp=$_POST["tp"]; /// tp
+        $id = $_POST["id"]; /// cite id | ins id
+
+        if($tp==0){
+          $cite=$this->model_modrequerimiento->get_cite_insumo($id); /// Datos cite
+          $tipo_mod=$cite[0]['tipo_modificacion'];
+        }
+        else{
+          $insumo= $this->model_insumo->get_requerimiento($id); /// Datos requerimientos productos
+          $tipo_mod=$insumo[0]['ins_tipo_modificacion'];
+        }
+        
+
+        if($tipo_mod==0){
+          $combog = pg_query('
+            select pg.par_id,pg.partida as par_codigo,p.par_nombre,p.par_depende,pg.importe
+            from ptto_partidas_sigep pg
+            Inner Join partidas as p On p.par_id=pg.par_id
+            where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.' and p.par_depende='.$id_pais.'
+            order by pg.partida asc');
+        }
+        else{
+          $combog = pg_query('
+            select par.par_id,par.par_codigo,par.par_nombre,par.par_depende,SUM(pr.presupuesto_revertido) ppto_revertido
+            from lista_partidas_revertidas('.$this->gestion.') pr
+            Inner Join partidas as par On par.par_id=pr.par_id
+            where pr.aper_id='.$aper_id.' and par.par_depende='.$id_pais.'
+            group by par.par_id,par.par_codigo,par.par_nombre,par.par_depende
+            order by par.par_codigo asc');
+        }
+
+        $salida .= "<option value=''>" . mb_convert_encoding('SELECCIONE PARTIDA', 'cp1252', 'UTF-8') . "</option>";
+        while ($sql_p = pg_fetch_row($combog)) {
+            $salida .= "<option value='" . $sql_p[0] . "'>" .$sql_p[1]." - ".$sql_p[2] . "</option>";
+        }
+        echo $salida;
+    }
 
     /*------- LISTA DE FORM 5 x Actividad (Form N° 4) ----------*/
     public function list_requerimientos($prod_id_activo){

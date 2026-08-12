@@ -590,347 +590,347 @@ class Modificacionpoa extends CI_Controller{
 
 
   //// Lista de Items Modificados en la Edicion (Reporte PDF) 2022 (reporte antiguo)
-  public function items_modificados_form4($cite_id){
-    $tabla='';
-            $ope_adicionados=$this->model_modfisica->operaciones_adicionados($cite_id);
-            if(count($ope_adicionados)!=0){
-              $tabla.='<div style="font-size: 10px;height:16px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACTIVIDADES AGREGADOS ('.count($ope_adicionados).')</b></div>';
-              $tabla.='<table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">';
-              $tabla.='<thead>';
-              $tabla.='<tr class="modo1" style="text-align: center;" bgcolor="#efefef">';
-                $tabla.='<th style="width:1%;height:20px;">#</th>';
-                $tabla.='<th style="width:2.2%;">COD.<br>ACE.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>ACP.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>OPE.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>ACT.</th>';
-                $tabla.='<th style="width:14%;">ACTIVIDAD</th>';
-                $tabla.='<th style="width:14%;">RESULTADO</th>';
-                $tabla.='<th style="width:7%;">UNIDAD RESPONSABLE</th>';
-                $tabla.='<th style="width:8%;">INDICADOR</th>';
-                $tabla.='<th style="width:2%;">L.B.</th>';
-                $tabla.='<th style="width:2%;">META</th>';
-                $tabla.='<th style="width:2.5%;">ENE.</th>';
-                $tabla.='<th style="width:2.5%;">FEB.</th>';
-                $tabla.='<th style="width:2.5%;">MAR.</th>';
-                $tabla.='<th style="width:2.5%;">ABR.</th>';
-                $tabla.='<th style="width:2.5%;">MAY.</th>';
-                $tabla.='<th style="width:2.5%;">JUN.</th>';
-                $tabla.='<th style="width:2.5%;">JUL.</th>';
-                $tabla.='<th style="width:2.5%;">AGO.</th>';
-                $tabla.='<th style="width:2.5%;">SEPT.</th>';
-                $tabla.='<th style="width:2.5%;">OCT.</th>';
-                $tabla.='<th style="width:2.5%;">NOV.</th>';
-                $tabla.='<th style="width:2.5%;">DIC.</th>';
-                $tabla.='<th style="width:10%;">MEDIO DE VERIFICACIÓN</th>';
+  // public function items_modificados_form4($cite_id){
+  //   $tabla='';
+  //           $ope_adicionados=$this->model_modfisica->operaciones_adicionados($cite_id);
+  //           if(count($ope_adicionados)!=0){
+  //             $tabla.='<div style="font-size: 10px;height:16px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACTIVIDADES AGREGADOS ('.count($ope_adicionados).')</b></div>';
+  //             $tabla.='<table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">';
+  //             $tabla.='<thead>';
+  //             $tabla.='<tr class="modo1" style="text-align: center;" bgcolor="#efefef">';
+  //               $tabla.='<th style="width:1%;height:20px;">#</th>';
+  //               $tabla.='<th style="width:2.2%;">COD.<br>ACE.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>ACP.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>OPE.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>ACT.</th>';
+  //               $tabla.='<th style="width:14%;">ACTIVIDAD</th>';
+  //               $tabla.='<th style="width:14%;">RESULTADO</th>';
+  //               $tabla.='<th style="width:7%;">UNIDAD RESPONSABLE</th>';
+  //               $tabla.='<th style="width:8%;">INDICADOR</th>';
+  //               $tabla.='<th style="width:2%;">L.B.</th>';
+  //               $tabla.='<th style="width:2%;">META</th>';
+  //               $tabla.='<th style="width:2.5%;">ENE.</th>';
+  //               $tabla.='<th style="width:2.5%;">FEB.</th>';
+  //               $tabla.='<th style="width:2.5%;">MAR.</th>';
+  //               $tabla.='<th style="width:2.5%;">ABR.</th>';
+  //               $tabla.='<th style="width:2.5%;">MAY.</th>';
+  //               $tabla.='<th style="width:2.5%;">JUN.</th>';
+  //               $tabla.='<th style="width:2.5%;">JUL.</th>';
+  //               $tabla.='<th style="width:2.5%;">AGO.</th>';
+  //               $tabla.='<th style="width:2.5%;">SEPT.</th>';
+  //               $tabla.='<th style="width:2.5%;">OCT.</th>';
+  //               $tabla.='<th style="width:2.5%;">NOV.</th>';
+  //               $tabla.='<th style="width:2.5%;">DIC.</th>';
+  //               $tabla.='<th style="width:10%;">MEDIO DE VERIFICACIÓN</th>';
              
-              $tabla.='</tr>';
-              $tabla.='</thead>';
-              $tabla.='<tbody>';
-              $nro=0;
-              foreach($ope_adicionados as $rowp){
-                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-              //  $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
-                $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
-                $color=''; $tp='';
-                if($rowp['indi_id']==1){
-                  if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                    $color='#fbd5d5';
-                  }
-                }
-                elseif ($rowp['indi_id']==2) {
-                  $tp='%';
-                  if($rowp['mt_id']==3){
-                    if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                      $color='#fbd5d5';
-                    }
-                  }
-                }
+  //             $tabla.='</tr>';
+  //             $tabla.='</thead>';
+  //             $tabla.='<tbody>';
+  //             $nro=0;
+  //             foreach($ope_adicionados as $rowp){
+  //               $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
+  //             //  $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
+  //               $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
+  //               $color=''; $tp='';
+  //               if($rowp['indi_id']==1){
+  //                 if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+  //                   $color='#fbd5d5';
+  //                 }
+  //               }
+  //               elseif ($rowp['indi_id']==2) {
+  //                 $tp='%';
+  //                 if($rowp['mt_id']==3){
+  //                   if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+  //                     $color='#fbd5d5';
+  //                   }
+  //                 }
+  //               }
 
-                /*$ptto=number_format(0, 2, '.', ',');
-                if(count($monto)!=0){
-                  $ptto="<b>".number_format($monto[0]['total'], 2, ',', '.')."</b>";
-                }*/
+  //               /*$ptto=number_format(0, 2, '.', ',');
+  //               if(count($monto)!=0){
+  //                 $ptto="<b>".number_format($monto[0]['total'], 2, ',', '.')."</b>";
+  //               }*/
 
-                $color_or='';
-                if($rowp['or_id']==0){
-                  $color_or='#fbd5d5';
-                }
+  //               $color_or='';
+  //               if($rowp['or_id']==0){
+  //                 $color_or='#fbd5d5';
+  //               }
 
-                $nro++;
-                $tabla.=
-                '<tr style="font-size: 6.5px;" bgcolor="'.$color.'">
-                  <td style="width: 1%; height:12px;text-align: center;" bgcolor='.$color_or.'>'.$nro.'</td>
-                  <td style="width: 2.2%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['acc_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['og_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['or_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center; font-size: 8px;" bgcolor="#eceaea"><b>'.$rowp['prod_cod'].'</b></td>
-                  <td style="width: 14%; text-align: left;font-size: 7px;">'.$rowp['prod_producto'].'</td>
-                  <td style="width: 14%; text-align: left;">'.$rowp['prod_resultado'].'</td>
-                  <td style="width: 7%; text-align: left;">'.strtoupper($rowp['prod_unidades']).'</td>
-                  <td style="width: 8%; text-align: left;">'.$rowp['prod_indicador'].'</td>
-                  <td style="width: 2%; text-align: right;">'.round($rowp['prod_linea_base'],2).'</td>
-                  <td style="width: 3%; text-align: right;" bgcolor="#eceaea"><b>'.round($rowp['prod_meta'],2).' '.$tp.'</b></td>';
+  //               $nro++;
+  //               $tabla.=
+  //               '<tr style="font-size: 6.5px;" bgcolor="'.$color.'">
+  //                 <td style="width: 1%; height:12px;text-align: center;" bgcolor='.$color_or.'>'.$nro.'</td>
+  //                 <td style="width: 2.2%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['acc_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['og_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['or_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center; font-size: 8px;" bgcolor="#eceaea"><b>'.$rowp['prod_cod'].'</b></td>
+  //                 <td style="width: 14%; text-align: left;font-size: 7px;">'.$rowp['prod_producto'].'</td>
+  //                 <td style="width: 14%; text-align: left;">'.$rowp['prod_resultado'].'</td>
+  //                 <td style="width: 7%; text-align: left;">'.strtoupper($rowp['prod_unidades']).'</td>
+  //                 <td style="width: 8%; text-align: left;">'.$rowp['prod_indicador'].'</td>
+  //                 <td style="width: 2%; text-align: right;">'.round($rowp['prod_linea_base'],2).'</td>
+  //                 <td style="width: 3%; text-align: right;" bgcolor="#eceaea"><b>'.round($rowp['prod_meta'],2).' '.$tp.'</b></td>';
 
-                  if(count($programado)!=0){
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).''.$tp.'</td>';
-                  }
-                  else{
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
-                    }
-                  }
+  //                 if(count($programado)!=0){
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).''.$tp.'</td>';
+  //                 }
+  //                 else{
+  //                   for ($i=1; $i <=12 ; $i++) { 
+  //                     $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
+  //                   }
+  //                 }
 
-                  $tabla.='
-                  <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
+  //                 $tabla.='
+  //                 <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
                  
-                </tr>';
+  //               </tr>';
 
-              }
-              $tabla.='</tbody>
-              </table><br>';
-            }
+  //             }
+  //             $tabla.='</tbody>
+  //             </table><br>';
+  //           }
 
-            $ope_modificados=$this->model_modfisica->operaciones_modificados($cite_id);
-            if(count($ope_modificados)!=0){
-              $tabla.='<div style="font-size: 10px;height:16px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACTIVIDADES MODIFICADOS ('.count($ope_modificados).')</b></div>';
-              $tabla.='<table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">';
-              $tabla.='<thead>';
-              $tabla.='<tr class="modo1" style="text-align: center;" bgcolor="#efefef">';
-                $tabla.='<th style="width:1%;height:20px;">#</th>';
-                $tabla.='<th style="width:2.2%;">COD.<br>ACE.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>ACP.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>OPE.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>ACT.</th>';
-                $tabla.='<th style="width:14%;">ACTIVIDAD</th>';
-                $tabla.='<th style="width:14%;">RESULTADO</th>';
-                $tabla.='<th style="width:7%;">UNIDAD RESPONSABLE</th>';
-                $tabla.='<th style="width:8%;">INDICADOR</th>';
-                $tabla.='<th style="width:2%;">L.B.</th>';
-                $tabla.='<th style="width:2%;">META</th>';
-                $tabla.='<th style="width:2.5%;">ENE.</th>';
-                $tabla.='<th style="width:2.5%;">FEB.</th>';
-                $tabla.='<th style="width:2.5%;">MAR.</th>';
-                $tabla.='<th style="width:2.5%;">ABR.</th>';
-                $tabla.='<th style="width:2.5%;">MAY.</th>';
-                $tabla.='<th style="width:2.5%;">JUN.</th>';
-                $tabla.='<th style="width:2.5%;">JUL.</th>';
-                $tabla.='<th style="width:2.5%;">AGO.</th>';
-                $tabla.='<th style="width:2.5%;">SEPT.</th>';
-                $tabla.='<th style="width:2.5%;">OCT.</th>';
-                $tabla.='<th style="width:2.5%;">NOV.</th>';
-                $tabla.='<th style="width:2.5%;">DIC.</th>';
-                $tabla.='<th style="width:10%;">MEDIO DE VERIFICACIÓN</th>';
-              //  $tabla.='<th style="width:5%;">PPTO.</th>';
-              $tabla.='</tr>';
-              $tabla.='</thead>';
-              $tabla.='<tbody>';
-              $nro=0;
-              foreach($ope_modificados as $rowp){
-                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-               // $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
-                $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
-                $color=''; $tp='';
-                if($rowp['indi_id']==1){
-                  if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                    $color='#fbd5d5';
-                  }
-                }
-                elseif ($rowp['indi_id']==2) {
-                  $tp='%';
-                  if($rowp['mt_id']==3){
-                    if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                      $color='#fbd5d5';
-                    }
-                  }
-                }
+  //           $ope_modificados=$this->model_modfisica->operaciones_modificados($cite_id);
+  //           if(count($ope_modificados)!=0){
+  //             $tabla.='<div style="font-size: 10px;height:16px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACTIVIDADES MODIFICADOS ('.count($ope_modificados).')</b></div>';
+  //             $tabla.='<table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">';
+  //             $tabla.='<thead>';
+  //             $tabla.='<tr class="modo1" style="text-align: center;" bgcolor="#efefef">';
+  //               $tabla.='<th style="width:1%;height:20px;">#</th>';
+  //               $tabla.='<th style="width:2.2%;">COD.<br>ACE.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>ACP.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>OPE.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>ACT.</th>';
+  //               $tabla.='<th style="width:14%;">ACTIVIDAD</th>';
+  //               $tabla.='<th style="width:14%;">RESULTADO</th>';
+  //               $tabla.='<th style="width:7%;">UNIDAD RESPONSABLE</th>';
+  //               $tabla.='<th style="width:8%;">INDICADOR</th>';
+  //               $tabla.='<th style="width:2%;">L.B.</th>';
+  //               $tabla.='<th style="width:2%;">META</th>';
+  //               $tabla.='<th style="width:2.5%;">ENE.</th>';
+  //               $tabla.='<th style="width:2.5%;">FEB.</th>';
+  //               $tabla.='<th style="width:2.5%;">MAR.</th>';
+  //               $tabla.='<th style="width:2.5%;">ABR.</th>';
+  //               $tabla.='<th style="width:2.5%;">MAY.</th>';
+  //               $tabla.='<th style="width:2.5%;">JUN.</th>';
+  //               $tabla.='<th style="width:2.5%;">JUL.</th>';
+  //               $tabla.='<th style="width:2.5%;">AGO.</th>';
+  //               $tabla.='<th style="width:2.5%;">SEPT.</th>';
+  //               $tabla.='<th style="width:2.5%;">OCT.</th>';
+  //               $tabla.='<th style="width:2.5%;">NOV.</th>';
+  //               $tabla.='<th style="width:2.5%;">DIC.</th>';
+  //               $tabla.='<th style="width:10%;">MEDIO DE VERIFICACIÓN</th>';
+  //             //  $tabla.='<th style="width:5%;">PPTO.</th>';
+  //             $tabla.='</tr>';
+  //             $tabla.='</thead>';
+  //             $tabla.='<tbody>';
+  //             $nro=0;
+  //             foreach($ope_modificados as $rowp){
+  //               $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
+  //              // $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
+  //               $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
+  //               $color=''; $tp='';
+  //               if($rowp['indi_id']==1){
+  //                 if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+  //                   $color='#fbd5d5';
+  //                 }
+  //               }
+  //               elseif ($rowp['indi_id']==2) {
+  //                 $tp='%';
+  //                 if($rowp['mt_id']==3){
+  //                   if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+  //                     $color='#fbd5d5';
+  //                   }
+  //                 }
+  //               }
 
-               /* $ptto=number_format(0, 2, '.', ',');
-                if(count($monto)!=0){
-                  $ptto="<b>".number_format($monto[0]['total'], 2, ',', '.')."</b>";
-                }*/
+  //              /* $ptto=number_format(0, 2, '.', ',');
+  //               if(count($monto)!=0){
+  //                 $ptto="<b>".number_format($monto[0]['total'], 2, ',', '.')."</b>";
+  //               }*/
 
-                $color_or='';
-                if($rowp['or_id']==0){
-                  $color_or='#fbd5d5';
-                }
+  //               $color_or='';
+  //               if($rowp['or_id']==0){
+  //                 $color_or='#fbd5d5';
+  //               }
 
-                $nro++;
-                $tabla.=
-                '<tr style="font-size: 6.5px;" bgcolor="'.$color.'">
-                  <td style="width: 1%; height:12px;text-align: center;" bgcolor='.$color_or.'>'.$nro.'</td>
-                  <td style="width: 2.2%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['acc_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['og_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['or_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center; font-size: 8px;" bgcolor="#eceaea"><b>'.$rowp['prod_cod'].'</b></td>
-                  <td style="width: 14%; text-align: left;font-size: 7px;">'.$rowp['prod_producto'].'</td>
-                  <td style="width: 14%; text-align: left;">'.$rowp['prod_resultado'].'</td>
-                  <td style="width: 7%; text-align: left;">'.strtoupper($rowp['prod_unidades']).'</td>
-                  <td style="width: 8%; text-align: left;">'.$rowp['prod_indicador'].'</td>
-                  <td style="width: 2%; text-align: right;">'.round($rowp['prod_linea_base'],2).'</td>
-                  <td style="width: 3%; text-align: right;" bgcolor="#eceaea"><b>'.round($rowp['prod_meta'],2).' '.$tp.'</b></td>';
+  //               $nro++;
+  //               $tabla.=
+  //               '<tr style="font-size: 6.5px;" bgcolor="'.$color.'">
+  //                 <td style="width: 1%; height:12px;text-align: center;" bgcolor='.$color_or.'>'.$nro.'</td>
+  //                 <td style="width: 2.2%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['acc_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['og_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['or_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center; font-size: 8px;" bgcolor="#eceaea"><b>'.$rowp['prod_cod'].'</b></td>
+  //                 <td style="width: 14%; text-align: left;font-size: 7px;">'.$rowp['prod_producto'].'</td>
+  //                 <td style="width: 14%; text-align: left;">'.$rowp['prod_resultado'].'</td>
+  //                 <td style="width: 7%; text-align: left;">'.strtoupper($rowp['prod_unidades']).'</td>
+  //                 <td style="width: 8%; text-align: left;">'.$rowp['prod_indicador'].'</td>
+  //                 <td style="width: 2%; text-align: right;">'.round($rowp['prod_linea_base'],2).'</td>
+  //                 <td style="width: 3%; text-align: right;" bgcolor="#eceaea"><b>'.round($rowp['prod_meta'],2).' '.$tp.'</b></td>';
 
-                  if(count($programado)!=0){
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).''.$tp.'</td>';
-                  }
-                  else{
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
-                    }
-                  }
+  //                 if(count($programado)!=0){
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).''.$tp.'</td>';
+  //                 }
+  //                 else{
+  //                   for ($i=1; $i <=12 ; $i++) { 
+  //                     $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
+  //                   }
+  //                 }
 
-                  $tabla.='
-                  <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
+  //                 $tabla.='
+  //                 <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
                  
-                </tr>';
+  //               </tr>';
 
-              }
-              $tabla.='</tbody>
-              </table><br>';
-            }
+  //             }
+  //             $tabla.='</tbody>
+  //             </table><br>';
+  //           }
 
-            $ope_eliminados=$this->model_modfisica->operaciones_eliminados($cite_id);
-            if(count($ope_eliminados)!=0){
-              $tabla.='<div style="font-size: 10px;height:16px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACTIVIDADES ELIMINADOS ('.count($ope_eliminados).')</b></div>';
-              $tabla.='<table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">';
-              $tabla.='<thead>';
-              $tabla.='<tr class="modo1" style="text-align: center;" bgcolor="#efefef">';
-                $tabla.='<th style="width:1%;height:20px;">#</th>';
-                $tabla.='<th style="width:2.2%;">COD.<br>ACE.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>ACP.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>OPE.</th>';
-                $tabla.='<th style="width:2.1%;">COD.<br>ACT.</th>';
-                $tabla.='<th style="width:14%;">ACTIVIDAD</th>';
-                $tabla.='<th style="width:14%;">RESULTADO</th>';
-                $tabla.='<th style="width:7%;">UNIDAD RESPONSABLE</th>';
-                $tabla.='<th style="width:8%;">INDICADOR</th>';
-                $tabla.='<th style="width:2%;">L.B.</th>';
-                $tabla.='<th style="width:2%;">META</th>';
-                $tabla.='<th style="width:2.5%;">ENE.</th>';
-                $tabla.='<th style="width:2.5%;">FEB.</th>';
-                $tabla.='<th style="width:2.5%;">MAR.</th>';
-                $tabla.='<th style="width:2.5%;">ABR.</th>';
-                $tabla.='<th style="width:2.5%;">MAY.</th>';
-                $tabla.='<th style="width:2.5%;">JUN.</th>';
-                $tabla.='<th style="width:2.5%;">JUL.</th>';
-                $tabla.='<th style="width:2.5%;">AGO.</th>';
-                $tabla.='<th style="width:2.5%;">SEPT.</th>';
-                $tabla.='<th style="width:2.5%;">OCT.</th>';
-                $tabla.='<th style="width:2.5%;">NOV.</th>';
-                $tabla.='<th style="width:2.5%;">DIC.</th>';
-                $tabla.='<th style="width:10%;">MEDIO DE VERIFICACIÓN</th>';
-              //  $tabla.='<th style="width:5%;">PPTO.</th>';
-              $tabla.='</tr>';
-              $tabla.='</thead>';
-              $tabla.='<tbody>';
-              $nro=0;
-              foreach($ope_eliminados as $rowp){
-                $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
-              //  $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
-                $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
-                $color=''; $tp='';
-                if($rowp['indi_id']==1){
-                  if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                    $color='#fbd5d5';
-                  }
-                }
-                elseif ($rowp['indi_id']==2) {
-                  $tp='%';
-                  if($rowp['mt_id']==3){
-                    if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
-                      $color='#fbd5d5';
-                    }
-                  }
-                }
+  //           $ope_eliminados=$this->model_modfisica->operaciones_eliminados($cite_id);
+  //           if(count($ope_eliminados)!=0){
+  //             $tabla.='<div style="font-size: 10px;height:16px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACTIVIDADES ELIMINADOS ('.count($ope_eliminados).')</b></div>';
+  //             $tabla.='<table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">';
+  //             $tabla.='<thead>';
+  //             $tabla.='<tr class="modo1" style="text-align: center;" bgcolor="#efefef">';
+  //               $tabla.='<th style="width:1%;height:20px;">#</th>';
+  //               $tabla.='<th style="width:2.2%;">COD.<br>ACE.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>ACP.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>OPE.</th>';
+  //               $tabla.='<th style="width:2.1%;">COD.<br>ACT.</th>';
+  //               $tabla.='<th style="width:14%;">ACTIVIDAD</th>';
+  //               $tabla.='<th style="width:14%;">RESULTADO</th>';
+  //               $tabla.='<th style="width:7%;">UNIDAD RESPONSABLE</th>';
+  //               $tabla.='<th style="width:8%;">INDICADOR</th>';
+  //               $tabla.='<th style="width:2%;">L.B.</th>';
+  //               $tabla.='<th style="width:2%;">META</th>';
+  //               $tabla.='<th style="width:2.5%;">ENE.</th>';
+  //               $tabla.='<th style="width:2.5%;">FEB.</th>';
+  //               $tabla.='<th style="width:2.5%;">MAR.</th>';
+  //               $tabla.='<th style="width:2.5%;">ABR.</th>';
+  //               $tabla.='<th style="width:2.5%;">MAY.</th>';
+  //               $tabla.='<th style="width:2.5%;">JUN.</th>';
+  //               $tabla.='<th style="width:2.5%;">JUL.</th>';
+  //               $tabla.='<th style="width:2.5%;">AGO.</th>';
+  //               $tabla.='<th style="width:2.5%;">SEPT.</th>';
+  //               $tabla.='<th style="width:2.5%;">OCT.</th>';
+  //               $tabla.='<th style="width:2.5%;">NOV.</th>';
+  //               $tabla.='<th style="width:2.5%;">DIC.</th>';
+  //               $tabla.='<th style="width:10%;">MEDIO DE VERIFICACIÓN</th>';
+  //             //  $tabla.='<th style="width:5%;">PPTO.</th>';
+  //             $tabla.='</tr>';
+  //             $tabla.='</thead>';
+  //             $tabla.='<tbody>';
+  //             $nro=0;
+  //             foreach($ope_eliminados as $rowp){
+  //               $sum=$this->model_producto->meta_prod_gest($rowp['prod_id']);
+  //             //  $monto=$this->model_producto->monto_insumoproducto($rowp['prod_id']);
+  //               $programado=$this->model_producto->producto_programado($rowp['prod_id'],$this->gestion);
+  //               $color=''; $tp='';
+  //               if($rowp['indi_id']==1){
+  //                 if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+  //                   $color='#fbd5d5';
+  //                 }
+  //               }
+  //               elseif ($rowp['indi_id']==2) {
+  //                 $tp='%';
+  //                 if($rowp['mt_id']==3){
+  //                   if(($sum[0]['meta_gest'])!=$rowp['prod_meta']){
+  //                     $color='#fbd5d5';
+  //                   }
+  //                 }
+  //               }
 
-              /*  $ptto=number_format(0, 2, '.', ',');
-                if(count($monto)!=0){
-                  $ptto="<b>".number_format($monto[0]['total'], 2, ',', '.')."</b>";
-                }*/
+  //             /*  $ptto=number_format(0, 2, '.', ',');
+  //               if(count($monto)!=0){
+  //                 $ptto="<b>".number_format($monto[0]['total'], 2, ',', '.')."</b>";
+  //               }*/
 
-                $color_or='';
-                if($rowp['or_id']==0){
-                  $color_or='#fbd5d5';
-                }
+  //               $color_or='';
+  //               if($rowp['or_id']==0){
+  //                 $color_or='#fbd5d5';
+  //               }
 
-                $nro++;
-                $tabla.=
-                '<tr style="font-size: 6.5px;" bgcolor="'.$color.'">
-                  <td style="width: 1%; height:12px;text-align: center;" bgcolor='.$color_or.'>'.$nro.'</td>
-                  <td style="width: 2.2%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['acc_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['og_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['or_codigo'].'</td>
-                  <td style="width: 2.1%; text-align: center; font-size: 8px;" bgcolor="#eceaea"><b>'.$rowp['prod_cod'].'</b></td>
-                  <td style="width: 14%; text-align: left;font-size: 7px;">'.$rowp['prod_producto'].'</td>
-                  <td style="width: 14%; text-align: left;">'.$rowp['prod_resultado'].'</td>
-                  <td style="width: 7%; text-align: left;">'.strtoupper($rowp['prod_unidades']).'</td>
-                  <td style="width: 8%; text-align: left;">'.$rowp['prod_indicador'].'</td>
-                  <td style="width: 2%; text-align: right;">'.round($rowp['prod_linea_base'],2).'</td>
-                  <td style="width: 3%; text-align: right;" bgcolor="#eceaea"><b>'.round($rowp['prod_meta'],2).' '.$tp.'</b></td>';
+  //               $nro++;
+  //               $tabla.=
+  //               '<tr style="font-size: 6.5px;" bgcolor="'.$color.'">
+  //                 <td style="width: 1%; height:12px;text-align: center;" bgcolor='.$color_or.'>'.$nro.'</td>
+  //                 <td style="width: 2.2%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['acc_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['og_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center;" bgcolor='.$color_or.' >'.$rowp['or_codigo'].'</td>
+  //                 <td style="width: 2.1%; text-align: center; font-size: 8px;" bgcolor="#eceaea"><b>'.$rowp['prod_cod'].'</b></td>
+  //                 <td style="width: 14%; text-align: left;font-size: 7px;">'.$rowp['prod_producto'].'</td>
+  //                 <td style="width: 14%; text-align: left;">'.$rowp['prod_resultado'].'</td>
+  //                 <td style="width: 7%; text-align: left;">'.strtoupper($rowp['prod_unidades']).'</td>
+  //                 <td style="width: 8%; text-align: left;">'.$rowp['prod_indicador'].'</td>
+  //                 <td style="width: 2%; text-align: right;">'.round($rowp['prod_linea_base'],2).'</td>
+  //                 <td style="width: 3%; text-align: right;" bgcolor="#eceaea"><b>'.round($rowp['prod_meta'],2).' '.$tp.'</b></td>';
 
-                  if(count($programado)!=0){
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).''.$tp.'</td>';
-                    $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).''.$tp.'</td>';
-                  }
-                  else{
-                    for ($i=1; $i <=12 ; $i++) { 
-                      $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
-                    }
-                  }
+  //                 if(count($programado)!=0){
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['enero'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['febrero'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['marzo'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['abril'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['mayo'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['junio'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['julio'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['agosto'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['septiembre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['octubre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['noviembre'],2).''.$tp.'</td>';
+  //                   $tabla.='<td style="width:2.5%;" bgcolor="#e5fde5" align=right>'.round($programado[0]['diciembre'],2).''.$tp.'</td>';
+  //                 }
+  //                 else{
+  //                   for ($i=1; $i <=12 ; $i++) { 
+  //                     $tabla.='<td style="width:2.5%;" bgcolor="#f5cace" align=right>0.00</td>';
+  //                   }
+  //                 }
 
-                  $tabla.='
-                  <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
+  //                 $tabla.='
+  //                 <td style="width: 10%; text-align: left;">'.$rowp['prod_fuente_verificacion'].'</td>
                  
-                </tr>';
+  //               </tr>';
 
-              }
-              $tabla.='</tbody>
-              </table><br>';
-            }
+  //             }
+  //             $tabla.='</tbody>
+  //             </table><br>';
+  //           }
 
-            $tabla.='
-            <div style="font-size: 7.5px;font-family: Arial;">
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; En atención a requerimiento de su unidad, comunicamos a usted que se ha procedido a efectivizar la modificación solicitada, toda vez que:<br>
+  //           $tabla.='
+  //           <div style="font-size: 7.5px;font-family: Arial;">
+  //             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; En atención a requerimiento de su unidad, comunicamos a usted que se ha procedido a efectivizar la modificación solicitada, toda vez que:<br>
 
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a)&nbsp;&nbsp;&nbsp;No compromete u obstaculiza el cumplimiento de los objetivos previstos en la gestión fiscal.<br>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b)&nbsp;&nbsp;&nbsp;No vulnera o contraviene disposiciones legales.<br>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c)&nbsp;&nbsp;&nbsp;No genera obligaciones o deudas por las modificaciones efectuadas.<br>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d)&nbsp;&nbsp;&nbsp;No compromete el pago de obligaciones previstas en el presupuesto.
-            </div>';
+  //             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a)&nbsp;&nbsp;&nbsp;No compromete u obstaculiza el cumplimiento de los objetivos previstos en la gestión fiscal.<br>
+  //             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b)&nbsp;&nbsp;&nbsp;No vulnera o contraviene disposiciones legales.<br>
+  //             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c)&nbsp;&nbsp;&nbsp;No genera obligaciones o deudas por las modificaciones efectuadas.<br>
+  //             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d)&nbsp;&nbsp;&nbsp;No compromete el pago de obligaciones previstas en el presupuesto.
+  //           </div>';
     
-    return $tabla;
-  }
+  //   return $tabla;
+  // }
 
   
 
@@ -1131,130 +1131,131 @@ class Modificacionpoa extends CI_Controller{
 
 
     /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE AUXILIAR (2027) en casos de que sean muchos requerimientos ------*/
-    public function formN5_mod_lista_requerimientos_SinTemporalidad($cite){
-      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// PROYECTO
-      if($proyecto[0]['por_id']==0){
-        $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']); /// Listado normal
-      }
-      else{
-        $lista_insumos=$this->model_insumo->lista_insumos_prod($cite[0]['prod_id']); /// listado de items segun actividad Programas Bolsas
-      }
+    // public function formN5_mod_lista_requerimientos_SinTemporalidad($cite){
+    //   //$proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// PROYECTO
+    //   //$lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']); /// Listado normal
+    //   if($proyecto[0]['por_id']==1){
+    //     $lista_insumos=$this->model_insumo->lista_insumos_prod($cite[0]['prod_id']); /// listado de items segun actividad Programas Bolsas
+    //   }
+    //   else{
+    //     $lista_insumos=$this->model_modrequerimiento->lista_requerimientos($cite[0]['com_id'],$cite[0]['tipo_modificacion']); /// Listado normal
+    //   }
       
-      $tabla='';
-      $total=0;
-      $tabla .= ' 
-            <input type="hidden" name="proy_id" value="'.$cite[0]['proy_id'].'">
-            <input type="hidden" name="aper_id" value="'.$cite[0]['aper_id'].'">
-            <input type="hidden" name="cite_id" value="'.$cite[0]['cite_id'].'">
-            <input type="hidden" name="base" value="'.base_url().'">
+    //   $tabla='';
+    //   $total=0;
+    //   $tabla .= ' 
+    //         <input type="hidden" name="proy_id" value="'.$cite[0]['proy_id'].'">
+    //         <input type="hidden" name="aper_id" value="'.$cite[0]['aper_id'].'">
+    //         <input type="hidden" name="cite_id" value="'.$cite[0]['cite_id'].'">
+    //         <input type="hidden" name="base" value="'.base_url().'">
             
-            <!-- 🌟 REPARADO CORE: Contenedor elástico con desborde horizontal controlado por hardware -->
-            <div class="alert alert-info" style="border-left: 4px solid #475569; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; padding: 10px 14px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 8px;">
-                <i class="fa fa-bolt" style="font-size: 13px; color: #d97706; animation: flash_siiplas_opt 2s infinite;"></i>
-                <span style="font-family: Arial, sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; line-height: 1.4;">
-                    <b>Optimización de rendimiento activo:</b> Despliegue de registros de alta densidad unificado (Caché RAM). Procesamiento optimizado para listados concurrentes superiores a 400 ítems.
-                </span>
-                <style>
-                    @keyframes flash_siiplas_opt { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-                </style>
-            </div>
-            <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 15px;">
-                <table id="dt_basic" class="table table-bordered table-striped table-hover" width="100%" style="margin-bottom: 0; min-width: 1600px; border-collapse: collapse; font-size: 11px;">
-                <thead>
-                  <tr class="modo1" style="height: 36px; background: #334155; color: #ffffff;">
-                    <th style="width:2%; text-align: center; vertical-align: middle;">#</th>
-                    <th style="width:2%; text-align: center; vertical-align: middle;">COD. ACT.</th>
-                    <th style="width:2%; text-align: center; vertical-align: middle;">ACCIONES</th>
-                    <th style="width:5%; text-align: left; vertical-align: middle;">PARTIDA</th>
-                    <th style="width:20%; text-align: left; vertical-align: middle;">DETALLE REQUERIMIENTO</th>
-                    <th style="width:10%; text-align: left; vertical-align: middle;">UNIDAD</th>
-                    <th style="width:5%; text-align: right; vertical-align: middle;">CANTIDAD</th>
-                    <th style="width:5%; text-align: right; vertical-align: middle;">UNITARIO</th>
-                    <th style="width:5%; text-align: right; vertical-align: middle;">TOTAL</th>
-                    <th style="width:5%; text-align: right; vertical-align: middle;">TOTAL CERT.</th>';
+    //         <!-- 🌟 REPARADO CORE: Contenedor elástico con desborde horizontal controlado por hardware -->
+    //         <div class="alert alert-info" style="border-left: 4px solid #475569; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; padding: 10px 14px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 8px;">
+    //             <i class="fa fa-bolt" style="font-size: 13px; color: #d97706; animation: flash_siiplas_opt 2s infinite;"></i>
+    //             <span style="font-family: Arial, sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; line-height: 1.4;">
+    //                 <b>Optimización de rendimiento activo:</b> Despliegue de registros de alta densidad unificado (Caché RAM). Procesamiento optimizado para listados concurrentes superiores a 400 ítems.
+    //             </span>
+    //             <style>
+    //                 @keyframes flash_siiplas_opt { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    //             </style>
+    //         </div>
+    //         <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 15px;">
+    //             <table id="dt_basic" class="table table-bordered table-striped table-hover" width="100%" style="margin-bottom: 0; min-width: 1600px; border-collapse: collapse; font-size: 11px;">
+    //             <thead>
+    //               <tr class="modo1" style="height: 36px; background: #334155; color: #ffffff;">
+    //                 <th style="width:2%; text-align: center; vertical-align: middle;">#</th>
+    //                 <th style="width:2%; text-align: center; vertical-align: middle;">COD. ACT.</th>
+    //                 <th style="width:2%; text-align: center; vertical-align: middle;">ACCIONES</th>
+    //                 <th style="width:5%; text-align: left; vertical-align: middle;">PARTIDA</th>
+    //                 <th style="width:20%; text-align: left; vertical-align: middle;">DETALLE REQUERIMIENTO</th>
+    //                 <th style="width:10%; text-align: left; vertical-align: middle;">UNIDAD</th>
+    //                 <th style="width:5%; text-align: right; vertical-align: middle;">CANTIDAD</th>
+    //                 <th style="width:5%; text-align: right; vertical-align: middle;">UNITARIO</th>
+    //                 <th style="width:5%; text-align: right; vertical-align: middle;">TOTAL</th>
+    //                 <th style="width:5%; text-align: right; vertical-align: middle;">TOTAL CERT.</th>';
                     
-                    // Matriz de nombres de meses para sanear tildes y codificaciones
-                    $meses = array(1=>"ENE.", 2=>"FEB.", 3=>"MAR.", 4=>"ABR.", 5=>"MAY.", 6=>"JUN.", 7=>"JUL.", 8=>"AGO.", 9=>"SEPT.", 10=>"OCT.", 11=>"NOV.", 12=>"DIC.");
-                    for ($m = 1; $m <= 12; $m++) {
-                        // 🛠️ REPARADO: Se fusionan los estilos en una sola directiva style válida
-                        $tabla .= '<th style="width:4%; text-align: right; vertical-align: middle; background-color: #0AA699; color: #FFFFFF;">'.$meses[$m].'</th>';
-                    }
+    //                 // Matriz de nombres de meses para sanear tildes y codificaciones
+    //                 $meses = array(1=>"ENE.", 2=>"FEB.", 3=>"MAR.", 4=>"ABR.", 5=>"MAY.", 6=>"JUN.", 7=>"JUL.", 8=>"AGO.", 9=>"SEPT.", 10=>"OCT.", 11=>"NOV.", 12=>"DIC.");
+    //                 for ($m = 1; $m <= 12; $m++) {
+    //                     // 🛠️ REPARADO: Se fusionan los estilos en una sola directiva style válida
+    //                     $tabla .= '<th style="width:4%; text-align: right; vertical-align: middle; background-color: #0AA699; color: #FFFFFF;">'.$meses[$m].'</th>';
+    //                 }
                     
-                    $tabla .= ' 
-                    <th style="width:8%; text-align: left; vertical-align: middle;">OBSERVACIONES</th>
-                    <th style="width:2%; text-align: center; vertical-align: middle;">DELETE</th>
-                  </tr>
-                </thead>
-                <tbody>';
-                 $cont = 0;
-                $total = 0;
+    //                 $tabla .= ' 
+    //                 <th style="width:8%; text-align: left; vertical-align: middle;">OBSERVACIONES</th>
+    //                 <th style="width:2%; text-align: center; vertical-align: middle;">DELETE</th>
+    //               </tr>
+    //             </thead>
+    //             <tbody>';
+    //              $cont = 0;
+    //             $total = 0;
 
-                foreach ($lista_insumos as $row) {
-                    $cont++;
-                    $total += $row['ins_costo_total'];
+    //             foreach ($lista_insumos as $row) {
+    //                 $cont++;
+    //                 $total += $row['ins_costo_total'];
                     
-                    // Lógica de colores y estados
-                    $color_tr = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 'style="background-color:#f9d8e0;"' : '';
-                    $valor_mod = ($row['ins_monto_certificado'] != 0 && (round($row['ins_monto_certificado'],2) == round($row['ins_costo_total'],2))) ? 1 : 0;
-                    $valor_delete = ($row['ins_monto_certificado'] != 0) ? 1 : 0;
+    //                 // Lógica de colores y estados
+    //                 $color_tr = ($row['ins_monto_certificado'] != 0 && $row['ins_monto_certificado'] == $row['ins_costo_total']) ? 'style="background-color:#f9d8e0;"' : '';
+    //                 $valor_mod = ($row['ins_monto_certificado'] != 0 && (round($row['ins_monto_certificado'],2) == round($row['ins_costo_total'],2))) ? 1 : 0;
+    //                 $valor_delete = ($row['ins_monto_certificado'] != 0) ? 1 : 0;
 
-                    // Etiqueta de tipo de registro
-                    $tp_label = ($row['ins_tipo_modificacion'] == 1) 
-                        ? '<span class="label label-warning" style="display:block; text-align:center;width="25">REG. x REV.</span>' 
-                        : '<span class="label label-primary" style="display:block; text-align:center;width="25">REG. x POA</span>';
+    //                 // Etiqueta de tipo de registro
+    //                 $tp_label = ($row['ins_tipo_modificacion'] == 1) 
+    //                     ? '<span class="label label-warning" style="display:block; text-align:center;width="25">REG. x REV.</span>' 
+    //                     : '<span class="label label-primary" style="display:block; text-align:center;width="25">REG. x POA</span>';
 
-                    // Construcción de Botones
-                    $botones = '';
-                    if ($valor_mod == 0 && $valor_delete == 0) {
-                        if ($this->fun_id == 399) {
-                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
-                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default btn-xs del_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="ELIMINAR" style="padding: 6px 8px;"><img src="'.base_url('assets/img/delete.png').'" width="30"></a>';
-                        }
-                    } elseif ($valor_mod == 0 && $valor_delete == 1) {
-                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
-                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="30"></a>';
-                    } else {
-                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="30"></a>';
-                    }
+    //                 // Construcción de Botones
+    //                 $botones = '';
+    //                 if ($valor_mod == 0 && $valor_delete == 0) {
+    //                     if ($this->fun_id == 399) {
+    //                         $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
+    //                         $botones .= '<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default btn-xs del_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="ELIMINAR" style="padding: 6px 8px;"><img src="'.base_url('assets/img/delete.png').'" width="30"></a>';
+    //                     }
+    //                 } elseif ($valor_mod == 0 && $valor_delete == 1) {
+    //                     $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
+    //                     $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="30"></a>';
+    //                 } else {
+    //                     $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="30"></a>';
+    //                 }
 
-                    $tabla .= '
-                    <tr '.$color_tr.' style="height: 30px; vertical-align: middle;">
-                        <td title="'.$row['ins_id'].'" style="vertical-align: middle;">'.$tp_label.'</td>
-                        <td class="text-center" style="background-color:#ecf9f7; color:blue; font-weight:bold; font-size:14px; vertical-align: middle;">'.$row['prod_cod'].'</td>
-                        <td class="text-center" style="vertical-align: middle; white-space: nowrap;">'.$botones.'</td>
-                        <td style="vertical-align: middle; font-weight: bold; color: #475569;">'.$row['par_codigo'].'</td>
-                        <td style="vertical-align: middle; white:20%;">'.htmlspecialchars($row['ins_detalle'], ENT_QUOTES, 'UTF-8').'</td>
-                        <td style="vertical-align: middle;">'.htmlspecialchars($row['ins_unidad_medida'], ENT_QUOTES, 'UTF-8').'</td>
-                        <td class="text-right" style="vertical-align: middle;">'.number_format($row['ins_cant_requerida'], 0, '.', ',').'</td>
-                        <td class="text-right" style="vertical-align: middle;">'.number_format($row['ins_costo_unitario'], 2, '.', ',').'</td>
-                        <td class="text-right" style="vertical-align: middle;"><b>'.number_format($row['ins_costo_total'], 2, '.', ',').'</b></td>
-                        <td class="text-right" style="background-color:#f1dfb9; vertical-align: middle; font-weight: 600;">'.number_format($row['ins_monto_certificado'], 2, '.', ',').'</td>';
-                        for ($i=1; $i <=12 ; $i++) { 
-                          $tabla.='<td class="text-right" bgcolor="#eaf9f7" style="vertical-align: middle;">-</td>';
-                        }
+    //                 $tabla .= '
+    //                 <tr '.$color_tr.' style="height: 30px; vertical-align: middle;">
+    //                     <td title="'.$row['ins_id'].'" style="vertical-align: middle;">'.$tp_label.'</td>
+    //                     <td class="text-center" style="background-color:#ecf9f7; color:blue; font-weight:bold; font-size:14px; vertical-align: middle;">'.$row['prod_cod'].'</td>
+    //                     <td class="text-center" style="vertical-align: middle; white-space: nowrap;">'.$botones.'</td>
+    //                     <td style="vertical-align: middle; font-weight: bold; color: #475569;">'.$row['par_codigo'].'</td>
+    //                     <td style="vertical-align: middle; white:20%;">'.htmlspecialchars($row['ins_detalle'], ENT_QUOTES, 'UTF-8').'</td>
+    //                     <td style="vertical-align: middle;">'.htmlspecialchars($row['ins_unidad_medida'], ENT_QUOTES, 'UTF-8').'</td>
+    //                     <td class="text-right" style="vertical-align: middle;">'.number_format($row['ins_cant_requerida'], 0, '.', ',').'</td>
+    //                     <td class="text-right" style="vertical-align: middle;">'.number_format($row['ins_costo_unitario'], 2, '.', ',').'</td>
+    //                     <td class="text-right" style="vertical-align: middle;"><b>'.number_format($row['ins_costo_total'], 2, '.', ',').'</b></td>
+    //                     <td class="text-right" style="background-color:#f1dfb9; vertical-align: middle; font-weight: 600;">'.number_format($row['ins_monto_certificado'], 2, '.', ',').'</td>';
+    //                     for ($i=1; $i <=12 ; $i++) { 
+    //                       $tabla.='<td class="text-right" bgcolor="#eaf9f7" style="vertical-align: middle;">-</td>';
+    //                     }
 
-                    $tabla .= '
-                        <td style="vertical-align: middle;">'.htmlspecialchars($row['ins_observacion'], ENT_QUOTES, 'UTF-8').'</td>
-                        <td class="text-center" style="background-color:#f3cbcb; vertical-align: middle;">';
-                        if ($valor_mod == 0 && $valor_delete == 0) {
-                            $tabla .= '<input type="checkbox" class="check-insumo" name="ins[]" value="'.$row['ins_id'].'" style="transform: scale(1.1); cursor: pointer;">';
-                        }
-                    $tabla .= '</td></tr>';
-                }
-              $tabla.='
-              </tbody>
-              <tfoot>
-                  <tr class="modo1" style="height: 36px; background: #f1f5f9; font-weight: bold; border-top: 2px solid #cbd5e1; vertical-align: middle;">
-                    <td colspan="8" style="padding-left: 10px; font-size: 11px;">proy: '.$cite[0]['proy_id'].' | aper: '.$cite[0]['aper_id'].' <span style="float: right; padding-right: 10px; text-transform: uppercase;"><b>TOTAL ACUMULADO PROYECTO:</b></span> </td>
-                    <td class="text-right" style="padding-right: 8px;"><font color="blue" size=2><b>'.number_format($total, 2, '.', ',') .'</b></font></td>
-                    <td colspan="15"></td>
-                  </tr>
-              </tfoot>
-            </table>
-            </div>';
+    //                 $tabla .= '
+    //                     <td style="vertical-align: middle;">'.htmlspecialchars($row['ins_observacion'], ENT_QUOTES, 'UTF-8').'</td>
+    //                     <td class="text-center" style="background-color:#f3cbcb; vertical-align: middle;">';
+    //                     if ($valor_mod == 0 && $valor_delete == 0) {
+    //                         $tabla .= '<input type="checkbox" class="check-insumo" name="ins[]" value="'.$row['ins_id'].'" style="transform: scale(1.1); cursor: pointer;">';
+    //                     }
+    //                 $tabla .= '</td></tr>';
+    //             }
+    //           $tabla.='
+    //           </tbody>
+    //           <tfoot>
+    //               <tr class="modo1" style="height: 36px; background: #f1f5f9; font-weight: bold; border-top: 2px solid #cbd5e1; vertical-align: middle;">
+    //                 <td colspan="8" style="padding-left: 10px; font-size: 11px;">proy: '.$cite[0]['proy_id'].' | aper: '.$cite[0]['aper_id'].' <span style="float: right; padding-right: 10px; text-transform: uppercase;"><b>TOTAL ACUMULADO PROYECTO:</b></span> </td>
+    //                 <td class="text-right" style="padding-right: 8px;"><font color="blue" size=2><b>'.number_format($total, 2, '.', ',') .'</b></font></td>
+    //                 <td colspan="15"></td>
+    //               </tr>
+    //           </tfoot>
+    //         </table>
+    //         </div>';
 
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
 
     /*----- LISTA REQUERIMIENTOS POR UNIDAD RESPONSABLE COMPLETO (2027) ------*/
@@ -1265,29 +1266,42 @@ class Modificacionpoa extends CI_Controller{
       else{
         $lista_insumos=$this->model_modrequerimiento->lista_requerimientos_con_temporalidad($cite[0]['com_id'],$cite[0]['tipo_modificacion']); 
       }
-      
+
       $tabla='';
       $total=0;
      $tabla .= ' 
             <input type="hidden" name="proy_id" value="'.$cite[0]['proy_id'].'">
             <input type="hidden" name="aper_id" value="'.$cite[0]['aper_id'].'">
             <input type="hidden" name="cite_id" value="'.$cite[0]['cite_id'].'">
-            <input type="hidden" name="base" value="'.base_url().'">
-            
-            <!-- 🌟 REPARADO CORE: Contenedor elástico con desborde horizontal controlado por hardware -->
+            <input type="hidden" name="base" value="'.base_url().'">';
+
+            if($cite[0]['por_id']==1){
+              $tabla.='
+              <div class="alert alert-info" style="border-left: 4px solid #475569; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; padding: 10px 14px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 8px;">
+                    <i class="fa fa-bolt" style="font-size: 13px; color: #d97706; animation: flash_siiplas_opt 2s infinite;"></i>
+                    <span style="font-family: Arial, sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; line-height: 1.4;">
+                        <b>ACTIVIDAD : '.$cite[0]['prod_cod'].'.- </b>'.$cite[0]['prod_producto'].'<br>
+                        <div style="color:blue;"><b>UNIDAD RESPONSABLE : </b>'.$cite[0]['unidad_responsable'].'</div>
+                    </span>
+                    <style>
+                        @keyframes flash_siiplas_opt { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+                    </style>
+                </div>';
+            }
+            $tabla.='
             <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 15px;">
                 <table id="dt_basic" class="table table-bordered table-striped table-hover" width="100%" style="margin-bottom: 0; min-width: 1600px; border-collapse: collapse; font-size: 11px;">
                 <thead>
                   <tr class="modo1" style="height: 36px; background: #334155; color: #ffffff;">
-                    <th style="width:2%; text-align: center; vertical-align: middle;">#</th>
+                    <th style="width:4%; text-align: center; vertical-align: middle;">#</th>
                     <th style="width:2%; text-align: center; vertical-align: middle;">COD. ACT.</th>
                     <th style="width:2%; text-align: center; vertical-align: middle;">ACCIONES</th>
                     <th style="width:5%; text-align: left; vertical-align: middle;">PARTIDA</th>
                     <th style="width:20%; text-align: left; vertical-align: middle;">DETALLE REQUERIMIENTO</th>
                     <th style="width:10%; text-align: left; vertical-align: middle;">UNIDAD</th>
                     <th style="width:5%; text-align: right; vertical-align: middle;">CANTIDAD</th>
-                    <th style="width:5%; text-align: right; vertical-align: middle;">UNITARIO</th>
-                    <th style="width:5%; text-align: right; vertical-align: middle;">TOTAL</th>
+                    <th style="width:5%; text-align: right; vertical-align: middle;">PRECIO</th>
+                    <th style="width:5%; text-align: right; vertical-align: middle;">COSTO TOTAL</th>
                     <th style="width:5%; text-align: right; vertical-align: middle;">TOTAL CERT.</th>';
                     
                     // Matriz de nombres de meses para sanear tildes y codificaciones
@@ -1317,8 +1331,8 @@ class Modificacionpoa extends CI_Controller{
 
                     // Etiqueta de tipo de registro
                     $tp_label = ($row['ins_tipo_modificacion'] == 1) 
-                        ? '<span class="label label-warning" style="display:block; text-align:center;width="25">REG. x REV.</span>' 
-                        : '<span class="label label-primary" style="display:block; text-align:center;width="25">REG. x POA</span>';
+                        ? '<span class="label label-warning" style="display:block; text-align:center;padding: 10px 12px;">REGISTRO x REVERSIÓN</span>' 
+                        : '<span class="label label-primary" style="display:block; text-align:center;padding: 10px 12px;">POA</span>';
 
                     // Construcción de Botones
                     $botones = '';
@@ -1336,7 +1350,7 @@ class Modificacionpoa extends CI_Controller{
 
                     $tabla .= '
                     <tr '.$color_tr.' style="height: 30px; vertical-align: middle;">
-                        <td title="'.$row['ins_id'].'" style="vertical-align: middle;">'.$tp_label.'</td>
+                        <td title="'.$row['ins_id'].'" style="vertical-align: middle; width:4%;">'.$tp_label.'</td>
                         <td class="text-center" style="background-color:#ecf9f7; color:blue; font-weight:bold; font-size:14px; vertical-align: middle;">'.$row['prod_cod'].'</td>
                         <td class="text-center" style="vertical-align: middle; white-space: nowrap;">'.$botones.'</td>
                         <td style="vertical-align: middle; font-weight: bold; color: #475569;">'.$row['par_codigo'].'</td>

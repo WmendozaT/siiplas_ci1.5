@@ -204,10 +204,10 @@
 	                    <div class="row">
 	                        <div id="bootstrap-wizard-1" class="col-sm-12">
 	                        		<form action="<?php echo site_url().'/modificaciones/cmod_insumo/valida_cite_modificacion'?>" id="form_nuevo" name="form_nuevo" class="smart-form" method="post">
-															  <input type="hidden" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
-															  <input type="hidden" name="com_id" id="com_id">
-															  <input type="hidden" name="tp_mod" id="tp_mod">
-															  <input type="hidden" name="prod_id" id="prod_id">
+															  <input type="text" name="proy_id" id="proy_id" value="<?php echo $proyecto[0]['proy_id'];?>">
+															  <input type="text" name="com_id" id="com_id">
+															  <input type="text" name="tp_mod" id="tp_mod">
+															  <input type="text" name="prod_id" id="prod_id">
 
 															  <fieldset>
 																	<section>

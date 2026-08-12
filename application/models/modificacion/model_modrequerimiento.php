@@ -46,25 +46,30 @@ class Model_modrequerimiento extends CI_Model{
         return $query->result_array();
     }
 
-    /*---- GET DATOS CITE 2026----*/
+    /*---- GET DATOS CITE 2027----*/
     function get_cite_insumo($cite_id){
-        $sql = 'SELECT ci.cite_id, ci.com_id, ci.cite_codigo, ci.cite_nota, ci.cite_fecha, ci.tp_reporte,
+        $sql = "SELECT ci.cite_id, ci.com_id, ci.cite_codigo, ci.cite_nota, ci.cite_fecha, ci.tp_reporte,
                     ci.cite_estado, ci.cite_activo, ci.tipo_modificacion,ci.prod_id,ci.fun_id,ci.cite_observacion,
                     f.fun_nombre, f.fun_paterno, f.fun_materno,f.fun_cargo,
                     c.com_componente,
                     tpsa.tipo_subactividad,
+                    p.prod_cod,
+                    p.prod_producto,
+                    CONCAT(uresp.tipo_subactividad, ' ', uresp.com_componente,' / ',uresp.proy_nombre, '.', uresp.abrev ) unidad_responsable,
                     poa.*
                         from cite_mod_requerimientos ci
                         Inner Join funcionario as f On ci.fun_id=f.fun_id
                         Inner Join _componentes as c On ci.com_id=c.com_id
+                        LEFT Join _productos as p On p.prod_id=ci.prod_id
+                        LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
                         Inner Join tipo_subactividad as tpsa On tpsa.tp_sact=c.tp_sact
-                INNER JOIN fn_lista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
-                where ci.cite_id = '.$cite_id.'' ;
+                INNER JOIN fn_lista_poa_nacional($this->gestion) poa ON c.pfec_id = poa.pfec_id
+                where ci.cite_id = $cite_id" ;
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
-    /*---- LISTA DE REQUERIMIENTOS x UNIDAD RESPONSABLE (SIN TEMPORALIDAD) ----*/
+    /*---- LISTA DE REQUERIMIENTOS x UNIDAD RESPONSABLE (SIN TEMPORALIDAD) por el tipo de Modificacion POA/REV ----*/
     function lista_requerimientos($com_id,$tp_mod){
         $sql = 'SELECT 
                     i.*, 

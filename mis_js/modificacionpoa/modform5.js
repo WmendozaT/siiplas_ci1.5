@@ -926,12 +926,14 @@ $(document).ready(function () {
           $("#padre option:selected").each(function () {
           elegido=$(this).val();
           tp=0; /// nuevo
+          //alert(elegido+' '+aper_id+'-'+tp+'-'+cite_id)
           $('[name="saldo"]').val((0).toFixed(2));
           $('#atit').html('');
           $('#but').slideUp();
 
           $.post(base+"index.php/prog/combo_partidas_asig", { elegido: elegido,aper:aper_id,tp:tp,id:cite_id }, function(data){ 
-          $("#partida_id").html(data);
+          console(data)
+          //$("#partida_id").html(data);
           });     
         });
       });

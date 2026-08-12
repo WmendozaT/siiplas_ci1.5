@@ -336,6 +336,28 @@ class Dashboard extends CI_Controller{
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr>
+                                    <td>Formulario N° 3 - FODA 2027 </td>
+                                    <td style="text-align:center;"><small>XLSX</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/2027/FORM_POA_N°3_PROBLEMAS_Y_CAUSAS_2027.xlsx" download class="btn-accion btn-descarga" title="Descargar">💾 Descargar</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Formulario N° 4 - ACTIVIDADES 2027 </td>
+                                    <td style="text-align:center;"><small>XLSX</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/2027/FORM_POA_N°4_ACTIVIDADES_2027.xlsx" download class="btn-accion btn-descarga" title="Descargar">💾 Descargar</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Formulario N° 5 - REQUERIMIENTOS 2027 </td>
+                                    <td style="text-align:center;"><small>XLSX</small></td>
+                                    <td style="text-align:center;">
+                                        <a href="'.base_url().'assets/video/2027/FORM_POA_N°5_PROGFISICOFINANCIERA2027.xlsx" download class="btn-accion btn-descarga" title="Descargar">💾 Descargar</a>
+                                    </td>
+                                </tr>
+
                                 <!-- Fila de ejemplo 1 (PDF) -->
                                 <tr>
                                     <td>Manual de Usuario - solicitud de Modificación y Certificación POA </td>

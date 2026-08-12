@@ -377,11 +377,12 @@ class model_producto extends CI_Model {
 
     /* ----- GET FORM 4 2027 -----*/
     function get_producto_id($id_prod){
-        $sql = '
+        $sql = "
         SELECT 
             p.prod_id, p.com_id, p.prod_cod,p.prod_producto, p.indi_id,p.prod_indicador,p.prod_linea_base, p.prod_meta, 
             p.prod_fuente_verificacion, p.prod_unidades, p.prod_resultado, p.prod_priori, p.or_id,
             p.uni_resp,
+            CONCAT(uresp.proy_nombre, '.', uresp.abrev, ' - ', uresp.tipo_subactividad, ' ', uresp.com_componente) unidad_responsable,
             c.com_componente,
             tp.indi_descripcion,
             p.mt_id,
@@ -405,10 +406,11 @@ class model_producto extends CI_Model {
         INNER JOIN indicador tp ON p.indi_id = tp.indi_id
         INNER JOIN meta_relativo mr ON p.mt_id = mr.mt_id
         INNER JOIN _componentes c ON p.com_id = c.com_id
+        LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
         LEFT JOIN vista_temporalidad_form4_programado_uresp prog ON p.prod_id = prog.prod_id
         INNER JOIN fnlista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
         WHERE p.prod_id = '.$id_prod.' 
-          AND p.estado != 3;'; 
+          AND p.estado != 3;"; 
         $query = $this->db->query($sql);
         return $query->result_array();
 

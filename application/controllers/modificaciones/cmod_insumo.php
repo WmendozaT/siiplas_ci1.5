@@ -99,9 +99,9 @@ class Cmod_insumo extends CI_Controller {
           $com_id = $this->security->xss_clean($post['com_id']); /// Com id
           $tp_mod = $this->security->xss_clean($post['tp_mod']); /// tipo mod
           $prod_id = $this->security->xss_clean($post['prod_id']); /// prod id
-          $proyecto = $this->model_proyecto->get_id_proyecto($proy_id);
+          $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
 
-          if($proy_id!='' & count($proyecto)!=0){
+          if(count($proyecto)!=0){
             /*--- GUARDANDO CITE MODIFICADO (con estado inactivo) ---*/
             $data_to_store = array(
               'cite_nota' => strtoupper($cite),
@@ -123,12 +123,12 @@ class Cmod_insumo extends CI_Controller {
             }
             else{
               $this->session->set_flashdata('danger','ERROR AL REGISTRAR CITE');
-              redirect(site_url("").'/mod/cite_servicios/'.$proy_id.'');
+              redirect(site_url("").'/mod/form5/'.$proy_id.'');
             }
           }
-          else{
-            $this->session->set_flashdata('danger','ERROR AL REGISTRAR CITE');
-            redirect(site_url("").'/mod/cite_servicios/'.$proy_id.'');
+          else{ 
+             $this->session->set_flashdata('danger','ERROR AL REGISTRAR CITE');
+             redirect(site_url("").'/mod/form5/'.$proy_id.'');
           }
 
           
@@ -149,14 +149,16 @@ class Cmod_insumo extends CI_Controller {
         $data['style']=$this->style();
         $data['loading_form']=$this->loagind_form();
         $data['loading']=$this->modificacionpoa->loading('ACTUALIZANDO LISTADO');
+
+        $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_ConTemporalidad($data['cite']);  /// 2026
       
-          if(count($this->model_modrequerimiento->lista_requerimientos($data['cite'][0]['com_id'],$data['cite'][0]['tipo_modificacion']))>150){
+          /*if(count($this->model_modrequerimiento->lista_requerimientos($data['cite'][0]['com_id'],$data['cite'][0]['tipo_modificacion']))>250){
             
             $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_SinTemporalidad($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
           }
           else{
             $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_ConTemporalidad($data['cite']);  /// 2026
-          }
+          }*/
 
          // $data['tabla']=$this->modificacionpoa->modificar_requerimientos_auxiliar($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
           $data['part_padres'] = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);//partidas padres
@@ -166,6 +168,7 @@ class Cmod_insumo extends CI_Controller {
 
           $data['lista']=$this->tipo_lista_ope_act($data['cite']); /// ALINEADO A ACTIVIDAD (FORM 4)
           $this->load->view('admin/modificacion/requerimientos/list_requerimientos', $data);
+         
       }
       else{
         redirect('mod/list_top');
