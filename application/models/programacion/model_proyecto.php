@@ -56,12 +56,32 @@ class Model_proyecto extends CI_Model{
 
     /*---- LISTA POA SEGUN EL TIPO DE ESTABLECIMIENTO PARA LA MIGRACION INSITUCIONAL DE FOMR 4----*/
     public function get_tp_UnidadOrganizacional($tn_id){
-        $sql = '
+        if($tn_id==1){
+            $sql = '
             SELECT poa.*,c.com_id
             from fn_lista_poa_nacional('.$this->gestion.') poa
             Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-            where poa.tn_id='.$tn_id.'
+            where poa.te_id=1
             order by poa.dep_id,poa.dist_id asc';
+        }
+        elseif($tn_id==2){
+            $sql = '
+            SELECT poa.*,c.com_id
+            from fn_lista_poa_nacional('.$this->gestion.') poa
+            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+            where poa.te_id=2 or poa.te_id=3 or poa.te_id=23
+            order by poa.dep_id,poa.dist_id asc';
+        }
+        else{
+            $sql = '
+            SELECT poa.*,c.com_id
+            from fn_lista_poa_nacional('.$this->gestion.') poa
+            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+            where poa.te_id=4 or poa.te_id=5
+            order by poa.dep_id,poa.dist_id asc';
+        }
+
+        
         $query = $this->db->query($sql);
         return $query->result_array();
     }

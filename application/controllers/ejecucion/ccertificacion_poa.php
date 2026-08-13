@@ -2173,9 +2173,73 @@ class Ccertificacion_poa extends CI_Controller {
   }
 
   
+    public function reporte_solicitud_probado_certpoa($cpoa_id){
+        // 1. Ampliación y control de recursos de hardware en el servidor
+        ini_set('memory_limit', '2048M'); 
+        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        $certificacion=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id); /// Datos Certificacion
+
+        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        if (ob_get_length()) ob_clean();
+            if(count($certificacion)!=0){
+              if($certificacion[0]['cpoa_ref']==0){ /// Certificacion Normal
+                  $verif_certificacion=true;
+                  $cabecera_cpoa=$this->certificacionpoa->cabecera_certpoa($certificacion,$certificacion[0]['cpoa_codigo']); /// Cabecera Certificacion POA
+                  $items_certificados=$this->certificacionpoa->items_certificados($cpoa_id); /// Lista de items certificados
+                  $pie_certpoa=$this->certificacionpoa->pie_certificacion_poa($certificacion,1); /// Pie Certificacion POA
+                  $pie_report='Certificacion_Poa'.$certificacion[0]['tipo_subactividad'].' '.$certificacion[0]['serv_descripcion'].' '.$certificacion[0]['abrev'];
+                  
+                  $data['lista'] = '
+                        <page orientation="portrait" backtop="115mm" backbottom="60mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
+              
+                          <page_header>
+                              <br><div class="verde"></div>
+                              '.$cabecera_cpoa.'
+                          </page_header>
+                          
+                       
+                          <page_footer>
+                              <div style="width: 100%; display: block;">
+                              '.$pie_certpoa.'
+                              </div>
+                          </page_footer>
+                              '.$items_certificados.'
+                        </page>';
+
+                    // 1. Capturamos el HTML estructurado de la vista en una variable
+                    $html_reporte = $this->load->view('admin/ejecucion/certpoa_unidad/reporte_solicitud_cpoa', $data, true); 
+                    // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+                    if (ob_get_length()) ob_clean();
+                    // 3. Importación segura del motor conversor usando la ruta física del servidor
+                    require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+                    try {
+                        // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+                        $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+                        $html2pdf->pdf->SetDisplayMode('fullpage');
+                        $html2pdf->writeHTML($html_reporte);
+                        
+                        // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+                        $html2pdf->Output($pie_report. '.pdf', 'I');
+                    }
+                    catch(HTML2PDF_exception $e) {
+                        echo "Error al compilar el reporte: " . $e;
+                    }
+                    exit;
+              }
+              else{ //// Certificado Editado
+                redirect('cert/rep_cert_poa_editado/'.$cpoa_id.''); /// redireccionar al reporte
+              } 
+            }
+            else{
+              echo "Error !!!";
+            }
+    }
+
+
+
 
   /*------ REPORTE SOLICITUD CERTIFICACION POA APROBADO -------*/
-  public function reporte_solicitud_probado_certpoa($cpoa_id){
+  public function reporte_solicitud_probado_certpoa2($cpoa_id){
     $certificacion=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id); /// Datos Certificacion
     // cpoa_ref: 0 (Certificacion normal)
     // cpoa_ref: 1 (Certfiicacion editado)
@@ -2209,6 +2273,49 @@ class Ccertificacion_poa extends CI_Controller {
       echo "Error !!!";
     }
   }
+
+
+
+  //   public function reporte_solicitud_probado_certpoa($cpoa_id){
+  //   $certificacion=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id); /// Datos Certificacion
+  //   // cpoa_ref: 0 (Certificacion normal)
+  //   // cpoa_ref: 1 (Certfiicacion editado)
+
+  //   if(count($certificacion)!=0){
+  //     if($certificacion[0]['cpoa_ref']==0){ /// Certificacion Normal
+  //         $data['verif_certificacion']=true;
+  //         $data['cabecera_cpoa']=$this->certificacionpoa->cabecera_certpoa($certificacion,$certificacion[0]['cpoa_codigo']); /// Cabecera Certificacion POA
+  //         $data['items_certificados']=$this->certificacionpoa->items_certificados($cpoa_id); /// Lista de items certificados
+  //         $data['pie_certpoa']=$this->certificacionpoa->pie_certificacion_poa($certificacion,1); /// Pie Certificacion POA
+  //         $data['pie_reporte']='Certificacion_Poa'.$certificacion[0]['tipo_subactividad'].' '.$certificacion[0]['serv_descripcion'].' '.$certificacion[0]['abrev'];
+  //         $data['verif_solicitud']=false;
+
+  //         if($certificacion[0]['sol_id']!=0){
+  //           $data['verif_solicitud']=true;
+  //           $data['solicitud'] = $this->model_certificacion->get_solicitud_cpoa($certificacion[0]['sol_id']);
+  //           $data['cabecera']=$this->certificacionpoa->cabecera_solicitudpoa($data['solicitud']);
+  //           $data['datos_unidad_articulacion']=$this->certificacionpoa->datos_unidad_organizacional($data['solicitud']); /// Datos de Articulacion POa
+  //           $data['items']=$this->certificacionpoa->lista_solicitud_requerimientos($certificacion[0]['sol_id']); /// Requerimientos solicitados
+  //           $data['conformidad']=$this->certificacionpoa->conformidad_solicitud($data['solicitud']); /// firma unidad
+  //           $data['pie_reporte']='Certificacion_Poa_Aprobado '.$data['solicitud'][0]['tipo_subactividad'].' '.$data['solicitud'][0]['serv_descripcion'].' '.$data['solicitud'][0]['abrev'];
+  //         }
+
+  //         $this->load->view('admin/ejecucion/certpoa_unidad/reporte_solicitud_cpoa', $data);
+  //     }
+  //     else{ //// Certificado Editado
+  //       redirect('cert/rep_cert_poa_editado/'.$cpoa_id.''); /// redireccionar al reporte
+  //     } 
+  //   }
+  //   else{
+  //     echo "Error !!!";
+  //   }
+  // }
+
+
+
+
+
+
 
 
   /*--- ANULA LA SOLICITUD DE CERTIFCACION POA ---*/

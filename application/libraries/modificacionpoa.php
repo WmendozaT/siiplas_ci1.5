@@ -1337,10 +1337,8 @@ class Modificacionpoa extends CI_Controller{
                     // Construcción de Botones
                     $botones = '';
                     if ($valor_mod == 0 && $valor_delete == 0) {
-                        if ($this->fun_id == 399) {
-                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
-                            $botones .= '<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default btn-xs del_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="ELIMINAR" style="padding: 6px 8px;"><img src="'.base_url('assets/img/delete.png').'" width="30"></a>';
-                        }
+                      $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
+                      $botones .= '<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default btn-xs del_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="ELIMINAR" style="padding: 6px 8px;"><img src="'.base_url('assets/img/delete.png').'" width="30"></a>';
                     } elseif ($valor_mod == 0 && $valor_delete == 1) {
                         $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
                         $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="30"></a>';

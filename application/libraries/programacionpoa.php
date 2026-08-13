@@ -69,11 +69,12 @@ class Programacionpoa extends CI_Controller{
                                             <div class="form-group" style="margin-bottom: 15px;">
                                                 <label style="display: block; font-weight: bold; margin-bottom: 6px; color: #475569; font-size: 11px; text-transform: uppercase;">NIVEL DE ESTABLECIMIENTO *</label>
                                                 <select class="form-control" id="tn_id" name="tn_id" title="SELECCIONE EL TIPO DE NIVEL" style="height: 32px; font-size: 11.5px; border-color: #cbd5e1; box-shadow: none; width: 100%;">
-                                                    <option value="1">PRIMER NIVEL (Establecimiento)</option>
-                                                    <option value="2">SEGUNDO NIVEL (Establecimiento)</option> 
-                                                    <option value="3">TERCER NIVEL (Establecimiento)</option>
-                                                    <option value="4">FORTALECIMIENTO (Programa)</option>
-                                                    <option value="5">BIENES Y SERVICIOS (Programa)</option>       
+                                                    <option value="1">1.- CIS (Establecimiento)</option>
+                                                    <option value="2">2.- CIMFA-PAISE-CAISE (Establecimiento)</option> 
+                                                    <option value="3">3.- HOSPITALES (Establecimiento)</option>
+                                                    <option value="4">4.- FORTALECIMIENTO (Programa)</option>
+                                                    <option value="5">5.- BIENES Y SERVICIOS (Programa)</option>
+                                                    <option value="6">6.- MEDICINA DEL TRABAJO (Programa)</option>       
                                                 </select>
                                             </div>
                                             <div class="form-group" style="margin-top: 15px; margin-bottom:0;">

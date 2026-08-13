@@ -1236,7 +1236,7 @@ class Cmod_insumo extends CI_Controller {
 
         // Configuración de la página en orientación horizontal (paysage) como solicita tu etiqueta <page>
         $data['informacion'] = '
-        <page orientation="paysage" backtop="73mm" backbottom="28mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
+        <page orientation="paysage" backtop="73mm" backbottom="26mm" backleft="2.6mm" backright="2.6mm" pagegroup="new">
           <page_header>
               <br><div class="verde"></div>
               ' . $cabecera_modpoa . '
@@ -1972,6 +1972,7 @@ class Cmod_insumo extends CI_Controller {
                       'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
                       'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo modificacion
                       'fun_id' => $this->fun_id, /// Funcionario
+                      'ins_gestion' => $this->gestion, /// gestion
                       'aper_id' => $cite[0]['aper_id'], /// aper id
                       'com_id' => $cite[0]['com_id'], /// com id 
                       'form4_cod' => $cod_act, /// cod act
@@ -2065,7 +2066,7 @@ class Cmod_insumo extends CI_Controller {
 
 
 
-    /*--- CERRAR MODIFICACION FIN (2020) ---*/
+    /*--- CERRAR MODIFICACION FIN (2027) A OPTIMIZAR ---*/
      public function cerrar_modificacion(){
       if($this->input->post()) {
         $post = $this->input->post();
@@ -2227,7 +2228,7 @@ class Cmod_insumo extends CI_Controller {
         $data['menu']=$this->menu(3); //// genera menu
         $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']);
         $data['titulo']=$this->modificacionpoa->titulo_cabecera($data['cite'],0); /// CABECERA
-        $data['datos_cite']=$this->modificacionpoa->datos_cite($data['cite']); /// DATOS CITE
+        //$data['datos_cite']=$this->modificacionpoa->datos_cite($data['cite']); /// DATOS CITE
 
         $this->load->view('admin/modificacion/requerimientos/ver_modificado_poa', $data);
       }

@@ -39,7 +39,7 @@ class Proyecto extends CI_Controller {
     }
 
 
-  /*=== Programacion - LISTA POA 2026 (Anteproyecto) ===*/  
+  /*=== Programacion - LISTA POA 2027 (Anteproyecto) ===*/  
     public function list_poa(){
       $data['menu']=$this->programacionpoa->menu(2);
       $data['mod']=1;
@@ -95,7 +95,7 @@ class Proyecto extends CI_Controller {
                                            data-toggle="modal" 
                                            data-target="#modal_importar" 
                                            class="btn btn-sm btn-default importar_ff" 
-                                           title="MIGRAR PLANILLA EXCEL DE OPERACIONES REGIONALES"
+                                           title="MIGRAR PLANILLA EXCEL ACTIVIDADES"
                                            style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #16a34a; border: 1px solid #15803d; color: #ffffff; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
                                            onmouseover="this.style.background=\'#15803d\'; this.style.borderColor=\'#166534\';"
                                            onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
@@ -2011,7 +2011,7 @@ class Proyecto extends CI_Controller {
             // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
             $columnaMaxLetra = $hoja->getHighestDataColumn(); 
             $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
-            $limitePermitido = 19; 
+            $limitePermitido = 21; 
 
             if ($totalColumnas != $limitePermitido) {
                 echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la 'V').")));
@@ -2024,8 +2024,11 @@ class Proyecto extends CI_Controller {
             elseif($tn_id==4){ /// fortalecimiento
               $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('771');
             }
-            else{ /// Bienes y Servicio
+            elseif($tn_id==5){ /// Bienes y Servicio
               $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('720');
+            }
+            else{ /// Medicina del Trabajo
+              $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('730');
             }
 
             
@@ -2039,6 +2042,9 @@ class Proyecto extends CI_Controller {
                 $indicador          = trim($hoja->getCell('E' . $i)->getValue());
                 $meta               = $hoja->getCell('F' . $i)->getValue();
                 $medioverificacion  = trim($hoja->getCell('S' . $i)->getValue());
+
+                $indi  = trim($hoja->getCell('T' . $i)->getValue());
+                $tp_meta  = trim($hoja->getCell('U' . $i)->getValue());
 
                 // 🌟 BLINDAJE ANTIFALLA: Filtra y salta las filas vacías inferiores del Excel
                 if (empty($cod_act) && empty($actividad) && empty($resultado) && empty($indicador) && (empty($meta) || floatval($meta) == 0)) {
@@ -2079,7 +2085,8 @@ class Proyecto extends CI_Controller {
                             'prod_cod'                 => intval($cod_act),
                             'prod_producto'            => strtoupper($actividad),
                             'prod_resultado'           => strtoupper($resultado),
-                            'indi_id'                  => 1,
+                            'indi_id'                  => floatval($indi),
+                            'mt_id'                    => floatval($tp_meta),
                             'prod_indicador'           => strtoupper($indicador),
                             'prod_fuente_verificacion' => strtoupper($medioverificacion), 
                             'prod_linea_base'          => 0,

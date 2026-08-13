@@ -396,17 +396,17 @@ class Componente extends CI_Controller {
                            title="VER MIS ACTIVIDADES (FORM 4)" 
                            class="btn btn-sm" 
                            target="_blank" 
-                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           style="font-family: Arial, sans-serif; height:50px; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
                            onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\'; this.style.color=\'#0f172a\';"
                            onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\'; this.style.color=\'#334155\';">
-                            <i class="fa fa-list text-muted" style="font-size: 12px;"></i> Actividades
+                            <i class="fa fa-list text-muted" style="font-size: 12px;"></i> ACTIVIDADES
                         </a>
                         
                         <!-- 🖨️ Exportar PDF Form 4 - AZUL AUDITORÍA -->
                         <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $com_id_actual) . '\');" 
                            title="GENERAR REPORTE POA FORMULARIO N° 4 (PDF)" 
                            class="btn btn-sm" 
-                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           style="font-family: Arial, sans-serif; height:50px; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
                            onmouseover="this.style.background=\'#dbeafe\'; this.style.borderColor=\'#3b82f6\';"
                            onmouseout="this.style.background=\'#eff6ff\'; this.style.borderColor=\'#bfdbfe\';">
                             <i class="fa fa-file-pdf-o" style="font-size: 12px; color: #1d4ed8;"></i> PDF F4
@@ -421,17 +421,17 @@ class Componente extends CI_Controller {
                            title="REQUERIMIENTOS DE LA UNIDAD (FORM 5)" 
                            class="btn btn-sm" 
                            target="_blank"  
-                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           style="font-family: Arial, sans-serif; height:50px; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
                            onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\'; this.style.color=\'#0f172a\';"
                            onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\'; this.style.color=\'#334155\';">
-                            <i class="fa fa-money text-muted" style="font-size: 12px;"></i> Requerimientos
+                            <i class="fa fa-money text-muted" style="font-size: 12px;"></i> REQUERIMIENTOS
                         </a>
                         
                         <!-- 🖨️ PDF Requerimientos Estándar - AZUL AUDITORÍA -->
                         <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $com_id_actual) . '\');" 
                            title="GENERAR REPORTE POA FORMULARIO N° 5 ESTÁNDAR (PDF)" 
                            class="btn btn-sm" 
-                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           style="font-family: Arial, sans-serif; height:50px; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
                            onmouseover="this.style.background=\'#dbeafe\'; this.style.borderColor=\'#3b82f6\';"
                            onmouseout="this.style.background=\'#eff6ff\'; this.style.borderColor=\'#bfdbfe\';">
                             <i class="fa fa-file-pdf-o" style="font-size: 12px; color: #1d4ed8;"></i> PDF F5
@@ -441,7 +441,7 @@ class Componente extends CI_Controller {
                         <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable_programa_bolsa_consoldado/" . $com_id_actual) . '\');" 
                            title="GENERAR REPORTE CONSOLIDADO FORMULARIO N° 5 - PROGRAMA 720-771 (PDF)" 
                            class="btn btn-sm" 
-                           style="font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                           style="font-family: Arial, sans-serif; height:50px; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
                            onmouseover="this.style.background=\'#dbeafe\'; this.style.borderColor=\'#3b82f6\';"
                            onmouseout="this.style.background=\'#eff6ff\'; this.style.borderColor=\'#bfdbfe\';">
                             <i class="fa fa-file-pdf-o" style="font-size: 12px; color: #1d4ed8;"></i> PDF Bolsa 720-771
@@ -454,10 +454,10 @@ class Componente extends CI_Controller {
                                 class="btn btn-sm btn-exportar-excel-fila" 
                                 onclick="exportarExcelConLoading(this, ' . $com_id_actual . ')" 
                                 title="EXPORTAR CONSOLIDADO DE LA UNIDAD EN EXCEL"
-                                style="padding: 5px 11px; background: #16a34a; border: 1px solid #15803d; color: #ffffff; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; height: 25px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; transition: all 0.15s ease;"
+                                style="padding: 5px 11px;  background: #16a34a; height:50px; border: 1px solid #15803d; color: #ffffff; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; height: 25px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; font-family: Arial, sans-serif; font-weight: 600; font-size: 11px; transition: all 0.15s ease;"
                                 onmouseover="this.style.background=\'#15803d\'; this.style.borderColor=\'#166534\';"
                                 onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
-                            <span class="txt-btn-excel-fila" style="display: inline-flex; align-items: center; gap: 4px;">
+                            <span class="txt-btn-excel-fila" style="display: inline-flex; height:50px; align-items: center; gap: 4px;">
                                 <i class="fa fa-file-excel-o" style="font-size: 12px; color: #ffffff;"></i> Xls Exportar
                             </span>
                         </button>
@@ -473,7 +473,7 @@ class Componente extends CI_Controller {
                                 data-toggle="modal" 
                                 data-target="#modal_desglose_partidas_unidad"
                                 title="VER MATRIZ DE REQUERIMIENTOS POR PARTIDA" 
-                                style="font-weight: bold; padding: 5px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius:3px; color:#334155;">
+                                style="font-weight: bold; height:50px; padding: 5px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius:3px; color:#334155;">
                             <i class="fa fa-table text-info"></i> Ver Detalle de Partidas
                         </button>
                       </div>
