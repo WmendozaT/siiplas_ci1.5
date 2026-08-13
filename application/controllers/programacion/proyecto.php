@@ -2046,7 +2046,8 @@ class Proyecto extends CI_Controller {
                 }
 
                 if (!is_numeric($meta) || floatval($meta) <= 0) {
-                    $errores[] = "Fila $i: La 'META' debe ser un número válido mayor a cero.";
+                    $meta=0;
+                    //$errores[] = "Fila $i: La 'META' debe ser un número válido mayor a cero.";
                 }
 
                 // Validación C: Cronograma Mensualizado Saneado (J al U)

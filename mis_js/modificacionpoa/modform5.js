@@ -521,6 +521,7 @@ $(function () {
     var xhr_requerimiento; // Variable externa para controlar peticiones
 
     $(".mod_ff").on("click", function (e) {
+
         e.preventDefault();
         const $this = $(this);
         const ins_id = $this.attr('name');
@@ -918,26 +919,81 @@ $(document).ready(function () {
     });
 });
 
+///// Modificacion FOrmulario Nuevo de Rgistro
+var requestPartida = null; 
+
+$(document).ready(function () {
+    
+    // Escucha delegada global para evitar pérdida de foco si la tabla se repinta
+    $(document).on("change", "#padre", function () {            
+        var $combo_padre = $(this);
+        var par_id = $combo_padre.val();
+        var cite_id = $('[name="cite_id"]').val() || $('#cite_id').val() || 0;
+        var $combo_hijo = $("#partida_id");
+        
+        var url = base + "index.php/modificaciones/cmod_insumo/get_partidas_dependientes_nuevo";
+
+        // Candado preventivo local: Si limpian el grupo, restauramos el bloqueo neutro
+        if (par_id === "" || par_id === undefined || par_id === null) {
+            $combo_hijo.prop('disabled', true).html('<option value="">SELECCIONE PARTIDA...</option>');
+            $('#atit').html('');
+            return false;
+        }
+
+        // Feedback visual al operador de las regionales
+        $combo_hijo.prop('disabled', true).html('<option value="">⏳ Cargando clasificadores dependientes...</option>');
+        $('#atit').html('');
+
+        // 🌟 REPARADO: Captura e inyección automática del Token CSRF de resguardo perimetral de la CNS
+        var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+        var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+        
+        var datos_multipart = { 
+            par_id: parseInt(par_id), 
+            cite_id: parseInt(cite_id) 
+        };
+        if (csrf_name !== '') { datos_multipart[csrf_name] = csrf_hash; }
+
+        // Cancelamos ráfagas o solicitudes concurrentes previas en cola para liberar RAM
+        if (requestPartida && requestPartida.readyState !== 4) {
+            requestPartida.abort();
+        }
+
+        // Despacho de la llamada AJAX Multipart unificada
+        requestPartida = $.ajax({
+            url: url,
+            type: "POST",
+            dataType: 'json',
+            data: datos_multipart
+        });
+
+        requestPartida.done(function (response) {
+            if (response.respuesta === 'correcto' || response.status === 'success') {
+                // Inyectamos las subpartidas y liberamos el casillero
+                $combo_hijo.prop('disabled', false).html(response.partidas_dependientes);
+            } else {
+                $combo_hijo.prop('disabled', true).html('<option value="">Error al recuperar partidas</option>');
+                $('#atit').html('');
+                if (typeof alertify !== "undefined") {
+                    alertify.error("🚨 Error técnico: " + (response.message || "No se localizó presupuesto asignado."));
+                }
+            }
+        });
+
+        requestPartida.fail(function(jqXHR, textStatus) {
+            if(textStatus !== 'abort') {
+                $combo_hijo.prop('disabled', true).html('<option value="">Error de conexión</option>');
+                $('#atit').html('<div class="alert alert-warning text-center" style="margin-top:10px; font-weight:bold;">⚠️ Error de conexión con el servidor central al verificar saldo.</div>');
+            }
+        });
+    });
+});
+
+
 
 /*---------- PARTIDAS ------------*/
   $(document).ready(function() {
     pageSetUp();
-      $("#padre").change(function () {
-          $("#padre option:selected").each(function () {
-          elegido=$(this).val();
-          tp=0; /// nuevo
-          //alert(elegido+' '+aper_id+'-'+tp+'-'+cite_id)
-          $('[name="saldo"]').val((0).toFixed(2));
-          $('#atit').html('');
-          $('#but').slideUp();
-
-          $.post(base+"index.php/prog/combo_partidas_asig", { elegido: elegido,aper:aper_id,tp:tp,id:cite_id }, function(data){ 
-          console(data)
-          //$("#partida_id").html(data);
-          });     
-        });
-      });
-
     $("#partida_id").change(function () {
           $("#partida_id option:selected").each(function () {
             elegido=$(this).val();

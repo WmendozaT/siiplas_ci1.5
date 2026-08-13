@@ -85,6 +85,130 @@ class Cmod_insumo extends CI_Controller {
     }
 
 
+    //// get lista de partidas dependientes (nuevo registro)
+    public function get_partidas_dependientes_nuevo(){
+        // Validamos la legitimidad asíncrona de la solicitud (Evita accesos directos por URL)
+        if($this->input->is_ajax_request() && $this->input->post()){
+            
+            $post    = $this->input->post();
+            $par_id  = intval($this->security->xss_clean($post['par_id'])); // ID del Grupo Padre
+            $cite_id = intval($this->security->xss_clean($post['cite_id'])); 
+            $g_id    = intval($this->gestion); // Año contable activo de sesión
+
+            if ($par_id <= 0 || $cite_id <= 0) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Identificadores contextuales numéricos vacíos.'));
+                exit;
+            }
+
+            // Recuperamos los datos máster del CITE de modificación física
+            $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); 
+            
+            if(empty($cite)){
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'El CITE de requerimientos no se encuentra registrado en el sistema.'));
+                exit;
+            }
+
+            $aper_id = intval($cite[0]['aper_id']);
+            $tipo_modificacion = intval($cite[0]['tipo_modificacion']);
+
+            // 🌟 REPARADO CORE 2: Consultas masivas reestructuradas mediante Query Binding nativo seguro
+            if($tipo_modificacion === 0){ /// CASO A: Partidas e Insumos Regulares del POA
+                $sql = "SELECT pg.par_id, pg.partida AS par_codigo, p.par_nombre
+                        FROM public.ptto_partidas_sigep pg
+                        INNER JOIN public.partidas AS p ON p.par_id = pg.par_id
+                        WHERE pg.aper_id = ? 
+                          AND pg.estado != '3' 
+                          AND pg.g_id = ? 
+                          AND p.par_depende = ?
+                        ORDER BY pg.partida ASC";
+                $bind_params = array($aper_id, $g_id, $par_id);
+            } 
+            else { //// CASO B: Partidas y Saldos de Reversión Masiva
+                $sql = "SELECT par.par_id, par.par_codigo, par.par_nombre
+                        FROM public.lista_partidas_revertidas(?) pr
+                        INNER JOIN public.partidas AS par ON par.par_id = pr.par_id
+                        WHERE pr.aper_id = ? 
+                          AND par.par_depende = ?
+                        GROUP BY par.par_id, par.par_codigo, par.par_nombre, par.par_depende
+                        ORDER BY par.par_codigo ASC";
+                $bind_params = array($g_id, $aper_id, $par_id);
+            }
+
+            $query_dataset = $this->db->query($sql, $bind_params)->result_array();
+
+            // 🌟 REPARADO CORE 3: Inicialización de la variable acumuladora para evitar Notice de PHP
+            $salida = '<option value="">SELECCIONE PARTIDA DEPENDIENTE...</option>';
+            
+            foreach ($query_dataset as $row) {
+                $salida .= '<option value="' . intval($row['par_id']) . '">' . htmlspecialchars($row['par_codigo'], ENT_QUOTES, 'UTF-8') . ' - ' . htmlspecialchars(strtoupper($row['par_nombre']), ENT_QUOTES, 'UTF-8') . '</option>';
+            }
+
+            // Ensamble del payload de respuesta atómico
+            $result = array(
+                'status'                => 'success',
+                'respuesta'             => 'correcto', // Total compatibilidad con el response.respuesta == 'correcto' de tu JS
+                'partidas_dependientes' => $salida
+            );
+  
+            // Saneamiento definitivo de buffers: barremos remanentes para garantizar salida JSON pura
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+
+            echo json_encode($result);
+            exit; // Congela la ejecución física resguardando la integridad de la tubería de red
+
+        } else {
+            show_404();
+        }
+    }
+
+
+
+    public function combo_partidas_hijos_asignados(){
+        $salida = "";
+        $id_pais = $_POST["elegido"]; /// codigo Partida
+        $aper_id = $_POST["aper"]; /// aper id
+        $tp=$_POST["tp"]; /// tp
+        $id = $_POST["id"]; /// cite id | ins id
+
+        if($tp==0){
+          $cite=$this->model_modrequerimiento->get_cite_insumo($id); /// Datos cite
+          $tipo_mod=$cite[0]['tipo_modificacion'];
+        }
+        else{
+          $insumo= $this->model_insumo->get_requerimiento($id); /// Datos requerimientos productos
+          $tipo_mod=$insumo[0]['ins_tipo_modificacion'];
+        }
+        
+
+        if($tipo_mod==0){
+          $combog = pg_query('
+            select pg.par_id,pg.partida as par_codigo,p.par_nombre,p.par_depende,pg.importe
+            from ptto_partidas_sigep pg
+            Inner Join partidas as p On p.par_id=pg.par_id
+            where pg.aper_id='.$aper_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.' and p.par_depende='.$id_pais.'
+            order by pg.partida asc');
+        }
+        else{
+          $combog = pg_query('
+            select par.par_id,par.par_codigo,par.par_nombre,par.par_depende,SUM(pr.presupuesto_revertido) ppto_revertido
+            from lista_partidas_revertidas('.$this->gestion.') pr
+            Inner Join partidas as par On par.par_id=pr.par_id
+            where pr.aper_id='.$aper_id.' and par.par_depende='.$id_pais.'
+            group by par.par_id,par.par_codigo,par.par_nombre,par.par_depende
+            order by par.par_codigo asc');
+        }
+
+        $salida .= "<option value=''>" . mb_convert_encoding('SELECCIONE PARTIDA', 'cp1252', 'UTF-8') . "</option>";
+        while ($sql_p = pg_fetch_row($combog)) {
+            $salida .= "<option value='" . $sql_p[0] . "'>" .$sql_p[1]." - ".$sql_p[2] . "</option>";
+        }
+        echo $salida;
+    }
 
 
 
@@ -143,9 +267,9 @@ class Cmod_insumo extends CI_Controller {
       $data['cite'] = $this->model_modrequerimiento->get_cite_insumo($cite_id);
 
       if(count($data['cite'])!=0){
-        $proyecto = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']); /// Proyecto de Inversion
-        $data['cabecera']=$this->cabecera_formulario_mod5($data['cite'],$proyecto);
-        $data['opciones']=$this->opciones_formulario_mod5($data['cite'],$proyecto);
+       // $proyecto = $this->model_proyecto->get_id_proyecto($data['cite'][0]['proy_id']); /// Proyecto de Inversion
+        $data['cabecera']=$this->cabecera_formulario_mod5($data['cite']);
+        $data['opciones']=$this->opciones_formulario_mod5($data['cite']);
         $data['style']=$this->style();
         $data['loading_form']=$this->loagind_form();
         $data['loading']=$this->modificacionpoa->loading('ACTUALIZANDO LISTADO');
@@ -161,9 +285,9 @@ class Cmod_insumo extends CI_Controller {
           }*/
 
          // $data['tabla']=$this->modificacionpoa->modificar_requerimientos_auxiliar($data['cite']);  /// 2026 -> cargado rapido sin temporalidad
-          $data['part_padres'] = $this->model_modificacion->list_part_padres_asig($proyecto[0]['aper_id']);//partidas padres
+          $data['part_padres'] = $this->model_modificacion->list_part_padres_asig($data['cite'][0]['aper_id']);//partidas padres
           if($data['cite'][0]['tipo_modificacion']==1){
-            $data['part_padres'] = $this->model_ptto_sigep->lista_partidas_padres_revertidos($proyecto[0]['aper_id']);//partidas padres REVERTIDO
+            $data['part_padres'] = $this->model_ptto_sigep->lista_partidas_padres_revertidos($data['cite'][0]['aper_id']);//partidas padres REVERTIDO
           }
 
           $data['lista']=$this->tipo_lista_ope_act($data['cite']); /// ALINEADO A ACTIVIDAD (FORM 4)
@@ -272,11 +396,11 @@ class Cmod_insumo extends CI_Controller {
 
 
   /*----- CABECERA FORMULARIO ------*/
-  public function cabecera_formulario_mod5($cite,$proyecto){
-    $monto=$this->modificacionpoa->ppto($proyecto);
+  public function cabecera_formulario_mod5($cite){
+    $monto=$this->modificacionpoa->ppto($cite);
     $tabla='';
     $tabla.='
-      <section id="widget-grid" class="well" title="'.$proyecto[0]['proy_id'].'">
+      <section id="widget-grid" class="well" title="'.$cite[0]['proy_id'].'">
           '.$this->modificacionpoa->titulo_cabecera($cite,1).'';
           $tabla.='
           <button type="button" 
@@ -295,8 +419,8 @@ class Cmod_insumo extends CI_Controller {
   }
 
   /*----- OPCIONES FORMULARIO 2026 ------*/
-  public function opciones_formulario_mod5($cite,$proyecto){
-    $monto=$this->modificacionpoa->ppto($proyecto);
+  public function opciones_formulario_mod5($cite){
+    $monto=$this->modificacionpoa->ppto($cite);
     $tabla='';
 
       $tabla.='
@@ -462,7 +586,7 @@ class Cmod_insumo extends CI_Controller {
           width: 50% !important;
         }
         #dialog_subir{
-          width: 30% !important;
+          width: 40% !important;
         }
           input[type="checkbox"] {
           display:inline-block;
@@ -500,7 +624,13 @@ class Cmod_insumo extends CI_Controller {
                 $tabla.='
                 <select class="form-control" id="dato_id" name="dato_id" title="SELECCIONE ACTIVIDAD">';
                   foreach($form4 as $row){
-                    $tabla.='<option value="'.$row['prod_id'].'">'.$row['unidad_responsable'].')</option>';
+                    if($cite[0]['prod_id']==$row['prod_id']){
+                      $tabla.='<option value="'.$row['prod_id'].'" selected>'.$row['unidad_responsable'].')</option>';
+                    }
+                    else{
+                      $tabla.='<option value="'.$row['prod_id'].'">'.$row['unidad_responsable'].')</option>';
+                    }
+                    
                   } 
                   $tabla.='      
                 </select>';
@@ -1744,7 +1874,15 @@ class Cmod_insumo extends CI_Controller {
               if (!empty($cod_act)) {
                   $get_form4=$this->model_producto->verif_form4_vigente_para_alineacion($cite[0]['com_id'],$cod_act);
                   if(count($get_form4)==1){
-                    $prod_id=$get_form4[0]['prod_id'];
+                    if($cite[0]['por_id']==1){
+                      if($cite[0]['prod_id']!=$get_form4[0]['prod_id']){
+                        $errores[] = "Fila $i: El Codigo de Actividad no corresponde, revisar el codigo de Actividad.";
+                      }
+                    }
+                    else{
+                      $prod_id=$get_form4[0]['prod_id'];
+                    }
+                    
                   }
                   else{
                     $errores[] = "Fila $i: sin Actividad disponible para su alineacion, revisar el codigo de Actividad.";

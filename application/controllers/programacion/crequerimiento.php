@@ -60,8 +60,26 @@ class crequerimiento extends CI_Controller {
        
     }
 
+    /// combo unidad de medida
+    public function combo_unidad_medida(){
+      //echo "urbanizaciones";
+      $salida = "";
+      $par_id = $_POST["elegido"];
+      // construimos el combo de ciudades deacuerdo al pais seleccionado
+      $combog = pg_query('select *
+              from par_umedida pum
+              Inner Join insumo_unidadmedida as ium on ium.um_id = pum.um_id
+              where pum.par_id='.$par_id.'
+              order by ium.um_id asc');
+      $salida .= "<option value=''>" . mb_convert_encoding('SELECCIONE UNIDAD DE MEDIDA', 'cp1252', 'UTF-8') . "</option>";
+      while ($sql_p = pg_fetch_row($combog)) {
+          $salida .= "<option value='" . $sql_p[3] . "'>" .$sql_p[4]. "</option>";
+      }
+      echo $salida;
+    } 
 
-    /*--------- Lista Partidas Hijos Asignados-----------*/
+
+    /*--------- Lista Partidas Hijos Asignados Para la modificacion del item por Modificacion POA-----------*/
     public function combo_partidas_hijos_asignados(){
         $salida = "";
         $id_pais = $_POST["elegido"]; /// codigo Partida

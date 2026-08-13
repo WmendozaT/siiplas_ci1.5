@@ -652,7 +652,7 @@
 		                    <span aria-hidden="true">&times;</span>
 		                </button>
 		                <h4 class="modal-title" style="font-weight: bold; color: #333;">
-		                    <i class="fa fa-upload text-primary"></i> Importar Requerimientos
+		                    <i class="fa fa-upload text-primary"></i> Subir Archivo Requerimientos Excel
 		                </h4>
 		            </div>
 
@@ -660,7 +660,8 @@
 		                <!-- Título e Instrucción -->
 		                <div class="text-center" style="margin-bottom: 20px;">
 		                    <h5 style="font-weight: bold; text-transform: uppercase; color: #555;">Subir archivo Excel (.xls, .xlsx)</h5>
-		                    <p  style="font-size:12px;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+		                    <p  style="font-size:12px; color: blue;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+		                    <p  style="font-size:15px; color: red;" class="text-muted"><b>NOTA !!!!<b/> No es Necesario que el archivo este en formato .CSV</p>
 		                </div>
 
 		                <!-- Vista previa de columnas (Imagen optimizada) -->
@@ -672,7 +673,7 @@
 		                    <input type="hidden" name="cite_id" value="<?= $cite[0]['cite_id']; ?>" />
 		                    
 		                    <div class="form-group" style="margin-top: 20px;">
-		                        <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #444;">SELECCIONAR ARCHIVO:</label>
+		                        <label style="display: block; font-weight: bold; margin-bottom: 10px; color: blue;">SELECCIONAR ARCHIVO EXCEL</label>
 		                        <div class="input-group input-group-lg">
 		                            <span class="input-group-btn">
 		                                <button type="button" class="btn btn-primary" onclick="$(this).parent().find('input[type=file]').click();" style="border-radius: 4px 0 0 4px;">

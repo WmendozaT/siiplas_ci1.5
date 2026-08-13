@@ -1281,7 +1281,7 @@ class Modificacionpoa extends CI_Controller{
                     <i class="fa fa-bolt" style="font-size: 13px; color: #d97706; animation: flash_siiplas_opt 2s infinite;"></i>
                     <span style="font-family: Arial, sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; line-height: 1.4;">
                         <b>ACTIVIDAD : '.$cite[0]['prod_cod'].'.- </b>'.$cite[0]['prod_producto'].'<br>
-                        <div style="color:blue;"><b>UNIDAD RESPONSABLE : </b>'.$cite[0]['unidad_responsable'].'</div>
+                        <div style="color:blue;">('.$cite[0]['prod_id'].')<b> UNIDAD RESPONSABLE : </b>'.$cite[0]['unidad_responsable'].'</div>
                     </span>
                     <style>
                         @keyframes flash_siiplas_opt { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }

@@ -408,8 +408,8 @@ class model_producto extends CI_Model {
         INNER JOIN _componentes c ON p.com_id = c.com_id
         LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
         LEFT JOIN vista_temporalidad_form4_programado_uresp prog ON p.prod_id = prog.prod_id
-        INNER JOIN fnlista_poa_nacional('.$this->gestion.') poa ON c.pfec_id = poa.pfec_id
-        WHERE p.prod_id = '.$id_prod.' 
+        INNER JOIN fn_lista_poa_nacional($this->gestion) poa ON c.pfec_id = poa.pfec_id
+        WHERE p.prod_id = $id_prod 
           AND p.estado != 3;"; 
         $query = $this->db->query($sql);
         return $query->result_array();
