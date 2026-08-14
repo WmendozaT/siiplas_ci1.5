@@ -56,7 +56,7 @@ class Model_proyecto extends CI_Model{
 
     /*---- LISTA POA SEGUN EL TIPO DE ESTABLECIMIENTO PARA LA MIGRACION INSITUCIONAL DE FOMR 4----*/
     public function get_tp_UnidadOrganizacional($tn_id){
-        if($tn_id==1){
+        if($tn_id==1){ /// CIS
             $sql = '
             SELECT poa.*,c.com_id
             from fn_lista_poa_nacional('.$this->gestion.') poa
@@ -64,20 +64,45 @@ class Model_proyecto extends CI_Model{
             where poa.te_id=1
             order by poa.dep_id,poa.dist_id asc';
         }
-        elseif($tn_id==2){
+        elseif($tn_id==2){ /// CIMFA-PAISE-CAISE
             $sql = '
             SELECT poa.*,c.com_id
             from fn_lista_poa_nacional('.$this->gestion.') poa
             Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-            where poa.te_id=2 or poa.te_id=3 or poa.te_id=23
+            WHERE poa.te_id IN (2,3,23)
             order by poa.dep_id,poa.dist_id asc';
         }
-        else{
+        elseif($tn_id==3){ /// HOSPITALES
             $sql = '
             SELECT poa.*,c.com_id
             from fn_lista_poa_nacional('.$this->gestion.') poa
             Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-            where poa.te_id=4 or poa.te_id=5
+            WHERE poa.te_id IN (4,5,8,6)
+            order by poa.dep_id,poa.dist_id asc';
+        }
+        elseif($tn_id==4){ /// FORTALECIMIENTO
+            $sql = '
+            SELECT poa.*,c.com_id
+            from fn_lista_poa_nacional('.$this->gestion.') poa
+            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+            WHERE poa.te_id=25
+            order by poa.dep_id,poa.dist_id asc';
+        }
+        elseif($tn_id==5){ /// BIENES Y SERVICIOS
+            $sql = '
+            SELECT poa.*,c.com_id
+            from fn_lista_poa_nacional('.$this->gestion.') poa
+            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+            WHERE poa.te_id=14
+            order by poa.dep_id,poa.dist_id asc';
+        }
+
+        else{ /// MEDICINA DEL TRABAJO
+            $sql = '
+            SELECT poa.*,c.com_id
+            from fn_lista_poa_nacional('.$this->gestion.') poa
+            Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+            WHERE poa.te_id=15
             order by poa.dep_id,poa.dist_id asc';
         }
 

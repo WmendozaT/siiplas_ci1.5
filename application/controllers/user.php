@@ -326,8 +326,10 @@ class User extends CI_Controller{
                         </div>
                         <div class="navbar-collapse collapse">
                           <ul class="nav navbar-nav">
-                            <li class="active"><a href="#"><b>Home</b></a></li>';
-                            if($this->tp_adm==1){
+                            <li class="active"><a href="#"><b>Home</b></a></li>
+                            <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" title="CAMBIAR GESTI&Oacute;N">Gesti&oacute;n</a></li>
+                            <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>';
+                            /*if($this->tp_adm==1){
                                 $data['cabecera'].='
                                 <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" title="CAMBIAR GESTI&Oacute;N">Gesti&oacute;n</a></li>
                                 <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>
@@ -335,7 +337,7 @@ class User extends CI_Controller{
                             }
                             else{
                                 $data['cabecera'].='<li><a href="#" data-toggle="modal" data-target="#modal_seguimiento" id="'.$this->dist_id.'" title="SEGUIMIENTO POA" class="seg_uni"><b>Seguimiento POA</b></a></li>';
-                            }
+                            }*/
 
                             $data['cabecera'].='
                             <li class="dropdown">

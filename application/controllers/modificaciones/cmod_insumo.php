@@ -750,7 +750,7 @@ class Cmod_insumo extends CI_Controller {
     }
 
 
-     /*======== VALIDA UPDATE REQUERIMIENTO (2026) ========*/
+     /*======== VALIDA UPDATE REQUERIMIENTO (2027) ========*/
      public function valida_update_insumo(){
       if($this->input->post()) {
         $post = $this->input->post();
@@ -1804,8 +1804,8 @@ class Cmod_insumo extends CI_Controller {
 
     //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2026
     public function valida_add_requerimientos() {
-      ini_set('max_execution_time', 300); // 5 minutos
-      ini_set('memory_limit', '512M');    // Aumentar memoria
+    @set_time_limit(0); 
+        ini_set('memory_limit', '1024M'); 
 
       $this->load->library('excel'); // Carga el archivo que creamos arriba
      // $path = $_FILES['archivo']['tmp_name'];

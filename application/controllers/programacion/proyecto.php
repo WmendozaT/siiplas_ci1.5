@@ -2018,18 +2018,17 @@ class Proyecto extends CI_Controller {
                 return;
             }
 
-            if($tn_id==1 || $tn_id==2 || $tn_id==3){ /// Establecimiento de Salud
+            $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional($tn_id);
+            
+            /*if($tn_id==1 || $tn_id==2 || $tn_id==3 || $tn_id==6){ /// Establecimiento de Salud
               $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional($tn_id);
             }
             elseif($tn_id==4){ /// fortalecimiento
               $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('771');
             }
-            elseif($tn_id==5){ /// Bienes y Servicio
+            else{ /// Bienes y Servicio
               $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('720');
-            }
-            else{ /// Medicina del Trabajo
-              $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('730');
-            }
+            }*/
 
             
             for ($i = 2; $i <= $filasMax; $i++) {

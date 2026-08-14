@@ -935,7 +935,7 @@ class Producto extends CI_Controller {
                     continue;
                 }
 
-                if (!empty($cod_uresp)) {
+              /*  if (!empty($cod_uresp)) {
                     if (strlen($cod_uresp) != 4) {
                         $errores[] = "Fila $i: El código de 'UNIDAD RESPONSABLE' ($cod_uresp) debe tener exactamente 4 caracteres.";
                     } 
@@ -946,10 +946,10 @@ class Producto extends CI_Controller {
                     }
                 } else {
                     $errores[] = "Fila $i: 'CODIGO DE UNIDAD RESPONSABLE' es obligatoria.";
-                }
+                }*/
 
                 // Verificando códigos ACP y Operación
-                if (!empty($cod_acp) && is_numeric($cod_acp) && !empty($cod_ope) && is_numeric($cod_ope)) {
+                /*if (!empty($cod_acp) && !empty($cod_ope)) {
                     if (count($list_oregional) != 0) {
                         $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
                         if (count($get_acc) != 0) {
@@ -964,7 +964,7 @@ class Producto extends CI_Controller {
 
                 if (!is_numeric($meta) || floatval($meta) <= 0) {
                     $errores[] = "Fila $i: La 'META' debe ser un número válido mayor a cero.";
-                }
+                }*/
 
                 // Validación C: Cronograma Mensualizado Saneado (J al U)
                 $suma_meses = 0;
@@ -987,9 +987,9 @@ class Producto extends CI_Controller {
                 }
 
                 // Validación de Coincidencia Física Matemática
-                if (abs($suma_meses - floatval($meta)) > 0.01) {
+                /*if (abs($suma_meses - floatval($meta)) > 0.01) {
                     $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con la meta ($meta).";
-                }
+                }*/
 
                 if (empty($errores)) {
                     // 🌟 SOLUCIÓN RAÍZ: Agrupamos el Maestro y su Detalle mensual correspondiente en paralelo

@@ -73,90 +73,160 @@ $(document).ready(function() {
   //// ------------------
 
 
-  ////------------  PARA MIGRAR ARCHIVO EN EXCEL 2026 ==========2026
+  ////------------  PARA MIGRAR ARCHIVO EN EXCEL 2027 ==========2027
+var xhr_migracion_sigep = null;
+
 $(document).ready(function() {
-    // Mostrar nombre del archivo al seleccionar
-    $('#archivo').on('change', function() {
+    
+    // Mostrar nombre del archivo al seleccionar en el input formalizado
+    $(document).on('change', '#archivo', function() {
         var fileName = $(this).val().split('\\').pop();
         if (fileName) {
-            $('.file-name-display').val(fileName); // Ajustado al input readonly del diseño anterior
+            $('.file-name-display').val(fileName); 
         }
     });
 
-    $('#btn_subir').on('click', function(e) {
+    /* ==========================================================================
+       📥 MÓDULO CNS: IMPORTADOR Y PROCESADOR DE PLANILLAS DE ALTA VELOCIDAD
+       ========================================================================== */
+    $(document).on('click', '#btn_subir', function(e) {
         e.preventDefault();
+        
+        var $btn = $(this);
         $('#mensaje').html(''); 
 
+        // Candado perimetral local: Validación de búfer vacío
         if ($('#archivo').val() == '') {
-            $('#mensaje').html('<div class="alert alert-warning"><i class="fa fa-exclamation-triangle"></i> Por favor, seleccione un archivo Excel.</div>');
+            $('#mensaje').html(
+                '<div class="alert alert-warning" style="display:flex; align-items:center; gap:8px; margin-bottom:0;">' +
+                    '<i class="fa fa-exclamation-triangle" style="font-size:14px;"></i>' +
+                    '<span style="font-weight:600; font-size:11.5px;">Restricción: Por favor, seleccione una planilla oficial estructurada (.xls o .xlsx).</span>' +
+                '</div>'
+            );
+            if (typeof alertify !== "undefined") alertify.error("⚠️ Operación cancelada: Ningún archivo seleccionado.");
             return false;
         }
 
-        var form = $('#form_subir_sigep')[0];
-        var data = new FormData(form);
+        var formElement = $('#form_subir_sigep')[0];
+        var data_multipart = new FormData(formElement);
 
-        // Bloquear UI
-        $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> PROCESANDO...');
-        $('#loads').show();
+        // Bloquear UI e inyectar estados de procesamiento para mitigar dobles clics
+        $btn.prop('disabled', true).html('<i class="fa fa-refresh fa-spin"></i> PROCESANDO MATRIZ POA EN POSTGRES...');
+        $('#loads').css('display', 'flex'); // Ajustado a flex para la simetría del preloader vectorial
 
-        $.ajax({
+        // Captura perimetral automática del Token CSRF activo para el blindaje de la CNS
+        var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+        var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+        if (csrf_name !== '') {
+            data_multipart.append(csrf_name, csrf_hash);
+        }
+
+        // Cancelamos hilos de red huérfanos simultáneos previos en cola para liberar RAM de Apache
+        if (xhr_migracion_sigep && xhr_migracion_sigep.readyState !== 4) {
+            xhr_migracion_sigep.abort();
+        }
+
+        // Despacho de la ráfaga AJAX hacia tu controlador CodeIgniter
+        xhr_migracion_sigep = $.ajax({
             type: "POST",
             url: $('#form_subir_sigep').attr('action'),
-            data: data,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                    var res;
-                    try {
-                        res = (typeof response === 'object') ? response : JSON.parse(response);
-                    } catch (e) {
-                        console.error("Error parseando JSON:", response);
-                        $('#mensaje').html('<div class="alert alert-danger">Error de respuesta del servidor (Posible tiempo de espera agotado).</div>');
-                        $('#btn_subir').prop('disabled', false).text('REINTENTAR');
-                        $('#loads').hide();
-                        return;
-                    }
+            data: data_multipart,
+            processData: false, // Impide que jQuery intente transformar las cadenas binarias en texto plano
+            contentType: false, // Forza a Apache a interpretar las cabeceras como multipart/form-data
+            
+            // 🌟 REPARADO CORE: Desactiva el límite de tiempo de espera del navegador (Ilimitado)
+            // Esto obliga al explorador a aguardar la respuesta del lector PHP de más de 500 filas
+            timeout: 0, 
 
-                if (res.status === 'success') {
-                    // Construimos un mensaje más visual
-                    var html = `
-                        <div class="alert alert-success text-center" style="border-left: 5px solid #2d8a39;">
-                            <i class="fa fa-check-circle fa-3x" style="margin-bottom:12px;"></i>
-                            <h4>¡PROCESO COMPLETADO!</h4>
-                            <p style="font-size: 16px;">${res.msj}</p>
-                            <div style="font-size: 24px; font-weight: bold;">
-                                <span class="label label-success">${res.conteo}</span>
+            success: function(response) {
+                var res;
+                try {
+                    res = (typeof response === 'object') ? response : JSON.parse(response);
+                } catch (err) {
+                    console.error("Error parseando JSON:", response);
+                    $('#mensaje').html('<div class="alert alert-danger" style="margin-bottom:0; font-size:11.5px;"><b>❌ Error de Transacción:</b> La respuesta devolvió un búfer de texto corrupto. Verifique que no se hayan filtrado Warnings de PHP en el controlador.</div>');
+                    $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR VALIDACIÓN Y SUBIDA');
+                    $('#loads').hide();
+                    return;
+                }
+
+                // Evalúa el éxito transaccional unificado para el SIIPLAS v2.0
+                if (res.status === 'success' || res.respuesta === 'correcto') {
+                    var mensaje_exito = res.msj || res.mensaje || "Planilla procesada correctamente.";
+                    var conteo_filas  = res.conteo || res.filas_procesadas || "0";
+
+                    // Construcción geométrica del banner de auditoría aprobada
+                    var html_success = `
+                        <div class="alert alert-success text-center" style="border-left: 5px solid #16a34a; background:#f0fdf4; color:#16a34a; padding:15px; margin-bottom:0;">
+                            <i class="fa fa-check-circle fa-2x" style="margin-bottom:8px; display:block;"></i>
+                            <h4 style="font-weight:bold; margin:0 0 5px 0; color:#15803d; font-size:13.5px;">¡PROCESO COMPLETADA CON ÉXITO!</h4>
+                            <p style="font-size: 12px; color:#166534; font-weight:500; margin:5px 0;">${mensaje_exito}</p>
+                            <div style="margin: 10px 0;">
+                                <span class="label label-success" style="font-size: 15px; padding: 4px 12px; font-weight:bold; background:#16a34a; border-radius:3px;">Registros: ${conteo_filas}</span>
                             </div>
-                            <p><small>Requerimientos registrados en el sistema.</small></p>
+                            <p style="margin:0;"><small class="text-muted" style="font-size:10.5px;">Requerimientos validados e inyectados en la base de datos de productos.</small></p>
                         </div>`;
 
-                    $('#mensaje').html(html);
+                    $('#mensaje').html(html_success);
                     $('#loads').hide();
-                    
-                    // Ocultar el botón para evitar doble clic
-                    $('#btn_subir').hide();
+                    $btn.hide(); 
 
-                    // Recargar la página después de 3 segundos
+                    if (typeof alertify !== "undefined") {
+                        alertify.success("✔ Plantilla procesada correctamente.");
+                    }
+
+                    // Temporizador inteligente para refrescar la grilla activa de la CNS
                     setTimeout(function() {
-                        location.reload();
-                    }, 3000);
+                        $('#modal_importar').modal("hide");
+                        $('.modal-backdrop').remove();
+                        $('body').removeClass('modal-open');
+                        
+                        // Si existe tu función reactiva en caliente de recarga AJAX, la llamamos, sino reload
+                        if (typeof recargar_listado_requerimientos_cns_ajax === "function") {
+                            recargar_listado_requerimientos_cns_ajax();
+                        } else {
+                            location.reload(); 
+                        }
+                    }, 2500);
+
                 } else {
-                    // LÓGICA DE ERRORES
-                    var errorMsg = "<strong>SE ENCONTRARON ERRORES:</strong><ul style='margin-top:12px;'>";
-                    $.each(res.errors, function(index, value) {
-                        errorMsg += "<li>" + value + "</li>";
-                    });
-                    errorMsg += "</ul>";
+                    // MÓDULO DE EXTRACTOS DE ERRORES DE CONSISTENCIA DE CELDAS
+                    var mensaje_error = res.mensaje || res.msj || "El archivo contiene celdas o tipados inválidos.";
+                    var errorMsg = '<strong style="font-size:11.5px; color:#b91c1c;"><i class="fa fa-times-circle"></i> SE DETECTARON INCONSISTENCIAS EN LA PLANILLA EXCEL:</strong><br><small class="text-muted" style="font-size:11px;">' + mensaje_error + '</small>';
                     
-                    $('#mensaje').html('<div class="alert alert-danger">' + errorMsg + '</div>');
-                    $('#btn_subir').prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> VALIDAR Y SUBIR ARCHIVO EXCEL');
+                    if (res.errors || res.errores) {
+                        var coleccion_errores = res.errors || res.errores;
+                        errorMsg += "<ul style='margin-top:6px; padding-left:15px; text-align:left; font-size:11px; max-height:120px; overflow-y:auto;'>";
+                        $.each(coleccion_errores, function(index, value) {
+                            errorMsg += "<li style='margin-bottom:2px; font-weight:500;'>" + value + "</li>";
+                        });
+                        errorMsg += "</ul>";
+                    }
+                    
+                    $('#mensaje').html('<div class="alert alert-danger" style="margin-bottom:0; background:#fef2f2; border-color:#fee2e2; color:#991b1b; padding:12px;">' + errorMsg + '</div>');
+                    $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> VALIDAR Y SUBIR ARCHIVO EXCEL');
                     $('#loads').hide();
                 }
             },
-            error: function() {
-                $('#mensaje').html('<div class="alert alert-danger">Error crítico: No se pudo procesar el archivo en el servidor.</div>');
-                $('#btn_subir').prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR SUBIDA');
+            error: function(xhr, textStatus, errorThrown) {
+                if (textStatus === 'abort') return;
+                console.error("Falla Crítica en canal de carga masiva de Excel. Detalle:", xhr.responseText);
                 $('#loads').hide();
+                $btn.prop('disabled', false).html('<i class="fa fa-file-excel-o"></i> REINTENTAR VALIDACIÓN Y SUBIDA');
+                
+                // Mensaje semántico contextualizado según el tipo de rebote de Apache
+                var mensaje_diagnostico = "Error crítico de hardware: No se pudo procesar el archivo masivo en el servidor.";
+                if(xhr.status === 504 || textStatus === "timeout") {
+                    mensaje_diagnostico = "❌ Error 504 (Gateway Timeout): El servidor Apache interrumpió el proceso porque la planilla excede los límites de tiempo. Aumente el 'max_execution_time' en el php.ini.";
+                } else if(xhr.status === 500) {
+                    mensaje_diagnostico = "❌ Error 500 (Internal Server Error): El lector de Excel agotó la memoria RAM asignada al script. Aumente el 'memory_limit' en su controlador.";
+                }
+                
+                $('#mensaje').html('<div class="alert alert-danger" style="margin-bottom:0; font-size:11.5px; font-weight:500; padding:12px;">' + mensaje_diagnostico + '</div>');
+                
+                if (typeof alertify !== "undefined") {
+                    alertify.error("Falla de red en el servidor.");
+                }
             }
         });
     });
@@ -553,7 +623,7 @@ $(function () {
             const esCertificado = (ins.certificado_total != 0);
 
             // 2. Control de Inputs (Habilitar/Deshabilitar en bloque)
-            const campos = ["#ins_id","#detalle", "#umedida", "#par_padre", "#par_hijo", "#observacion"];
+            const campos = ["#detalle", "#umedida", "#par_padre", "#par_hijo", "#observacion"];
             $(campos.join(",")).prop("disabled", esCertificado);
             
             // Lógica específica para cantidad
