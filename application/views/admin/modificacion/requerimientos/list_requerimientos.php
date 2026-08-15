@@ -436,7 +436,7 @@
                     <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; Salir Formulario</span></button>
                 </div>
 	              <div class="modal-body">
-	              	<?php echo $loading_form; ?>
+	              	 <!-- <?php echo $loading_form; ?> -->
 	              	<div id="formulario_requerimiento">
 	              	<div id="titulo_req"></div>
 	               		<form action="<?php echo site_url().'/modificaciones/cmod_insumo/valida_update_insumo'?>" method="post" id="form_mod" name="form_mod" class="smart-form">

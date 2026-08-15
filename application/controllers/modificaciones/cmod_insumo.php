@@ -271,7 +271,7 @@ class Cmod_insumo extends CI_Controller {
         $data['cabecera']=$this->cabecera_formulario_mod5($data['cite']);
         $data['opciones']=$this->opciones_formulario_mod5($data['cite']);
         $data['style']=$this->style();
-        $data['loading_form']=$this->loagind_form();
+        //$data['loading_form']=$this->loagind_form();
         $data['loading']=$this->modificacionpoa->loading('ACTUALIZANDO LISTADO');
 
         $data['tabla']=$this->modificacionpoa->formN5_mod_lista_requerimientos_ConTemporalidad($data['cite']);  /// 2026
@@ -1802,13 +1802,12 @@ class Cmod_insumo extends CI_Controller {
     }
 
 
-    //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2026
+    //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2027
     public function valida_add_requerimientos() {
-    @set_time_limit(0); 
-        ini_set('memory_limit', '1024M'); 
+        @set_time_limit(0); 
+        ini_set('memory_limit', '2048M'); 
 
       $this->load->library('excel'); // Carga el archivo que creamos arriba
-     // $path = $_FILES['archivo']['tmp_name'];
       $cite_id = $this->input->post('cite_id');
       $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id);
 
@@ -1828,8 +1827,6 @@ class Cmod_insumo extends CI_Controller {
           $phpExcel = $lector->load($archivo);
           $hoja = $phpExcel->getSheet(0);
           $filasMax = $hoja->getHighestRow();
-          // --- 1. VALIDACIÓN DE ESTRUCTURA (Columnas) ---
-          // Obtener la última columna con datos (ej: 'S') y convertirla a número (19)
           $columnaMaxLetra = $hoja->getHighestDataColumn(); 
           $totalColumnas = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
           $limitePermitido = 20; // Columna T es la 20
@@ -1839,75 +1836,38 @@ class Cmod_insumo extends CI_Controller {
               return;
           }
 
-          // --- 1. VALIDACIÓN DE ENCABEZADOS (Columnas A a la T) ---
-          // Verificamos las primeras columnas críticas para asegurar que sea el formato correcto
-          if (trim($hoja->getCell('A1')->getValue()) != 'COD ACT' || 
-              trim($hoja->getCell('B1')->getValue()) != 'PARTIDA' || 
-              trim($hoja->getCell('G1')->getValue()) != 'TOTAL') {
-              echo json_encode(array('status' => 'error', 'errors' => array('El formato del Excel no es válido. Verifique los encabezados.')));
-              return;
-          }
-
           // --- 2. VALIDACIÓN FILA POR FILA ---
           for ($i = 2; $i <= $filasMax; $i++) {
-              // Extraer valores básicos
               $cod_act = $hoja->getCell('A' . $i)->getValue();
               $partida = $hoja->getCell('B' . $i)->getValue();
               $cantidad = $hoja->getCell('E' . $i)->getValue();
-              //$precio = $hoja->getCell('F' . $i)->getValue();
-              //$total   = $hoja->getCell('G' . $i)->getOldCalculatedValue() ? $hoja->getCell('G' . $i)->getCalculatedValue() : $hoja->getCell('G' . $i)->getValue();
               $precio_crudo = $hoja->getCell('F' . $i)->getCalculatedValue();
               $precio = ($precio_crudo !== NULL && trim($precio_crudo) !== '') ? trim($precio_crudo) : 0;
-
-              // AJUSTE: Extracción calculada del TOTAL resolviendo fórmulas en caliente
-            $celda_total = $hoja->getCell('G' . $i)->getCalculatedValue();
-            $total = (!empty($celda_total) && is_numeric($celda_total)) ? floatval($celda_total) : 0.00;
-
-
-
+              $celda_total = $hoja->getCell('G' . $i)->getCalculatedValue();
+              $total = (!empty($celda_total) && is_numeric($celda_total)) ? floatval($celda_total) : 0.00;
               if($total!=($cantidad*$precio)){
                 $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
               }
-
-
-              // --- VALIDACION CODIGO DE ACTIVIDAD---
               if (!empty($cod_act)) {
-                  $get_form4=$this->model_producto->verif_form4_vigente_para_alineacion($cite[0]['com_id'],$cod_act);
-                  if(count($get_form4)==1){
-                    if($cite[0]['por_id']==1){
-                      if($cite[0]['prod_id']!=$get_form4[0]['prod_id']){
-                        $errores[] = "Fila $i: El Codigo de Actividad no corresponde, revisar el codigo de Actividad.";
-                      }
-                    }
-                    else{
-                      $prod_id=$get_form4[0]['prod_id'];
-                    }
-                    
-                  }
-                  else{
-                    $errores[] = "Fila $i: sin Actividad disponible para su alineacion, revisar el codigo de Actividad.";
-                  }
+                $prod_id=$cite[0]['prod_id'];
+
               } else {
                   $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
               }
 
-              // --- NUEVA VALIDACIÓN: TAMAÑO DE PARTIDA ---
               if (!empty($partida)) {
-                  // strlen cuenta cuántos caracteres tiene la cadena
-
-                  if (strlen($partida) != 5) {
-                      $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres (tiene " . strlen($partida) . ").";
+                  $par_id=0;
+                  if (strlen($partida) == 5) {
+                      $verif_partida_asignada=$this->model_ptto_sigep->get_ptto_sigep_pi($cite[0]['aper_id'],$partida);
+                      if(count($verif_partida_asignada)!=0){
+                        $par_id=$verif_partida_asignada[0]['par_id'];
+                      }
+                      else{
+                        $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe o no esta asignado.";
+                      }
                   }
                   else{
-                    $get_partida=$this->model_partidas->dato_par_codigo($partida);
-                    if(count($get_partida)==1){
-                      if(count($this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],$get_partida[0]['par_id']))==0){
-                        $errores[] = "Fila $i: Error !! la 'PARTIDA' ($partida) Nose encuentra asignado al programa, verifique la asignacion de partida..";
-                      }
-                    }
-                    else{
-                      $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe en nuestra Base de Datos.";
-                    }
+                    $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida).";
                   }
               } else {
                   $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
@@ -1918,10 +1878,6 @@ class Cmod_insumo extends CI_Controller {
                     $errores[] = "Fila $i: El 'PRECIO UNITARIO' debe ser un valor numérico válido.";
                 } else {
                     $precio_float = floatval($precio);
-                    
-                    // Verificación matemática: Multiplicamos por 100 y evaluamos si queda un residuo decimal
-                    // Si multiplicamos 10.55 * 100 = 1055 (Entero, residuo 0) -> OK
-                    // Si multiplicamos 10.553 * 100 = 1055.3 (Flotante, tiene residuo) -> ERROR
                     if (floor($precio_float * 100) != ($precio_float * 100)) {
                         $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio) excede el límite permitido. Solo se aceptan hasta 2 decimales (Ej: 10.55).";
                     }
@@ -1931,8 +1887,6 @@ class Cmod_insumo extends CI_Controller {
               if (empty($cod_act)) $errores[] = "Fila $i: 'COD ACT' es obligatorio.";
               if (empty($partida)) $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
               if (!is_numeric($total)) $errores[] = "Fila $i: El 'TOTAL' debe ser un número.";
-
-              // --- 3. VALIDACIÓN DE MESES (Columnas G a R) ---
               $suma_meses = 0;
               $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
               
@@ -1940,7 +1894,6 @@ class Cmod_insumo extends CI_Controller {
               foreach ($columnas_meses as $col) {
                 // Se evalúa la ecuación mensual directa en caliente
                 $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
-                
                 // Si la celda con fórmula o vacía no tiene valor, la homologamos a 0 puros
                 $val_mes = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
 
@@ -1950,7 +1903,6 @@ class Cmod_insumo extends CI_Controller {
                 }
                 $suma_meses += floatval($val_mes);
               }
-              ///----------
 
               // Validación de integridad: ¿La suma de los meses coincide con el TOTAL?
               if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
@@ -1962,12 +1914,11 @@ class Cmod_insumo extends CI_Controller {
                   $data_insertar[] = array(
                       'ins_codigo'   => $this->session->userdata("name").'/REQ/'.$this->gestion,
                       'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-                      'par_id'   => $get_partida[0]['par_id'],
+                      'par_id'   => $par_id,
                       'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
                       'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
                       'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
                       'ins_costo_unitario'      => round(floatval($precio), 2),
-                      //'ins_costo_unitario'    => $hoja->getCell('F' . $i)->getValue(),
                       'ins_costo_total'     => $total,
                       'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
                       'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo modificacion
@@ -2385,9 +2336,9 @@ class Cmod_insumo extends CI_Controller {
         $ins_id = $this->security->xss_clean($post['ins_id']);
         $cite_id = $this->security->xss_clean($post['cite_id']);
         $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); /// Datos Cite
-        
         $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos Get requerimientos 
-        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],$insumo[0]['par_id']);
+        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],130);
+
 
         if($insumo[0]['ins_tipo_modificacion']==0){ /// Poa Normal
           $saldo=$ppto_partida[0]['saldo_poa'];
@@ -2412,16 +2363,27 @@ class Cmod_insumo extends CI_Controller {
             };
           /// -------------------------------------                           
 
-          $lista_partidas=$this->partidas_dependientes($insumo); /// Lista de Insumos dependientes
+          $lista_partidas='';
+          $lista_partidas.='';
+
+          if($insumo[0]['ins_tipo_modificacion']==0){
+            $lista_partidas_dependientes=$this->model_modrequerimiento->lista_partidas_dependientes($insumo[0]['aper_id'],$insumo[0]['par_depende']);
+          }
+          else{
+            $lista_partidas_dependientes=$this->model_ptto_sigep->lista_partidas_dependientes_revertidos($insumo[0]['aper_id'],$insumo[0]['par_depende']);
+          }
+
+          foreach ($lista_partidas_dependientes as $row) {
+            if($insumo[0]['par_id']==$row['par_id']){
+              $lista_partidas.='<option value="'.$row['par_id'].'" selected>'.$row['par_codigo'].'.- '.$row['par_nombre'].'</option>';
+            }
+            else{
+              $lista_partidas.='<option value="'.$row['par_id'].'">'.$row['par_codigo'].'.- '.$row['par_nombre'].'</option>';
+            }
+          }
+
+
           $lista_prod_act=$this->lista_form4_x_unidadresponsable($cite,$insumo); /// Lista de Actividades (Form 4)
-//$lista_prod_act='';
-          /// --------------
-          $update_insumo= array(
-            'ins_monto_certificado' => $insumo[0]['certificado_total']
-          );
-          $this->db->where('ins_id', $ins_id);
-          $this->db->update('insumos', $this->security->xss_clean($update_insumo));
-          /// --------------
 
 
           if(count($insumo)!=0){

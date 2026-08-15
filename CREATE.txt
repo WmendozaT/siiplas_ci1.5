@@ -1038,3 +1038,31 @@ BEGIN -- 🛠️ CORRECCIÓN 1: Bloque de apertura obligatorio añadido
         p.tp_id ASC;
 END;
 $$ LANGUAGE plpgsql;
+
+---------------
+
+
+
+
+
+CREATE OR REPLACE VIEW public.vmonto_certificado_insumo2 AS 
+ SELECT 
+    ti.ins_id,
+    COALESCE(SUM(ti.ipm_fis), 0.00) AS certificado -- Blindaje anti-nulos contable
+   FROM public.cert_temporalidad_prog_insumo cti
+   INNER JOIN public.temporalidad_prog_insumo ti ON ti.tins_id = cti.tins_id
+   GROUP BY ti.ins_id;
+
+-- Asignación formal de pertenencia de hardware
+ALTER TABLE public.vmonto_certificado_insumo2
+  OWNER TO postgres;
+
+-- ==========================================================================
+-- 🔒 CANDADOS DE VELOCIDAD EXTRAS: EJECUTAR EN PGADMIN SI NO EXISTEN
+-- Estos índices fuerzan un 'Index Scan' inmediato destruyendo la latencia
+-- ==========================================================================
+CREATE INDEX IF NOT EXISTS idx_temporalidad_prog_insumo_tins_ins 
+ON public.temporalidad_prog_insumo (tins_id, ins_id);
+
+CREATE INDEX IF NOT EXISTS idx_cert_temporalidad_prog_insumo_tins 
+ON public.cert_temporalidad_prog_insumo (tins_id);

@@ -131,11 +131,54 @@ class Model_ptto_sigep extends CI_Model{
 
     /// GET  seguimiento A LA PARTIDA ASIGNADOS Y PROGRAMADOS + (REVERTIDOS) 2026 (POR UNIDAD)
     public function vista_get_seguimiento_partida_UOrganizacional($aper_id,$par_id){
-        $sql = '
-        SELECT * 
-        FROM vista_seguimiento_partidas 
-        WHERE aper_id = '.$aper_id.' AND g_id = '.$this->gestion.' and par_id='.$par_id.'
-        ORDER BY codigo_partida ASC;';
+        $sql = "
+        SELECT 
+            COALESCE(asig.sp_id, 0) AS sp_id,
+            COALESCE(asig.par_id, prog.par_id) AS par_id,
+            COALESCE(asig.partida, prog.codigo::VARCHAR) AS codigo_partida,
+            COALESCE(asig.par_nombre, prog.partida_nombre, 'SIN ASIGNAR') AS partida,
+            
+            COALESCE(asig.ppto_asignado1, 0) AS ppto_asignado,
+            COALESCE(prog.ppto_programado1, 0) AS ppto_programado,
+            (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) AS saldo_poa,
+            
+            CASE 
+                WHEN (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) < 0 THEN 3
+                WHEN (COALESCE(asig.ppto_asignado1, 0) - COALESCE(prog.ppto_programado1, 0)) > 0 THEN 1
+                ELSE 0 
+            END AS estado_poa,
+            
+            COALESCE(asig.ppto_asignado_revertido2, 0) AS ppto_asignado_revertido,
+            COALESCE(prog.ppto_programado_revertido2, 0) AS ppto_programado_revertido,
+            (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) AS saldo_revertido,
+            
+            CASE 
+                WHEN (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) < 0 THEN 3
+                WHEN (COALESCE(asig.ppto_asignado_revertido2, 0) - COALESCE(prog.ppto_programado_revertido2, 0)) > 0 THEN 1
+                ELSE 0 
+            END AS estado_revertido
+
+        FROM (
+            SELECT 
+                pg.sp_id,pg.par_id, pg.partida, par.par_nombre, 
+                pg.importe AS ppto_asignado1, pg.ppto_saldo_ncert AS ppto_asignado_revertido2
+            FROM ptto_partidas_sigep pg
+            INNER JOIN partidas par ON par.par_id = pg.par_id
+           
+            WHERE pg.aper_id = ".$aper_id." and pg.par_id=".$par_id." AND pg.estado != 3 AND pg.g_id = ".$this->gestion."
+        ) asig
+        FULL OUTER JOIN (
+            SELECT 
+                i.par_id, par.par_codigo AS codigo, par.par_nombre AS partida_nombre,
+                SUM(CASE WHEN i.ins_tipo_modificacion = 0 THEN i.ins_costo_total ELSE 0 END) AS ppto_programado1,
+                SUM(CASE WHEN i.ins_tipo_modificacion = 1 THEN i.ins_costo_total ELSE 0 END) AS ppto_programado_revertido2
+            FROM insumos i
+            INNER JOIN partidas par ON par.par_id = i.par_id
+           
+            WHERE i.aper_id = ".$aper_id." and i.par_id=".$par_id." AND i.aper_id != 0 AND i.ins_tipo_modificacion IN (0, 1)
+            GROUP BY i.par_id, par.par_codigo, par.par_nombre
+        ) prog ON asig.par_id = prog.par_id
+        ORDER BY codigo_partida ASC;";
 
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -379,7 +422,7 @@ class Model_ptto_sigep extends CI_Model{
         return $query->result_array();
     }
 
-    /*------- Presupuesto Sigep Inicial (Proyecto de Inversion) ----------*/
+    /*------- Presupuesto Sigep Inicial (Proyecto de Inversion) 2027 sirve----------*/
     public function get_ptto_sigep_pi($aper_id,$partida){
         $sql = 'select *
                 from ptto_partidas_sigep

@@ -1290,7 +1290,7 @@ class Modificacionpoa extends CI_Controller{
             }
             $tabla.='
             <div class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 15px;">
-                <table id="dt_basic" class="table table-bordered table-striped table-hover" width="100%" style="margin-bottom: 0; min-width: 1600px; border-collapse: collapse; font-size: 11px;">
+                <table id="dt_basic" class="table table-bordered" width="100%" style="margin-bottom: 0; min-width: 1600px; border-collapse: collapse; font-size: 11px;">
                 <thead>
                   <tr class="modo1" style="height: 36px; background: #334155; color: #ffffff;">
                     <th style="width:4%; text-align: center; vertical-align: middle;">#</th>
@@ -1337,10 +1337,10 @@ class Modificacionpoa extends CI_Controller{
                     // Construcción de Botones
                     $botones = '';
                     if ($valor_mod == 0 && $valor_delete == 0) {
-                      $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
+                      $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff5" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="MODIFICAR" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
                       $botones .= '<a href="#" data-toggle="modal" data-target="#modal_del_ff" class="btn btn-default btn-xs del_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" title="ELIMINAR" style="padding: 6px 8px;"><img src="'.base_url('assets/img/delete.png').'" width="30"></a>';
                     } elseif ($valor_mod == 0 && $valor_delete == 1) {
-                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
+                        $botones .= '<a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default btn-xs mod_ff5" name="'.$row['ins_id'].'" id="'.$cite[0]['cite_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/ifinal/modificar.png').'" width="30"></a> ';
                         $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="30"></a>';
                     } else {
                         $botones .= '<a href="#" data-toggle="modal" data-target="#modal_certpoas" class="btn btn-default btn-xs certpoas" name="'.$row['ins_id'].'" style="padding: 6px 8px;"><img src="'.base_url('assets/img/ifinal/doc.jpg').'" width="30"></a>';

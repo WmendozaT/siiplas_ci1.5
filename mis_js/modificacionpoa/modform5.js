@@ -590,7 +590,7 @@ function valida_eliminar(){
 $(function () {
     var xhr_requerimiento; // Variable externa para controlar peticiones
 
-    $(".mod_ff").on("click", function (e) {
+    $(".mod_ff5").on("click", function (e) {
 
         e.preventDefault();
         const $this = $(this);
@@ -620,14 +620,14 @@ $(function () {
             }
 
             const ins = response.insumo[0];
-            const esCertificado = (ins.certificado_total != 0);
+            const esCertificado = (ins.ins_monto_certificado != 0);
 
             // 2. Control de Inputs (Habilitar/Deshabilitar en bloque)
             const campos = ["#detalle", "#umedida", "#par_padre", "#par_hijo", "#observacion"];
             $(campos.join(",")).prop("disabled", esCertificado);
             
             // Lógica específica para cantidad
-            $("#cantidad").prop("disabled", (esCertificado && ins.certificado_total == ins.programado_total));
+            $("#cantidad").prop("disabled", (esCertificado && ins.ins_monto_certificado == ins.programado_total));
             $("#costou").prop("disabled", false);
 
             // 3. Llenado masivo de datos al formulario
@@ -642,13 +642,13 @@ $(function () {
             $("#par_hijo, #par_id").val(ins.par_id);
             $("#mtot").val(ins.programado_total);
             $("#observacion").val(ins.ins_observacion);
-            $("#monto_cert").val(ins.certificado_total);
+            $("#monto_cert").val(ins.ins_monto_certificado);
 
             // Inyección de HTML dinámico (Selects y Listas)
             $("#par_padre").html(response.partidas);
             $("#par_hijo").html(response.lista_partidas);
             $("#id").html(response.lista_prod_act);
-            $('#monto').html(`<font color="blue" size="2"><b>MONTO CERTIFICADO : ${ins.certificado_total}</b></font>`);
+            $('#monto').html(`<font color="blue" size="2"><b>MONTO CERTIFICADO : ${ins.ins_monto_certificado}</b></font>`);
 
             // 4. Bucle de Meses (Uso de la nueva vista)
             for (let i = 1; i <= 12; i++) {
@@ -674,7 +674,7 @@ $(function () {
             }
 
             // Validación: Certificación Total
-            if (ins.certificado_total == ins.programado_total) {
+            if (ins.ins_monto_certificado == ins.programado_total) {
                 tituloHtml = '<center><h2 class="alert alert-danger">REQUERIMIENTO CERTIFICADO</h2></center>';
                 mostrarBoton = false;
             } else {

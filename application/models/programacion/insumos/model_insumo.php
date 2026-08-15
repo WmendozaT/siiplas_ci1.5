@@ -587,9 +587,27 @@ class Model_insumo extends CI_Model{
 
     /*---- GET REQUERIMIENTO + temporalidad 2027 -----*/
         function get_requerimiento($ins_id){
-        $sql = 'SELECT ip.*, 
-                i.*, 
-                par.*, 
+/*            $sql = ' SELECT ip.*, 
+                i.ins_codigo,
+                i.ins_cant_requerida, 
+                i.ins_costo_unitario, 
+                i.ins_costo_total, 
+                i.ins_detalle, 
+                i.ins_unidad_medida, 
+                i.ins_gestion, 
+                i.par_id, 
+                i.ins_estado, 
+                i.fun_id, 
+                i.ins_observacion, 
+                i.ins_cpoa,
+                i.ins_mod,
+                i.aper_id,
+                i.ins_monto_certificado,
+                i.com_id,
+                i.form4_cod,
+                i.ins_tipo_modificacion,
+                par.par_nombre,
+                par.par_codigo,
                 prog.*, 
                 COALESCE(cert.certificado, 0) AS certificado_total,
                 mes_cert.*
@@ -597,7 +615,20 @@ class Model_insumo extends CI_Model{
                 Inner Join insumos as i On i.ins_id=ip.ins_id
                 Inner Join partidas as par On par.par_id=i.par_id
                 left Join vista_temporalidad_insumo2 as prog On prog.ins_id=i.ins_id
-                left Join vmonto_certificado_insumo as cert On cert.ins_id=i.ins_id
+                left Join vmonto_certificado_insumo2 as cert On cert.ins_id=i.ins_id
+                left Join vista_verif_certificacion_mensual_requerimiento as mes_cert On mes_cert.ins_id=i.ins_id
+                where i.ins_id='.$ins_id.' and ins_estado!=3 and i.aper_id!=0';*/
+
+
+        $sql = 'SELECT ip.*, 
+                i.*, 
+                par.*, 
+                prog.*, 
+                mes_cert.*
+                from _insumoproducto ip
+                Inner Join insumos as i On i.ins_id=ip.ins_id
+                Inner Join partidas as par On par.par_id=i.par_id
+                left Join vista_temporalidad_insumo2 as prog On prog.ins_id=i.ins_id
                 left Join vista_verif_certificacion_mensual_requerimiento as mes_cert On mes_cert.ins_id=i.ins_id
                 where i.ins_id='.$ins_id.' and ins_estado!=3 and i.aper_id!=0';
         
