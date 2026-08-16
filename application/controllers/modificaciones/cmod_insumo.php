@@ -291,6 +291,7 @@ class Cmod_insumo extends CI_Controller {
           }
 
           $data['lista']=$this->tipo_lista_ope_act($data['cite']); /// ALINEADO A ACTIVIDAD (FORM 4)
+          $data['modal_migracion']=$this->modificacionpoa->modal_migracion_form5x_modpoa($cite_id);
           $this->load->view('admin/modificacion/requerimientos/list_requerimientos', $data);
          
       }
@@ -1804,8 +1805,8 @@ class Cmod_insumo extends CI_Controller {
 
     //// PARA MIGRACION DE REQUERIMIENTOS POR ARCHIVO EXCEL 2027
     public function valida_add_requerimientos() {
-        @set_time_limit(0); 
-        ini_set('memory_limit', '2048M'); 
+        ini_set('max_execution_time', 900); // 15 minutos máximos de procesamiento de CPU
+        ini_set('memory_limit', '3072M'); 
 
       $this->load->library('excel'); // Carga el archivo que creamos arriba
       $cite_id = $this->input->post('cite_id');
@@ -1824,195 +1825,237 @@ class Cmod_insumo extends CI_Controller {
       try {
           $archivoTipo = PHPExcel_IOFactory::identify($archivo);
           $lector = PHPExcel_IOFactory::createReader($archivoTipo);
-          $phpExcel = $lector->load($archivo);
+          
+          $phpExcel    = $lector->load($archivo);
           $hoja = $phpExcel->getSheet(0);
           $filasMax = $hoja->getHighestRow();
+
           $columnaMaxLetra = $hoja->getHighestDataColumn(); 
           $totalColumnas = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
           $limitePermitido = 20; // Columna T es la 20
 
-          if (($totalColumnas > $limitePermitido) || ($totalColumnas < $limitePermitido)) {
+          if ($totalColumnas != $limitePermitido) {
               echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. Solo se permiten $limitePermitido (hasta la 'T'). Por favor, elimine columnas sobrantes.")));
               return;
           }
 
           // --- 2. VALIDACIÓN FILA POR FILA ---
           for ($i = 2; $i <= $filasMax; $i++) {
-              $cod_act = $hoja->getCell('A' . $i)->getValue();
-              $partida = $hoja->getCell('B' . $i)->getValue();
-              $cantidad = $hoja->getCell('E' . $i)->getValue();
-              $precio_crudo = $hoja->getCell('F' . $i)->getCalculatedValue();
-              $precio = ($precio_crudo !== NULL && trim($precio_crudo) !== '') ? trim($precio_crudo) : 0;
-              $celda_total = $hoja->getCell('G' . $i)->getCalculatedValue();
-              $total = (!empty($celda_total) && is_numeric($celda_total)) ? floatval($celda_total) : 0.00;
-              if($total!=($cantidad*$precio)){
-                $errores[] = "Fila $i: Error en el Costo Total != (Cantidad*Precio) verificar los valores..";
-              }
-              if (!empty($cod_act)) {
-                $prod_id=$cite[0]['prod_id'];
+              
+              $cod_act       = trim($hoja->getCell('A' . $i)->getValue());
+              $partida       = trim($hoja->getCell('B' . $i)->getValue());
+              $requerimiento = trim($hoja->getCell('C' . $i)->getValue());
+              $unidad_medida = trim($hoja->getCell('D' . $i)->getValue());
+              
+              $cantidad_raw  = $hoja->getCell('E' . $i)->getCalculatedValue();
+              $precio_raw    = $hoja->getCell('F' . $i)->getCalculatedValue();
+              $total_raw     = $hoja->getCell('G' . $i)->getCalculatedValue();
+              $observacion   = trim($hoja->getCell('T' . $i)->getValue());
 
+              if (empty($cod_act) && empty($partida) && empty($requerimiento) && (empty($total_raw) || floatval($total_raw) == 0)) {
+                  // Alerta institucional con la instrucción didáctica de limpieza
+                  $errores[] = "🚨 RECHAZO DE PLANILLA: Se detectó que la Fila N° $i está completamente vacía o contiene residuos de formato invisible de Excel. Por favor, abra su archivo Excel, seleccione la Fila $i completa (haciendo clic en el número de la fila a la izquierda), haga clic derecho y elija la opción 'Eliminar' para purgar la planilla antes de reintentar la subida.";
+                  // Detiene el bucle por completo para no procesar hileras vacías inferiores
+                  break; 
+              }
+
+              if ($cantidad_raw === NULL || trim($cantidad_raw) === '' || !is_numeric($cantidad_raw)) {
+                  $errores[] = "Fila $i: La 'CANTIDAD' es obligatoria y debe ser numérica.";
               } else {
-                  $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
-              }
-
-              if (!empty($partida)) {
-                  $par_id=0;
-                  if (strlen($partida) == 5) {
-                      $verif_partida_asignada=$this->model_ptto_sigep->get_ptto_sigep_pi($cite[0]['aper_id'],$partida);
-                      if(count($verif_partida_asignada)!=0){
-                        $par_id=$verif_partida_asignada[0]['par_id'];
-                      }
-                      else{
-                        $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe o no esta asignado.";
-                      }
+                  $cantidad_float = floatval($cantidad_raw);
+                  if ($cantidad_float != floor($cantidad_float)) {
+                      $errores[] = "Fila $i: Restricción contable -> La 'CANTIDAD' ($cantidad_raw) debe ser un número entero puro, sin decimales.";
                   }
-                  else{
-                    $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida).";
-                  }
-              } else {
-                  $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
               }
+              $cantidad = intval($cantidad_raw);
 
 
-              if (!is_numeric($precio)) {
-                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' debe ser un valor numérico válido.";
+              // 📋 REGLA 2: VALIDACIÓN DE PRECIO UNITARIO (Máximo 2 decimales)
+                if ($precio_raw === NULL || trim($precio_raw) === '' || !is_numeric($precio_raw)) {
+                    $errores[] = "Fila $i: El 'PRECIO UNITARIO' es obligatorio y debe ser numérico.";
                 } else {
-                    $precio_float = floatval($precio);
-                    if (floor($precio_float * 100) != ($precio_float * 100)) {
-                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio) excede el límite permitido. Solo se aceptan hasta 2 decimales (Ej: 10.55).";
+                    $precio_float = floatval($precio_raw);
+                    if (round($precio_float, 2) != $precio_float) {
+                        $errores[] = "Fila $i: El 'PRECIO UNITARIO' ($precio_raw) excede el límite. Solo se aceptan hasta 2 decimales (Ej: 2500.00).";
                     }
                 }
+                $precio = round(floatval($precio_raw), 2);
 
-              // Validaciones básicas
-              if (empty($cod_act)) $errores[] = "Fila $i: 'COD ACT' es obligatorio.";
-              if (empty($partida)) $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
-              if (!is_numeric($total)) $errores[] = "Fila $i: El 'TOTAL' debe ser un número.";
-              $suma_meses = 0;
-              $columnas_meses = array('H','I','J','K','L','M','N','O','P','Q','R','S');
-              
-              ///----------
-              foreach ($columnas_meses as $col) {
-                // Se evalúa la ecuación mensual directa en caliente
-                $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
-                // Si la celda con fórmula o vacía no tiene valor, la homologamos a 0 puros
-                $val_mes = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+                // 📋 REGLA 3: VALIDACIÓN DEL COSTO TOTAL MATEMÁTICO (Cantidad * Precio)
+                $total_calculado = round(($cantidad * $precio), 2);
+                $total_archivo   = round(floatval($total_raw), 2);
 
-                if (!is_numeric($val_mes)) {
-                    $errores[] = "Fila $i: Valor no numérico detectado en el mes de la columna '$col'.";
-                    break;
+                if (abs($total_archivo - $total_calculado) > 0.05) {
+                    $errores[] = "Fila $i: El 'PRECIO TOTAL' registrado ($total_raw) no coincide con la ecuación aritmética (Cantidad: $cantidad * Precio: $precio = $total_calculado).";
                 }
-                $suma_meses += floatval($val_mes);
-              }
 
-              // Validación de integridad: ¿La suma de los meses coincide con el TOTAL?
-              if (abs($suma_meses - $total) > 0.01) { // Usamos margen por decimales
-                  $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con el TOTAL ($total).";
-              }
+                if (!empty($cod_act)) {
+                  $prod_id=$cite[0]['prod_id'];
 
-              if (empty($errores)) {
-                  // Preparamos el array para PostgreSQL
-                  $data_insertar[] = array(
-                      'ins_codigo'   => $this->session->userdata("name").'/REQ/'.$this->gestion,
-                      'ins_fecha_requerimiento' => date('d/m/Y'), /// Fecha de Requerimiento
-                      'par_id'   => $par_id,
-                      'ins_detalle'   => strtoupper($hoja->getCell('C' . $i)->getValue()),
-                      'ins_unidad_medida'    => strtoupper($hoja->getCell('D' . $i)->getValue()),
-                      'ins_cant_requerida'    => $hoja->getCell('E' . $i)->getValue(),
-                      'ins_costo_unitario'      => round(floatval($precio), 2),
-                      'ins_costo_total'     => $total,
-                      'ins_observacion'=> $hoja->getCell('T' . $i)->getValue(),
-                      'ins_tipo_modificacion' => $cite[0]['tipo_modificacion'], /// tipo modificacion
-                      'fun_id' => $this->fun_id, /// Funcionario
-                      'ins_gestion' => $this->gestion, /// gestion
-                      'aper_id' => $cite[0]['aper_id'], /// aper id
-                      'com_id' => $cite[0]['com_id'], /// com id 
-                      'form4_cod' => $cod_act, /// cod act
-                      'ins_mod' => 2, /// mod
-                      'num_ip' => $this->input->ip_address(), 
-                      'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
-                  );
+                } else {
+                    $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";
+                }
 
-                      // Creamos un vector temporal con los meses para esta fila
-                  $meses_vector = array(
-                      1  => $hoja->getCell('H' . $i)->getCalculatedValue(),
-                      2  => $hoja->getCell('I' . $i)->getCalculatedValue(),
-                      3  => $hoja->getCell('J' . $i)->getCalculatedValue(),
-                      4  => $hoja->getCell('K' . $i)->getCalculatedValue(),
-                      5  => $hoja->getCell('L' . $i)->getCalculatedValue(),
-                      6  => $hoja->getCell('M' . $i)->getCalculatedValue(),
-                      7  => $hoja->getCell('N' . $i)->getCalculatedValue(),
-                      8  => $hoja->getCell('O' . $i)->getCalculatedValue(),
-                      9  => $hoja->getCell('P' . $i)->getCalculatedValue(),
-                      10 => $hoja->getCell('Q' . $i)->getCalculatedValue(),
-                      11 => $hoja->getCell('R' . $i)->getCalculatedValue(),
-                      12 => $hoja->getCell('S' . $i)->getCalculatedValue()
-                  );
-              }
-              if (count($errores) > 15) break; // Límite de errores para no saturar
-          }
-          // --- 4. INSERCIÓN FINAL ---
-          if (ob_get_length()) ob_clean(); 
-          header('Content-Type: application/json');
-          ob_clean();
-          if (empty($errores) && !empty($data_insertar)) {
-              $this->db->trans_start(); // Iniciar transacción en Postgres
-              
-              foreach ($data_insertar as $fila) {
-                  // Cambia 'tu_tabla_requerimientos' por el nombre real de tu tabla
-                  $this->db->insert('insumos', $fila);
-                  $ins_id=$this->db->insert_id();
-                  /*-----------------------------------------------*/
-                  $data_to_store2 = array( ///// Tabla InsumoProducto
-                    'prod_id' => $prod_id, /// prod id 
-                    'ins_id' => $ins_id, /// ins_id
-                  );
-                  $this->db->insert('_insumoproducto', $data_to_store2);
-                  /*---------------------------------------------*/
+
+                if (!empty($partida)) {
+                    $par_id=0;
+                    if (strlen($partida) == 5) {
+                        $verif_partida_asignada=$this->model_ptto_sigep->get_ptto_sigep_pi($cite[0]['aper_id'],$partida);
+                        if(count($verif_partida_asignada)!=0){
+                          $par_id=$verif_partida_asignada[0]['par_id'];
+                        }
+                        else{
+                          $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida) No existe o no esta asignado.";
+                        }
+                    }
+                    else{
+                      $errores[] = "Fila $i: Error en el registro de la 'PARTIDA' ($partida).";
+                    }
+                } else {
+                    $errores[] = "Fila $i: 'PARTIDA' es obligatoria.";
+                }
+
+
+                // 📋 REGLA 4: VALIDACIÓN MÁSTER Y RESOLUCIÓN DE FÓRMULAS EN LOS 12 MESES (H hasta la S)
+                $suma_meses = 0;
+                $columnas_meses = array('H' => 1,'I' => 2,'J' => 3,'K' => 4,'L' => 5,'M' => 6,'N' => 7,'O' => 8,'P' => 9,'Q' => 10,'R' => 11,'S' => 12);
+                $meses_valores = array();
+
+                foreach ($columnas_meses as $col => $mes_nro) {
+                    // 🛠️ REPARADO: getCalculatedValue() resuelve la fórmula de Excel (ej: =SUMA(), =5000/12) y extrae el resultado numérico puro
+                    $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
+                    $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
+                    
+                    if (!is_numeric($val_mes)) {
+                        $errores[] = "Fila $i: Valor o fórmula no numérica detectada en la columna del mes '$col'.";
+                        break;
+                    }
+                    
+                    $monto_mes = round(floatval($val_mes), 2);
+                    $suma_meses += $monto_mes;
+                    $meses_valores[$mes_nro] = $monto_mes; 
+                }
+
+                if (abs($suma_meses - $total_archivo) > 0.05) { 
+                    $errores[] = "Fila $i: La suma de la distribución mensual ($suma_meses) no cuadra con el PRECIO TOTAL ($total_archivo) de la celda G.";
+                }
+
+
+                if (empty($errores)) {
+                    $data_insertar[] = array(
+                        'maestro' => array(
+                            'ins_codigo'              => $this->session->userdata("name") . '/REQ/' . $this->gestion,
+                            'ins_fecha_requerimiento' => date('Y-m-d'), 
+                            'par_id'                  => $par_id,
+                            'ins_detalle'             => strtoupper($this->security->xss_clean($requerimiento)),
+                            'ins_unidad_medida'       => strtoupper($this->security->xss_clean($unidad_medida)),
+                            'ins_cant_requerida'      => $cantidad,
+                            'ins_costo_unitario'      => $precio,
+                            'ins_costo_total'         => $total_archivo,
+                            'ins_observacion'         => strtoupper($this->security->xss_clean($observacion)),
+                            'ins_tipo_modificacion'   => $cite[0]['tipo_modificacion'],
+                            'fun_id'                  => $this->fun_id,
+                            'ins_gestion'             => $this->gestion,
+                            'aper_id'                 => $cite[0]['aper_id'], 
+                            'com_id'                  => $cite[0]['com_id'], 
+                            'form4_cod'               => intval($cod_act), 
+                            'ins_mod'                 => 2, // Conmutador de registro insertado
+                            'num_ip'                  => $this->input->ip_address(), 
+                            'nom_ip'                  => gethostbyaddr($_SERVER['REMOTE_ADDR'])
+                        ),
+
+                        'meses' => $meses_valores // Array indexado del 1 al 12 resuelto por fórmulas
+                    );
+                }
+             }   
+
+             if (empty($errores) && count($data_insertar) > 0) {
+                
+                // Levantamos los muros de control transaccional para aislar fallas de presupuesto
+                $this->db->trans_start(); 
+                $filas_insertadas_conteo = 0;
+
+                foreach ($data_insertar as $registro) {
+                    
+                    // 🛠️ REPARADO: Se inserta únicamente la estructura plana del sub-arreglo 'maestro'
+                    $this->db->insert('insumos', $registro['maestro']);
+                    
+                    // Recuperamos el ID autogenerado asignado por la secuencia en Postgres
+                    $ins_id = $this->db->insert_id();
+
+                    /*-----------------------------------------------*/
+                    // B. Registro de la alineación relacional en la tabla _insumoproducto
+                    $data_to_store2 = array(
+                        'prod_id' => $prod_id, // Variable física relacional obtenida en la validación
+                        'ins_id'  => $ins_id
+                    );
+                    $this->db->insert('_insumoproducto', $data_to_store2);
+                    /*---------------------------------------------*/
+                    
                     /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
-                      for ($i=1; $i <=12 ; $i++) {
-                        $pfin=$this->security->xss_clean($meses_vector[$i]);
-                        if($pfin!=0){
+                    // 🛠️ REPARADO: Se recorre la colección real 'meses' usando $m_id para no pisar el iterador superior $i
+                    for ($m_id = 1; $m_id <= 12; $m_id++) {
+                        $pfin = isset($registro['meses'][$m_id]) ? $registro['meses'][$m_id] : 0;
+                        
+                        if ($pfin != 0) {
                             $data_to_store4 = array( 
-                              'ins_id' => $ins_id, /// Id Insumo
-                              'mes_id' => $i, /// Mes 
-                              'ipm_fis' => $pfin, /// Valor mes
-                              'g_id' => $this->gestion, /// Gestion 
+                                'ins_id'  => $ins_id,          // Id Insumo maestro correlativo
+                                'mes_id'  => $m_id,            // Mes dinámico (1 al 12)
+                                'ipm_fis' => $pfin,            // Valor físico financiero del mes resuelto
+                                'g_id'    => $this->gestion,   // Gestión POA activa de sesión
                             );
                             $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
                         }
-                      }
-                    /*------------------------------------------*/
-                    /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
-                    if($this->copia_insumo($cite_id,$ins_id,1)){ /// inserta historial reporte
+                    }
+                    
+                    $filas_insertadas_conteo++;
+                    if($this->copia_insumo2($cite,$this->model_insumo->get_requerimiento($ins_id))){ /// inserta historial reporte
                       /*---- iNSERT AUDI ADICIONAR INSUMOS ---*/
                         $this->update_activo_modificacion($cite_id);
                       /*--------------------------------------*/
                     }
-              }
-              $this->db->trans_complete();
-              if ($this->db->trans_status() === FALSE) {
-                  echo json_encode(array(
-                      'status' => 'error', 
-                      'errors' => array('Error al insertar en la base de datos (Transacción fallida).')
-                  ));
-              } else {
-                  echo json_encode(array(
-                      'status' => 'success', 
-                      'msj' => 'Importación finalizada con éxito.',
-                      'conteo' => count($data_insertar) 
-                  ));
-              }
-          } else {
-              // Si hay errores de validación o no hay datos
-              echo json_encode(array(
-                  'status' => 'error', 
-                  'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no tiene datos válidos.')
-              ));
-          }
-          exit; 
+                }
+
+                // Cerramos e indicamos a CodeIgniter que evalúe el estatus de las inserciones
+                $this->db->trans_complete();
+
+                // Si PostgreSQL detecta un desbordamiento numérico o violación de tope, aplica Rollback total
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array(
+                        'status'    => 'error', 
+                        'respuesta' => 'error', 
+                        'mensaje'   => 'PostgreSQL rechazó las restricciones físicas o techos de los requerimientos. Matriz revertida de forma íntegra.'
+                    ));
+                    return;
+                }
+
+                // 🌟 ÉXITO ABSOLUTO: Despachamos el payload esperado por tu $.ajax en form4.js
+                echo json_encode(array(
+                    'status'           => 'success',
+                    'respuesta'        => 'correcto',
+                    'mensaje'          => '¡Matriz de requerimientos contables consolidados e inyectados en el sistema de forma exitosa!',
+                    'filas_procesadas' => $filas_insertadas_conteo
+                ));
+
+            } else {
+                // Si la colección de errores contiene advertencias estructurales, frena e informa al usuario
+                echo json_encode(array(
+                    'status'    => 'error',
+                    'respuesta' => 'error',
+                    'mensaje'   => 'Se detectaron observaciones de validación en la estructura o coincidencia de la plantilla.',
+                    'errores'   => !empty($errores) ? $errores : array("No se encontraron registros consistentes para migrar.")
+                ));
+            }
+
+
       } catch (Exception $e) {
-          echo json_encode(array('status' => 'error', 'errors' => array('Excepción: ' . $e->getMessage())));
-      }
+            // Captura forense de desbordamientos de memoria del motor de PHPExcel
+            echo json_encode(array(
+                'status'    => 'error', 
+                'respuesta' => 'error', 
+                'mensaje'   => 'Falla crítica del lector de planillas: ' . $e->getMessage()
+            ));
+        }
     }
 
 
@@ -2214,6 +2257,67 @@ class Cmod_insumo extends CI_Controller {
           echo 'DATOS ERRONEOS';
       }
     }
+
+
+
+    /*---- Funcion Copia Insumo a Historial para reportes----*/
+    public function copia_insumo2($cite,$insumo){
+      //$insumo = $this->model_insumo->get_requerimiento($ins_id); //// DATOS DEL REQUERIMIENTO
+      //$insumo = $this->minsumos->get_dato_insumo($ins_id); //// DATOS DEL REQUERIMIENTO
+      
+      if(count($insumo)!=0){
+       // $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); /// Datos Cite
+       // $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); //// DATOS DEL PROYECTO
+
+        //$ins_rel=$this->minsumos->relacion_ins_ope($ins_id);
+        //$id=$ins_rel[0]['prod_id'];
+
+        $query=$this->db->query('set datestyle to DMY');
+          $data_to_store = array( 
+            'ins_codigo' => $insumo[0]['ins_codigo'], /// Codigo Insumo
+            'ins_fecha_requerimiento' => $insumo[0]['ins_fecha_requerimiento'], /// Fecha de Requerimiento
+            'ins_detalle' => $insumo[0]['ins_detalle'], /// Insumo Detalle
+            'ins_cant_requerida' => $insumo[0]['ins_cant_requerida'], /// Cantidad Requerida
+            'ins_costo_unitario' => $insumo[0]['ins_costo_unitario'], /// Costo Unitario
+            'ins_costo_total' => $insumo[0]['ins_costo_total'], /// Costo Total
+            'ins_unidad_medida' => $insumo[0]['ins_unidad_medida'], /// Insumo Unidad de Medida
+            'ins_tipo' => $insumo[0]['ins_tipo'], /// Ins Tipo
+            'par_id' => $insumo[0]['par_id'], /// Partidas
+            'ins_observacion' => $insumo[0]['ins_observacion'], /// Ins Observacion
+            'ins_tipo_modificacion' => $insumo[0]['ins_tipo_modificacion'], /// mod por poa o reversion
+            'fun_id' => $this->fun_id, /// Funcionario quien realizo la ACCION DE MODIFICACION
+            'aper_id' => $cite[0]['aper_id'], /// aper id
+            'num_ip' => $this->input->ip_address(), 
+            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+            'id' => $insumo[0]['prod_id'], ///prod id
+            'tipo_mod' => 1, ///tipo de modificacion 1:adicion, 2:modificacion, 3: eliminacion
+            'cite_id' => $cite[0]['cite_id'], ///cite id
+            'ins_id' => $insumo[0]['ins_id'], ///ins id
+          );
+          $this->db->insert('insumos_historial', $data_to_store); ///// Guardar en Tabla Insumos 
+          $insh_id=$this->db->insert_id();
+
+          for ($i=1; $i <=12 ; $i++) { 
+            if($insumo[0]['mes'.$i]!=0){
+               $data_to_store4 = array(
+              'insh_id' => $insh_id, /// Insumo Id
+              'mes_id' => $i, /// Mes
+              'ipm_fis' => $insumo[0]['mes'.$i], /// Valor
+              'g_id' => $this->gestion, /// gestion
+              );
+              $this->db->insert('temporalidad_prog_insumo_historial', $data_to_store4);
+            }
+          }
+
+          return true;
+      }
+      else{
+        return false;
+      }
+      
+    }
+
+
 
 
     /*---- Funcion Copia Insumo a Historial para reportes----*/

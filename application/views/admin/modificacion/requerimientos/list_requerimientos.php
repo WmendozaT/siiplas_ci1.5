@@ -642,71 +642,7 @@
 	 	<!--  =============== -->
 
 	    <!-- ================== MODAL SUBIR ARCHIVO ========================== -->
-		<div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true">
-		    <div class="modal-dialog" id="dialog_subir">
-		        <div class="modal-content" style="border-radius: 8px; border: none; overflow: hidden;">
-		            
-		            <!-- Cabecera más limpia -->
-		            <div class="modal-header" style="background: #f8f9fa; border-bottom: 1px solid #eee; padding: 15px 20px;">
-		                <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 24px;">
-		                    <span aria-hidden="true">&times;</span>
-		                </button>
-		                <h4 class="modal-title" style="font-weight: bold; color: #333;">
-		                    <i class="fa fa-upload text-primary"></i> Subir Archivo Requerimientos Excel
-		                </h4>
-		            </div>
-
-		            <div class="modal-body" style="padding: 25px;">
-		                <!-- Título e Instrucción -->
-		                <div class="text-center" style="margin-bottom: 20px;">
-		                    <h5 style="font-weight: bold; text-transform: uppercase; color: #555;">Subir archivo Excel (.xls, .xlsx)</h5>
-		                    <p  style="font-size:12px; color: blue;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
-		                    <p  style="font-size:15px; color: red;" class="text-muted"><b>NOTA !!!!<b/> No es Necesario que el archivo este en formato .CSV</p>
-		                </div>
-
-		                <!-- Vista previa de columnas (Imagen optimizada) -->
-		                <div class="thumbnail" style="border: 1px dashed #ddd; padding: 10px; background: #fafafa;">
-		                    <img src="<?= base_url('assets/img/img_migracion/migracion_form5.JPG'); ?>" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto;">
-		                </div>
-
-		                <form action="<?= site_url('modificaciones/cmod_insumo/valida_add_requerimientos'); ?>" method="post" enctype="multipart/form-data" id="form_subir_sigep">
-		                    <input type="hidden" name="cite_id" value="<?= $cite[0]['cite_id']; ?>" />
-		                    
-		                    <div class="form-group" style="margin-top: 20px;">
-		                        <label style="display: block; font-weight: bold; margin-bottom: 10px; color: blue;">SELECCIONAR ARCHIVO EXCEL</label>
-		                        <div class="input-group input-group-lg">
-		                            <span class="input-group-btn">
-		                                <button type="button" class="btn btn-primary" onclick="$(this).parent().find('input[type=file]').click();" style="border-radius: 4px 0 0 4px;">
-		                                    <i class="fa fa-folder-open"></i> Examinar...
-		                                </button>
-		                                <input id="archivo" accept=".xlsx, .xls" name="archivo" 
-		                                       onchange="$(this).parent().parent().find('.file-name-display').val($(this).val().split(/[\\|/]/).pop());" 
-		                                       style="display: none;" type="file" required>
-		                            </span>
-		                            <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #fff; cursor: default;">
-		                        </div>
-		                    </div>
-
-		                    <div id="mensaje" style="margin: 10px 0;"></div>
-
-		                    <!-- Botón de Acción -->
-		                    <div style="margin-top: 25px;">
-		                        <button type="button" id="btn_subir" class="btn btn-success btn-lg btn-block" style="font-weight: bold; border-radius: 4px; transition: all 0.3s;">
-		                            <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
-		                        </button>
-		                    </div>
-
-		                    <!-- Loader -->
-		                    <div id="loads" class="text-center" style="display: none; margin-top: 15px;">
-		                        <i class="fa fa-spinner fa-spin fa-2x text-success"></i>
-		                        <p style="margin-top: 10px;"><b>Validando datos, por favor espere...</b></p>
-		                    </div>
-		                </form>
-		            </div>
-		        </div>
-		    </div>
-		</div>
-
+		<?php echo $modal_migracion; ?>
 		<?php echo $loading;?>
 		<!-- END PAGE FOOTER -->
 		<script>

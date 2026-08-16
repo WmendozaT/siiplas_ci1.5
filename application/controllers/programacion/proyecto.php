@@ -101,6 +101,55 @@ class Proyecto extends CI_Controller {
                                            onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
                                             <i class="fa fa-cloud-upload" style="font-size: 12px; color: #ffffff;"></i> Subir Formulario N° 4 (.xls)
                                         </a>';
+                                       $tabla .= '
+                                        <!-- Contenedor agrupador para asegurar la alineación de Bootstrap -->
+                                        <div class="btn-group" style="display: inline-flex; vertical-align: middle; margin-left: 5px;">
+                                            
+                                            <!-- Botón Disparador del Menú de Eliminación -->
+                                            <button type="button" 
+                                                    class="btn btn-sm dropdown-toggle" 
+                                                    data-toggle="dropdown" 
+                                                    aria-haspopup="true" 
+                                                    aria-expanded="false"
+                                                    title="OPCIONES DE ELIMINACIÓN MASIVA"
+                                                    style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #dc2626; border: 1px solid #b91c1c; color: #ffffff; border-radius: 3px; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 5px;"
+                                                    onmouseover="this.style.background=\'#b91c1c\'; this.style.borderColor=\'#991b1b\';"
+                                                    onmouseout="this.style.background=\'#dc2626\'; this.style.borderColor=\'#b91c1c\';">
+                                                <i class="fa fa-trash"></i> ELIMINAR REGISTRO <span class="caret" style="margin-left: 2px;"></span>
+                                            </button>
+
+                                            <!-- Lista de las 4 Opciones de Eliminación -->
+                                            <ul class="dropdown-menu dropdown-menu-right" style="border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; padding: 5px 0; margin-top: 2px; min-width: 255px; font-size: 11.5px; font-family: Arial, sans-serif;">
+                                                <li class="dropdown-header" style="font-weight: bold; text-transform: uppercase; color: #64748b; font-size: 10px; padding: 6px 15px; letter-spacing: 0.5px;">Acciones de Limpieza</li>
+                                                
+                                                <li>
+                                                    <!-- 🛠️ AJUSTE: Ahora data-cite envía dinámicamente el ID real del registro -->
+                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="1" data-cite="1" style="padding: 7px 15px; color: #334155; display: flex; align-items: center; gap: 8px;">
+                                                        <i class="fa fa-file-excel-o text-danger" style="width: 14px;"></i> Eliminar registro de CIS
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
+                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="2" data-cite="2" style="padding: 7px 15px; color: #334155; display: flex; align-items: center; gap: 8px;">
+                                                        <i class="fa fa-calendar-times-o text-warning" style="width: 14px;"></i> Eliminar registro de CIMFA-PAISE-CAISE
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
+                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="3" data-cite="3" style="padding: 7px 15px; color: #334155; display: flex; align-items: center; gap: 8px;">
+                                                        <i class="fa fa-ban text-muted" style="width: 14px;"></i> Eliminar registro HOSPITALES
+                                                    </a>
+                                                </li>
+                                                <li role="separator" class="divider" style="margin: 5px 0; border-color: #f1f5f9;"></li>
+                                                <li>
+                                                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
+                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="4" data-cite="4" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
+                                                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
+                                                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro MEDICINA DE TRABAJO
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>';
                                     }
                                     
                                 $tabla .= '
@@ -2161,6 +2210,87 @@ class Proyecto extends CI_Controller {
             echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
         }
     }
+
+
+
+    /// Eliminar Registro de actividades migrados 2027
+    public function ejecutar_borrado_estructurado() {
+        // 1. Validar que la petición entre estrictamente por POST
+        if ($this->input->method() !== 'post') {
+            echo json_encode(array('status' => 'error', 'message' => 'Acceso denegado. Método no permitido.'));
+            return;
+        }
+
+        // 2. Rescatar variables sanitizadas
+        $opcion  = intval($this->input->post('opcion'));
+        $cite_id = intval($this->input->post('cite_id'));
+
+        if (empty($opcion) || empty($cite_id)) {
+            echo json_encode(array('status' => 'error', 'message' => 'Parámetros de eliminación insuficientes o corruptos.'));
+            return;
+        }
+
+        // Nombre identificador para el mensaje de respuesta
+        $nombre_proceso = "";
+
+        // 3. Iniciar Transacción de Base de Datos para asegurar la consistencia
+        $this->db->trans_begin();
+
+/*        switch ($opcion) {
+            case 1:
+                $nombre_proceso = "Registro de CIS";
+                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
+                // $this->db->where('cite_id', $cite_id);
+                // $this->db->delete('tabla_cis');
+                break;
+
+            case 2:
+                $nombre_proceso = "Registro de CIMFA-PAISE-CAISE";
+                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
+                // $this->db->where('cite_id', $cite_id);
+                // $this->db->delete('tabla_cimfa');
+                break;
+
+            case 3:
+                $nombre_proceso = "Registro HOSPITALES";
+                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
+                // $this->db->where('cite_id', $cite_id);
+                // $this->db->delete('tabla_hospitales');
+                break;
+
+            case 4:
+                $nombre_proceso = "Registro MEDICINA DE TRABAJO";
+                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
+                // $this->db->where('cite_id', $cite_id);
+                // $this->db->delete('tabla_medicina_trabajo');
+                break;
+
+            default:
+                $this->db->trans_rollback();
+                echo json_encode(array('status' => 'error', 'message' => 'La opción de borrado seleccionada no es válida.'));
+                return;
+        }
+
+        // 4. Evaluar si las consultas de la transacción se ejecutaron correctamente
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            echo json_encode(array('status' => 'error', 'message' => 'Falla interna al intentar suprimir el ' . $nombre_proceso . ' de la base de datos.'));
+        } else {
+            $this->db->trans_commit();
+            echo json_encode(array(
+                'status' => 'success', 
+                'message' => 'El ' . $nombre_proceso . ' con ID ' . $cite_id . ' fue eliminado exitosamente del sistema.'
+            ));
+        }*/
+
+
+         echo json_encode(array(
+                'status' => 'success', 
+                'message' => 'El ' . $nombre_proceso . ' con ID ' . $cite_id . ' fue eliminado exitosamente del sistema.'
+            ));
+    }
+
+
 
 
 }

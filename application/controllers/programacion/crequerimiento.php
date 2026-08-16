@@ -263,7 +263,8 @@ class crequerimiento extends CI_Controller {
                 $tabla .= '<td style="text-align: right; padding: 6px; width: 5%; vertical-align: middle;">' . number_format($row['ins_costo_unitario'], 2, '.', ',') . '</td>';
                 $tabla .= '<td style="text-align: right; font-weight: width: 5%; bold; background: #f8fafc; color: #0f172a; padding: 6px; vertical-align: middle;">' . number_format($row['ins_costo_total'], 2, '.', ',') . '</td>';
                 for ($m = 1; $m <= 12; $m++) {
-                    $monto_mes_real = isset($row['mes_' . $m]) ? floatval($row['mes_' . $m]) : 0.00;
+                   // $tabla.='<td>'.floatval($row['mes' . $m]).'</td>';
+                    $monto_mes_real = isset($row['mes' . $m]) ? floatval($row['mes' . $m]) : 0.00;
                     $style_celda_mes = ($monto_mes_real > 0) ? 'style="text-align: right; width: 4.5%; background: #f0fdf4; color: #16a34a; font-weight: bold; padding: 6px; vertical-align: middle;"' : 'style="text-align: right; color: #cbd5e1; padding: 6px; vertical-align: middle;"';
                     $tabla .= '<td ' . $style_celda_mes . '>' . ($monto_mes_real > 0 ? number_format($monto_mes_real, 2, '.', ',') : '0.00') . '</td>';
                     $total_meses[$m] += $monto_mes_real;

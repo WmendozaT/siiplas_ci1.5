@@ -177,6 +177,77 @@ function abreVentana_poa(url) {
 
 
 
+///// Eliminar Registro de lo migrado Act4 Insitucional
+$(document).ready(function() {
+    
+    $(document).on('click', '.btn-eliminar-opcion', function(e) {
+        e.preventDefault();
+        
+        var opcionId = $(this).data('opcion'); // Retorna 1, 2, 3 o 4
+        var citeId   = $(this).data('cite');   // ID del registro asociado
+        var nombreRegistro = $(this).text().trim(); // Captura el texto de la opción seleccionada
+
+        // Mensaje de confirmación nativo del navegador (Seguro y compatible)
+        var mensajeConfirmacion = "¿Está absolutamente seguro de que desea ejecutar la siguiente acción?\n\n" + 
+                                  "➔ ACCIÓN: " + nombreRegistro + "\n" +
+                                  "➔ ID REGISTRO: " + citeId + "\n\n" +
+                                  "Esta operación no se puede deshacer. ¿Desea continuar?";
+
+        if (confirm(mensajeConfirmacion)) {
+            
+            // Capturar de forma preventiva el token CSRF de CodeIgniter por si está activo
+            var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+            var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+            
+            var dataPost = {
+                opcion: opcionId,
+                cite_id: citeId
+            };
+            
+            if (csrf_name !== '') {
+                dataPost[csrf_name] = csrf_hash;
+            }
+
+            $.ajax({
+                type: "POST",
+                // Modifica esta URL según la ruta exacta de tu controlador
+                url: base+"index.php/programacion/proyecto/ejecutar_borrado_estructurado";
+                data: dataPost,
+                dataType: "json",
+                beforeSend: function() {
+                    // Desactivar el menú desplegable temporalmente durante la carga
+                    $('.dropdown-toggle').prop('disabled', true);
+                },
+                success: function(response) {
+                    $('.dropdown-toggle').prop('disabled', false);
+
+                    if (response.status === 'success') {
+                        // Alerta nativa de éxito
+                        alert("✔ ÉXITO: " + response.message);
+                        
+                        // Recargar el listado asíncrono o la página
+                        if (typeof recargar_listado_requerimientos_cns_ajax === "function") {
+                            recargar_listado_requerimientos_cns_ajax();
+                        } else {
+                            location.reload();
+                        }
+                    } else {
+                        alert("❌ ERROR: " + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('.dropdown-toggle').prop('disabled', false);
+                    alert("❌ Error crítico de red (" + xhr.status + "): No se pudo procesar la eliminación en el servidor.");
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    });
+});
+
+
+
+
 
 
   function confirmar(){
