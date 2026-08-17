@@ -68,7 +68,7 @@ class Producto extends CI_Controller {
 
       if (!empty($data['componente']) && count($data['componente']) != 0) {
           // A. Recuperamos la matriz cruda de actividades registradas actualmente
-            $form4_crudo = $this->model_producto->lista_form4_x_unidadresponsable($com_id);
+            $form4_crudo = $this->model_producto->lista_productos($com_id);
             
             // 🌟 MOTOR AUTOMÁTICO: Re-enumeramos el correlativo prod_cod (1, 2, 3...) en caliente
             if (!empty($form4_crudo) && count($form4_crudo) > 0) {
@@ -157,8 +157,12 @@ class Producto extends CI_Controller {
                       <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>VER MIS REQUERIMIENTOS</b>
                     </a>
                     <a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$com_id.'\');" class="btn btn-primary" title="REPORTE FORM. 4"> <img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>REPORTE FORM N 4</a>
-                    <a onclick="eliminar_form4_todos()" class="btn btn-danger"  title="Eliminar Actividades de la unidad (todos)"><img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 4 (TODOS)</a>
-                    <a onclick="eliminar_requerimientos_UnidadReponsable()" class="btn btn-danger"  title="Eliminar Solo Requerimientos de la unidad (todos)"><img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 5 (TODOS)</a>';
+                    <a onclick="eliminar_form4_todos(this)" class="btn btn-danger" title="Eliminar Actividades de la unidad (todos)">
+                        <img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 4 (TODOS)</b>
+                    </a>
+                    <a onclick="eliminar_requerimientos_UnidadReponsable(this)" class="btn btn-danger" title="Eliminar Solo Requerimientos de la unidad (todos)">
+                        <img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 5 (TODOS)</b>
+                    </a>';
                   }
                   $data['titulo'].='
               </div>
@@ -865,10 +869,10 @@ class Producto extends CI_Controller {
 
 
 
-      /// ==== MIGRACION EXCEL DE ACTIVIDADES - Formulario N° 4 / 2027
+      /// ==== MIGRACION EXCEL DE ACTIVIDADES x unidad responsable - Formulario N° 4 / 2027
       public function valida_migracion_form4() {
-        ini_set('max_execution_time', 300); // 5 minutos
-        ini_set('memory_limit', '512M');    // Aumentar memoria
+        ini_set('max_execution_time', 900); // 15 minutos máximos de procesamiento de CPU
+        ini_set('memory_limit', '3072M'); 
 
         $this->load->library('excel'); 
         $com_id = $this->input->post('com_id');
@@ -935,21 +939,8 @@ class Producto extends CI_Controller {
                     continue;
                 }
 
-              /*  if (!empty($cod_uresp)) {
-                    if (strlen($cod_uresp) != 4) {
-                        $errores[] = "Fila $i: El código de 'UNIDAD RESPONSABLE' ($cod_uresp) debe tener exactamente 4 caracteres.";
-                    } 
-                    else {
-                      if($get_unidad[0]['serv_cod']!=$cod_uresp){
-                        $errores[] = "Fila $i: Error en la 'UNIDAD RESPONSABLE' ($cod_uresp). debe exluir del archivo a migrar, ya que corresponde a otra Unidad Responsable.";
-                      }
-                    }
-                } else {
-                    $errores[] = "Fila $i: 'CODIGO DE UNIDAD RESPONSABLE' es obligatoria.";
-                }*/
-
                 // Verificando códigos ACP y Operación
-                /*if (!empty($cod_acp) && !empty($cod_ope)) {
+                if (empty($cod_acp) && empty($cod_ope)) {
                     if (count($list_oregional) != 0) {
                         $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
                         if (count($get_acc) != 0) {
@@ -964,7 +955,7 @@ class Producto extends CI_Controller {
 
                 if (!is_numeric($meta) || floatval($meta) <= 0) {
                     $errores[] = "Fila $i: La 'META' debe ser un número válido mayor a cero.";
-                }*/
+                }
 
                 // Validación C: Cronograma Mensualizado Saneado (J al U)
                 $suma_meses = 0;
@@ -987,9 +978,9 @@ class Producto extends CI_Controller {
                 }
 
                 // Validación de Coincidencia Física Matemática
-                /*if (abs($suma_meses - floatval($meta)) > 0.01) {
+                if (abs($suma_meses - floatval($meta)) > 0.01) {
                     $errores[] = "Fila $i: La suma de los meses ($suma_meses) no coincide con la meta ($meta).";
-                }*/
+                }
 
                 if (empty($errores)) {
                     // 🌟 SOLUCIÓN RAÍZ: Agrupamos el Maestro y su Detalle mensual correspondiente en paralelo

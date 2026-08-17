@@ -178,75 +178,111 @@ function abreVentana_poa(url) {
 
 
 ///// Eliminar Registro de lo migrado Act4 Insitucional
+var xhr_eliminacion_masiva_formularios = null;
 $(document).ready(function() {
-    
-    $(document).on('click', '.btn-eliminar-opcion', function(e) {
+    function restaurar_configuracion_alertify() {
+        if (typeof alertify !== "undefined") {
+            alertify.set({
+                labels: { ok: "ACEPTAR Y ELIMINAR", cancel: "CANCELAR" },
+                delay: 5000,
+                buttonReverse: false,
+                buttonFocus: "cancel" 
+            });
+        }
+    }
+
+    $(document).on("click", ".btn-eliminar-opcion", function (e) {
         e.preventDefault();
-        
-        var opcionId = $(this).data('opcion'); // Retorna 1, 2, 3 o 4
-        var citeId   = $(this).data('cite');   // ID del registro asociado
-        var nombreRegistro = $(this).text().trim(); // Captura el texto de la opción seleccionada
+        restaurar_configuracion_alertify();
 
-        // Mensaje de confirmación nativo del navegador (Seguro y compatible)
-        var mensajeConfirmacion = "¿Está absolutamente seguro de que desea ejecutar la siguiente acción?\n\n" + 
-                                  "➔ ACCIÓN: " + nombreRegistro + "\n" +
-                                  "➔ ID REGISTRO: " + citeId + "\n\n" +
-                                  "Esta operación no se puede deshacer. ¿Desea continuar?";
+        var $btn_opcion = $(this);
+        var opcion_id   = $btn_opcion.data("opcion") || $btn_opcion.attr("data-opcion");
+        var texto_item  = $btn_opcion.text().trim(); 
 
-        if (confirm(mensajeConfirmacion)) {
-            
-            // Capturar de forma preventiva el token CSRF de CodeIgniter por si está activo
-            var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
-            var csrf_hash = $('[name="csrf_test_name"]').val() || '';
-            
-            var dataPost = {
-                opcion: opcionId,
-                cite_id: citeId
-            };
-            
-            if (csrf_name !== '') {
-                dataPost[csrf_name] = csrf_hash;
-            }
+        if (!opcion_id) {
+            if (typeof alertify !== "undefined") alertify.error("⚠️ Error: Atributos contextuales de la fila corruptos.");
+            return false;
+        }
 
-            $.ajax({
-                type: "POST",
-                // Modifica esta URL según la ruta exacta de tu controlador
-                url: base+"index.php/programacion/proyecto/ejecutar_borrado_estructurado";
-                data: dataPost,
-                dataType: "json",
-                beforeSend: function() {
-                    // Desactivar el menú desplegable temporalmente durante la carga
-                    $('.dropdown-toggle').prop('disabled', true);
-                },
-                success: function(response) {
-                    $('.dropdown-toggle').prop('disabled', false);
+        var mensaje_confirmacion = `🚨 <b>¿CONFIRMA LA ELIMINACIÓN MASIVA SELECCIONADA?</b><br><br>` +
+                                   `• Acción: <span style="color:#dc2626; font-weight:bold;">${texto_item}</span><br>` +
+                                   `• FORMULARIO : <b>${opcion_id}</b><br><br>` +
+                                   `<i>El motor del SIIPLAS v2.0 eliminará todos los registros de Actividades y requerimientos (si corresponde)</i>`;
 
-                    if (response.status === 'success') {
-                        // Alerta nativa de éxito
-                        alert("✔ ÉXITO: " + response.message);
-                        
-                        // Recargar el listado asíncrono o la página
-                        if (typeof recargar_listado_requerimientos_cns_ajax === "function") {
-                            recargar_listado_requerimientos_cns_ajax();
-                        } else {
-                            location.reload();
-                        }
-                    } else {
-                        alert("❌ ERROR: " + response.message);
+        if (typeof alertify !== "undefined") {
+            alertify.confirm(mensaje_confirmacion, function (a) {
+                if (a) {
+                    
+                    // 🛠️ ACTIVACIÓN DEL LOADING Y BLOQUEO DE CONTROLES
+                    var $dropdownBtn = $(".btn-group").find("button.dropdown-toggle");
+                    var textoOriginalBtn = $dropdownBtn.html(); // Guardar HTML original (ícono + texto)
+
+                    $("#loading-overlay").css("display", "flex"); // Muestra el overlay masivo
+                    $dropdownBtn.prop("disabled", true).html('<i class="fa fa-refresh fa-spin"></i> PROCESANDO...'); // Bloqueo visual local
+
+                    var url = base+"index.php/programacion/proyecto/delete_formularioN4_masivo_ajax";
+
+                    var csrf_name = $('[name="csrf_test_name"]').attr('name') || '';
+                    var csrf_hash = $('[name="csrf_test_name"]').val() || '';
+                    
+                    var query_post = { 
+                        opcion_id: parseInt(opcion_id)
+                    };
+                    if (csrf_name !== '') { query_post[csrf_name] = csrf_hash; }
+
+                    if (xhr_eliminacion_masiva_formularios && xhr_eliminacion_masiva_formularios.readyState !== 4) {
+                        xhr_eliminacion_masiva_formularios.abort();
                     }
-                },
-                error: function(xhr, status, error) {
-                    $('.dropdown-toggle').prop('disabled', false);
-                    alert("❌ Error crítico de red (" + xhr.status + "): No se pudo procesar la eliminación en el servidor.");
-                    console.error(xhr.responseText);
+
+                    xhr_eliminacion_masiva_formularios = $.ajax({
+                        url: url,
+                        type: "POST",
+                        dataType: "json",
+                        data: query_post,
+                        success: function (res) {
+                            // 🛠️ REMOCIÓN DEL LOADING Y DESBLOQUEO DE CONTROLES
+                            $("#loading-overlay").hide();
+                            $dropdownBtn.prop("disabled", false).html(textoOriginalBtn);
+
+                            if (res.respuesta === 'correcto' || res.status === 'success') {
+                                alertify.success("✔ Los registros fueron eliminados con éxito.");
+                                
+                                setTimeout(function() {
+                                    if (typeof recargar_listado_requerimientos_cns_ajax === "function") {
+                                        recargar_listado_requerimientos_cns_ajax();
+                                    } else {
+                                        location.reload(true);
+                                    }
+                                }, 1500);
+
+                            } else {
+                                alertify.error("🚨 Rechazo: " + (res.message || "PostgreSQL denegó la purga física."));
+                            }
+                        },
+                        error: function (xhr, textStatus, errorThrown) {
+                            if (textStatus === 'abort') return;
+                            
+                            // 🛠️ REMOCIÓN DEL LOADING EN CASO DE ERROR
+                            $("#loading-overlay").hide();
+                            $dropdownBtn.prop("disabled", false).html(textoOriginalBtn);
+                            
+                            if (xhr.status === 404) {
+                                alertify.error("❌ Error 404: Ruta de destino del controlador no localizada.");
+                            } else {
+                                alertify.error("❌ Error de comunicación: " + textStatus);
+                            }
+                            console.error("CNS EXCEPTION ELIMINACIÓN MASIVA ->", errorThrown);
+                        }
+                    });
+                } else {
+                    alertify.log("Operación cancelada. Las matrices presupuestarias permanecen inalteradas.");
                 }
             });
         }
+        return false;
     });
+
 });
-
-
-
 
 
 

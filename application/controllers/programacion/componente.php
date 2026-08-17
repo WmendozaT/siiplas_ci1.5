@@ -815,7 +815,7 @@ $tabla .= '
     }
 
 
-      //// PARA MIGRACION CONSOLIDADO DE ACTIVIDADES POR ARCHIVO EXCEL 2026 
+      //// PARA MIGRACION CONSOLIDADO DE ACTIVIDADES POR ARCHIVO EXCEL 2027 
       //// PARA TODAS LAS UNIDADES DE LA UNIDAD ORGANIZACIONAL
       public function valida_migracion_form4_consolidado() {
         ini_set('max_execution_time', 300); // 5 minutos
@@ -902,7 +902,7 @@ $tabla .= '
                 }
 
                 // Verificando códigos ACP y Operación
-                if (!empty($cod_acp) && is_numeric($cod_acp) && !empty($cod_ope) && is_numeric($cod_ope)) {
+                if (empty($cod_acp) && empty($cod_ope)) {
                     if (count($list_oregional) != 0) {
                         $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
                         if (count($get_acc) != 0) {

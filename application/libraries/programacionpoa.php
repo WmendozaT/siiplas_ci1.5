@@ -39,6 +39,72 @@ class Programacionpoa extends CI_Controller{
       $this->conf_poa_estado = $this->session->userData('conf_poa_estado'); /// Ajuste POA 1: Inicial, 2 : Ajuste, 3 : aprobado
     }
 
+    //// Seleccion de formularios subidos para el anteproyecto para su eliminacion
+    public function select_eliminacion_formularios_anteproyectopoa(){
+    $tabla='';
+    $tabla .= '
+        <div class="btn-group" style="display: inline-flex; vertical-align: middle; margin-left: 5px;">
+            <button type="button" 
+                    class="btn btn-sm dropdown-toggle" 
+                    data-toggle="dropdown" 
+                    aria-haspopup="true" 
+                    aria-expanded="false"
+                    title="OPCIONES DE ELIMINACIÓN MASIVA"
+                    style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #dc2626; border: 1px solid #b91c1c; color: #ffffff; border-radius: 3px; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 5px;"
+                    onmouseover="this.style.background=\'#b91c1c\'; this.style.borderColor=\'#991b1b\';"
+                    onmouseout="this.style.background=\'#dc2626\'; this.style.borderColor=\'#b91c1c\';">
+                <i class="fa fa-trash"></i> ELIMINAR REGISTRO <span class="caret" style="margin-left: 2px;"></span>
+            </button>
+
+            <!-- Lista de las 4 Opciones de Eliminación -->
+            <ul class="dropdown-menu dropdown-menu-right" style="border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; padding: 5px 0; margin-top: 2px; min-width: 255px; font-size: 11.5px; font-family: Arial, sans-serif;">
+                <li class="dropdown-header" style="font-weight: bold; text-transform: uppercase; color: #64748b; font-size: 10px; padding: 6px 15px; letter-spacing: 0.5px;">Acciones de Limpieza</li>
+                <li>
+                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
+                    <a href="#" class="btn-eliminar-opcion" data-opcion="1" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
+                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
+                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro Formulario CIS 
+                    </a>
+                </li>
+                <li>
+                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
+                    <a href="#" class="btn-eliminar-opcion" data-opcion="2" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
+                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
+                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro Formulario CIS-CIMFA-CAISE
+                    </a>
+                </li>
+                <li>
+                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
+                    <a href="#" class="btn-eliminar-opcion" data-opcion="3" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
+                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
+                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro Formulario HOSPITALES 
+                    </a>
+                </li>
+                <li>
+                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
+                    <a href="#" class="btn-eliminar-opcion" data-opcion="5" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
+                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
+                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro Formulario FORTALECIMIENTO
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="btn-eliminar-opcion" data-opcion="6" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
+                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
+                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro Formulario BIENES Y SERVICIO
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="btn-eliminar-opcion" data-opcion="7" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
+                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
+                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro Formulario MEDICINA DEL TRABAJO
+                    </a>
+                </li>
+            </ul>
+        </div>';
+
+    return $tabla;
+    }
+
     /// modal de migracion del form 4 para todos los establecimientos 1, 2 3 nivel a nivel institucional
     public function modal_migracion_form4_institucional(){
         $tabla='';

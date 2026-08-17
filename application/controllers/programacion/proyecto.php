@@ -52,7 +52,15 @@ class Proyecto extends CI_Controller {
       }
       $tabla .= $this->programacionpoa->tp_resp();
       $tabla .= '<input name="base" type="hidden" value="'.base_url().'">
-
+        <div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; color: #ffffff; font-family: Arial, sans-serif;">
+            <div class="spinner-cns"></div>
+            <p style="margin-top: 20px; font-weight: bold; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase;">
+                Procesando Purga Física en PostgreSQL...
+            </p>
+            <p style="margin-top: 5px; font-size: 11px; color: #94a3b8; font-style: italic;">
+                Por favor, no cierre ni refresque el navegador.
+            </p>
+        </div>
     <div id="tabs" style="border: none; background: transparent;">
         <!-- 📌 MENÚ DE PESTAÑAS PRINCIPALES (TABS) -->
         <ul style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; padding: 0; border-radius: 4px 4px 0 0;">
@@ -101,55 +109,7 @@ class Proyecto extends CI_Controller {
                                            onmouseout="this.style.background=\'#16a34a\'; this.style.borderColor=\'#15803d\';">
                                             <i class="fa fa-cloud-upload" style="font-size: 12px; color: #ffffff;"></i> Subir Formulario N° 4 (.xls)
                                         </a>';
-                                       $tabla .= '
-                                        <!-- Contenedor agrupador para asegurar la alineación de Bootstrap -->
-                                        <div class="btn-group" style="display: inline-flex; vertical-align: middle; margin-left: 5px;">
-                                            
-                                            <!-- Botón Disparador del Menú de Eliminación -->
-                                            <button type="button" 
-                                                    class="btn btn-sm dropdown-toggle" 
-                                                    data-toggle="dropdown" 
-                                                    aria-haspopup="true" 
-                                                    aria-expanded="false"
-                                                    title="OPCIONES DE ELIMINACIÓN MASIVA"
-                                                    style="font-family: Arial, sans-serif; font-weight: bold; font-size: 11px; padding: 5px 12px; background: #dc2626; border: 1px solid #b91c1c; color: #ffffff; border-radius: 3px; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 5px;"
-                                                    onmouseover="this.style.background=\'#b91c1c\'; this.style.borderColor=\'#991b1b\';"
-                                                    onmouseout="this.style.background=\'#dc2626\'; this.style.borderColor=\'#b91c1c\';">
-                                                <i class="fa fa-trash"></i> ELIMINAR REGISTRO <span class="caret" style="margin-left: 2px;"></span>
-                                            </button>
-
-                                            <!-- Lista de las 4 Opciones de Eliminación -->
-                                            <ul class="dropdown-menu dropdown-menu-right" style="border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; padding: 5px 0; margin-top: 2px; min-width: 255px; font-size: 11.5px; font-family: Arial, sans-serif;">
-                                                <li class="dropdown-header" style="font-weight: bold; text-transform: uppercase; color: #64748b; font-size: 10px; padding: 6px 15px; letter-spacing: 0.5px;">Acciones de Limpieza</li>
-                                                
-                                                <li>
-                                                    <!-- 🛠️ AJUSTE: Ahora data-cite envía dinámicamente el ID real del registro -->
-                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="1" data-cite="1" style="padding: 7px 15px; color: #334155; display: flex; align-items: center; gap: 8px;">
-                                                        <i class="fa fa-file-excel-o text-danger" style="width: 14px;"></i> Eliminar registro de CIS
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
-                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="2" data-cite="2" style="padding: 7px 15px; color: #334155; display: flex; align-items: center; gap: 8px;">
-                                                        <i class="fa fa-calendar-times-o text-warning" style="width: 14px;"></i> Eliminar registro de CIMFA-PAISE-CAISE
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
-                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="3" data-cite="3" style="padding: 7px 15px; color: #334155; display: flex; align-items: center; gap: 8px;">
-                                                        <i class="fa fa-ban text-muted" style="width: 14px;"></i> Eliminar registro HOSPITALES
-                                                    </a>
-                                                </li>
-                                                <li role="separator" class="divider" style="margin: 5px 0; border-color: #f1f5f9;"></li>
-                                                <li>
-                                                    <!-- 🛠️ AJUSTE: data-cite dinámico -->
-                                                    <a href="#" class="btn-eliminar-opcion" data-opcion="4" data-cite="4" style="padding: 7px 15px; color: #b91c1c; font-weight: bold; background: #fef2f2; display: flex; align-items: center; gap: 8px;"
-                                                       onmouseover="this.style.background=\'#fee2e2\';" onmouseout="this.style.background=\'#fef2f2\';">
-                                                        <i class="fa fa-exclamation-triangle" style="width: 14px;"></i> Eliminar registro MEDICINA DE TRABAJO
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>';
+                                       $tabla.=$this->programacionpoa->select_eliminacion_formularios_anteproyectopoa();
                                     }
                                     
                                 $tabla .= '
@@ -2032,8 +1992,8 @@ class Proyecto extends CI_Controller {
 
     //////// MIGRAR ACTIVIDADES A NIVEL INSITUCIONAL (Archivo Excel) 2027
     public function valida_add_form4_insitucional() {
-        ini_set('max_execution_time', 300); // 5 minutos
-        ini_set('memory_limit', '512M');    // Aumentar memoria
+        ini_set('max_execution_time', 900); // 15 minutos máximos de procesamiento de CPU
+        ini_set('memory_limit', '3072M'); 
 
         $this->load->library('excel'); 
         if (!isset($_FILES['archivo']) || empty($_FILES['archivo']['tmp_name'])) {
@@ -2068,18 +2028,6 @@ class Proyecto extends CI_Controller {
             }
 
             $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional($tn_id);
-            
-            /*if($tn_id==1 || $tn_id==2 || $tn_id==3 || $tn_id==6){ /// Establecimiento de Salud
-              $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional($tn_id);
-            }
-            elseif($tn_id==4){ /// fortalecimiento
-              $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('771');
-            }
-            else{ /// Bienes y Servicio
-              $lista_poa_segun_tipo_establecimiento=$this->model_proyecto->get_tp_UnidadOrganizacional_prog_bolsa('720');
-            }*/
-
-            
             for ($i = 2; $i <= $filasMax; $i++) {
                 $or_id  = 0;
                 // Extraer valores básicos de la fila activa
@@ -2212,85 +2160,122 @@ class Proyecto extends CI_Controller {
     }
 
 
+    //// ELIMINAR REGISTRO DE ACTIVIDADES REGISTRADOS PARA EL ANTEPROYECTO 
+    public function delete_formularioN4_masivo_ajax() {
+        // 1. Iniciar un búfer preventivo para atrapar cualquier error o Warning huérfano de PHP viejo
+        @set_time_limit(0); 
+        @ini_set('memory_limit', '512M'); // Ampliar memoria temporal por seguridad volumétrica
 
-    /// Eliminar Registro de actividades migrados 2027
-    public function ejecutar_borrado_estructurado() {
-        // 1. Validar que la petición entre estrictamente por POST
-        if ($this->input->method() !== 'post') {
-            echo json_encode(array('status' => 'error', 'message' => 'Acceso denegado. Método no permitido.'));
+        ob_start();
+
+        // 2. Validación manual de cabecera AJAX nativa compatible con CI 1.5 (Evita accesos por URL directa)
+        $is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+        if (!$is_ajax || !$_POST) {
+            ob_end_clean();
+            show_404();
             return;
         }
 
-        // 2. Rescatar variables sanitizadas
-        $opcion  = intval($this->input->post('opcion'));
-        $cite_id = intval($this->input->post('cite_id'));
+        // 3. Captura directa de variables de entrada estilo CI 1.5
+        $tn_id = intval($this->input->post('opcion_id'));
+        //$g_id  = isset($this->gestion) ? $this->gestion : null; // Control de seguridad si no está definida en la clase
 
-        if (empty($opcion) || empty($cite_id)) {
-            echo json_encode(array('status' => 'error', 'message' => 'Parámetros de eliminación insuficientes o corruptos.'));
+        if ($tn_id <= 0) {
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(array('status' => 'error', 'respuesta' => 'error', 'message' => 'Parámetros de eliminación insuficientes o corruptos en la petición.'));
             return;
         }
 
-        // Nombre identificador para el mensaje de respuesta
-        $nombre_proceso = "";
+        $nombre_proceso = "Formulario Desconocido";
+        switch ($tn_id) {
+            case 1: $nombre_proceso = "Formulario CIS"; break;
+            case 3: $nombre_proceso = "Formulario HOSPITALES"; break;
+            case 5: $nombre_proceso = "Formulario FORTALECIMIENTO"; break;
+            case 6: $nombre_proceso = "Formulario BIENES Y SERVICIO"; break;
+            case 7: $nombre_proceso = "Formulario MEDICINA DEL TRABAJO"; break;
+        }
 
-        // 3. Iniciar Transacción de Base de Datos para asegurar la consistencia
+        // 4. Iniciar Transacción clásica mediante Active Record histórico
         $this->db->trans_begin();
 
-/*        switch ($opcion) {
-            case 1:
-                $nombre_proceso = "Registro de CIS";
-                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
-                // $this->db->where('cite_id', $cite_id);
-                // $this->db->delete('tabla_cis');
-                break;
+        $lista_poa_segun_tipo_establecimiento = $this->model_proyecto->get_tp_UnidadOrganizacional($tn_id);
+        
+        if (!empty($lista_poa_segun_tipo_establecimiento) && is_array($lista_poa_segun_tipo_establecimiento)) {
+            foreach($lista_poa_segun_tipo_establecimiento as $rowp){
+                
+                // --- Purgado de Insumos (Requerimientos) ---
+               /* $insumos_uorganizacional = $this->model_insumo->insumos_por_unidad($rowp['aper_id']);
+                if (!empty($insumos_uorganizacional) && is_array($insumos_uorganizacional)) {
+                    foreach($insumos_uorganizacional as $rowu){
+                        $this->db->where('ins_id', $rowu['ins_id']);
+                        $this->db->delete('temporalidad_prog_insumo');
 
-            case 2:
-                $nombre_proceso = "Registro de CIMFA-PAISE-CAISE";
-                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
-                // $this->db->where('cite_id', $cite_id);
-                // $this->db->delete('tabla_cimfa');
-                break;
+                        $this->db->where('ins_id', $rowu['ins_id']);
+                        $this->db->delete('insumos');
+                    }
+                }*/
 
-            case 3:
-                $nombre_proceso = "Registro HOSPITALES";
-                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
-                // $this->db->where('cite_id', $cite_id);
-                // $this->db->delete('tabla_hospitales');
-                break;
+                // --- Purgado de Productos (Formulario 4) ---
+                // 🛠️ CORRECCIÓN CRÍTICA: Se remueve el índice [0] erróneo que rompía el JSON
+                $form4 = $this->model_producto->lista_productos($rowp['com_id']);
+                if (!empty($form4) && is_array($form4)) {
+                    // 1. Extraer todos los prod_id en un arreglo plano de una sola pasada
+                    $arr_prod_ids = array();
+                    foreach ($form4 as $rowu) {
+                        if (!empty($rowu['prod_id'])) {
+                            $arr_prod_ids[] = (int)$rowu['prod_id'];
+                        }
+                    }
 
-            case 4:
-                $nombre_proceso = "Registro MEDICINA DE TRABAJO";
-                // 📝 Agrega aquí tus consultas SQL reales. Ejemplo:
-                // $this->db->where('cite_id', $cite_id);
-                // $this->db->delete('tabla_medicina_trabajo');
-                break;
+                    // 2. Ejecutar los borrados en bloque solo si el arreglo contiene elementos
+                    if (!empty($arr_prod_ids)) {
+                        // Primero borramos la tabla dependiente (la que tiene la clave foránea)
+                        $this->db->where_in('prod_id', $arr_prod_ids);
+                        $this->db->delete('prod_programado_mensual');
 
-            default:
-                $this->db->trans_rollback();
-                echo json_encode(array('status' => 'error', 'message' => 'La opción de borrado seleccionada no es válida.'));
-                return;
+                        // Luego borramos la tabla principal de productos
+                        $this->db->where_in('prod_id', $arr_prod_ids);
+                        $this->db->delete('_productos');
+                    }
+                }
+            }
         }
 
-        // 4. Evaluar si las consultas de la transacción se ejecutaron correctamente
+        // 5. Evaluación del estado de la transacción en PostgreSQL
         if ($this->db->trans_status() === FALSE) {
             $this->db->trans_rollback();
-            echo json_encode(array('status' => 'error', 'message' => 'Falla interna al intentar suprimir el ' . $nombre_proceso . ' de la base de datos.'));
+            $respuesta_final = array(
+                'status'    => 'error',
+                'respuesta' => 'error',
+                'message'   => '🚨 PostgreSQL rechazó la eliminación masiva por restricciones de integridad.'
+            );
         } else {
-            $this->db->trans_commit();
+            $this->db->trans_commit(); // Confirma y aplica los borrados físicos en cascada
+            $respuesta_final = array(
+                'status'    => 'success', 
+                'respuesta' => 'correcto', 
+                'message'   => '✔ El ' . $nombre_proceso . ' fue removido del sistema de forma física.'
+            );
+        }
+
+        // 6. Interceptación de basura visual (Aísla cualquier error HTML remanente)
+        $basura_php = ob_get_contents();
+        while (ob_get_level() > 0) { ob_end_clean(); }
+
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (!empty($basura_php)) {
+            // Si PHP generó un warning, lo enviamos sanitizado dentro del mensaje JSON para que el JS no se rompa
             echo json_encode(array(
-                'status' => 'success', 
-                'message' => 'El ' . $nombre_proceso . ' con ID ' . $cite_id . ' fue eliminado exitosamente del sistema.'
+                'status'    => 'error',
+                'respuesta' => 'error',
+                'message'   => '🚨 Error del Servidor interceptado: ' . strip_tags($basura_php)
             ));
-        }*/
-
-
-         echo json_encode(array(
-                'status' => 'success', 
-                'message' => 'El ' . $nombre_proceso . ' con ID ' . $cite_id . ' fue eliminado exitosamente del sistema.'
-            ));
+        } else {
+            echo json_encode($respuesta_final);
+        }
+        exit; 
     }
-
-
-
 
 }

@@ -447,7 +447,6 @@
         }
     </style>
     
-
         <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
         <script>
             if (!window.jQuery) {
