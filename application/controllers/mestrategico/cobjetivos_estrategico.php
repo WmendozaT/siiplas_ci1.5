@@ -175,7 +175,7 @@ class Cobjetivos_estrategico extends CI_Controller {
 
     }
 
-    /*------------------------- Valida Objetivo Estrategico --------------------------*/
+    /*------- Valida Objetivo Estrategico ---------*/
     public function valida_objetivos_estrategicos(){
       if ($this->input->post()) {
           $post = $this->input->post();

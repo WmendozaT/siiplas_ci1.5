@@ -101,7 +101,7 @@ class Producto extends CI_Controller {
                   <section class="col col-4">
                     <label class="label"><b>ALINEACI&Oacute;N OPERACI&Oacute;N '.$this->gestion.'</b></label>
                       <select class="form-control" id="or_id" name="or_id" style="width:100%; font-size:13px; color:blue; background-color: #fafcd7;" title="SELECCIONE ALINEACION">
-                        <option value="">SELECCIONE OPERACI&Oacute;N </option>';
+                        <option value="0">SELECCIONE OPERACI&Oacute;N </option>';
                         foreach($list_oregional as $row){
                           $data['alineacion'].='<option value="'.$row['or_id'].'">'.$row['og_codigo'].'.|'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';    
                         }
@@ -114,7 +114,7 @@ class Producto extends CI_Controller {
             <section class="col col-3">
               <label class="label"><b>UNIDAD RESPONSABLE</b></label>
                 <select class="form-control" id="uni_resp" name="uni_resp" title="SELECCIONE UNIDAD RESPONSABLE" style="width:100%; font-size:10.5px; color:blue; background-color: #d7fcfa;">
-                  <option value="">Selec. Uni. Resp.</option>';
+                  <option value="0">Selec. Uni. Resp.</option>';
                   foreach($data['unidades'] as $row){
                     $data['uni_resp'].='<option value="'.$row['com_id'].'">'.$row['tipo'].' '.$row['proy_nombre'].'-'.$row['abrev'].' -> '.$row['tipo_subactividad'].' '.$row['com_componente'].'</option>';
                   }       
@@ -209,7 +209,7 @@ class Producto extends CI_Controller {
                     <td style="width: 10%; text-align: center;" title="'.$rowp['prod_id'].'">
                         <section class="col col-2" style="margin-bottom: 0; padding: 0;">
                             <select class="form-control auto-save-field" id="or_id'.$rowp['prod_id'].'" name="or_id'.$rowp['prod_id'].'" data-id="'.$rowp['prod_id'].'" data-campo="or_id" style="width:100%; font-size:12px; color:blue; background-color: #fafcd7;" title="SELECCIONE ALINEACION">
-                                <option value="">SELECCIONE OPERACI&Oacute;N</option>';
+                                <option value="0">SELECCIONE OPERACI&Oacute;N</option>';
                                 foreach($list_oregional as $row){
                                     $selected = ($rowp['or_id'] == $row['or_id']) ? 'selected' : '';
                                     $tabla .= '<option value="'.$row['or_id'].'" '.$selected.'>'.$row['og_codigo'].'.|'.$row['or_codigo'].'. .- '.$row['or_objetivo'].'</option>';    
@@ -1338,102 +1338,94 @@ class Producto extends CI_Controller {
 
 
   /*--------- VALIDA FORM 4 (REGISTRO nuevo) -----------*/
-  public function valida_producto(){
-    if ($this->input->server('REQUEST_METHOD') === 'POST'){
-        $this->form_validation->set_rules('prod', 'Producto', 'required|trim');
-        $this->form_validation->set_rules('tipo_i', 'Tipo de Indicador', 'required|trim');
-        $componente = $this->model_componente->get_componente($this->input->post('com_id'),$this->gestion);
-        $fase=$this->model_faseetapa->get_fase($componente[0]['pfec_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($fase[0]['proy_id']);
-        $form4 = $this->model_producto->lista_productos($this->input->post('com_id'));
-        $cod_nuv=0;
-        if(count($form4)!=0){
-          $cod_nuv=(count($form4)+1);
-        }  
-
-        if($proyecto[0]['por_id']==1){ /// BOLSA
-          $campo='uni_resp';
-        }
-        else{
-          $campo='prod_unidades';
+  public function valida_producto(){ 
+    if ($this->input->server('REQUEST_METHOD') === 'POST'){ 
+        $this->form_validation->set_rules('prod', 'Producto', 'required|trim'); 
+        $this->form_validation->set_rules('tipo_i', 'Tipo de Indicador', 'required|trim'); 
+        
+        $com_id = $this->input->post('com_id');
+        $componente = $this->model_componente->get_componente($com_id, $this->gestion);
+        
+        if(empty($componente)){
+            $this->session->set_flashdata('danger','ERROR: EL COMPONENTE NO EXISTE :(');
+            redirect('admin/prog/list_prod/'.$com_id);
+            return;
         }
 
-        if($this->input->post('tipo_i')==1){
-          $tp_met=3;
-        }
-        else{
-          $tp_met=$this->input->post('tp_met');
-        }
-    
-
-        if ($this->form_validation->run()){
-          /*-------- INSERT FORMULARIO N 4 ---------*/
-          $data_to_store = array(
-            'com_id' => $this->input->post('com_id'),
-            'prod_cod' => $cod_nuv,
-            'or_id' => strtoupper($this->input->post('or_id')),
-            'prod_producto' => strtoupper($this->input->post('prod')),
-            'prod_resultado' => strtoupper($this->input->post('resultado')),
-            'indi_id' => $this->input->post('tipo_i'),
-            'prod_indicador' => strtoupper($this->input->post('indicador')),
-            'prod_fuente_verificacion' => strtoupper($this->input->post('verificacion')), 
-            'prod_meta' => $this->input->post('meta'),
-            $campo => strtoupper($this->input->post('uni_resp')),
-            'mt_id' => $tp_met,
-            'fecha' => date("d/m/Y H:i:s"),
-            'fun_id' => $this->fun_id,
-            'num_ip' => $this->input->ip_address(), 
-            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-          );
-          $this->db->insert('_productos', $data_to_store);
-          $id_pr=$this->db->insert_id(); ////// id del producto
-          /*------------------------------------------------------*/
-          if($this->input->post('tipo_i')==1){
-            for ($i=1; $i <=12 ; $i++) {
-              if($this->input->post('m'.$i)!=0){
-                $this->model_producto->add_prod_gest($id_pr,$this->gestion,$i,$this->input->post('m'.$i));
-              }
-            }
-          }
-          if($this->input->post('tipo_i')==2){
-            if($tp_met==3){
-              for ($i=1; $i <=12 ; $i++) {
-                if($this->input->post('m'.$i)!=0){
-                  $this->model_producto->add_prod_gest($id_pr,$this->gestion,$i,$this->input->post('m'.$i));
-                }
-              }
-            }
-            elseif($tp_met==1){
-              for ($i=1; $i <=12 ; $i++) {
-                $this->model_producto->add_prod_gest($id_pr,$this->gestion,$i,$this->input->post('meta'));
-              }
-            }
-            elseif($tp_met==5){ /// trimestre recurrente
-              for ($i=1; $i <=4 ; $i++) {
-                $this->model_producto->add_prod_gest($id_pr,$this->gestion,($i*3),$this->input->post('meta'));
-              }
-            }
-          }
-
-          $producto=$this->model_producto->get_producto_id($id_pr);
-          if(count($producto)==1){
-            $this->session->set_flashdata('success','LA ACTIVIDAD SE REGISTRO CORRECTAMENTE :)');
-          }
-          else{
-            $this->session->set_flashdata('danger','ERROR AL REGISTRAR ACTIVIDAD, VUELVA REGISTRAR :(');
-          }
-
-          redirect('admin/prog/list_prod/'.$this->input->post('com_id').'');
-        }
-        else{
-          $this->session->set_flashdata('danger','ERROR AL REGISTRAR LA ACTIVIDAD :(');
-          redirect('admin/prog/list_prod/'.$this->input->post('com_id').'');
-        }
-    }
-    else{
-      echo "<center><font color='red'>Error, Vuelva a registrar la Actividad !!!!</font></center>";
-    }
-  }
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($componente[0]['proy_id']); 
+        $form4 = $this->model_producto->lista_productos($com_id); 
+        
+        $cod_nuv = count($form4) > 0 ? (count($form4) + 1) : 0; 
+        $or_id_value = $this->input->post('or_id');
+        // Si está vacío o no es numérico, lo dejamos como NULL (o puedes poner 0 si no admite NULL)
+        $or_id_final = (!empty($or_id_value) && is_numeric($or_id_value)) ? intval($or_id_value) : NULL;
+        
+        $campo = ($proyecto[0]['por_id'] == 1) ? 'uni_resp' : 'prod_unidades'; 
+        
+        $tipo_i = $this->input->post('tipo_i');
+        $tp_met = ($tipo_i == 1) ? 3 : $this->input->post('tp_met'); 
+        
+        if ($this->form_validation->run() == TRUE){ 
+            $data_to_store = array( 
+                'com_id' => $com_id, 
+                'prod_cod' => $cod_nuv, 
+                'or_id' => $or_id_final, 
+                'prod_producto' => strtoupper($this->input->post('prod')), 
+                'prod_resultado' => strtoupper($this->input->post('resultado')), 
+                'indi_id' => $tipo_i, 
+                'prod_indicador' => strtoupper($this->input->post('indicador')), 
+                'prod_fuente_verificacion' => strtoupper($this->input->post('verificacion')), 
+                'prod_meta' => $this->input->post('meta'), 
+                $campo => strtoupper($this->input->post('uni_resp')), 
+                'mt_id' => $tp_met, 
+                'fecha' => date("d/m/Y H:i:s"), 
+                'fun_id' => $this->fun_id, 
+                'num_ip' => $this->input->ip_address(), 
+                'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']), 
+            ); 
+            
+            $this->db->insert('_productos', $data_to_store); 
+            $id_pr = $this->db->insert_id(); 
+            
+            if($tipo_i == 1){ 
+                for ($i = 1; $i <= 12; $i++) { 
+                    if($this->input->post('m'.$i) != 0){ 
+                        $this->model_producto->add_prod_gest($id_pr, $this->gestion, $i, $this->input->post('m'.$i)); 
+                    } 
+                } 
+            } elseif($tipo_i == 2){ 
+                if($tp_met == 3){ 
+                    for ($i = 1; $i <= 12; $i++) { 
+                        if($this->input->post('m'.$i) != 0){ 
+                            $this->model_producto->add_prod_gest($id_pr, $this->gestion, $i, $this->input->post('m'.$i)); 
+                        } 
+                    } 
+                } elseif($tp_met == 1){ 
+                    for ($i = 1; $i <= 12; $i++) { 
+                        $this->model_producto->add_prod_gest($id_pr, $this->gestion, $i, $this->input->post('meta')); 
+                    } 
+                } elseif($tp_met == 5){ 
+                    for ($i = 1; $i <= 4; $i++) { 
+                        $this->model_producto->add_prod_gest($id_pr, $this->gestion, ($i * 3), $this->input->post('meta')); 
+                    } 
+                } 
+            } 
+            
+            $producto = $this->model_producto->get_producto_id($id_pr); 
+            if(count($producto) == 1){ 
+                $this->session->set_flashdata('success','LA ACTIVIDAD SE REGISTRO CORRECTAMENTE :)'); 
+            } else { 
+                $this->session->set_flashdata('danger','ERROR AL REGISTRAR ACTIVIDAD, VUELVA REGISTRAR :('); 
+            } 
+            redirect('admin/prog/list_prod/'.$com_id); 
+        } else { 
+            $this->session->set_flashdata('danger','ERROR AL REGISTRAR LA ACTIVIDAD :('); 
+            redirect('admin/prog/list_prod/'.$com_id); 
+        } 
+    } else { 
+        echo "<center><font color='red'>Error, Vuelva a registrar la Actividad !!!!</font></center>"; 
+    } 
+}
 
     /*---- GET VER REQUERIMIENTOS CARGADOS POR UNIDAD RESPONSABLE 2027 ----*/
     public function get_ver_requerimientos(){

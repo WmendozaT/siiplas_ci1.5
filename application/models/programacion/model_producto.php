@@ -226,9 +226,9 @@ class model_producto extends CI_Model {
         prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
         prog.g_id,prog.total_anual
         FROM _productos p
-        INNER JOIN indicador i ON i.indi_id = p.indi_id
-        INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
-        INNER JOIN (
+        left JOIN indicador i ON i.indi_id = p.indi_id
+        left JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+        left JOIN (
             SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
         ) opm ON ore.pog_id = opm.pog_id
         INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
@@ -355,8 +355,8 @@ class model_producto extends CI_Model {
                 \'0\'
             ) AS unidad_responsable
         FROM public._productos AS p
-        INNER JOIN public.objetivos_regionales AS ore ON ore.or_id = p.or_id
-        INNER JOIN public.indicador AS tp ON p.indi_id = tp.indi_id
+        left JOIN public.objetivos_regionales AS ore ON ore.or_id = p.or_id
+        left JOIN public.indicador AS tp ON p.indi_id = tp.indi_id
         INNER JOIN public.meta_relativo AS mt ON mt.mt_id = p.mt_id
         LEFT JOIN public.vista_ver_uresp_proyecto AS uresp ON uresp.com_id = p.uni_resp
         WHERE p.com_id = ' . intval($com_id) . ' AND p.estado != 3
@@ -471,11 +471,11 @@ class model_producto extends CI_Model {
                     
             FROM public._productos p
             INNER JOIN public.indicador i ON i.indi_id = p.indi_id
-            INNER JOIN public.objetivos_regionales ore ON ore.or_id = p.or_id
-            INNER JOIN (
+            LEFT JOIN public.objetivos_regionales ore ON ore.or_id = p.or_id
+            LEFT JOIN (
                 SELECT DISTINCT pog_id, og_id FROM public.objetivo_programado_mensual
             ) opm ON ore.pog_id = opm.pog_id
-            INNER JOIN public.objetivo_gestion og ON og.og_id = opm.og_id
+            LEFT JOIN public.objetivo_gestion og ON og.og_id = opm.og_id
             LEFT JOIN public.vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
             WHERE p.com_id = '.$com_id.' 
@@ -488,10 +488,11 @@ class model_producto extends CI_Model {
     }
 
 
-    /*=== LISTA DE ACTIVIDADES (NORMAL) + TEMPORALIDAD 2026 ===*/
+    /*=== LISTA DE ACTIVIDADES (NORMAL) + TEMPORALIDAD 2027 ===*/
     function lista_form4_institucional_completo(){
-        $sql = 'SELECT *
-                from get_formulario4_consolidado_nacional('.$this->gestion.')'; 
+        $sql = 'SELECT poa.*
+                from get_formulario4_consolidado_nacional('.$this->gestion.') poa
+                ORDER BY poa.dep_id,poa.dist_id,poa.aper_programa,poa.aper_proyecto,poa.aper_actividad,poa.proy_id,poa.com_id,poa.prod_id,poa.prod_cod asc'; 
 
         $query = $this->db->query($sql);
         return $query->result_array();

@@ -2441,7 +2441,7 @@ class Cmod_insumo extends CI_Controller {
         $cite_id = $this->security->xss_clean($post['cite_id']);
         $cite = $this->model_modrequerimiento->get_cite_insumo($cite_id); /// Datos Cite
         $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos Get requerimientos 
-        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],130);
+        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cite[0]['aper_id'],$insumo[0]['par_id']);
 
 
         if($insumo[0]['ins_tipo_modificacion']==0){ /// Poa Normal

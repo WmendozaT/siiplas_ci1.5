@@ -330,7 +330,7 @@
     }
 
     /*--- EXPORTAR CONSOLIDADO FORMULARIO N 4 INSTITUCIONAL ---*/
-    public function formulario4_institucional(){
+/*    public function formulario4_institucional(){
       $titulo='FORMULARIO N° 4 - INSTITUCIONAL';
       $formulario4=$this->mrep_operaciones->formulario_N4_institucional(); /// Formulario N 4 a Nivel Institucional
       $tabla=$this->genera_informacion->lista_operaciones_regional_distrital($formulario4,$titulo,0); // Regional Operaciones Distrital 2020-2021
@@ -342,11 +342,177 @@
       header("Pragma: no-cache");
       header("Expires: 0");
       echo $tabla;
+    }*/
+
+    //// Exportar Formulario N4 Actividades Institucional 2027
+    function formulario4_institucional($token = NULL) {
+      // En tu función principal
+      $data['form4'] = $this->exportar_form4_Institucional();
+      // Pestaña 2 también debe ser una tabla para que se vea bien
+     
+
+      // 3. Manejo del Token para el Loading de JS
+      if($token != NULL) {
+          // Importante: El path "/" asegura que la cookie sea visible en todo el sitio
+          header("Set-Cookie: downloadToken=$token; path=/; SameSite=Lax");
+      }
+
+      // 4. Cabeceras para Excel (Formato XML Spreadsheet 2003)
+      header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+      header("Content-Disposition: attachment; filename=Reporte_POA_UResponsable.xls");
+      header("Pragma: no-cache");
+      header("Expires: 0");
+      
+      // 5. Cargar la vista especial XML que definimos antes
+      $this->load->view('admin/reportes_cns/exportar_requerimientos/exportar_poa_uresponsable',$data); 
     }
 
 
+    ////= (Archivo) Exportar Formulario N° 4 Institucional 2027
+public function exportar_form4_Institucional(){
+    $tabla = '';
+    // Obtiene los datos mapeados desde la función de Postgres
+    $formularioN4 = $this->model_producto->lista_form4_institucional_completo(); 
+
+    $tabla .= '
+          <Row ss:Height="30">
+          <Cell ss:StyleID="header"><Data ss:Type="String">REG.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">REG. COD.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">REGIONAL</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">DIST. COD.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">DISTRITAL</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">DA.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">UE.</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROGRAMA</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROYECTO</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">ACTIVIDAD</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">TIPO GASTO</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">CODIGO SISIN</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">GASTO CORRIENTE / INVERSIÓN</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">UNIDAD RESPONSABLE</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">ID</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACP.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. OPE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">COD. ACT.</Data></Cell> 
+          
+          <Cell ss:StyleID="header"><Data ss:Type="String">ACTIVIDAD</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">RESULTADO</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">UNIDAD RESPONSABLE</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">INDICADOR</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">META</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. ENE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. FEB.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. MAR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. ABR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. MAY.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. JUN.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. JUL.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. AGO.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. SEPT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. OCT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. NOV.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">PROG. DIC.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">VERIFICACIÓN</Data></Cell>
+
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. ENE.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. FEB.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. MAR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. ABR.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. MAY.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. JUN.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. JUL.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. AGO.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. SEPT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. OCT.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. NOV.</Data></Cell>
+          <Cell ss:StyleID="header"><Data ss:Type="String">EJEC. DIC.</Data></Cell>
+      </Row>';
+
+    foreach($formularioN4 as $rowp){
+        $tabla .= '<Row ss:AutoFitHeight="1">'; 
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['dep_id'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['dep_cod'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['dep_departamento'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['dist_cod'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['dist_distrital'].'</Data></Cell>';
+
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['da'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['ue'].'</Data></Cell>';
+
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_programa'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_proyecto'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['aper_actividad'].'</Data></Cell>';
+
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['tipo_gasto_nombre'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['proy_sisin'].'</Data></Cell>';
+
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['tipo'].' '.$rowp['proy_nombre'].' '.$rowp['abrev'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="String">'.$rowp['tipo_subactividad'].' '.$rowp['com_componente'].'</Data></Cell>';
+        
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['prod_id'].'</Data></Cell>';
+
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['og_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['or_codigo'].'</Data></Cell>';
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.$rowp['prod_cod'].'</Data></Cell>';
+        
+        // Controladores de nulos con operador ternario clásico compatible con PHP 5.6
+        $prod_producto = isset($rowp['prod_producto']) ? $rowp['prod_producto'] : '';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($prod_producto, ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $prod_resultado = isset($rowp['prod_resultado']) ? $rowp['prod_resultado'] : '';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($prod_resultado, ENT_XML1, 'UTF-8').'</Data></Cell>';
+
+        if($rowp['por_id'] == 0){
+            $prod_unidades = isset($rowp['prod_unidades']) ? $rowp['prod_unidades'] : '';
+            $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($prod_unidades, ENT_XML1, 'UTF-8').'</Data></Cell>';
+        } else {
+            $unidad_responsable = isset($rowp['unidad_responsable']) ? $rowp['unidad_responsable'] : '';
+            $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($unidad_responsable, ENT_XML1, 'UTF-8').'</Data></Cell>';
+        }
+        
+        $prod_indicador = isset($rowp['prod_indicador']) ? $rowp['prod_indicador'] : '';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($prod_indicador, ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['prod_meta'], 2).'</Data></Cell>';
+        
+        // Bucle 1: Programación Mensual (m1 a m12)
+        for ($i = 1; $i <= 12; $i++) { 
+            $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['m'.$i], 2).'</Data></Cell>';
+        }
+
+        // Fuente de Verificación intercalada
+        $prod_fuente_verificacion = isset($rowp['prod_fuente_verificacion']) ? $rowp['prod_fuente_verificacion'] : '';
+        $tabla .= '<Cell ss:StyleID="cuerpoTexto"><Data ss:Type="String">'.htmlspecialchars($prod_fuente_verificacion, ENT_XML1, 'UTF-8').'</Data></Cell>';
+        
+        // Bucle 2: Ejecución Mensual (ejec_m1 a ejec_m12)
+        for ($i = 1; $i <= 12; $i++) { 
+            $tabla .= '<Cell ss:StyleID="cuerpoCentro"><Data ss:Type="Number">'.round($rowp['ejec_m'.$i], 2).'</Data></Cell>';
+        }
+        
+        $tabla .= '</Row>';
+    }
+
+    return $tabla;
+}
+
+
+
+
+
+
+
+
+
     /*--- EXPORTAR LISTADO DE PARTIDAS ASIGNADAS PPTO (REGIONAL - DISTRITAL) 2026---*/
-    public function consolidado_partidas_regional(){
+/*    public function consolidado_partidas_regional(){
       $titulo='CUADRO COMPARATIVO PARTIDAS';
       $tabla='';
       $detalle=$this->model_ptto_sigep->lista_detalle_consolidado_partidas_x_regional();
@@ -416,7 +582,7 @@
       ini_set('max_execution_time', 300); 
       ini_set('memory_limit','3072M');
       echo $tabla;
-    }
+    }*/
 
     /*--- EXPORTAR REQUERIMIENTOS A DETALLE 2026 a mejorar (Reporte Gerencial) ---*/
     public function exportar_formularioN5($dep_id,$dist_id,$tp_id){
@@ -587,7 +753,7 @@
 
     }
 
-  ////= (Archivo) Exportar Formulario N° 4 por Unidad Responsable 2026
+  ////= (Archivo) Exportar Formulario N° 4 por Unidad Responsable 2027
   public function exportar_form4_uresponsable($com_id){
     $tabla='';
     $formularioN4 = $this->model_producto->get_lista_form4_uresp_consolidado($com_id); /// poa normal + Bolsa
