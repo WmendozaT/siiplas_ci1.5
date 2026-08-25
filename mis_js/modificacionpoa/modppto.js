@@ -93,32 +93,32 @@ $(document).ready(function() {
   //   window.open(direccion, "CERTIFICACIÓN POA" , "width=800,height=750,scrollbars=NO") ; 
   // }
 
+    ///// SELECT DISTRITAL - Para subir Modificacion presupuestaria (vigente)
+    $(document).ready(function() {
+        pageSetUp();
+        $("#dep_id").change(function () {
+            $("#dep_id option:selected").each(function () {
+                elegido=$(this).val();
+                $.post(base+"index.php/admin/proy/combo_uejecutoras", { elegido: elegido,accion:'distrital' }, function(data){
+                    $("#ue_id").html(data);
+                });     
+            });
+        });
+    })
 
-  //   $(document).ready(function() {
-  //       pageSetUp();
-  //       $("#dep_id").change(function () {
-  //           $("#dep_id option:selected").each(function () {
-  //               elegido=$(this).val();
-  //               $.post(base+"index.php/admin/proy/combo_uejecutoras", { elegido: elegido,accion:'distrital' }, function(data){
-  //                   $("#ue_id").html(data);
-  //               });     
-  //           });
-  //       });
-  //   })
-
-  //   $(document).ready(function() {
-  //       pageSetUp();
-  //       $("#reg_id").change(function () {
-  //           $("#reg_id option:selected").each(function () {
-  //               elegido=$(this).val();
-  //               $.post(base+"index.php/admin/proy/combo_uejecutoras", { elegido: elegido,accion:'distrital' }, function(data){
-  //                   $("#uejec_id").html(data);
-  //                   document.getElementById("but").style.display = 'block';
-  //               });     
-  //           });
-  //       });
-  //   })
-
+/*    $(document).ready(function() {
+        pageSetUp();
+        $("#reg_id").change(function () {
+            $("#reg_id option:selected").each(function () {
+                elegido=$(this).val();
+                $.post(base+"index.php/admin/proy/combo_uejecutoras", { elegido: elegido,accion:'distrital' }, function(data){
+                    $("#uejec_id").html(data);
+                    document.getElementById("but").style.display = 'block';
+                });     
+            });
+        });
+    })
+*/
 
 
   //   /// ---- Generar Reporte Detallado por Regional sobre las modificaciones presupuestarias

@@ -1169,7 +1169,7 @@ class Cmod_presupuestario extends CI_Controller {
           
           $cpoa=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id);
          
-          if (!empty($_POST["par_id"]) && is_array($_POST["par_id"]) && count($this->model_ptto_sigep->partidas_proyecto($cpoa[0]['aper_id']))!=0) {
+          if (!empty($_POST["par_id"]) && is_array($_POST["par_id"]) && count($this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($cpoa[0]['aper_id']))!=0) {
             
             /// ------ GENERANDO CITE DE MODIFICACION
                $data_to_store = array(

@@ -289,7 +289,7 @@ class CDiagnostico_equipamiento extends CI_Controller {
 
         $data['titulo']=$titulo;
         if(count($equipamiento)!=0){
-            $data['listado']=$this->lib_diagnostico_equipamiento->listado_equipamiento($equipamiento);
+            //$data['listado']=$this->lib_diagnostico_equipamiento->listado_equipamiento($equipamiento);
         }
         else{
             echo "Error !!!";

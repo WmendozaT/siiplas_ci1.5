@@ -187,13 +187,13 @@
             <!-- END MAIN CONTENT -->
         <!-- END PAGE FOOTER -->
 
-       <div class="overlay" id="overlay" onclick="hidePopup()"></div>
-        <div class="popup" id="popup">
+        <div class="overlay" id="overlay" onclick="hidePopup()"></div>
+         <div class="popup" id="popup">
             <h2>Reporte de Seguimiento POA</h2>
             <div class="loading_rep" id="loading_rep"><?php echo $cargando; ?></div>
             <iframe id="reportIframe" src="" onload="hideLoading()"></iframe>
             <button onclick="hidePopup()">Cerrar</button>
-        </div>
+        </div> 
     <!-- ========================= -->
         <div class="modal fade" id="modal_nuevo_ff2" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog" style="width:85%;">

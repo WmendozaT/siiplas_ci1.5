@@ -857,7 +857,7 @@ function graf_regresion_pastel(matriz,trimestre) {
 
     /// Funcion para guardar datos de seguimiento POA y Actualiza Cuadro de Evaluacion POA 2025
     function guardar(prod_id,nro){
-      alert(prod_id+'---'+nro)
+      //alert(prod_id+'---'+nro)
       $('#btn_generarr').html('');
       $('#loading_evalpoa').html('<center><img src="'+base+'/assets/img_v1.1/loading.gif" style="width:350px; height:350px;" alt="loading" /></center>');
       ejec=parseFloat($('[id="ejec'+nro+'"]').val());

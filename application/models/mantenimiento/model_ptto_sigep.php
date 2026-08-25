@@ -1136,8 +1136,8 @@ class Model_ptto_sigep extends CI_Model{
     }
 
 
-    /*---------- Get ppto asignado x Partida unidad (vigente)-------------*/
-/*    public function get_ppto_partida_asig_unidad($dep_id,$aper_id,$par_id){
+    /*---------- Get ppto asignado x Partida unidad (vigente) Modulo : Modificacion Presupuestaria-------------*/
+    public function get_ppto_partida_asig_unidad($dep_id,$aper_id,$par_id){
         $sql = 'select p.dep_id,pg.par_id,pg.partida as codigo,par.par_nombre as nombre,SUM(pg.importe) as ppto_asignado ,pg.ppto_saldo_ncert as ppto_revertido
                     from ptto_partidas_sigep pg 
                     Inner Join aperturaproyectos as ap On ap.aper_id=pg.aper_id 
@@ -1148,7 +1148,7 @@ class Model_ptto_sigep extends CI_Model{
                     order by pg.partida';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
 
 /*============ MODULO DE MODIFICACIONES =============*/
@@ -1345,14 +1345,14 @@ class Model_ptto_sigep extends CI_Model{
     }
     
 
-    /*-------- SUMA SALDOS REVERTIDOS POR PARTIDA Y CITE --------*/
-/*    public function suma_saldo_revertido($sp_id){
+    /*-------- SUMA SALDOS REVERTIDOS POR PARTIDA Y CITE (vigente)--------*/
+    public function suma_saldo_revertido($sp_id){
         $sql = 'select SUM(monto_revertido) saldo
                 from saldo_partida
                 where sp_id='.$sp_id.' and saldo_estado!=\'3\'';
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
 
     /*-------- LISTA DE SALDOS REVERTIDOS POR PARTIDA Y CITE --------*/

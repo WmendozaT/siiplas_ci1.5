@@ -500,18 +500,20 @@ class model_producto extends CI_Model {
 
     /// lista POA Formulario N4 completo
     function lista_form4_x_regional_completo($dep_id,$tp_id){
-        $sql = 'SELECT *
-                from get_formulario4_consolidado_nacional('.$this->gestion.')
-                where dep_id='.$dep_id.' and tp_id='.$tp_id.''; 
+        $sql = 'SELECT poa.*
+                from get_formulario4_consolidado_nacional('.$this->gestion.') poa
+                where poa.dep_id='.$dep_id.' and poa.tp_id='.$tp_id.'
+                ORDER BY poa.dep_id,poa.dist_id,poa.aper_programa,poa.aper_proyecto,poa.aper_actividad,poa.proy_id,poa.com_id,poa.prod_id,poa.prod_cod asc'; 
 
         $query = $this->db->query($sql);
         return $query->result_array();
     }
 
     function lista_form4_x_distrital_completo($dep_id,$tp_id){
-        $sql = 'SELECT *
-                from get_formulario4_consolidado_nacional('.$this->gestion.')
-                where dist_id='.$dist_id.' and tp_id='.$dist_id.''; 
+        $sql = 'SELECT poa.*
+                from get_formulario4_consolidado_nacional('.$this->gestion.') poa
+                where dist_id='.$dist_id.' and tp_id='.$dist_id.'
+                ORDER BY poa.dist_id,poa.aper_programa,poa.aper_proyecto,poa.aper_actividad,poa.proy_id,poa.com_id,poa.prod_id,poa.prod_cod asc'; 
 
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -764,5 +766,26 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }
     /// ======================================
+
+
+    //// VIGENTE PARA EL FORMULARIO DE SEGUIMIENTO POA (A OPTIMIZAR EN LA NUEVA VERSION)
+    function producto_programado($prod_id,$gestion){
+        $sql = 'select *
+                from vista_productos_temporalizacion_programado_dictamen
+                where prod_id='.$prod_id.' and g_id='.$gestion.''; 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    function producto_ejecutado($prod_id,$gestion){
+        $sql = 'select *
+                from vista_productos_temporalizacion_ejecutado_dictamen
+                where prod_id='.$prod_id.' and g_id='.$gestion.''; 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
 }
 ?>  

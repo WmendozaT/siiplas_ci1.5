@@ -696,7 +696,6 @@ class Cmod_requerimientos extends CI_Controller {
         }
         
         $data['pie_rep']=$cite[0]['cppto_cite'];
-        //$data['lista']=$this->mis_modificaciones_techo($cppto_id);
 
         $this->load->view('admin/modificacion/techo/reporte_mod_techo', $data);
       }

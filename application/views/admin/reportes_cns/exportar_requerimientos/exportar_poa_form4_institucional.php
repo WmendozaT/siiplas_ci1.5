@@ -49,52 +49,52 @@
     <Table>
       <!-- DEFINICIÓN EXPLÍCITA DE ANCHOS (78 columnas mapeadas correlativamente) -->
       <!-- [1 al 5] Datos Regionales y Distritales -->
-      <Column ss:Width="30"/> <!-- REG (dep_id) -->
-      <Column ss:Width="50"/> <!-- REG. COD. -->
-      <Column ss:Width="100"/> <!-- REGIONAL -->
-      <Column ss:Width="50"/> <!-- DIST. COD. -->
-      <Column ss:Width="100"/> <!-- DISTRITAL -->
+      <Column ss:Width="10"/> <!-- REG (dep_id) -->
+      <Column ss:Width="30"/> <!-- REG. COD. -->
+      <Column ss:Width="50"/> <!-- REGIONAL -->
+      <Column ss:Width="20"/> <!-- DIST. COD. -->
+      <Column ss:Width="40"/> <!-- DISTRITAL -->
       
       <!-- [6 al 7] DA y UE -->
-      <Column ss:Width="10"/> <!-- DA -->
-      <Column ss:Width="10"/> <!-- UE -->
+      <Column ss:Width="5"/> <!-- DA -->
+      <Column ss:Width="5"/> <!-- UE -->
       
       <!-- [8 al 10] Apertura Programática -->
-      <Column ss:Width="60"/> <!-- PROGRAMA -->
-      <Column ss:Width="60"/> <!-- PROYECTO -->
-      <Column ss:Width="60"/> <!-- ACTIVIDAD (Aper) -->
+      <Column ss:Width="30"/> <!-- PROGRAMA -->
+      <Column ss:Width="30"/> <!-- PROYECTO -->
+      <Column ss:Width="30"/> <!-- ACTIVIDAD (Aper) -->
       
       <!-- [11 al 14] Gestión Institucional -->
-      <Column ss:Width="90"/> <!-- TIPO GASTO -->
-      <Column ss:Width="80"/> <!-- CODIGO SISIN -->
-      <Column ss:Width="180"/> <!-- GASTO CORRIENTE / INVERSIÓN (tipo/proy/abrev) -->
-      <Column ss:Width="180"/> <!-- UNIDAD RESPONSABLE (subact/componente) -->
+      <Column ss:Width="30"/> <!-- TIPO GASTO -->
+      <Column ss:Width="30"/> <!-- CODIGO SISIN -->
+      <Column ss:Width="50"/> <!-- GASTO CORRIENTE / INVERSIÓN (tipo/proy/abrev) -->
+      <Column ss:Width="50"/> <!-- UNIDAD RESPONSABLE (subact/componente) -->
       
       <!-- [15 al 18] Códigos de Identificación -->
-      <Column ss:Width="40"/> <!-- ID (prod_id) -->
-      <Column ss:Width="55"/> <!-- COD. ACP (og_codigo) -->
-      <Column ss:Width="55"/> <!-- COD. OPE (or_codigo) -->
-      <Column ss:Width="55"/> <!-- COD. ACT (prod_cod) -->
+      <Column ss:Width="20"/> <!-- ID (prod_id) -->
+      <Column ss:Width="20"/> <!-- COD. ACP (og_codigo) -->
+      <Column ss:Width="20"/> <!-- COD. OPE (or_codigo) -->
+      <Column ss:Width="20"/> <!-- COD. ACT (prod_cod) -->
       
       <!-- [19 al 23] Textos del Producto -->
-      <Column ss:Width="250"/> <!-- ACTIVIDAD (prod_producto) -->
-      <Column ss:Width="250"/> <!-- RESULTADO (prod_resultado) -->
-      <Column ss:Width="150"/> <!-- UNIDAD RESPONSABLE (por_id condicional) -->
-      <Column ss:Width="200"/> <!-- INDICADOR (prod_indicador) -->
-      <Column ss:Width="60"/>  <!-- META (prod_meta) -->
+      <Column ss:Width="50"/> <!-- ACTIVIDAD (prod_producto) -->
+      <Column ss:Width="50"/> <!-- RESULTADO (prod_resultado) -->
+      <Column ss:Width="30"/> <!-- UNIDAD RESPONSABLE (por_id condicional) -->
+      <Column ss:Width="20"/> <!-- INDICADOR (prod_indicador) -->
+      <Column ss:Width="10"/>  <!-- META (prod_meta) -->
       
       <!-- [24 al 35] Programación mensual (m1 a m12) -->
-      <Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/>
-      <Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/>
-      <Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/>
+      <Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/>
+      <Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/>
+      <Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/>
       
       <!-- [36] Fuente de Verificación -->
-      <Column ss:Width="200"/> <!-- VERIFICACIÓN -->
+      <Column ss:Width="50"/> <!-- VERIFICACIÓN -->
       
       <!-- [37 al 48] Ejecución mensual (ejec_m1 a ejec_m12) -->
-      <Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/>
-      <Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/>
-      <Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/><Column ss:Width="45"/>
+      <Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/>
+      <Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/>
+      <Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/><Column ss:Width="25"/>
 
       <!-- Inyección segura de la cadena HTML/XML generada por el Controlador -->
       <?php echo $form4; ?>

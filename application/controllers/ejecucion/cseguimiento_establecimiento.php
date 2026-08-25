@@ -43,7 +43,7 @@ class Cseguimiento_establecimiento extends CI_Controller {
     if(count($data['componente'])!=0){
 
         ///-------------------------------------------
-        $registro=$this->model_seguimientopoa->verif_llenado_impresion_seguimientpoa($this->establecimiento[0]['com_id'],$this->verif_mes[1]);
+/*        $registro=$this->model_seguimientopoa->verif_llenado_impresion_seguimientpoa($this->establecimiento[0]['com_id'],$this->verif_mes[1]);
         if(count($registro)!=0){
 
             $update_seg= array(
@@ -72,12 +72,12 @@ class Cseguimiento_establecimiento extends CI_Controller {
             $this->db->insert('registro_seguimientopoa', $data_to_store3);
             $reg_id=$this->db->insert_id();
           /// insert
-        }
+        }*/
         //// -----------------------------------------
 
       $data['datos_mes'] = $this->verif_mes;
       $fase=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']);
-      $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($fase[0]['proy_id']);
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);
 
       $data['titulo']='
       <h2 title='.$data['proyecto'][0]['aper_id'].'>BIENVENIDO : '.$data['proyecto'][0]['aper_programa'].''.$data['proyecto'][0]['aper_proyecto'].''.$data['proyecto'][0]['aper_actividad'].' - '.$data['proyecto'][0]['tipo'].' '.$data['proyecto'][0]['proy_nombre'].' - '.$data['proyecto'][0]['abrev'].'</h2>
@@ -195,7 +195,7 @@ class Cseguimiento_establecimiento extends CI_Controller {
         $data['fase']=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']); /// DATOS FASE
         $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['fase'][0]['proy_id']); //// DATOS PROYECTO
         if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($data['fase'][0]['proy_id']); /// PROYECTO
+          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['fase'][0]['proy_id']); /// PROYECTO
         }
         $data['cabecera']=$this->seguimientopoa->cabecera($data['componente'],$data['proyecto']); /// Cabecera
         $data['titulo_formulario']='<b>FORMULARIO SEGUIMIENTO POA</b> - '.$this->verif_mes[2].' / '.$this->gestion.'';
