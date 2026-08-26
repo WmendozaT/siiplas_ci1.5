@@ -1863,11 +1863,14 @@ class Cmod_insumo extends CI_Controller {
                   $errores[] = "Fila $i: La 'CANTIDAD' es obligatoria y debe ser numérica.";
               } else {
                   $cantidad_float = floatval($cantidad_raw);
-                  if ($cantidad_float != floor($cantidad_float)) {
+                  if (round($cantidad_float, 2) != $cantidad_float) {
+                        $errores[] = "Fila $i: La cantidad' ($cantidad_float) excede el límite. Solo se aceptan hasta 2 decimales (Ej: 1.50).";
+                    }
+                  /*if ($cantidad_float != floor($cantidad_float)) {
                       $errores[] = "Fila $i: Restricción contable -> La 'CANTIDAD' ($cantidad_raw) debe ser un número entero puro, sin decimales.";
-                  }
+                  }*/
               }
-              $cantidad = intval($cantidad_raw);
+              //$cantidad = intval($cantidad_raw);
 
 
               // 📋 REGLA 2: VALIDACIÓN DE PRECIO UNITARIO (Máximo 2 decimales)
@@ -1882,11 +1885,11 @@ class Cmod_insumo extends CI_Controller {
                 $precio = round(floatval($precio_raw), 2);
 
                 // 📋 REGLA 3: VALIDACIÓN DEL COSTO TOTAL MATEMÁTICO (Cantidad * Precio)
-                $total_calculado = round(($cantidad * $precio), 2);
+                $total_calculado = round(($cantidad_float * $precio), 2);
                 $total_archivo   = round(floatval($total_raw), 2);
 
                 if (abs($total_archivo - $total_calculado) > 0.05) {
-                    $errores[] = "Fila $i: El 'PRECIO TOTAL' registrado ($total_raw) no coincide con la ecuación aritmética (Cantidad: $cantidad * Precio: $precio = $total_calculado).";
+                    $errores[] = "Fila $i: El 'PRECIO TOTAL' registrado ($total_raw) no coincide con la ecuación aritmética (Cantidad: $cantidad_float * Precio: $precio = $total_calculado).";
                 }
 
                 if (!empty($cod_act)) {
@@ -1949,7 +1952,7 @@ class Cmod_insumo extends CI_Controller {
                             'par_id'                  => $par_id,
                             'ins_detalle'             => strtoupper($this->security->xss_clean($requerimiento)),
                             'ins_unidad_medida'       => strtoupper($this->security->xss_clean($unidad_medida)),
-                            'ins_cant_requerida'      => $cantidad,
+                            'ins_cant_requerida'      => $cantidad_raw,
                             'ins_costo_unitario'      => $precio,
                             'ins_costo_total'         => $total_archivo,
                             'ins_observacion'         => strtoupper($this->security->xss_clean($observacion)),

@@ -231,7 +231,7 @@ class model_producto extends CI_Model {
         left JOIN (
             SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
         ) opm ON ore.pog_id = opm.pog_id
-        INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+        LEFT JOIN objetivo_gestion og ON og.og_id = opm.og_id
         LEFT JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
         LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id
@@ -280,12 +280,12 @@ class model_producto extends CI_Model {
             prog.mes9 AS m9, prog.mes10 AS m10, prog.mes11 AS m11, prog.mes12 AS m12, 
             prog.g_id, prog.total_anual
         FROM _productos p
-        INNER JOIN indicador i ON i.indi_id = p.indi_id
-        INNER JOIN objetivos_regionales ore ON ore.or_id = p.or_id
+        LEFT JOIN indicador i ON i.indi_id = p.indi_id
+        LEFT JOIN objetivos_regionales ore ON ore.or_id = p.or_id
         INNER JOIN (
             SELECT DISTINCT pog_id, og_id FROM objetivo_programado_mensual
         ) opm ON ore.pog_id = opm.pog_id
-        INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+        LEFT JOIN objetivo_gestion og ON og.og_id = opm.og_id
         LEFT JOIN vista_temporalidad_form4_programado_uresp prog ON prog.prod_id = p.prod_id
 
         LEFT JOIN aperturaprogramatica apg_normal ON apg_normal.aper_id = og.aper_id

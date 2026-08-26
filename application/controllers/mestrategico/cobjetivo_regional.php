@@ -677,7 +677,7 @@ class Cobjetivo_regional extends CI_Controller {
     }
 
 
-    function valida_add_operaciones_regionales2(){
+/*    function valida_add_operaciones_regionales2(){
       if ($this->input->post()) {
           $post = $this->input->post();
 
@@ -750,7 +750,7 @@ class Cobjetivo_regional extends CI_Controller {
       else{
         echo "Error !!!!";
       }
-    }
+    }*/
 
 
 

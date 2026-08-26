@@ -48,6 +48,9 @@ class Acortoplazo extends CI_Controller{
                 $tabla.='&nbsp;
                   <a href="#" data-toggle="modal" data-target="#modal_importar" class="btn btn-default importar_ff" title="SUBIR ARCHIVO EXCEL">
                     <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="25" HEIGHT="20"/>&nbsp;<b>Subir Operaciones.Xls </b>
+                  </a>
+                  <a href="#" data-toggle="modal" data-target="#modal_importar_alineacion" class="btn btn-success" title="SUBIR ARCHIVO PARA ALINEACION FORM 4">
+                    <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="25" HEIGHT="20"/>&nbsp;<b>Subir Alineacion Form N4.Xls </b>
                   </a><br><br>';
               }
             $tabla.='

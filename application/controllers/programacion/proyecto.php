@@ -408,13 +408,13 @@ class Proyecto extends CI_Controller {
             $tabla.='
             </td>';
             $tabla .= '<td aling="center" bgcolor="#F7F9BC">';
-              if($this->conf_form4==1 || $this->fun_id==401 || $this->fun_id==399){
+              if($this->fun_id==401 || $this->fun_id==399){
                 $tabla .= '<center><a href="'.site_url("").'/proy/update_unidad/'.$row['proy_id'].'" title="MODIFICAR" class="btn btn-default"><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="30" HEIGHT="30"/></a></center>';
               }
             $tabla .= '</td>';
             $tabla .= '<td aling="center" bgcolor="#F7F9BC">';
               /*---------------------------------------------*/
-              if($this->conf_form4==1 || $this->fun_id==401 || $this->fun_id==399){
+              if($this->fun_id==401 || $this->fun_id==399){
                 $tabla .= '<center><a href="'.site_url("admin").'/proy/delete/1/'.$row['proy_id'].'" title="ELIMINAR" onclick="return confirmar()" class="btn btn-default"><img src="'.base_url().'assets/ifinal/eliminar.png" WIDTH="30" HEIGHT="30"/></a></center>';
               }                 
             $tabla .= '</td>';
