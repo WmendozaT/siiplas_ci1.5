@@ -707,8 +707,7 @@ class model_producto extends CI_Model {
     public function verif_componente_operacion($com_id,$prod_cod){ 
         $sql = 'select *
                 from _productos p
-                Inner Join vista_productos_temporalizacion_programado_dictamen as pr On pr.prod_id=p.prod_id
-                where p.com_id='.$com_id.' and p.prod_cod='.$prod_cod.' and p.estado!=\'3\' and pr.g_id='.$this->gestion.''; 
+                where p.com_id='.$com_id.' and p.prod_cod='.$prod_cod.' and p.estado!=\'3\''; 
         $query = $this->db->query($sql);
         return $query->result_array();
     }

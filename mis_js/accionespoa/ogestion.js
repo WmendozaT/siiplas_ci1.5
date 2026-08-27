@@ -148,13 +148,13 @@ function abreVentana(PDF){
 
 
 /// =============== Modal Subir Archivo para alinear Actividades a form 2
-/*    $(document).on('change', '#archivo', function() {
+    $(document).on('change', '#archivo2', function() {
         // 🛠️ REPARADO: Se remueven las dobles barras inversas fijas de escape de PHP
         var fileName = $(this).val().split('\\').pop(); 
         if (fileName) {
             $('.file-name-display').val(fileName);
         }
-    });*/
+    });
 
     /// Actividades
     $(document).on('click', '#btn_subir_alineacion', function(e) {
@@ -162,7 +162,7 @@ function abreVentana(PDF){
         $('#mensaje_alineacion').html(''); 
 
         // Validación preventiva en el cliente antes de consumir canal de red
-        if ($('#archivo').val() == '') {
+        if ($('#archivo2').val() == '') {
             $('#mensaje_alineacion').html('<div class="alert alert-warning" style="margin-bottom:0;"><i class="fa fa-exclamation-triangle"></i> Por favor, seleccione un archivo Excel válido.</div>');
             if (typeof alertify !== "undefined") {
                 alertify.error("⚠️ Restricción: No se seleccionó ninguna plantilla .XLSX");
@@ -230,23 +230,9 @@ function abreVentana(PDF){
 
                     // Temporizador inteligente multi-rol para recargar la grilla activa de la CNS
                     setTimeout(function() {
-                        $('#modal_importar').modal("hide");
+                        $('#modal_importar_alineacion').modal("hide");
                         $('.modal-backdrop').remove();
                         $('body').removeClass('modal-open').css('padding-right', '');
-
-                        /*var combo_admin = $('#dist_id').val();
-                        if (combo_admin !== undefined && combo_admin !== "" && combo_admin !== "0") {
-                            // Si es Administrador Nacional, fuerza el change para recargar la regional consultada
-                            $("#dist_id").trigger("change");
-                        } else {
-                            // Si es un Operador de Unidad Regional, usa la función reactiva o recarga
-                            if (typeof forzar_refresco_grilla_siiplas_directo === "function") {
-                                var dist_id_oculto = $('input[name="dist_id"]').val() || 0;
-                                forzar_refresco_grilla_siiplas_directo(dist_id_oculto);
-                            } else {
-                                location.reload(); 
-                            }
-                        }*/
                     }, 2500);
 
                 } else {

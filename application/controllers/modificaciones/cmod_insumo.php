@@ -1893,7 +1893,19 @@ class Cmod_insumo extends CI_Controller {
                 }
 
                 if (!empty($cod_act)) {
-                  $prod_id=$cite[0]['prod_id'];
+                  if($cite[0]['por_id']==1){ //// programas bolsa
+                    $prod_id=$cite[0]['prod_id'];
+                  }
+                  else{
+                    $verif_operacion=$this->model_producto->verif_componente_operacion($cite[0]['com_id'],$cod_act);
+                    if(count($verif_operacion)!=0){
+                      $prod_id=$verif_operacion[0]['prod_id'];
+                    }
+                    else{
+                      $errores[] = "Fila $i: 'VERIFICAR EL CODIGO DE ACTIVIDAD' nose encuentra asignado para su migracion.";
+                    }
+                  }
+                  
 
                 } else {
                     $errores[] = "Fila $i: 'CODIGO DE ACTIVIDAD' es obligatoria.";

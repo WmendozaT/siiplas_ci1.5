@@ -141,7 +141,7 @@ class Cobjetivo_gestion extends CI_Controller {
                         </div>
 
                         <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
-                        <form action="' . site_url('mestrategico/cobjetivo_regional/valida_add_operaciones_regionales') . '" method="post" enctype="multipart/form-data" id="form_subir_alineacion" autocomplete="off" style="padding:0; background:transparent;">
+                        <form action="' . site_url('programacion/producto/valida_alineacion_a_form2') . '" method="post" enctype="multipart/form-data" id="form_subir_alineacion" autocomplete="off" style="padding:0; background:transparent;">
                             <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
                                 <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
                                 
@@ -151,7 +151,7 @@ class Cobjetivo_gestion extends CI_Controller {
                                             <i class="fa fa-folder-open"></i> Examinar...
                                         </button>
                                         
-                                        <input id="archivo" accept=".xlsx, .xls" name="archivo" 
+                                        <input id="archivo2" accept=".xlsx, .xls" name="archivo2" 
                                                onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
                                                style="display: none;" type="file" required>
                                     </span>
@@ -184,7 +184,7 @@ class Cobjetivo_gestion extends CI_Controller {
 
 
 
-    /*----- REPORTE DE ACCION CORTO PLAZO 2022 ----*/
+    /*----- REPORTE DE ACCION CORTO PLAZO 2027 ----*/
     public function reporte_ogestion($tp){
       // tp : 1 distribucion Regional
       // tp : 2 distribuacion mensual

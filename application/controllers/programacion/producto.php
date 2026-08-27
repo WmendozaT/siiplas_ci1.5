@@ -18,6 +18,7 @@ class Producto extends CI_Controller {
         $this->load->model('mestrategico/model_objetivoregion');
         $this->load->model('programacion/insumos/model_insumo');
         $this->load->model('mantenimiento/model_partidas');
+        $this->load->model('mestrategico/model_objetivogestion');
         $this->load->model('menu_modelo');
         $this->load->model('Users_model','',true);
         $this->load->library('security');
@@ -940,9 +941,9 @@ class Producto extends CI_Controller {
                 }
 
                 // Verificando códigos ACP y Operación
-                if (empty($cod_acp) && empty($cod_ope)) {
+                if (!empty($cod_acp) && !empty($cod_ope)) {
                     if (count($list_oregional) != 0) {
-                        $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
+                        $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($get_unidad[0]['proy_id'], $cod_acp, $cod_ope);
                         if (count($get_acc) != 0) {
                             $or_id = $get_acc[0]['or_id'];
                         } else {
@@ -1065,6 +1066,164 @@ class Producto extends CI_Controller {
             echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
         }
     }
+
+
+    //////// MIGRAR FORM4 PARA ALINEAR A FORM 2
+        public function valida_alineacion_a_form2() {
+        // 1. Ampliamos límites físicos de hardware para mitigar bloqueos por Timeouts
+        @set_time_limit(0); 
+        ini_set('memory_limit', '1024M'); 
+
+        $this->load->library('excel'); 
+
+        if (!isset($_FILES['archivo2']) || empty($_FILES['archivo2']['tmp_name'])) {
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
+            return;
+        }
+
+        $archivo = $_FILES['archivo2']['tmp_name'];
+        $errores = array();
+        $data_actualizar = array();
+
+        try {
+            $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+            $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
+            
+            // OPTIMIZACIÓN DE MEMORIA RAM: Ignoramos estilos gráficos pesados de las celdas
+            $lector->setReadDataOnly(true);
+            
+            $phpExcel    = $lector->load($archivo);
+            $hoja        = $phpExcel->getSheet(0);
+            $filasMax    = $hoja->getHighestRow();
+            
+            // --- 1. VALIDACIÓN DE ESTRUCTURA MÉTRICA (12 Columnas exactas hasta la L) ---
+            $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+            $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+            $limitePermitido = 12; 
+
+            if ($totalColumnas != $limitePermitido) {
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'error', 'errors' => array("Estructura Inválida: El archivo posee $totalColumnas columnas. El formato oficial estructurado exige exactamente $limitePermitido columnas (Hasta la columna 'L').")));
+                return;
+            }
+
+            // --- 2. VALIDACIÓN FILA POR FILA EXCEL ---
+            for ($i = 2; $i <= $filasMax; $i++) {
+                $or_id = 0;
+
+                $dep_id             = trim($hoja->getCell('A' . $i)->getValue());
+                $prod_id            = trim($hoja->getCell('B' . $i)->getValue());
+                $cod_acp            = trim($hoja->getCell('C' . $i)->getValue());
+                $cod_ope            = trim($hoja->getCell('D' . $i)->getValue());
+                $priori             = trim($hoja->getCell('E' . $i)->getValue());
+                $priori_sigep       = trim($hoja->getCell('F' . $i)->getValue());
+                $actividad          = trim($hoja->getCell('G' . $i)->getValue());
+                $resultado          = trim($hoja->getCell('H' . $i)->getValue());
+                $indicador          = trim($hoja->getCell('I' . $i)->getValue());
+                $unidad_responsable = trim($hoja->getCell('J' . $i)->getValue());
+                $meta               = $hoja->getCell('K' . $i)->getValue();
+                $medioverificacion  = trim($hoja->getCell('L' . $i)->getValue());
+
+                // Filtramos y saltamos limpiamente las hileras muertas o vacías del pie del Excel
+                if (empty($prod_id) && empty($actividad) && empty($dep_id)) {
+                    continue;
+                }
+
+                // Validación preventiva obligatoria del Identificador del Producto
+                if (empty($prod_id) || intval($prod_id) <= 0) {
+                    $errores[] = "Fila $i: El identificador 'PROD_ID' de la columna B es obligatorio para ejecutar la actualización.";
+                    continue;
+                }
+
+                // Recuperación indexada del Objetivo Regional
+                $get_informacion_alineacion = $this->model_objetivogestion->get_alineacion_habilitado_oregional_a_form4_ajuste($cod_acp, $cod_ope, $dep_id);
+                if (!empty($get_informacion_alineacion)) {
+                    $or_id = intval($get_informacion_alineacion[0]['or_id']);
+                }
+
+                if (empty($errores)) {
+                    // 🌟 REPARADO: Almacenamos el prod_id junto al subvector maestro para aislar el ámbito en el foreach
+                    $data_actualizar[] = array(
+                        'prod_id' => intval($prod_id),
+                        'campos'  => array(
+                            'prod_producto'            => strtoupper($actividad),
+                            'prod_resultado'           => strtoupper($resultado),
+                            'prod_indicador'           => strtoupper($indicador),
+                            'prod_fuente_verificacion' => strtoupper($medioverificacion),
+                            'prod_meta'                => floatval($meta),
+                            'prod_unidades'            => strtoupper($unidad_responsable),
+                            'or_id'                    => $or_id,
+                            'sigep_priori'             => intval($priori_sigep) ?: 0,
+                            'prod_priori'              => (strtoupper($priori) === 'SI' || intval($priori) === 1) ? 1 : 0
+                        )
+                    );
+                }
+                
+                if (count($errores) > 20) break; // Candado perimetral contra planillas masivas corruptas
+            } // Fin del bucle general FOR por fila
+
+            // Purgamos búferes intermedios ocultos para asegurar salida JSON pura libre de Warnings
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+
+            // --- 3. EXECUTE DE ACTUALIZACIÓN MASIVA TRANSACCIONAL (CASCADA) ---
+            if (empty($errores) && !empty($data_actualizar)) {
+                
+                $this->db->trans_start(); // Iniciar entorno transaccional atómico en Postgres
+                
+                foreach ($data_actualizar as $lote) {
+                    // 🌟 REPARADO CORE: Se asocia el where exacto de forma unívoca a la hilera correspondiente
+                    $this->db->where('prod_id', $lote['prod_id']);
+                    $this->db->update('_productos', $lote['campos']);
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'errors' => array('PostgreSQL rechazó la actualización masiva debido a un conflicto de restricciones relacionales.')));
+                } else {
+                    echo json_encode(array(
+                        'status'    => 'success', 
+                        'respuesta' => 'correcto', // Total compatibilidad con tus archivos JavaScript
+                        'msj'       => '¡Actualización masiva finalizada con éxito contable! Se modificaron un total de ' . count($data_actualizar) . ' actividades.',
+                        'conteo'    => count($data_actualizar) 
+                    ));
+                }
+            } else {
+                echo json_encode(array(
+                    'status' => 'error', 
+                    'errors' => !empty($errores) ? $errores : array('El archivo parece estar vacío o no contiene hileras válidas para actualizar.')
+                ));
+            }
+            exit; 
+
+        } catch (Exception $e) {
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel en el hardware: ' . $e->getMessage())));
+            exit;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

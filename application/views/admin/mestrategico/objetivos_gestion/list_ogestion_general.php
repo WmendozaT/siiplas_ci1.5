@@ -159,6 +159,7 @@
 	</div>
 	<!-- END MAIN PANEL -->
 	<?php echo $modal_migracion; ?>
+  <?php echo $modal_migracion_alineacion_form4; ?>
 
 	<!-- MODAL NUEVO REGISTRO ACP  -->
   <div class="modal fade" id="modal_nuevo_ff" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

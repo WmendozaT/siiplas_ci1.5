@@ -902,7 +902,7 @@ $tabla .= '
                 }
 
                 // Verificando códigos ACP y Operación
-                if (empty($cod_acp) && empty($cod_ope)) {
+                if (!empty($cod_acp) && !empty($cod_ope)) {
                     if (count($list_oregional) != 0) {
                         $get_acc = $this->model_objetivoregion->get_alineacion_proyecto_oregional($proy_id, $cod_acp, $cod_ope);
                         if (count($get_acc) != 0) {
