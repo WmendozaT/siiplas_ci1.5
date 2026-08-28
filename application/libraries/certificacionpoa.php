@@ -67,11 +67,11 @@ class Certificacionpoa extends CI_Controller{
   public function titulo_cabecera($datos){
     $tabla='';
     if($datos[0]['tp_id']==1){ /// Proyecto de Inversion
-      $tabla.=' <h1><b>PROYECTO INVERSIÓN: </b><small>'.$datos[0]['proy_sisin'].' - '.$datos[0]['proy_nombre'].' / '.$datos[0]['tipo_subactividad'].' '.$datos[0]['serv_descripcion'].'</small>
+      $tabla.=' <h1><b>PROYECTO INVERSIÓN: </b><small>'.$datos[0]['proy_sisin'].' - '.$datos[0]['proy_nombre'].' / '.$datos[0]['tipo_subactividad'].' '.$datos[0]['com_componente'].'</small>
                 <h1><b>ACTIVIDAD : </b><small>'.$datos[0]['prod_cod'].'.- '.$datos[0]['prod_producto'].'</small></h1>';
     }
     else{ /// Gasto Corriente
-      $tabla.=' <h1><b>PROGRAMA : </b><small>'.$datos[0]['aper_programa'].' '.$datos[0]['aper_proyecto'].' '.$datos[0]['aper_actividad'].' '.$datos[0]['tipo'].' '.$datos[0]['act_descripcion'].' '.$datos[0]['abrev'].' / '.$datos[0]['tipo_subactividad'].' '.$datos[0]['serv_descripcion'].'</small></h1>
+      $tabla.=' <h1><b>PROGRAMA : </b><small>'.$datos[0]['aper_programa'].' '.$datos[0]['aper_proyecto'].' '.$datos[0]['aper_actividad'].' '.$datos[0]['tipo'].' '.$datos[0]['act_descripcion'].' '.$datos[0]['abrev'].' / '.$datos[0]['tipo_subactividad'].' '.$datos[0]['com_componente'].'</small></h1>
                 <h1><b>ACTIVIDAD : </b><small>'.$datos[0]['prod_cod'].'.- '.$datos[0]['prod_producto'].'</small></h1>';
     }
 
@@ -2160,7 +2160,7 @@ class Certificacionpoa extends CI_Controller{
                       <td title="'.$row['sol_id'].'">'.$nro.'</td>
                       <td>'.$row['cite'].'</td>
                       <td>'.date('d-m-Y',strtotime($row['fecha'])).'</td>
-                      <td><b>'.$row['tipo_subactividad'].'.- '.$row['serv_descripcion'].'</b></td>
+                      <td><b>'.$row['tipo_subactividad'].'.- '.$row['com_componente'].'</b></td>
                       <td>'.$row['prod_cod'].'.- '.$row['prod_producto'].'</td>
                       <td align=center><b>'.$estado.'</b></td>
                       <td><b>'.$codigo_cpoa.'</b></td>
@@ -2361,7 +2361,7 @@ class Certificacionpoa extends CI_Controller{
                             <td style="width:80%;">
                                 <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
                                     <tr>
-                                        <td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$cite[0]['tipo_subactividad'].' '.$cite[0]['serv_descripcion'].'</td>
+                                        <td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$cite[0]['tipo_subactividad'].' '.$cite[0]['com_componente'].'</td>
                                     </tr>
                                 </table>
                             </td>
@@ -2390,7 +2390,7 @@ class Certificacionpoa extends CI_Controller{
                             <td style="width:80%;">
                                 <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
                                     <tr>
-                                        <td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$cite[0]['tipo_subactividad'].' '.$cite[0]['serv_descripcion'].'</td>
+                                        <td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$cite[0]['tipo_subactividad'].' '.$cite[0]['com_componente'].'</td>
                                     </tr>
                                 </table>
                             </td>

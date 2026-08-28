@@ -713,7 +713,7 @@ class Evaluacionpoa extends CI_Controller{
             $tabla.='<td style="width:10%;">'.strtoupper($row['dist_distrital']).'</td>';
             $tabla.='<td style="width:10%;">'.$row['aper_programa'].' - '.$row['tipo'].' '.$row['actividad'].' '.$row['abrev'].'</td>';
             $tabla.='<td style="width:5%;" align=center>';
-            $procesos=$this->model_componente->lista_subactividad($row['proy_id']);
+            /*$procesos=$this->model_componente->lista_UnidadesResponsables($row['proy_id']);
               $tabla.=' <div class="btn-group">
                           <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);"><span class="caret"></span> VER EVAL.</a>
                           <ul class="dropdown-menu">';
@@ -735,7 +735,7 @@ class Evaluacionpoa extends CI_Controller{
                           }
                           $tabla.='
                           </ul>
-                        </div>';
+                        </div>';*/
             $tabla.='</td>';
             $tabla.='<td style="width:5%;" align=right><b>'.$eficacia[2][$this->tmes].'</b></td>';
             $tabla.='<td style="width:5%;" align=right><b>'.$eficacia[3][$this->tmes].'</b></td>';

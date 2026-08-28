@@ -843,8 +843,8 @@ $(function () {
             rules: {
                 ins_id: { required: true },
                 detalle: { required: true },
-                cantidad: { required: true, min: 0.1 },
-                costou: { required: true, min: 0.1 },
+                cantidad: { required: true},
+                costou: { required: true },
                 costot: { required: true },
                 umedida: { required: true },
                 par_padre: { required: true },
@@ -1307,6 +1307,7 @@ $(document).ready(function() {
     }
 
     function costo_totalm(input){
+
       const valor = input.value;
       if (valor.indexOf('.') !== -1) {
         const partes = valor.split('.');
