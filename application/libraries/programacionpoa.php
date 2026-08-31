@@ -850,7 +850,7 @@ class Programacionpoa extends CI_Controller{
               $nroc=0; $nro_ppto=0;
                 $unidades=$this->model_componente->lista_UnidadesResponsables($proy_id);
                 foreach($unidades as $pr){
-                  if(count($this->model_producto->productos_nro($pr['com_id']))!=0){
+                  if($this->model_producto->productos_nro($pr['com_id'])!=0){
                     $nroc++;
                     $tabla.=
                       '<tr>
@@ -1843,7 +1843,7 @@ public function pie_foda(){
                             </span>
                             
                             <!-- 🛠️ REPARADO: Renderizado en tabla simétrica limpia en lugar de listas viñeteadas de alto desborde -->
-                            <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; font-size: 9pt; color: #334155; line-height: 1.4;">';
+                            <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; font-size: 7.5pt; color: #334155; line-height: 1.4;">';
                                 $conteo_items = 0;
                                 foreach ($UnidadesResponsables as $row) {
                                     if (count($this->model_producto->productos_nro(intval($row['com_id']))) != 0) {
