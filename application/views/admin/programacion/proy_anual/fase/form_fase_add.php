@@ -200,6 +200,7 @@
 							<input type="hidden" name="proy_id" value="<?php echo $proyecto[0]['proy_id']?>">
 							<input type="hidden" name="fi" id="fi" value="<?php echo date('d/m/Y',strtotime($proyecto[0]['f_inicial'])); ?>">	
 							<input type="hidden" name="ff" id="ff" value="<?php echo date('d/m/Y',strtotime($proyecto[0]['f_final'])); ?>">
+							<input type="hidden" name="f_final" id="f_final" placeholder="Seleccione Fecha final" class="form-control datepicker" data-dateformat="dd/mm/yy" value="<?php echo date('d/m/Y',strtotime($proyecto[0]['f_final'])); ?>">
 							<div class="jarviswidget" id="wid-id-8" data-widget-colorbutton="false" data-widget-editbutton="false">
 								<header>
 									<span class="widget-icon"> <i class="fa fa-columns"></i> </span>
@@ -246,7 +247,7 @@
 											</div>
 											<div class="col-sm-6">
 												<div class="well">
-													<fieldset>
+													<!-- <fieldset>
 														<section>
 															<label class="label" id="col"><b>FECHA INICIO FASE</b></label>
 								                                <div class="input-group">
@@ -273,7 +274,7 @@
 																<input class="form-control" type="text" value="0" placeholder="0" disabled="true">
 															</label>
 														</section>
-													</fieldset>
+													</fieldset> -->
 												</div><br>
 											</div>
 										</div>

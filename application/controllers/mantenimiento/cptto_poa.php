@@ -39,26 +39,24 @@ class Cptto_poa extends CI_Controller {
         }
     }
 
-    /*------------ Lista de Unidades Organizacionales -----------*/
-    public function list_acciones_operativas(){ 
+    /*----- Lista de Unidades Organizacionales -------*/
+    public function list_poa(){ 
       $data['menu']=$this->menu(9);
       $data['resp']=$this->session->userdata('funcionario');
       
       //// Asignacion Poa Presupuesto Inicial
       if($this->verif_ppto==0){
-        $data['proyectos']=$this->list_pinversion(1); /// Proyecto de Inversion Aprobado
-        $data['operacion']=$this->list_unidades_es(1);  /// Gasto corriente Aprobado
+        $data['list_inversion']=$this->list_pinversion(1); /// Proyecto de Inversion Aprobado
+        $data['list_gasto_corriente']=$this->list_unidades_es(1);  /// Gasto corriente Aprobado
         $this->load->view('admin/mantenimiento/ptto_sigep/vlist_ope', $data);
       }
       //// Re-Asignacion Poa Presupuesto Final (Aprobado)
       else{
-        $data['proyectos']=$this->list_pinversion(4); /// Proyecto de Inversion Aprobado
-        $data['operacion']=$this->list_unidades_es(4);  /// Gasto corriente Aprobado
+        $data['list_inversion']=$this->list_pinversion(4); /// Proyecto de Inversion Aprobado
+        $data['list_gasto_corriente']=$this->list_unidades_es(4);  /// Gasto corriente Aprobado
         $data['regionales']=$this->model_ptto_sigep->list_regionales();
         $this->load->view('admin/mantenimiento/ptto_sigep/reajustado_ptto', $data);
         
-        // $aper=$this->model_ptto_sigep->get_apertura('01','01','720','04170002400000','000');
-        //echo $aper[0]['aper_id'];
       }
       
 
@@ -121,7 +119,7 @@ class Cptto_poa extends CI_Controller {
 
 
 
-    /*---- Lista de Unidades / Establecimientos de Salud (2020) -----*/
+    /*---- Lista Gasto Corriente -----*/
     public function list_unidades_es($estado_ppto){
       $unidades=$this->model_proyecto->list_gasto_corriente();
       $tabla='';
@@ -135,21 +133,23 @@ class Cptto_poa extends CI_Controller {
           <table id="dt_basic3" class="table1 table-bordered" style="width:100%;">
             <thead>
               <tr style="height:50px;">
-                <th style="width:1%;" bgcolor="#474544" title="">#</th>
-                <th style="width:5%;" bgcolor="#474544" title=""></th>
-                <th style="width:5%;" bgcolor="#474544" title="VER PPTO">VER PARTIDAS</th>
-                <th style="width:5%;" bgcolor="#474544" title="DIRECCION ADMINISTRATIVA">D.A.</th>
-                <th style="width:5%;" bgcolor="#474544" title="UNIDAD EJECUTORA">U.E.</th>
-                <th style="width:10%;" bgcolor="#474544" title="APERTURA PROGRAM&Aacute;TICA">PROGRAMA '.$this->gestion.'</th>
-                <th style="width:25%;" bgcolor="#474544" title="DESCRIPCI&Oacute;N">DESCRIPCI&Oacute;N</th>
-                <th style="width:10%;" bgcolor="#474544" title="UNIDAD ADMINISTRATIVA">UNIDAD ADMINISTRATIVA</th>
-                <th style="width:10%;" bgcolor="#474544" title="UNIDAD EJECUTORA">UNIDAD EJECUTORA</th>
+                <th style="width:1%;" title="">#</th>
+                <th style="width:5%;" title=""></th>
+                <th style="width:5%;" title="VER PPTO">VER PARTIDAS</th>
+                <th style="width:5%;" title="DIRECCION ADMINISTRATIVA">D.A.</th>
+                <th style="width:5%;" title="UNIDAD EJECUTORA">U.E.</th>
+                <th style="width:10%;" title="APERTURA PROGRAM&Aacute;TICA">PROGRAMA '.$this->gestion.'</th>
+                <th style="width:25%;" title="DESCRIPCI&Oacute;N">GASTO CORRIENTE</th>
+                <th style="width:10%;" title="ESTADO">ESTADO</th>
+                <th style="width:10%;" title="PPTO ASIGNADO">PPTO. ASIGNADO</th>
+                <th style="width:10%;" title="PPTO ASIGNADO">PPTO. POA</th>
+                <th style="width:10%;" title="PPTO ASIGNADO">SALDO</th>
               </tr>
             </thead>
             <tbody>';
             $nro=0;
               foreach($unidades as $row){
-                $aper=$this->model_ptto_sigep->partidas_proyecto($row['aper_id']);
+                $aper=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($row['aper_id']);
                 $nro++;
                 $tabla.='<tr bgcolor='.$color.'>';
                   $tabla.='<td style="height:30px;" align=center>'.$nro.'</td>';
@@ -196,9 +196,11 @@ class Cptto_poa extends CI_Controller {
                   $tabla.='<td align=center><b>'.$row['da'].'</b></td>';
                   $tabla.='<td align=center><b>'.$row['ue'].'</b></td>';
                   $tabla.='<td><center>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</center></td>';
-                  $tabla.='<td style="font-size: 8pt;"><b>'.$row['tipo'].' '.$row['actividad'].' '.$row['abrev'].'</b></td>';
-                  $tabla.='<td>'.strtoupper($row['dep_departamento']).'</td>';
-                  $tabla.='<td>'.strtoupper($row['dist_distrital']).'</td>';
+                  $tabla.='<td style="font-size: 8pt;"><b>'.$row['tipo'].' '.$row['proy_nombre'].' '.$row['abrev'].'</b></td>';
+                  $tabla.='<td>'.strtoupper($row['estado_poa']).'</td>';
+                  $tabla.='<td>'.$row['ppto_asignado'].'</td>';
+                  $tabla.='<td>'.$row['ppto_poa'].'</td>';
+                  $tabla.='<td>'.$row['ppto_saldo'].'</td>';
                 $tabla.='</tr>';
               }
             $tabla.='
@@ -253,7 +255,7 @@ class Cptto_poa extends CI_Controller {
                 $codigo_sisin=$row['proy_sisin'];
               }
 
-              $aper=$this->model_ptto_sigep->partidas_proyecto($row['aper_id']);
+              $aper=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($row['aper_id']);
               $tabla.='<tr bgcolor='.$color.'>';
               $tabla.='<td style="height:30px;" align=center><b>'.$row['aper_id'].'</b></td>';
               $tabla.='<td align=center>';
@@ -1192,7 +1194,7 @@ class Cptto_poa extends CI_Controller {
 
     /*------------ Verificar Comparativo Partidas -----------*/
     public function ver_comparativo_partidas($proy_id){ 
-      $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
       if(count($data['proyecto'])!=0){
         $data['menu']=$this->menu(9);
         $data['resp']=$this->session->userdata('funcionario');
@@ -1575,7 +1577,7 @@ class Cptto_poa extends CI_Controller {
 
     /*-------- REPORTE COMPARATIVO POR UNIDAD (PDF) ---------*/
     public function reporte_comparativo_unidad($proy_id){
-      $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
 
       if(count($data['proyecto'])!=0){
         $data['mes'] = $this->mes_nombre();

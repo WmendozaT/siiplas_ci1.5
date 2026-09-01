@@ -2197,10 +2197,7 @@ class Cseguimiento extends CI_Controller {
         $data['verif_mes']=$this->seguimientopoa->update_mes_gestion($mes_id);
         $data['mes'] = $this->seguimientopoa->mes_nombre();
         $data['fase']=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']); /// DATOS FASE
-        $data['proyecto'] = $this->model_proyecto->get_id_proyecto($data['fase'][0]['proy_id']); //// DATOS PROYECTO
-        if($data['proyecto'][0]['tp_id']==4){
-          $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['fase'][0]['proy_id']); /// PROYECTO
-        }
+        $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($data['fase'][0]['proy_id']); /// PROYECTO
         $data['cabecera']=$this->seguimientopoa->cabecera($data['componente'],$data['proyecto']); /// Cabecera
         $data['titulo_formulario']='<b>FORMULARIO SEGUIMIENTO POA</b> - '.$data['verif_mes'][2].' / '.$this->gestion.'';
 

@@ -134,7 +134,7 @@ class Cconf_pinversion extends CI_Controller {
     /*Lista de Proyectos de Inversion-activar fases*/
     public function proyectos_inversion1(){ 
         $tabla='';
-        $proyectos = $this->model_proyecto->list_proyectos_inversion();//lista de proyectos de inversion
+        $proyectos = $this->model_proyecto->list_inversion_gral();//lista de proyectos de inversion
         $nro=0;
         foreach($proyectos  as $row){
             $fase = $this->model_faseetapa->get_id_fase($row['proy_id']);
@@ -150,7 +150,7 @@ class Cconf_pinversion extends CI_Controller {
                     <td align=center>'.$row['aper_programa'].''.$row['aper_proyecto'].''.$row['aper_actividad'].'</td>
                     <td>'.$row['proy_nombre'].'</td>
                     <td>'.$row['proy_sisin'].'</td>
-                    <td>'.$row['fun_nombre'].' '.$row['fun_paterno'].' '.$row['fun_materno'].'</td>
+                    <td></td>
                     <td>'.strtoupper($row['dep_departamento']).'</td>
                     <td>'.strtoupper($row['dist_distrital']).'</td>';
             $tabla.='
@@ -162,7 +162,7 @@ class Cconf_pinversion extends CI_Controller {
     /*Lista de Proyectos de Inversion-activar fases*/
     public function proyectos_inversion2(){ 
         $tabla='';
-        $proyectos = $this->model_proyecto->list_proyectos_inversion();//lista de proyectos de inversion
+        $proyectos = $this->model_proyecto->list_inversion_gral();//lista de proyectos de inversion
         $nro=0;
         foreach($proyectos  as $row){
             $fase = $this->model_faseetapa->get_id_fase($row['proy_id']);
@@ -173,7 +173,7 @@ class Cconf_pinversion extends CI_Controller {
                     <td align=center>'.$row['aper_programa'].''.$row['aper_proyecto'].''.$row['aper_actividad'].'</td>
                     <td>'.$row['proy_nombre'].'</td>
                     <td>'.$row['proy_sisin'].'</td>
-                    <td>'.$row['fun_nombre'].' '.$row['fun_paterno'].' '.$row['fun_materno'].'</td>
+                    <td></td>
                     <td>'.strtoupper($row['dep_departamento']).'</td>
                     <td>'.strtoupper($row['dist_distrital']).'</td>';
                     if(count($fase)!=0){

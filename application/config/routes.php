@@ -268,7 +268,7 @@ $route['admin/mantenimiento/del_aper'] = 'cmantenimiento/del_aper';*/
 
 
 /*-- Ptto Sipeg (MANTENIMIENTO)--*/
-$route['ptto_asig_poa'] = 'mantenimiento/cptto_poa/list_acciones_operativas'; /// Lista de Acciones Operativas
+$route['ptto_asig_poa'] = 'mantenimiento/cptto_poa/list_poa'; /// Lista poa
 $route['mnt/rep_partidas/(:any)'] = 'mantenimiento/cptto_poa/rep_partida/$1'; /// Reporte Partida
 $route['mnt/edit_ptto_asig/(:any)'] = 'mantenimiento/cptto_poa/edit_partidas/$1'; /// Modifica Monto Partida
 $route['mnt/delete_partida'] = 'mantenimiento/cptto_poa/delete_partida';	//// Delete Partida

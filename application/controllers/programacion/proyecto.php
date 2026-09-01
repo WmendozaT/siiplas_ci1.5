@@ -183,6 +183,7 @@ class Proyecto extends CI_Controller {
                                       <th style="width:4%;">VALIDAR</th>
                                       <th style="width:4%;">PROG. POA</th>
                                       <th style="width:4%;" title="REPORTE POA">REPORTE POA</th>
+                                      <th style="width:4%;" title="CONSOLIDADO POA">CONSOLIDADO</th>
                                       <th style="width:4%;" title="MODIFICAR">MODIFICAR</th>
                                       <th style="width:4%;" title="FASE">FASE</th>
                                       <th style="width:4%;" title="ELIMINAR">ELIMINAR</th>
@@ -501,7 +502,13 @@ class Proyecto extends CI_Controller {
             $tabla .= '</td>';
 
             $tabla .='<td bgcolor="#5B9360"><center><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default enlace" name="'.$row['proy_id'].'" id="'.strtoupper($row['proy_nombre']).'"><img src="'.base_url().'assets/ifinal/doc.jpg" WIDTH="35" HEIGHT="35"/></a></center></td>';
-
+            $tabla.='
+            <td bgcolor="#fafafa">';
+              if(count($fase)!=0 & $this->conf_form4==1){
+                $tabla.='<center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" class="btn btn-default" title="CONSOLIDADO POA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30" title="VER POA '.$this->gestion.'"/></a></center>';
+              }
+            $tabla.='
+            </td>';
               $tabla .= '<td bgcolor="#5B9360"><center><a href="'.site_url("admin").'/proy/edit/'.$row['proy_id'].'" title="MODIFICAR OPERACION" class="btn btn-default" target=_blank><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a></center></td>';
               $tabla .='<td bgcolor="#5B9360"><center><a href="'.site_url("admin").'/proy/fase_etapa/'.$row['proy_id'].'" title="FASE ETAPA DEL PROYECTO" class="btn btn-default" target=_blank><img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="35" HEIGHT="35"/></a></center></td>';
               /*---------------------------------------------*/

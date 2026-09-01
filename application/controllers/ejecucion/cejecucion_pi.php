@@ -109,8 +109,8 @@ class Cejecucion_pi extends CI_Controller {
           <div id="cuadro_consolidado_impresion" style="display: none"></div>
         </div>';
         
-        $ppto_asignado=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],1);
-        $ppto_programado=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],2);
+        $ppto_asignado=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],1);
+        $ppto_programado=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],2);
 
         if(count($ppto_programado)!=0 || ($ppto_asignado[0]['monto']==$ppto_programado[0]['monto']) ){
             $data['cuerpo_seguimiento_poa']='
@@ -325,7 +325,7 @@ class Cejecucion_pi extends CI_Controller {
   /*-- CALIFICACION EJECUCION POR PROYECTO POR GESTION --*/
   public function cumplimiento_gestion($proyecto,$tp){
     //// Asig - Ejec (a Gestion)
-    $total_ppto_asignado=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],1); /// monto total asignado (sigep) poa GESTION
+    $total_ppto_asignado=$this->model_ptto_sigep->suma_ptto_UnidadOrganizacional($proyecto[0]['aper_id'],1); /// monto total asignado (sigep) poa GESTION
     $total_ppto_ejecutado=$this->model_ptto_sigep->suma_monto_ejecutado_total_ppto_sigep($proyecto[0]['aper_id']); /// monto total ejecutado poa GESTION
     $cumplimiento_trimestral=0;
     if(count($total_ppto_asignado)!=0 & count($total_ppto_ejecutado)!=0){
@@ -582,7 +582,7 @@ class Cejecucion_pi extends CI_Controller {
 
   /*-- FORMULARIO EJECUCION FINANCIERA POR PARTIDAS --*/
   public function tabla_formulario_ejecucion_partidas($proyecto,$com_id){
-    $ppto_asig=$this->model_ptto_sigep->partidas_proyecto($proyecto[0]['aper_id']); /// lista de partidas asignados por proyectos
+    $ppto_asig=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($proyecto[0]['aper_id']); /// lista de partidas asignados por proyectos
     $tabla='';
 
       $tabla.='
@@ -624,7 +624,7 @@ class Cejecucion_pi extends CI_Controller {
 
           $tabla.='
           <hr>
-          <div style="font-size: 18px;font-family: Arial, sans-serif;"><b>PARTIDA : '.$partida['partida'].'</b> - '.strtoupper($partida['par_nombre']).'</div>
+          <div style="font-size: 18px;font-family: Arial, sans-serif;"><b>PARTIDA : '.$partida['codigo_partida'].'</b> - '.strtoupper($partida['partida']).'</div>
           <div class="table-responsive">
           <form class="smart-form">
           <table class="table table-bordered">

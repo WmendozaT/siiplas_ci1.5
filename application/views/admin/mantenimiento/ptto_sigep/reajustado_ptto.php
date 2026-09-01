@@ -22,7 +22,7 @@
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
         <meta name="viewport" content="width=device-width">
         <!--fin de stiloh-->
-            <script>
+<!--             <script>
             function abreVentana(PDF){             
                 var direccion;
                 direccion = '' + PDF;
@@ -50,32 +50,12 @@
             #csv{
               width: 30% !important;
             }
-            </style>
+            </style> -->
     </head>
     <body class="">
         <!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
         <!-- HEADER -->
         <header id="header">
-            <div id="logo-group">
-            </div>
-            <div class="col-md-4 " style="font-size:18px;margin-top:10px;margin-bottom:-10px;">
-                <span>
-                    &nbsp;&nbsp;&nbsp; 
-                    <div class="badge bg-color-blue">
-                        <span style="font-size:15px;"><b>Fecha Sesi&oacute;n: <?php echo $this->session->userdata('desc_mes').' / '.$this->session->userdata('gestion');?></b></span>
-                    </div>
-                </span>
-                <div class="project-context hidden-xs">
-                    <span class="project-selector dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="font-size:19px;">
-                        <i class="fa fa-lg fa-fw fa-calendar txt-color-blue"></i>
-                    </span>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="<?php echo base_url();?>index.php/cambiar_gestion">Cambiar Gestión</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
             <!-- pulled right: nav area -->
             <div class="pull-right">
                 <!-- collapse menu button -->
@@ -202,7 +182,7 @@
                                               </header>
                                                 <div>
                                                     <div class="widget-body no-padding">
-                                                        <?php echo $proyectos; ?>
+                                                        <?php echo $list_inversion; ?>
                                                     </div>
                                                     <!-- end widget content -->
                                                 </div>
@@ -235,11 +215,11 @@
                                             <div class="jarviswidget jarviswidget-color-darken" >
                                               <header>
                                                   <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-                                                  <h2 class="font-md"><strong>OPERACI&Oacute;N FUNCIONAMIENTO</strong></h2>  
+                                                  <h2 class="font-md"><strong>GASTO CORRIENTE</strong></h2>  
                                               </header>
                                                 <div>
                                                     <div class="widget-body no-padding">
-                                                        <?php echo $operacion;?>
+                                                        <?php echo $list_gasto_corriente;?>
                                                     </div>
                                                     <!-- end widget content -->
                                                 </div>

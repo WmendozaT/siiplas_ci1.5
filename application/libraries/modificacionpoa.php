@@ -342,7 +342,7 @@ class Modificacionpoa extends CI_Controller{
         }
 
         if($tp==1){
-          if($monto[3]>0){
+          if($monto[3]>0 || $cite[0]['proy_id']==4009){
             $tabla.='
             <a role="menuitem" tabindex="-1" href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default" title="NUEVO REGISTRO">
               <img src="'.base_url().'assets/Iconos/add.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>NUEVO REGISTRO (FORM. N 5)</b>

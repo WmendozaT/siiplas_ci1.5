@@ -212,6 +212,20 @@ class Model_proyecto extends CI_Model{
         return $query->result_array();
     }
 
+
+        /*---------- LISTA POA INVERSION 2027 ----------*/
+    public function list_inversion_gral(){
+        $sql = 'select *
+                    from fn_lista_poa_nacional('.$this->gestion.')
+                    where tp_id=1
+                    order by dep_id,dist_id,aper_programa,aper_actividad, aper_actividad asc'; 
+        
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+
     /*---------- LISTA POA 2027 - CONSULTA ----------*/
     public function lista_programacion_poa_x_regional($dep_id,$tp_id){
         $sql = 'select *
@@ -1226,9 +1240,11 @@ class Model_proyecto extends CI_Model{
         return $query->result_array();
     }
 
-    /*-------- LISTA OPERACION DE FUNCIONAMIENTO - GASTO CORRIENTE  --------*/
+    /*-------- LISTA POA - GASTO CORRIENTE  --------*/
     public function list_gasto_corriente(){
-        $sql = 'select * from lista_poa_gastocorriente_nacional('.$this->gestion.')';
+        $sql = 'select * from fn_lista_poa_nacional('.$this->gestion.')
+                where tp_id=4
+                order by aper_programa,aper_actividad, aper_actividad asc';
         $query = $this->db->query($sql);
         return $query->result_array();
     }

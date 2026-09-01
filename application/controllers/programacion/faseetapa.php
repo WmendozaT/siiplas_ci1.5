@@ -278,7 +278,7 @@ class Faseetapa extends CI_Controller {
           $fas_id=$this->security->xss_clean($this->input->post('fase'));
           $etapa_id=$this->security->xss_clean($this->input->post('etapas'));
           $desc=$this->security->xss_clean($this->input->post('desc'));
-          $f_inicio=$this->security->xss_clean($this->input->post('f_inicio'));
+          //$f_inicio=$this->security->xss_clean($this->input->post('f_inicio'));
           $f_final=$this->security->xss_clean($this->input->post('f_final'));
           $monto=$this->security->xss_clean($this->input->post('monto_total'));
           $proyecto = $this->model_proyecto->get_id_proyecto($proy_id);
@@ -290,11 +290,11 @@ class Faseetapa extends CI_Controller {
               'fas_id' => $fas_id,
               'eta_id' => $etapa_id,
               'pfec_descripcion' => strtoupper($desc),
-              'pfec_fecha_inicio_ddmmaaa' => $f_inicio,
+              'pfec_fecha_inicio_ddmmaaa' => $f_final,
               'pfec_fecha_fin_ddmmaaa' => $f_final,
               'pfec_fecha_registro' => date('d/m/Y h:i:s'),
               'pfec_ejecucion' => 1,
-              'pfec_ptto_fase' => $monto,
+              'pfec_ptto_fase' => 0,
               'aper_id' => $proyecto[0]['aper_id'],
               'fun_id' => $this->fun_id,
               'unidad_ejec' => $proyecto[0]['dist_id'],
@@ -319,14 +319,14 @@ class Faseetapa extends CI_Controller {
             $this->db->update('_proyectofaseetapacomponente', $update_fase);
 
             /*---------------  fase etapa gestion ----------------*/
-              for($i=$fechas[0]['inicio'];$i<=$fechas[0]['final'];$i++){
+             /* for($i=$fechas[0]['inicio'];$i<=$fechas[0]['final'];$i++){
                 $data_to_store2 = array(
                   'pfec_id' => $pfec_id,
                   'g_id' => $i,
                   'fun_id' => $this->fun_id,
                 );
                 $this->db->insert('ptto_fase_gestion', $data_to_store2);
-              }
+              }*/
 
               /*------------ Fase Pre-Inversion ----------*/
               if($fas_id==1){
@@ -343,7 +343,7 @@ class Faseetapa extends CI_Controller {
               }
               /*=================================================================*/
               $this->session->set_flashdata('success','LOS DATOS GENERALES DE LA FASE SE REGISTRARON CORRECTAMENTE');
-              redirect('admin/proy/fase_ptto/'.$pfec_id.'');
+              redirect('admin/proy/list_proy#tabs-a');
               /*-----------------------------------------------------------------------*/
 
         }
