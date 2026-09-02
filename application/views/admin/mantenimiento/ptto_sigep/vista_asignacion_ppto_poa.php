@@ -21,62 +21,11 @@
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.core.css" />
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
         <meta name="viewport" content="width=device-width">
-        <!--fin de stiloh-->
-          <script>
-            function abreVentana(PDF){             
-                var direccion;
-                direccion = '' + PDF;
-                window.open(direccion, "Reporte de Proyectos" , "width=800,height=650,scrollbars=SI") ;                                                                 
-            }                                          
-          </script>
-            <style>
-            .table1{
-              display: inline-block;
-              width:100%;
-              max-width:1550px;
-              overflow-x: scroll;
-              }
-            table{font-size: 10px;
-            width: 100%;
-            max-width:1550px;;
-            overflow-x: scroll;
-            }
-            th{
-              padding: 1.4px;
-              text-align: center;
-              font-size: 10px;
-              color: #ffffff;
-            }
-            #csv{
-              width: 30% !important;
-            }
-            </style>
     </head>
     <body class="">
         <!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
         <!-- HEADER -->
         <header id="header">
-            <div id="logo-group">
-                <!-- <span id="logo"> <img src="<?php echo base_url(); ?>assets/img/logo.png" alt="SmartAdmin"> </span> -->
-            </div>
-            <div class="col-md-4 " style="font-size:18px;margin-top:10px;margin-bottom:-10px;">
-                <span>
-                    &nbsp;&nbsp;&nbsp; 
-                    <div class="badge bg-color-blue">
-                        <span style="font-size:15px;"><b>Fecha Sesi&oacute;n: <?php echo $this->session->userdata('desc_mes').' / '.$this->session->userdata('gestion');?></b></span>
-                    </div>
-                </span>
-                <div class="project-context hidden-xs">
-                    <span class="project-selector dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="font-size:19px;">
-                        <i class="fa fa-lg fa-fw fa-calendar txt-color-blue"></i>
-                    </span>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="<?php echo base_url();?>index.php/cambiar_gestion">Cambiar Gestión</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
             <!-- pulled right: nav area -->
             <div class="pull-right">
                 <!-- collapse menu button -->
@@ -142,7 +91,7 @@
                 </span>
                 <!-- breadcrumb -->
                 <ol class="breadcrumb">
-                    <li>Mantenimiento</li><li>Asignar presupuesto POA</li><li>Mis POAS - <?php echo $this->session->userdata("gestion");?></li>
+                    <li>Mantenimiento</li><li>Asignar presupuesto POA <?php echo $this->session->userdata("gestion");?></li>
                 </ol>
             </div>
             <!-- MAIN CONTENT -->
@@ -170,74 +119,7 @@
                             </section>
                         </article>
 
-                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                            <?php 
-                              if($this->session->flashdata('success')){ ?>
-                                <div class="alert alert-success">
-                                  <?php echo $this->session->flashdata('success'); ?>
-                                </div>
-                            <?php }
-                                elseif($this->session->flashdata('danger')){ ?>
-                                <div class="alert alert-danger">
-                                  <?php echo $this->session->flashdata('danger'); ?>
-                                </div><?php }
-                            ?>
-
-                            <div class="well well-sm well-light">
-                                <div id="tabs">
-                                    <ul>
-                                        <li>
-                                            <a href="#tabs-c">GASTO CORRIENTE</a>
-                                        </li>
-                                        <li>
-                                            <a href="#tabs-a">PROYECTOS DE INVERSI&Oacute;N</a>
-                                        </li>
-                                    </ul>
-                                    
-                                    <div id="tabs-c">
-                                        <div class="row">
-                                            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                            <div class="jarviswidget jarviswidget-color-darken" >
-                                              <header>
-                                                  <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-                                                  <h2 class="font-md"><strong>GASTO CORRIENTE</strong></h2>  
-                                              </header>
-                                                <div>
-                                                    <div class="widget-body no-padding">
-                                                        <?php echo $operacion;?>
-                                                    </div>
-                                                    <!-- end widget content -->
-                                                </div>
-                                                <!-- end widget div -->
-                                            </div>
-                                            <!-- end widget -->
-                                            </article>
-                                        </div>
-                                    </div>
-
-                                    <div id="tabs-a">
-                                        <div class="row">
-                                            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                            <div class="jarviswidget jarviswidget-color-darken" >
-                                              <header>
-                                                  <span class="widget-icon"> <i class="fa fa-arrows-v"></i> </span>
-                                                  <h2 class="font-md"><strong>PROYECTOS DE INVERSI&Oacute;N</strong></h2>  
-                                              </header>
-                                                <div>
-                                                    <div class="widget-body no-padding">
-                                                        <?php echo $proyectos; ?>
-                                                    </div>
-                                                    <!-- end widget content -->
-                                                </div>
-                                                <!-- end widget div -->
-                                            </div>
-                                            <!-- end widget -->
-                                            </article>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
+                        <?php echo $lista_poa;?>
                         <!-- WIDGET END -->
                     </div>
                 </section>
@@ -357,47 +239,8 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.tableTools.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-        <script type="text/javascript">
-        $(function () {
-            $("#subir_archivo").on("click", function () {
-                var $valid = $("#form_subir_sigep").valid();
-                if (!$valid) {
-                    $validator.focusInvalid();
-                } else {
-                    if(document.getElementById('archivo').value==''){
-                        alertify.alert('POR FAVOR SELECCIONE ARCHIVO .CSV');
-                        return false;
-                    }
-
-                    if(document.getElementById('tp_id').value==0){
-                        alertify.alert('POR FAVOR SELECCIONE TIPO DE GASTO');
-                        return false;
-                    }
-                   
-                    archivo = document.getElementById('archivo').value;
-                    alertify.confirm("SUBIR ARCHIVO ?", function (a) {
-                        if (a) {
-                            document.getElementById("loads").style.display = 'block';
-                            document.getElementById('subir_archivo').disabled = true;
-                            document.getElementById("subir_archivo").value = "Subiendo Archivo...";
-                            document.forms['form_subir_sigep'].submit();
-                        } else {
-                            alertify.error("OPCI\u00D3N CANCELADA");
-                        }
-                    });
-                }
-            });
-        });
-        </script>
         <script src = "<?php echo base_url(); ?>mis_js/programacion/programacion/tablas.js"></script>
-        <script type="text/javascript">
-        // DO NOT REMOVE : GLOBAL FUNCTIONS!
-        $(document).ready(function() {
-            pageSetUp();
-            $("#menu").menu();
-            $('.ui-dialog :button').blur();
-            $('#tabs').tabs();
-        })
-        </script>
+        <script src="<?php echo base_url(); ?>mis_js/mantenimiento/Js_asignacion_ppto_partidas.js"></script> 
+
     </body>
 </html>

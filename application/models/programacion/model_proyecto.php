@@ -1240,11 +1240,10 @@ class Model_proyecto extends CI_Model{
         return $query->result_array();
     }
 
-    /*-------- LISTA POA - GASTO CORRIENTE  --------*/
-    public function list_gasto_corriente(){
-        $sql = 'select * from fn_lista_poa_nacional('.$this->gestion.')
-                where tp_id=4
-                order by aper_programa,aper_actividad, aper_actividad asc';
+    /*-------- LISTA POA PARA ASIGNACION DE PPTO - POA  --------*/
+    public function lista_poa_consolidado(){
+        $sql = 'SELECT * from fn_lista_poa_nacional('.$this->gestion.')
+                order by dep_id,dist_id,aper_programa,aper_proyecto, aper_actividad, proy_id asc';
         $query = $this->db->query($sql);
         return $query->result_array();
     }
