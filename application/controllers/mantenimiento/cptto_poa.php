@@ -1,6 +1,4 @@
 <?php
-define("DOMPDF_ENABLE_REMOTE", true);
-define("DOMPDF_TEMP_DIR", "/tmp");
 class Cptto_poa extends CI_Controller {
     public $rol = array('1' => '1');
     public function __construct(){
@@ -65,177 +63,102 @@ class Cptto_poa extends CI_Controller {
 
 
     /*---- Lista Gasto Corriente / Inversion-----*/
-    public function lista_poa_general(){
-      $unidades=$this->model_proyecto->lista_poa_consolidado();
-      $tabla='';
-        
-      $color='';  
-      $tabla.='
-          <table id="dt_basic" class="table table-bordered" style="width:100%;">
-            <thead>
-              <tr style="height:50px;">
-                <th style="width:1%;" title="">#</th>
-                <th style="width:5%;" title=""></th>
-                <th style="width:5%;" title="VER PPTO">VER PARTIDAS</th>
-                <th style="width:5%;" title="DIRECCION ADMINISTRATIVA">D.A.</th>
-                <th style="width:5%;" title="UNIDAD EJECUTORA">U.E.</th>
-                <th style="width:10%;" title="APERTURA PROGRAM&Aacute;TICA">PROGRAMA '.$this->gestion.'</th>
-                <th style="width:25%;" title="DESCRIPCI&Oacute;N">GASTO CORRIENTE / INVERSIÓN</th>
-                <th style="width:10%;" title="DISTRITAL">DISTRITAL</th>
-                <th style="width:10%;" title="ESTADO">ESTADO</th>
-                <th style="width:10%;" title="ESTADO">TIPO DE GASTO</th>
-                <th style="width:10%;" title="PPTO ASIGNADO">PPTO. ASIGNADO</th>
-                <th style="width:10%;" title="PPTO ASIGNADO">PPTO. POA</th>
-                <th style="width:10%;" title="PPTO ASIGNADO">SALDO</th>
-              </tr>
-            </thead>
-            <tbody>';
-            $nro=0;
-              foreach($unidades as $row){
-                $aper=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($row['aper_id']);
-                $nro++;
-                $tabla.='<tr bgcolor='.$color.'>';
-                  $tabla.='<td style="height:30px;" align=center>'.$nro.'</td>';
-                  $tabla.='<td>generar modal ´para ver el listado de partidas</td>';
-                  $tabla.='<td>';
-                  $tabla .='<center><a href="'.site_url("").'/mnt/edit_ptto_asig/'.$row['proy_id'].'" title="MODIFICAR PRESUPUESTO ASIGNADO" class="btn btn-default"><img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="34" HEIGHT="34"/></a></center>';
-                  $tabla.='<center><a href="'.site_url("").'/mnt/ver_ptto_asig_final/'.$row['proy_id'].'" id="myBtnn'.$row['proy_id'].'" title="VER PRESUPUESTO ASIGNADO INICIAL - PROGRAMADO - APROBADO" iclass="btn btn-default"><img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="34" HEIGHT="34"/></a></center>';
-                  $tabla.='</td>';
-                  $tabla.='<td align=center><b>'.$row['da'].'</b></td>';
-                  $tabla.='<td align=center><b>'.$row['ue'].'</b></td>';
-                  
-                  if($row['tp_id']==1){
-                    $tabla.='<td><center>'.$row['proy_sisin'].'</center></td>';
-                    $tabla.='<td style="font-size: 8pt;"><b>'.$row['proy_nombre'].'</b></td>';
-                  }
-                  else{
-                    $tabla.='<td><center>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</center></td>';
-                    $tabla.='<td style="font-size: 8pt;"><b>'.$row['tipo'].' '.$row['proy_nombre'].' '.$row['abrev'].'</b></td>';
-                  }
-                  $tabla.='<td>'.strtoupper($row['dist_distrital']).'</td>';
-                  $tabla.='<td>'.strtoupper($row['estado_poa']).'</td>';
-                  $tabla.='<td>'.strtoupper($row['tipo_gasto_nombre']).'</td>';
-                  $tabla.='<td>'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>';
-                  $tabla.='<td>'.number_format($row['ppto_poa'], 2, ',', '.').'</td>';
-                  $tabla.='<td>'.number_format($row['ppto_saldo'], 2, ',', '.').'</td>';
-                $tabla.='</tr>';
-              }
-            $tabla.='
-            </tbody>
-          </table>';
-
-      return $tabla;
-    }
-
-
-    /*---- Lista de Proyectos de Inversion (2020) -----*/
-   /* public function list_pinversion($estado_ppto){
-      if($estado_ppto==1){
-        $proyectos=$this->model_proyecto->list_poa_general(1);
-
-      }
-      else{
-        $proyectos=$this->model_proyecto->list_proy_inversion();
-      }
-
-      $tabla='';
-
-      $color='';  
-      if($estado_ppto==1){
-        $color='#e2f4f9';
-      }
-
-      $tabla.='
-        <table id="dt_basic" class="table table-bordered" style="width:100%;">
-            <thead>
-              <tr style="height:50px;">
-                <th style="width:1%;" bgcolor="#474544" title="#">APER ID</th>
-                <th style="width:5%;" bgcolor="#474544" title="VER PARTIDAS"></th>
-                <th style="width:5%;" bgcolor="#474544" title="VER PARTIDAS">VER PARTIDAS</th>
-                <th style="width:10%;" bgcolor="#474544" title="APERTURA PROGRAM&Aacute;TICA">CATEGORIA PROGRAM&Aacute;TICA '.$this->gestion.'</th>
-                <th style="width:20%;" bgcolor="#474544" title="NOMBRE DEL PROYECTO DE INVERSI&Oacute;N">NOMBRE_PROYECTO_INVERSI&Oacute;N</th>
-                <th style="width:10%;" bgcolor="#474544" title="C&Oacute;DIGO SISIN">C&Oacute;DIGO_SISIN</th>
-                <th style="width:10%;" bgcolor="#474544" title="UNIDAD ADMINISTRATIVA">UNIDAD_ADMINISTRATIVA</th>
-                <th style="width:10%;" bgcolor="#474544" title="UNIDAD EJECUTORA">UNIDAD_EJECUTORA</th>
-              </tr>
-            </thead>
-            <tbody>';
-            $nro=0;
-            foreach($proyectos as $row){
-
-              if($estado_ppto==4){ // ppto final
-                $nombre=$row['proyecto'];
-                $codigo_sisin=$row['proy'];
-              }
-              else{ /// ppto inicial
-                $nombre=$row['proy_nombre'];
-                $codigo_sisin=$row['proy_sisin'];
-              }
-
-              $aper=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($row['aper_id']);
-              $tabla.='<tr bgcolor='.$color.'>';
-              $tabla.='<td style="height:30px;" align=center><b>'.$row['aper_id'].'</b></td>';
-              $tabla.='<td align=center>';
-                if($row['pfec_estado']==1){
-                  if($estado_ppto==0){
-                    if(count($aper)!=0){
-                        $tabla .='
-                        <center><a data-toggle="modal" data-target="#'.$row['aper_id'].'" title="PARTIDAS ASIGNADAS" ><img src="'.base_url().'assets/img/select.png" WIDTH="35" HEIGHT="35"/></a></center>
-                          <div class="modal fade bs-example-modal-lg" tabindex="-1" id="'.$row['aper_id'].'"  role="dialog" aria-labelledby="myLargeModalLabel">
-                            <div class="modal-dialog modal-lg" role="document">
-                              <div class="modal-content">
-                                <div class="modal-header">
-                                  <button type="button" class="close text-danger" data-dismiss="modal" aria-hidden="true">
-                                    &times;
-                                  </button>
-                                  <h4 class="modal-title">
-                                  '.$row['proy_nombre'].'
-                                  </h4>
-                                </div>
-                                <div class="modal-body no-padding">
-                                  <div class="well">
-                                  '.$this->partidas($row['aper_id'],1).'  
-                                  </div>
-                                </div>
-                                  <div class="modal-footer">
-                                      <a href="javascript:abreVentana(\''.site_url("").'/mnt/rep_partidas/'.$row['aper_id'].'\');" class="btn btn-primary" title="IMPRIMIR PARTIDAS">IMPRIMIR PARTIDAS</a>
-                                  </div>
-                              </div>
-                            </div>
-                          </div>';
-                    }
-                  }
-                }
-                else{
-                  $tabla.='<b>FASE NO ACTIVA</b>';
-                }
-              $tabla.='</td>';
-              $tabla.='<td>';
-                if($this->tp_adm==1 & $row['pfec_estado']==1){
-
-                  if($estado_ppto==0){
-                    if(count($aper)!=0){
-                      $tabla .='<center><a href="'.site_url("").'/mnt/edit_ptto_asig/'.$row['proy_id'].'" title="MODIFICAR PRESUPUESTO ASIGNADO" class="btn btn-default"><img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="34" HEIGHT="34"/></a></center>';
-                    }
-                  }
-                  else{
-                    $tabla.='<center><a href="'.site_url("").'/mnt/ver_ptto_asig_final/'.$row['proy_id'].'" id="myBtnn'.$row['proy_id'].'" title="VER PRESUPUESTO ASIGNADO INICIAL - PROGRAMADO - APROBADO" iclass="btn btn-default"><img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="34" HEIGHT="34"/></a></center>';
-                  }
-                }
-              $tabla.='</td>';
-              $tabla.='<td><center>'.$row['prog'].' '.$row['proy'].' '.$row['act'].'</center></td>';
-              $tabla.='<td>'.$nombre.'</td>';
-              $tabla.='<td>'.$codigo_sisin.'</td>';
-              $tabla.='<td>'.strtoupper($row['dep_departamento']).'</td>';
-              $tabla.='<td>'.strtoupper($row['dist_distrital']).'</td>';
-              $tabla.='</tr>';
-            }
-            $tabla.='
-            </tbody>
-          </table>';
+public function lista_poa_general(){
+    // Trae todo el listado consolidado en una sola consulta
+    $unidades = $this->model_proyecto->lista_poa_consolidado();
+    $tabla = '';
+    
+    $tabla .= '
+    <input name="base" type="text" value="'.base_url().'">
+    <table id="dt_basic" class="table table-bordered table-striped" style="width:100%;">
+      <thead>
+        <tr style="height:50px;">
+          <th style="width:1%;">#</th>
+          <th style="width:5%;">PARTIDAS</th>
+          <th style="width:5%;">VER PPTO</th>
+          <th style="width:5%;" title="DIRECCION ADMINISTRATIVA">D.A.</th>
+          <th style="width:5%;" title="UNIDAD EJECUTORA">U.E.</th>
+          <th style="width:10%;">PROGRAMA '.$this->gestion.'</th>
+          <th style="width:25%;">GASTO CORRIENTE / INVERSIÓN</th>
+          <th style="width:10%;">DISTRITAL</th>
+          <th style="width:10%;">ESTADO</th>
+          <th style="width:10%;">TIPO DE GASTO</th>
+          <th style="width:10%;">PPTO. ASIGNADO</th>
+          <th style="width:10%;">PPTO. POA</th>
+          <th style="width:10%;">SALDO</th>
+        </tr>
+      </thead>
+      <tbody>';
       
-      return $tabla;
-    }*/
+      $nro = 0;
+      foreach($unidades as $row){
+          $nro++;
+          $tabla .= '<tr>';
+          $tabla .= '<td align="center">'.$nro.'</td>';
+          
+          // BOTÓN DEL MODAL (Carga datos dinámicamente vía AJAX usando aper_id)
+          $tabla .= '<td align="center">
+                      <button type="button" class="btn btn-info btn-sm btn-ver-partidas" data-id="'.$row['aper_id'].'">
+                        <i class="glyphicon glyphicon-list"></i> Ver Partidas
+                      </button>
+                    </td>';
+          
+          // ACCIONES
+          $tabla .= '<td>
+                      <center>
+                        <a href="'.site_url("mnt/edit_ptto_asig/".$row['proy_id']).'" title="MODIFICAR PRESUPUESTO ASIGNADO" class="btn btn-xs btn-default"><img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="24" HEIGHT="24"/></a>
+                        <a href="'.site_url("mnt/ver_ptto_asig_final/".$row['proy_id']).'" id="myBtnn'.$row['proy_id'].'" title="VER PRESUPUESTO ASIGNADO" class="btn btn-xs btn-default"><img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="24" HEIGHT="24"/></a>
+                      </center>
+                    </td>';
+                    
+          $tabla .= '<td align="center"><b>'.$row['da'].'</b></td>';
+          $tabla .= '<td align="center"><b>'.$row['ue'].'</b></td>';
+          
+          if($row['tp_id'] == 1){
+              $tabla .= '<td><center>'.$row['proy_sisin'].'</center></td>';
+              $tabla .= '<td style="font-size: 8pt;"><b>'.htmlentities($row['proy_nombre']).'</b></td>';
+          } else {
+              $tabla .= '<td><center>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</center></td>';
+              $tabla .= '<td style="font-size: 8pt;"><b>'.$row['tipo'].' '.htmlentities($row['proy_nombre']).' '.$row['abrev'].'</b></td>';
+          }
+          
+          $tabla .= '<td>'.strtoupper($row['dist_distrital']).'</td>';
+          $tabla .= '<td>'.strtoupper($row['estado_poa']).'</td>';
+          $tabla .= '<td>'.strtoupper($row['tipo_gasto_nombre']).'</td>';
+          $tabla .= '<td>'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>';
+          $tabla .= '<td>'.number_format($row['ppto_poa'], 2, ',', '.').'</td>';
+          $tabla .= '<td>'.number_format($row['ppto_saldo'], 2, ',', '.').'</td>';
+          $tabla .= '</tr>';
+      }
+      
+      $tabla .= '
+      </tbody>
+    </table>';
+
+// 3. ESTRUCTURA DEL MODAL BOOTSTRAP INYECTADA EN LA VARIABLE
+    $tabla .= '
+    <div class="modal fade" id="modalPartidas" tabindex="-1" role="dialog" aria-labelledby="modalPartidasLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header" style="background-color: #3276b1; color: white;">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:1;"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="modalPartidasLabel"><b><span class="glyphicon glyphicon-folder-open"></span> DETALLE DE PARTIDAS ASIGNADAS</b></h4>
+          </div>
+          <div class="modal-body">
+            <!-- El contenido dinámico de PostgreSQL se cargará aquí -->
+            <div id="contenido_modal_partidas" class="text-center" style="padding: 20px;">
+                <p><span class="glyphicon glyphicon-refresh"></span> Esperando acción...</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar Ventana</button>
+          </div>
+        </div>
+      </div>
+    </div>';
+
+    return $tabla;
+}
 
 
     /*------------ Modificar Partidas -----------*/
