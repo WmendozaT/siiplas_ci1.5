@@ -387,7 +387,7 @@ class Programacionpoa extends CI_Controller{
     //// Modal lista de partidas asignados y programados por Unidad Organizacional
     public function modal_partidas_unidad_organizacional($proyecto){
         $tabla='';
-        $partidas   = $this->model_insumo->lista_partidas_ppto_poa_asignado(intval($proyecto[0]['aper_id']), $g_id);
+        $partidas   = $this->model_insumo->lista_partidas_ppto_poa_asignado(intval($proyecto[0]['aper_id'])); /// cuadro por unidad responsable y partida
         $componente = $this->model_componente->lista_UnidadesResponsables($proyecto[0]['proy_id']);
         
         $tabla .= '
@@ -453,6 +453,40 @@ class Programacionpoa extends CI_Controller{
         $tabla.='
         </tbody>
         </table>
+        </div>';
+
+        return $tabla;
+    }
+
+    //// Modal lista de partidas programados por Unidad Responsable
+    public function modal_partidas_programadas_unidad_organizacional($proyecto){
+        $tabla='';
+        $tabla.='
+        <div class="modal fade" id="modal_techos_resumen_global" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
+            <div class="modal-dialog modal-lg" style="width: 80% !important; max-width: 95%; margin: 25px auto;">
+                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
+                    
+                    <!-- CABECERA DEL MODAL CORPORATIVA -->
+                    <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+                        <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; margin:0;">
+                            <i class="fa fa-folder-open text-primary"></i> Desglose de Presupuesto Programado por Partidas
+                        </h4>
+                        <!-- 🛠️ REPARADO: Añadido data-dismiss para que la "x" superior limpie los flujos y cierre la ventana -->
+                        <button type="button" class="close" data-dismiss="modal" style="font-size: 20px; color: #475569; opacity: 0.8; border:none; background:none; cursor:pointer;">&times;</button>
+                    </div>
+
+                    <!-- CUERPO RECEPTOR DINÁMICO AJAX -->
+                    '.$this->modal_partidas_unidad_organizacional($proyecto).'
+                    
+                    <!-- PIE DE VENTANA ACCIONES -->
+                    <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 20px; text-align: right; margin:0;">
+                        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" style="font-weight: bold; font-size: 11.5px; padding: 6px 16px; border-radius: 3px; background:#64748b; color:#fff; border-color:#475569;">
+                            <i class="fa fa-arrow-circle-left"></i> Cerrar Ventana
+                        </button>
+                    </div>
+
+                </div>
+            </div>
         </div>';
 
         return $tabla;

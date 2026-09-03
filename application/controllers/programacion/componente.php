@@ -488,6 +488,7 @@ class Componente extends CI_Controller {
    
       //// modal para mostrar la programacion de partidas por cada Unidad Responsable
             $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_responsable();
+            $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_organizacional($proyecto);
 
             $tabla.='
             <div class="modal fade" id="modal_nuevo_ff" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
