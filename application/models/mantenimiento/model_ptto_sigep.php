@@ -10,15 +10,6 @@ class Model_ptto_sigep extends CI_Model{
         $this->dist_tp = $this->session->userData('dist_tp');
     }
     
-    /// Get Proyecto
-    // public function get_proy($proy_id){
-    //     $sql = '
-    //         select *
-    //         from lista_poa_gastocorriente_nacional('.$this->gestion.')
-    //         where proy_id='.$proy_id.'';
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
 
     /// GET LISTA PPTO X PARTIDAS ASIGNADOS Y PROGRAMADOS + (REVERTIDOS) 2026 (SE GENERA RAPIDO)
     public function get_lista_ppto_partidas_UOrganizacional($aper_id){
@@ -208,8 +199,17 @@ class Model_ptto_sigep extends CI_Model{
         return $query->result_array();
     }
 
+    /*-------- SUMA SALDOS REVERTIDOS POR PARTIDA Y CITE (vigente2027)--------*/
+    public function suma_saldo_revertido($sp_id){
+        $sql = 'select SUM(monto_revertido) saldo
+                from saldo_partida
+                where sp_id='.$sp_id.' and saldo_estado!=\'3\'';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     //// Get datos partida - ppto_sigep
-    public function get_sp_id($sp_id){
+/*    public function get_sp_id($sp_id){
         $sql = 'select *
                 from ptto_partidas_sigep pg
                 Inner Join partidas as p On p.par_id=pg.par_id
@@ -217,7 +217,7 @@ class Model_ptto_sigep extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     public function dep_dist($dist_id){
         $sql = 'select *
@@ -447,19 +447,11 @@ class Model_ptto_sigep extends CI_Model{
     // }
 //// =====================================
 
-    /*------- Apertura Programatica hijo ----------*/
+    /*------- Apertura Programatica hijo para migrado de los techos presupuestarios 2027----------*/
     public function get_apertura($da,$ue,$programa,$proyecto,$actividad){
-        if($this->gestion>2023){ /// poa 2024
-            $sql = 'select *
-                from lista_poa_nacional('.$this->gestion.')
-                where da=\''.$da.'\' and ue=\''.$ue.'\' and prog=\''.$programa.'\' and proy=\''.$proyecto.'\' and act=\''.$actividad.'\'  ';
-        }
-        else{ /// poa 2023
-            $sql = 'select *
-                from lista_poa_gastocorriente_nacional('.$this->gestion.')
-                where dep_cod=\''.$da.'\' and dist_cod=\''.$ue.'\' and prog=\''.$programa.'\' and act=\''.$actividad.'\'  ';
-        }
-        
+        $sql = 'select *
+                from fn_lista_poa_nacional('.$this->gestion.')
+                where da=\''.$da.'\' and ue=\''.$ue.'\' and aper_programa=\''.$programa.'\' and aper_proyecto=\''.$proyecto.'\' and aper_actividad=\''.$actividad.'\'  ';
 
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -1397,14 +1389,7 @@ class Model_ptto_sigep extends CI_Model{
     }
     
 
-    /*-------- SUMA SALDOS REVERTIDOS POR PARTIDA Y CITE (vigente)--------*/
-    public function suma_saldo_revertido($sp_id){
-        $sql = 'select SUM(monto_revertido) saldo
-                from saldo_partida
-                where sp_id='.$sp_id.' and saldo_estado!=\'3\'';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+
 
 
     /*-------- LISTA DE SALDOS REVERTIDOS POR PARTIDA Y CITE --------*/

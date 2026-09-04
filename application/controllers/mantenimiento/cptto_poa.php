@@ -41,9 +41,24 @@ class Cptto_poa extends CI_Controller {
     /*----- Lista Poa -------*/
     public function list_poa(){ 
       $data['menu']=$this->menu(9);
-      $data['resp']=$this->session->userdata('funcionario');
+      //$data['resp']=$this->session->userdata('funcionario');
       $tabla='';
       $tabla.='
+        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-9">
+            <section id="widget-grid" class="well">
+                <div class="">
+                  <h1><b>UNIDADES ORGANIZACIONALES - '.$this->gestion.'</b>
+                </div>
+            </section>
+        </article>
+        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-3" align="center">
+            <section id="widget-grid" class="well">
+                <a href="#" data-toggle="modal" data-target="#modal_importar" class="btn btn-default importar_ff" title="SUBIR TECHO PRESUPUESTARIO EXCEL">
+                  <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="25" HEIGHT="20"/>&nbsp;<b>Subir Techo Presupuestario.xls </b>
+                </a>
+            </section>
+        </article>
+
         <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
           <div class="jarviswidget jarviswidget-color-darken" >
             <header>
@@ -57,11 +72,234 @@ class Cptto_poa extends CI_Controller {
               </div>
           </div>
         </article>';
+
+        $tabla.=$this->modal_migracion_techo();
+         
         $data['lista_poa']=$tabla;
         $this->load->view('admin/mantenimiento/ptto_sigep/vista_asignacion_ppto_poa', $data);
     }
 
 
+  /*---- Modal para migrar Archivo del techo presupuestario -----*/
+  public function modal_migracion_techo(){
+    $tabla='';
+    $tabla .= '
+            <style>
+                /* Estilización formal e inmunizada para la rejilla del cargador masivo */
+                #dialog_subir { width: 30%;}
+            </style>
+
+            <div class="modal fade" id="modal_importar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true" role="dialog">
+                <div class="modal-dialog" id="dialog_subir">
+                    <div class="modal-content" style="border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: none; overflow: hidden;">
+                        
+                        <!-- CABECERA DEL COMPONENTE -->
+                        <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 15px 20px;">
+                            <button type="button" class="close" data-dismiss="modal" id="amcl" aria-label="Close" style="font-size: 20px; color: #475569; opacity: 0.8; margin-top:2px;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title" style="font-weight: bold; color: #1e293b; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                                <i class="fa fa-upload text-primary"></i> Importar Techo Presupuestario
+                            </h4>
+                        </div>
+
+                        <!-- CUERPO DEL COMPONENTE TRANSACCIONAL -->
+                        <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                            
+                            <!-- Título e Instrucción -->
+                            <div class="text-center" style="margin-bottom: 20px;">
+                                <h5 style="font-weight: bold; text-transform: uppercase; color: #334155; font-size:12px; margin:0 0 5px 0;">Subir archivo Excel (.xls, .xlsx)</h5>
+                                <p style="font-size:11.5px; margin:0;" class="text-muted">Asegúrese de que su archivo tenga la estructura de columnas indicada abajo:</p>
+                            </div>
+
+                            <!-- Vista previa de columnas (Corregido: Concatenación nativa base_url) -->
+                            <div class="thumbnail" style="border: 1px dashed #cbd5e1; padding: 10px; background: #f8fafc; box-shadow: none; margin-bottom: 20px;">
+                                <img src="' . base_url('assets/img/img_migracion/mig_techo.JPG') . '" class="img-responsive" alt="Ejemplo Excel" style="border-radius: 4px; margin: 0 auto; max-height: 180px;">
+                            </div>
+
+                            <!-- Formulario de persistencia binaria (Corregido: Concatenación nativa site_url) -->
+                            <form action="' . site_url('mantenimiento/cptto_poa/valida_migracion_techo') . '" method="post" enctype="multipart/form-data" id="form_subir_sigep" autocomplete="off" style="padding:0; background:transparent;">
+
+                                <div class="form-group" style="margin-top: 15px; margin-bottom:0;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; font-size: 11.5px;">SELECCIONAR ARCHIVO EXCEL: *</label>
+                                    
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" onclick="$(this).parent().find(\'input[type=file]\').click();" style="border-radius: 3px 0 0 3px; font-weight: bold; height: 32px; font-size: 11.5px; background:#475569; border-color:#475569;">
+                                                <i class="fa fa-folder-open"></i> Examinar...
+                                            </button>
+                                            
+                                            <input id="archivo" accept=".xlsx, .xls" name="archivo" 
+                                                   onchange="$(this).parent().parent().find(\'.file-name-display\').val($(this).val().split(/[\\\\|/]/).pop());" 
+                                                   style="display: none;" type="file" required>
+                                        </span>
+                                        <input type="text" class="form-control file-name-display" placeholder="No se ha seleccionado archivo" readonly style="background: #ffffff; cursor: default; height: 32px; font-size: 12px; border-color: #cbd5e1; box-shadow:none;">
+                                    </div>
+                                </div>
+
+                                <div id="mensaje" style="margin: 10px 0; font-size: 11px;"></div>
+
+                                <!-- Botón de Envío y Validación Masiva -->
+                                <div style="margin-top: 25px;">
+                                    <button type="button" id="btn_subir" class="btn btn-success btn-block" style="font-weight: bold; border-radius: 3px; padding: 8px 16px; font-size: 13px; background: #2e7d32; border-color: #2e7d32; text-transform: uppercase; letter-spacing: 0.3px;">
+                                        <i class="fa fa-check-circle"></i> VALIDAR Y SUBIR ARCHIVO
+                                    </button>
+                                </div>
+
+                                <!-- Animación Pre-Loader de la Planilla -->
+                                <div id="loads" class="text-center" style="display: none; margin-top: 20px; padding: 10px; border: 1px dashed #2e7d32; background: #f0fdf4; border-radius: 4px;">
+                                    <i class="fa fa-refresh fa-spin fa-2x text-success" style="margin-bottom: 5px;"></i>
+                                    <p style="margin: 0; font-size: 11.5px; color: #16a34a;"><b>Sincronizando celdas, por favor espere...</b></p>
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>';
+
+        $tabla .= '
+        <script type="text/javascript">
+            // REVISIÓN DE INTEGRIDAD SIIPLAS: Espera nativamente la disponibilidad de JQuery en el DOM
+            window.addEventListener("load", function() {
+                if (typeof $ !== "undefined") {
+
+                    // Mostrar nombre del archivo al seleccionar en el input simulado de SmartAdmin
+                    $(document).on(\'change\', \'#archivo\', function() {
+                        var fileName = $(this).val().split(\'\\\\\').pop();
+                        if (fileName) {
+                            $(\'.file-name-display\').val(fileName);
+                        }
+                    });
+
+                    // ==========================================================================
+                    // ESCUCHA SUBMIT ASÍNCRONA: MIGRACIÓN Y CONSOLIDACIÓN DE FILAS DEL EXCEL
+                    // ==========================================================================
+                    $(document).on(\'click\', \'#btn_subir\', function(e) {
+                        e.preventDefault();
+                        $(\'#mensaje\').html(\'\'); 
+
+                        if ($(\'#archivo\').val() == \'\') {
+                            $(\'#mensaje\').html(\'<div class="alert alert-warning" style="margin-bottom:0;"><i class="fa fa-exclamation-triangle"></i> Por favor, seleccione un archivo Excel válido.</div>\');
+                            if (typeof alertify !== "undefined") {
+                                alertify.error("⚠️ Restricción: No se seleccionó ninguna plantilla .CSV o .XLSX");
+                            }
+                            return false;
+                        }
+
+                        var form = $(\'#form_subir_sigep\')[0];
+                        var data_multipart = new FormData(form);
+                        var $btn = $(this);
+
+                        // Bloquear UI e Inyectar Loader
+                        $btn.prop(\'disabled\', true).html(\'<i class="fa fa-refresh fa-spin"></i> PROCESANDO MATRIZ POA...\');
+                        $(\'#loads\').show();
+
+                        $.ajax({
+                            type: "POST",
+                            url: $(\'#form_subir_sigep\').attr(\'action\'),
+                            data: data_multipart,
+                            processData: false,
+                            contentType: false,
+                            success: function(response) {
+                                var res;
+                                try {
+                                    res = (typeof response === \'object\') ? response : JSON.parse(response);
+                                } catch (err) {
+                                    console.error("Error parseando JSON:", response);
+                                    $(\'#mensaje\').html(\'<div class="alert alert-danger"><b>❌ Error del Servidor:</b> La respuesta de la base de datos PostgreSQL devolvió un buffer corrupto o se agotó el tiempo de espera.</div>\');
+                                    $btn.prop(\'disabled\', false).text(\'REINTENTAR ACCIÓN\');
+                                    $(\'#loads\').hide();
+                                    return;
+                                }
+
+                                // Evalúa el éxito transaccional unificado en la CNS
+                                if (res.respuesta === \'correcto\' || res.status === \'success\') {
+                                    var mensaje_exito = res.mensaje || res.msj || "Registros migrados exitosamente.";
+                                    var conteo_filas = res.filas_procesadas || res.conteo || "0";
+
+                                    // Construcción de plantilla visual de éxito en auditoría
+                                    var html_success = `
+                                        <div class="alert alert-success text-center" style="border-left: 5px solid #2e7d32; background:#f0fdf4; color:#16a34a; padding:15px; margin-bottom:0;">
+                                            <i class="fa fa-check-circle fa-3x" style="margin-bottom:10px;"></i>
+                                            <h4 style="font-weight:bold; margin:0 0 5px 0; color:#15803d;">¡MIGRACIÓN COMPLETADA CON ÉXITO!</h4>
+                                            <p style="font-size: 12.5px; color:#166534; font-weight:500;">${mensaje_exito}</p>
+                                            <div style="margin: 10px 0;">
+                                                <span class="label label-success" style="font-size: 16px; padding: 4px 12px; font-weight:bold; background:#16a34a;">${conteo_filas}</span>
+                                            </div>
+                                            <p style="margin:0;"><small class="text-muted">Registros validados e insertados en las aperturas programáticas.</small></p>
+                                        </div>`;
+
+                                    $(\'#mensaje\').html(html_success);
+                                    $(\'#loads\').hide();
+                                    $btn.hide(); 
+
+                                    // Temporizador inteligente multi-rol CNS para refrescar grilla
+                                    setTimeout(function() {
+                                        $(\'#modal_importar\').modal("hide");
+                                        $(\'.modal-backdrop\').remove();
+                                        $(\'body\').removeClass(\'modal-open\').css(\'padding-right\', \'\');
+
+                                        var combo_admin = $(\'#dist_id\').val();
+                                        if (combo_admin !== undefined && combo_admin !== "" && combo_admin !== "0") {
+                                            $("#dist_id").trigger("change");
+                                        } else {
+                                            if (typeof forzar_refresco_grilla_siiplas_directo === "function") {
+                                                var dist_id_oculto = $(\'input[name="dist_id"]\').val() || 0;
+                                                forzar_refresco_grilla_siiplas_directo(dist_id_oculto);
+                                            } else {
+                                                location.reload(); 
+                                            }
+                                        }
+                                    }, 2500);
+
+                                } else {
+                                    // LÓGICA COHERENTE DE EXTRACCIÓN DE ALERTAS Y ERRORES DE CONSISTENCIA
+                                    var mensaje_error = res.mensaje || res.msj || "El archivo contiene celdas inválidas.";
+                                    var errorMsg = `<strong style="font-size:12px; color:#b91c1c;"><i class="fa fa-times-circle"></i> SE DETECTARON INCONSISTENCIAS EN LA PLANILLA:</strong><br><small class="text-muted">${mensaje_error}</small>`;
+                                    
+                                    if (res.errors || res.errores) {
+                                        var coleccion_errores = res.errors || res.errores;
+                                        errorMsg += "<ul style=\'margin-top:8px; padding-left:15px; text-align:left; font-size:11px;\'>";
+                                        $.each(coleccion_errores, function(index, value) {
+                                            errorMsg += "<li>" + value + "</li>";
+                                        });
+                                        errorMsg += "</ul>";
+                                    }
+                                    
+                                    $(\'#mensaje\').html(\'<div class="alert alert-danger" style="margin-bottom:0; background:#fef2f2; border-color:#fee2e2; color:#991b1b;">\' + errorMsg + \'</div>\');
+                                    $btn.prop(\'disabled\', false).html(\'<i class="fa fa-file-excel-o"></i> REINTENTAR VALIDACIÓN Y SUBIDA\');
+                                    $(\'#loads\').hide();
+                                }
+                            },
+                            error: function(xhr, textStatus, errorThrown) {
+                                // 🌟 DETECTOR FORENSE INTEGRADO: Intercepta el colapso 500 y expone el Fatal Error en caliente
+                                $(\'#loads\').hide();
+                                $btn.prop(\'disabled\', false).html(\'<i class="fa fa-file-excel-o"></i> REINTENTAR SUBIDA\');
+
+                                var errorDetallado = xhr.responseText;
+                                var mensajeVisible = "<strong>🚨 FALLA CRÍTICA EN EL SERVIDOR (HTTP 500):</strong><br>";
+                                mensajeVisible += "<small class=\'text-muted\'>Apache local abortó el hilo de procesamiento PHPExcel. Detalle del volcado:</small><hr>";
+                                
+                                if (errorDetallado) {
+                                    mensajeVisible += "<div style=\'max-height: 200px; overflow-y: auto; background: #fff5f5; padding: 10px; border: 1px solid #fee2e2; font-family: monospace; font-size: 11px; text-align: left; color: #991b1b;\'>";
+                                    mensajeVisible += errorDetallado;
+                                    mensajeVisible += "</div>";
+                                } else {
+                                    mensajeVisible += "El backend no retornó ninguna cadena de caracteres. Verifique directivas max_input_vars en su php.ini.";
+                                }
+
+                                $(\'#mensaje\').html(\'<div class="alert alert-danger" style="margin-bottom:0; background:#fef2f2;">\' + mensajeVisible + \'</div>\');
+                            }
+                        });
+                    });
+
+                }
+            });
+        </script>';
+
+      return $tabla;
+  }
 
   /*---- Lista Gasto Corriente / Inversion-----*/
   public function lista_poa_general(){
@@ -76,7 +314,6 @@ class Cptto_poa extends CI_Controller {
         <tr style="height:50px;">
           <th style="width:1%;">#</th>
           <th style="width:5%;">PARTIDAS</th>
-          <th style="width:5%;">VER PPTO</th>
           <th style="width:5%;" title="DIRECCION ADMINISTRATIVA">D.A.</th>
           <th style="width:5%;" title="UNIDAD EJECUTORA">U.E.</th>
           <th style="width:10%;">PROGRAMA '.$this->gestion.'</th>
@@ -119,9 +356,6 @@ class Cptto_poa extends CI_Controller {
                         </button>
                       </div>
                     </td>';
-          
-          // ACCIONES
-          $tabla .= '<td></td>';
                     
           $tabla .= '<td align="center"><b>'.$row['da'].'</b></td>';
           $tabla .= '<td align="center"><b>'.$row['ue'].'</b></td>';
@@ -160,7 +394,7 @@ class Cptto_poa extends CI_Controller {
         $tabla='';
         $tabla.='
         <div class="modal fade" id="modal_desglose_partidas_unidad" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
-            <div class="modal-dialog modal-lg" style="width: 50% !important; max-width: 95%; margin: 25px auto;">
+            <div class="modal-dialog modal-lg" style="width: 70% !important; max-width: 95%; margin: 25px auto;">
                 <div class="modal-content" style="border-radius: 4px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden;">
                     
                     <!-- CABECERA DEL MODAL CORPORATIVA -->
@@ -204,8 +438,56 @@ class Cptto_poa extends CI_Controller {
             // 🎯 OBTENER EL CATÁLOGO GLOBAL DE PARTIDAS PARA EL SELECTOR
             $catalogo_partidas = $this->model_partidas->lista_partida_dependientes();
 
+            $total_asignado            = 0;
+            $total_asignado_mod        = 0;
+            $total_programado          = 0;
+            $total_saldo               = 0;
+            $total_asig_revertido      = 0;
+            $total_prog_revertido      = 0;
+            $total_saldo_revertido     = 0;
+
+            if (!empty($list_partidas)) {
+                foreach ($list_partidas as $row) {
+                    $total_asignado        += floatval($row['ppto_asignado']);
+                    $total_asignado_mod    += floatval($row['ppto_asignado']); // Toma el valor base inicializado
+                    $total_programado      += floatval($row['ppto_programado']);
+                    $total_saldo           += floatval($row['saldo_poa']);
+                    $total_asig_revertido  += floatval($row['ppto_asignado_revertido']);
+                    $total_prog_revertido  += floatval($row['ppto_programado_revertido']);
+                    $total_saldo_revertido += floatval($row['saldo_revertido']);
+                }
+            }
+
+            
             // Modificamos la cabecera para incrustar el selector a la izquierda del botón imprimir
             $html = '
+             
+            <div id="contenedor_general_partidas" style="font-family: Arial, sans-serif; margin-bottom: 15px;">
+              <!-- 🧮 PANEL DE SUMATORIAS TOTALES (Estilo Tarjetas) -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1-fr)); gap: 10px; margin-bottom: 15px;">
+                  
+                  <div style="background: #1e3a8a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #1d4ed8;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Presupuesto Asignado</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_asignado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #1e293b; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #475569;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Programado POA</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: #22c55e;">Bs. ' . number_format($total_programado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #0f172a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #0aa699;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Saldo Disponible</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: ' . ($total_saldo < 0 ? '#ef4444' : '#38bdf8') . ';">Bs. ' . number_format($total_saldo, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #fdf2f2; color: #991b1b; padding: 10px; border-radius: 4px; text-align: center; border: 1px solid #fca5a5; border-left: 5px solid #dc2626;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; color: #7f1d1d;">Total Saldo Revertido</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_saldo_revertido, 2, ',', '.') . '</div>
+                  </div>
+
+              </div>
+
             <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
                 <!-- 🛠️ SELECTOR Y MONTO EN CALIENTE PARA ADICIONAR NUEVA PARTIDA -->
                 <div style="display: flex; gap: 6px; width: 75%;">
@@ -250,60 +532,92 @@ class Cptto_poa extends CI_Controller {
                 <table class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11.5px; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #334155; color: #ffffff; text-transform: uppercase; font-size: 10px; height: 40px; letter-spacing:0.3px;">
-                            <th style="padding: 8px; text-align: center; width: 10%; background: #991b1b; vertical-align: middle;">ACCIONES</th>
-                            <th style="padding: 8px; text-align: left; width: 22%; background: #1e293b; vertical-align: middle;">PARTIDA PRESUPUESTARIA</th>
-                            <th style="padding: 8px; text-align: right; width: 10%; background: #1e3a8a; vertical-align: middle;">ASIGNADO (Bs.)</th>
-                            <th style="padding: 8px; text-align: right; width: 13%; background: #1e3a8a; vertical-align: middle;">ASIGNADO MOD.(Bs.)</th>
-                            <th style="padding: 8px; text-align: right; width: 10%; background: #0aa699; vertical-align: middle;">PROGRAMADO POA (Bs.)</th>
-                            <th style="padding: 8px; text-align: right; width: 10%; background: #475569; vertical-align: middle;">SALDO DISPONIBLE (Bs.)</th>
+                            <th style="padding: 8px; text-align: center; width: 5%; background: #991b1b; vertical-align: middle;">ACCIONES</th>
+                            <th style="padding: 8px; text-align: center; width: 18%; background: #1e293b; vertical-align: middle;">PARTIDA PRESUPUESTARIA</th>
+                            <th style="padding: 8px; text-align: center; width: 10%; background: #1e3a8a; vertical-align: middle;">ASIGNADO (Bs.)</th>
+                            <th style="padding: 8px; text-align: center; width: 13%; background: #1e3a8a; vertical-align: middle;">ASIGNADO MOD.(Bs.)</th>
+                            <th style="padding: 8px; text-align: center; width: 10%; background: #0aa699; vertical-align: middle;">PROGRAMADO POA (Bs.)</th>
+                            <th style="padding: 8px; text-align: center; width: 10%; background: #475569; vertical-align: middle;">SALDO DISPONIBLE (Bs.)</th>
+
+                            <th style="padding: 8px; text-align: center; color:red; width: 10%; background: #FADCE1; vertical-align: middle;">PPTO. ASIG. REVERTIDO (Bs.)</th>
+                            <th style="padding: 8px; text-align: center; color:red; width: 10%; background: #FADCE1; vertical-align: middle;">PPTO. POA. REVERTIDO (Bs.)</th>
+                            <th style="padding: 8px; text-align: center; color:red; width: 10%; background: #FADCE1; vertical-align: middle;">PPTO. SALDO. REVERTIDO (Bs.)</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpo_tabla_partidas">';
             
             // 🛠️ AJUSTADO A 6 COLUMNAS REALES
             if(empty($list_partidas)) {
-                $html .= '<tr><td colspan="6" class="text-center" style="padding: 15px; font-weight: bold; color: #64748b;"><i class="fa fa-info-circle"></i> Sin requerimientos presupuestarios asignados en esta unidad.</td></tr>';
+                $html .= '<tr><td colspan="9" class="text-center" style="padding: 15px; font-weight: bold; color: #64748b;"><i class="fa fa-info-circle"></i> Sin requerimientos presupuestarios asignados en esta unidad.</td></tr>';
             } else {
-                foreach($list_partidas as $row) {
-                    $saldo_item = floatval($row['saldo_poa']);
-                    $sp_id = intval($row['sp_id']);
-                    
-                    $style_saldo = ($saldo_item < 0) ? 'background: #fef2f2; color: #dc2626; font-weight: bold;' : 'background: #f8fafc; color: #334155; font-weight: bold;';
+                 foreach($list_partidas as $row) {
+                  $saldo_item = floatval($row['saldo_poa']);
+                  $saldo_revertido = floatval($row['saldo_revertido']);
+                  $sp_id = intval($row['sp_id']);
+                  
+                  $style_saldo = ($saldo_item < 0) ? 'background: #fef2f2; color: #dc2626; font-weight: bold;' : 'background: #f8fafc; color: #334155; font-weight: bold;';
+                  $style_saldo_rev = ($saldo_revertido < 0) ? 'background: #fef2f2; color: #dc2626; font-weight: bold;' : 'background: #f8fafc; color: #334155; font-weight: bold;';
 
-                    $html .= '<tr id="fila_partida_' . $sp_id . '" style="height: 28px; vertical-align: middle;">';
-                    $html .= '<td style="text-align: center; padding: 4px;">';
-                    if ($sp_id > 0) {
-                        $html .= '<button type="button" class="btn btn-xs btn-danger" title="Eliminar Partida" onclick="eliminarPartidaAsignada(' . $sp_id . ');" style="padding: 2px 8px;">';
-                        $html .= '<i class="fa fa-trash"> Eliminar</i>';
-                        $html .= '</button>';
-                    } else {
-                        $html .= '-';
-                    }
-                    $html .= '</td>';
-                    $html .= '<td style="font-weight: bold; color: #0f172a; padding-left: 8px;">' . $row['codigo_partida'] . ' - ' . strtoupper($row['partida']) . '</td>';
-                    $html .= '<td style="text-align: right; padding-right: 8px; font-weight: bold; color: blue;">' . number_format($row['ppto_asignado'], 2, ',', '.') . '</td>';
-                    
-                    $html .= '<td style="text-align: right; padding: 4px; font-weight: bold; color: #1e40af;">';
-                    if ($sp_id > 0) {
-                        $html .= '<input type="number" 
-                                   step="0.01" 
-                                   class="form-control" 
-                                   style="text-align: right; font-weight: bold; color: #1e40af; height: 26px; font-size: 11.5px; width: 100%;" 
-                                   id="monto_' . $sp_id . '" 
-                                   data-programado="' . $row['ppto_programado'] . '" 
-                                   value="' . round($row['ppto_asignado'],2) . '" 
-                                   onchange="actualizarMontoAsignado(' . $sp_id . ');">';
-                    } else {
-                        $html .= '<span class="text-muted" style="font-size:10px;">SIN PPTO. ASIG.</span>';
-                    }
-                    $html .= '</td>';
+                  $html .= '<tr id="fila_partida_' . $sp_id . '" style="height: 28px; vertical-align: middle;">';
+                  $html .= '<td style="text-align: center; padding: 4px;">';
+                  if ($row['ppto_asignado']== 0 && $row['ppto_inicial_aprobado']== 0) {
+                      $html .= '<button type="button" class="btn btn-xs btn-danger" title="Eliminar Partida" onclick="eliminarPartidaAsignada(' . $sp_id . ');" style="padding: 2px 8px;">';
+                      $html .= '<i class="fa fa-trash"> Eliminar</i>';
+                      $button_text = '</button>';
+                  } else {
+                      $html .= '-';
+                  }
+                  $html .= '</td>';
+                  $html .= '<td style="font-weight: bold; color: #0f172a; padding-left: 8px;">' . $row['codigo_partida'] . ' - ' . strtoupper($row['partida']) . '</td>';
+                  $html .= '<td style="text-align: right; padding-right: 8px; font-weight: bold; color: blue;">' . number_format($row['ppto_asignado'], 2, ',', '.') . '</td>';
+                  
+                  // 🎯 COLUMNA ASIGNADO MOD. (TIPO 0)
+                  $html .= '<td style="text-align: right; padding: 4px; font-weight: bold; color: #1e40af;">';
+                  if ($sp_id > 0) {
+                      // 🛠️ CORREGIDO ID A: monto_0_...
+                      $html .= '<input type="number" 
+                                 step="0.01" 
+                                 class="form-control" 
+                                 style="text-align: right; font-weight: bold; color: #1e40af; height: 26px; font-size: 11.5px; width: 100%;" 
+                                 id="monto_0_' . $sp_id . '" 
+                                 data-programado="' . $row['ppto_programado'] . '"
+                                 data-tp="0" 
+                                 value="' . round($row['ppto_asignado'], 2) . '" 
+                                 onchange="actualizarMontoAsignado(' . $sp_id . ', 0);">'; // Se pasa el tipo 0
+                  } else {
+                      $html .= '<span class="text-muted" style="font-size:10px;">SIN PPTO. ASIG.</span>';
+                  }
+                  $html .= '</td>';
 
-                    $html .= '<td style="text-align: right; padding-right: 8px; font-weight: bold; color: #16a34a;">' . number_format($row['ppto_programado'], 2, ',', '.') . '</td>';
-                    $html .= '<td style="text-align: right; padding-right: 8px; ' . $style_saldo . '" id="saldo_' . $sp_id . '">' . number_format($saldo_item, 2, ',', '.') . '</td>';
-                    $html .= '</tr>';
-                }
+                  $html .= '<td style="text-align: right; padding-right: 8px; font-weight: bold; color: #16a34a;">' . number_format($row['ppto_programado'], 2, ',', '.') . '</td>';
+                  $html .= '<td style="text-align: right; padding-right: 8px; ' . $style_saldo . '" id="saldo_0_' . $sp_id . '">' . number_format($saldo_item, 2, ',', '.') . '</td>';
+                  
+                  // 🎯 COLUMNA ASIGNADO REVERTIDO (TIPO 1)
+                  $html .= '<td style="background:#F5E9EA; padding: 4px;">';
+                  if ($sp_id > 0) {
+                      // 🛠️ CORREGIDO ID A: monto_1_... y corregido data-programado a ppto_programado_revertido
+                      $html .= '<input type="number" 
+                                 step="0.01" 
+                                 class="form-control" 
+                                 style="text-align: right; font-weight: bold; color: #dc2626; height: 26px; font-size: 11.5px; width: 100%; background: #fff5f5;" 
+                                 id="monto_1_' . $sp_id . '" 
+                                 data-programado="' . $row['ppto_programado_revertido'] . '"
+                                 data-tp="1"
+                                 value="' . round($row['ppto_asignado_revertido'], 2) . '" 
+                                 onchange="actualizarMontoAsignado(' . $sp_id . ', 1);">'; // Se pasa el tipo 1
+                  } else {
+                      $html .= '-';
+                  }
+                  $html .= '</td>';
+                  
+                  $html .= '<td style="background:#F5E9EA; text-align: right; padding-right: 8px;">' . number_format($row['ppto_programado_revertido'], 2, ',', '.') . '</td>';
+                  // Se añade id único al saldo revertido para refrescarlo en caliente
+                  $html .= '<td style="background:#F5E9EA; text-align: right; padding-right: 8px; ' . $style_saldo_rev . '" id="saldo_1_' . $sp_id . '">' . number_format($saldo_revertido, 2, ',', '.') . '</td>';
+
+                  $html .= '</tr>';
+              }
             }
-            $html .= '</tbody></table></div>';
+            $html .= '</tbody></table></div></div>';
 
             while (ob_get_level() > 0) { ob_end_clean(); }
             header('Content-Type: application/json; charset=utf-8');
@@ -323,21 +637,23 @@ class Cptto_poa extends CI_Controller {
         if ($this->input->is_ajax_request() && $this->input->post()) {
             $sp_id   = intval($this->input->post('sp_id'));
             $importe = floatval($this->input->post('importe'));
+            $tipo    = intval($this->input->post('tipo')); // 0 = Normal, 1 = Revertido
 
             if ($sp_id > 0) {
-                // Guarda directamente en la base de datos
-                ///------
-                $update_ppto = array(
-                  'importe'  => $importe
-                );
-                
+                // Evaluamos qué campo de la base de datos modificar
+                if ($tipo === 1) {
+                    // Actualiza el Presupuesto Asignado Revertido
+                    $data = array('ppto_saldo_ncert' => $importe); 
+                } else {
+                    // Actualiza el Presupuesto Asignado Normal
+                    $data = array('importe' => $importe); 
+                }
+
                 $this->db->where('sp_id', $sp_id);
-                $this->db->update('ptto_partidas_sigep', $update_ppto);
-                ///-----
+                $this->db->update('ptto_partidas_sigep', $data);
 
                 while (ob_get_level() > 0) { ob_end_clean(); }
                 header('Content-Type: application/json; charset=utf-8');
-                
                 echo json_encode(array('status' => 'success'));
                 exit;
             }
@@ -350,6 +666,7 @@ class Cptto_poa extends CI_Controller {
     public function guardar_nueva_partida() {
         if ($this->input->is_ajax_request() && $this->input->post()) {
             $aper_id = intval($this->input->post('aper_id'));
+            $proyecto = $this->model_proyecto->get_aper_programa($aper_id); 
             $par_id  = intval($this->input->post('par_id'));
             $partida = $this->model_partidas->get_partida($par_id);
             $importe = floatval($this->input->post('importe')); // 🎯 Captura el monto enviado
@@ -364,6 +681,11 @@ class Cptto_poa extends CI_Controller {
                         'aper_id'          => $aper_id,
                         'par_id'           => $par_id,         // Guarda la llave primaria numérica
                         'partida'          => $partida[0]['par_codigo'],
+                        'da'               => $proyecto[0]['da'],
+                        'ue'               => $proyecto[0]['ue'],
+                        'aper_programa'   => $proyecto[0]['aper_programa'],
+                        'aper_proyecto'   => $proyecto[0]['aper_proyecto'],
+                        'aper_actividad'  => $proyecto[0]['aper_actividad'],
                         'g_id'             => $g_id,
                         'importe'          => $importe,        // Guarda el monto digitado
                         'ppto_inicial'     => $importe,        // Presupuesto inicial
@@ -401,14 +723,218 @@ class Cptto_poa extends CI_Controller {
     }
 
 
+    /// eliminar registro de la partida
+    public function eliminar_asignacion() {
+        if ($this->input->is_ajax_request() && $this->input->post()) {
+            $sp_id = intval($this->input->post('sp_id'));
+            
+            if ($sp_id > 0) {
+                // Borrado lógico cambiando el estado a 3 para que no aparezca en tu query original
+                $data = array('estado' => 3);
+                $this->db->where('sp_id', $sp_id);
+                $this->db->update('ptto_partidas_sigep', $data);
+                
+                while (ob_get_level() > 0) { ob_end_clean(); }
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(array('status' => 'success'));
+                exit;
+            }
+        }
+        echo json_encode(array('status' => 'error', 'msg' => 'Petición inválida o ID incorrecto.'));
+        exit;
+    }
 
 
 
 
+    //// PARA TODAS LAS UNIDADES DE LA UNIDAD ORGANIZACIONAL
+       public function valida_migracion_techo() {
+        ini_set('max_execution_time', 1200); 
+        ini_set('memory_limit', '1024M'); 
 
+        $this->load->library('excel'); 
+        if (!isset($_FILES['archivo']) || empty($_FILES['archivo']['tmp_name'])) {
+            echo json_encode(array('status' => 'error', 'errors' => array('Por favor, seleccione un archivo Excel válido.')));
+            return;
+        }
 
+        // 🌟 CRÍTICO PARA CI 1.5: Apagamos el historial de consultas en RAM para evitar que colapse con 4,000 filas
+        $this->db->queries = array();
+        $this->db->query_times = array();
 
+        $archivo = $_FILES['archivo']['tmp_name'];
+        $errores = array();
+        $data_insertar = array();
 
+        try {
+            $archivoTipo = PHPExcel_IOFactory::identify($archivo);
+            $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
+            
+            $lector->setReadDataOnly(true);
+            $phpExcel    = $lector->load($archivo);
+            $hoja        = $phpExcel->getSheet(0);
+            $filasMax    = $hoja->getHighestRow();
+            
+            $columnaMaxLetra = $hoja->getHighestDataColumn(); 
+            $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
+            $limitePermitido = 8; 
+
+            if ($totalColumnas != $limitePermitido) {
+                echo json_encode(array('status' => 'error', 'errors' => array("El archivo tiene $totalColumnas columnas. El formato oficial exige exactamente $limitePermitido columnas.")));
+                return;
+            }
+            
+            // --- 2. VALIDACIÓN FILA POR FILA ---
+            for ($i = 2; $i <= $filasMax; $i++) {
+                $error_fila = false; 
+                
+                $tp_gasto         = trim($hoja->getCell('A' . $i)->getFormattedValue());
+                $cod_da           = trim($hoja->getCell('B' . $i)->getFormattedValue());
+                $cod_ue           = trim($hoja->getCell('C' . $i)->getFormattedValue());
+                $cod_prog         = trim($hoja->getCell('D' . $i)->getFormattedValue());
+                $cod_proy         = trim($hoja->getCell('E' . $i)->getFormattedValue());
+                $cod_act          = trim($hoja->getCell('F' . $i)->getFormattedValue());
+                $cod_partida      = trim($hoja->getCell('G' . $i)->getFormattedValue());
+                $importe          = trim($hoja->getCell('H' . $i)->getFormattedValue());
+
+                if (empty($tp_gasto) && empty($cod_da) && (empty($importe) || floatval($importe) == 0)) {
+                    continue;
+                }
+
+                if (is_numeric($cod_da))   $cod_da   = str_pad($cod_da, 2, "0", STR_PAD_LEFT);
+                if (is_numeric($cod_ue))   $cod_ue   = str_pad($cod_ue, 2, "0", STR_PAD_LEFT);
+                if (is_numeric($cod_prog)) $cod_prog = str_pad($cod_prog, 2, "0", STR_PAD_LEFT);
+                if (is_numeric($cod_act))  $cod_act  = str_pad($cod_act, 2, "0", STR_PAD_LEFT);
+
+                if (!empty($cod_da) && !empty($cod_ue) && !empty($cod_prog) && $cod_act !== '') {
+                    $aper = $this->model_ptto_sigep->get_apertura($cod_da, $cod_ue, $cod_prog, $cod_proy, $cod_act);
+                    if(empty($aper) || count($aper) == 0){
+                        $errores[] = "Fila $i: No existe la Apertura Estructurada (DA:$cod_da UE:$cod_ue PROG:$cod_prog PROY:$cod_proy ACT:$cod_act) en la BD.";
+                        $error_fila = true;
+                    }
+                } else {
+                    $errores[] = "Fila $i: Los códigos de estructura (DA, UE, PROG, ACT) son obligatorios.";
+                    $error_fila = true;
+                }
+
+                // Validación de Partida
+                $par_id = 0;
+                if (strlen($cod_partida) == 5) {
+                    $partida = $this->model_insumo->get_partida_codigo($cod_partida);
+                    if(!empty($partida) && count($partida) != 0){
+                        $par_id = $partida[0]['par_id']; 
+                    } else {
+                        $errores[] = "Fila $i: El código de Partida ($cod_partida) no está catalogado.";
+                        $error_fila = true;
+                    }
+                } else {
+                    $errores[] = "Fila $i: El código de la Partida debe tener 5 dígitos (Ejem: 22210).";
+                    $error_fila = true;
+                }
+
+                // 🛠️ Limpieza de formato monetario por si vienen comas o puntos de millar en el Excel
+                $monto_limpio = str_replace(array('.', ','), array('', '.'), $importe);
+                $monto_final  = floatval($monto_limpio);
+
+                if ($monto_final <= 0) {
+                    $errores[] = "Fila $i: El importe debe ser un monto numérico mayor a cero.";
+                    $error_fila = true;
+                }
+
+                if (!$error_fila) {
+                    $data_insertar[] = array(
+                        'aper_id'            => intval($aper[0]['aper_id']), 
+                        'da'                 => $aper[0]['da'],
+                        'ue'                 => $aper[0]['ue'],
+                        'aper_programa'      => $aper[0]['aper_programa'],
+                        'aper_proyecto'      => $aper[0]['aper_proyecto'],
+                        'aper_actividad'     => $aper[0]['aper_actividad'],
+                        'par_id'             => intval($par_id), 
+                        'partida'            => $cod_partida,
+                        'importe'            => $monto_final,
+                        'g_id'               => intval($this->gestion), 
+                        'estado'             => 1,
+                        'fun_id'             => intval($this->fun_id),
+                        'ppto_inicial'       => $monto_final
+                    );
+                }
+                
+                // Si acumula más de 30 errores, paramos el bucle para no saturar la respuesta
+                if (count($errores) > 30) break; 
+            } // Fin del bucle general FOR por fila
+
+            // Liberamos la memoria RAM del archivo de Excel inmediatamente
+            $phpExcel->disconnectWorksheets();
+            unset($phpExcel, $hoja);
+
+            if (ob_get_level() > 0) ob_clean(); 
+            header('Content-Type: application/json; charset=utf-8');
+
+            // --- 3. PROCESAMIENTO ATÓMICO POR LOTES (COMPATIBLE CI 1.5) ---
+            if (empty($errores) && !empty($data_insertar)) {
+                $this->db->trans_start(); 
+                
+                // Eliminamos los registros previos de la gestión activa
+                $this->db->where('g_id', intval($this->gestion));
+                $this->db->delete('ptto_partidas_sigep');
+
+                // 🎯 CONSTRUCCIÓN DE MULTI-INSERT MANUAL: Agrupamos de 500 en 500 filas
+                $lotes = array_chunk($data_insertar, 500);
+                
+                foreach ($lotes as $lote) {
+                    $valores_sql = array();
+                    
+                    foreach ($lote as $fila) {
+                        $val_da       = $this->db->escape($fila['da']);
+                        $val_ue       = $this->db->escape($fila['ue']);
+                        $val_prog     = $this->db->escape($fila['aper_programa']);
+                        $val_proy     = $this->db->escape($fila['aper_proyecto']);
+                        $val_act      = $this->db->escape($fila['aper_actividad']);
+                        $val_partida  = $this->db->escape($fila['partida']);
+
+                        $valores_sql[] = "({$fila['aper_id']}, {$val_da}, {$val_ue}, {$val_prog}, {$val_proy}, {$val_act}, {$fila['par_id']}, {$val_partida}, {$fila['importe']}, {$fila['g_id']}, {$fila['estado']}, {$fila['fun_id']}, {$fila['ppto_inicial']})";
+                    }
+
+                    $sql_consolidado = "INSERT INTO ptto_partidas_sigep 
+                        (aper_id, da, ue, aper_programa, aper_proyecto, aper_actividad, par_id, partida, importe, g_id, estado, fun_id, ppto_inicial) 
+                        VALUES " . implode(',', $valores_sql);
+                    
+                    // Ejecutamos la consulta pura agrupada
+                    $this->db->query($sql_consolidado);
+                    
+                    // Limpiamos la RAM acumulada por consultas de CodeIgniter 1.5
+                    $this->db->queries = array();
+                    $this->db->query_times = array();
+                }
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    echo json_encode(array('status' => 'error', 'errors' => array('Error al insertar en la base de datos (Transacción fallida en Postgres).')));
+                } else {
+                    // 🎯 🌟 REPARADO: Cambiado de 'error' a 'success' con el mensaje de éxito real
+                    echo json_encode(array(
+                        'status' => 'success', 
+                        'msj'    => 'Importación masiva finalizada con éxito.',
+                        'conteo' => count($data_insertar)
+                    ));
+                }
+            } 
+            else {
+                echo json_encode(array(
+                    'status' => 'error', 
+                    'errors' => !empty($errores) ? $errores : array('El archivo no contiene filas válidas o los códigos no coinciden con los catálogos de la base de datos.')
+                ));
+            }
+            exit; 
+
+        } catch (Exception $e) {
+            if (ob_get_level() > 0) ob_clean();
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(array('status' => 'error', 'errors' => array('Excepción crítica de PHPExcel: ' . $e->getMessage())));
+            exit;
+        }
+    }
 
 
 
@@ -1872,7 +2398,6 @@ class Cptto_poa extends CI_Controller {
         return $tabla;
     }
 
-    /*------------------ Rol Funcionario ---------------------*/
     function rolfun($rol){
       $valor=false;
       for ($i=1; $i <=count($rol) ; $i++) { 
@@ -1884,6 +2409,8 @@ class Cptto_poa extends CI_Controller {
       }
       return $valor;
     }
+    /*------------------ Rol Funcionario ---------------------*/
+/*    
 
     
     function estilo_vertical(){
@@ -1945,5 +2472,5 @@ class Cptto_poa extends CI_Controller {
         }
     </style>';
         return $estilo_vertical;
-    }
+    }*/
 }

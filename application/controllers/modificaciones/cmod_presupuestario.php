@@ -1169,7 +1169,7 @@ class Cmod_presupuestario extends CI_Controller {
           
           $cpoa=$this->model_certificacion->get_datos_certificacion_poa($cpoa_id);
          
-          if (!empty($_POST["par_id"]) && is_array($_POST["par_id"]) && count($this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($cpoa[0]['aper_id']))!=0) {
+          if (!empty($_POST["par_id"]) && is_array($_POST["par_id"]) && count($this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($cpoa[0]['aper_id']))!=0) {
             
             /// ------ GENERANDO CITE DE MODIFICACION
                $data_to_store = array(
@@ -1187,17 +1187,17 @@ class Cmod_presupuestario extends CI_Controller {
             $nro=0;
             foreach ( array_keys($_POST["par_id"]) as $como){
               if($_POST["saldo"][$como]!=0){ /// saldo != 0
-                $get_ppto_partida_asignado=$this->model_ptto_sigep->get_partida_asignado_unidad($cpoa[0]['aper_id'],$_POST["par_id"][$como]);
+                $get_ppto_partida_asignado=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cpoa[0]['aper_id'],$_POST["par_id"][$como]);
 
                 if(($_POST["saldo"][$como]<$_POST["ppto_cert"][$como]) && count($get_ppto_partida_asignado)!=0){
                     //echo $get_ppto_partida_asignado[0]['sp_id'].'----->'.$_POST["par_id"][$como].'---'.$_POST["saldo"][$como].'<br>';
-                  $partida_ppto=$this->model_ptto_sigep->get_sp_id($get_ppto_partida_asignado[0]['sp_id']);
+                  //$partida_ppto=$this->model_ptto_sigep->get_sp_id($get_ppto_partida_asignado[0]['sp_id']);
 
                   /*------- Insert historial de saldos -------*/
                   $data_to_store = array(
                     'sp_id' => $get_ppto_partida_asignado[0]['sp_id'],
                     'monto_revertido' => $_POST["saldo"][$como],
-                    'ppto_anterior' => $partida_ppto[0]['importe'],
+                    'ppto_anterior' => $get_ppto_partida_asignado[0]['ppto_asignado'],
                     'cpoa_id' => $cpoa_id,
                     'cppto_id' => $cppto_id,
                   );

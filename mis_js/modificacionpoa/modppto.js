@@ -1,4 +1,4 @@
-  base = $('[name="base"]').val();
+/*  base = $('[name="base"]').val();
 
 $(document).ready(function() {
     
@@ -63,7 +63,7 @@ $(document).ready(function() {
         }
     });
 });
-
+*/
 
 
 
@@ -94,7 +94,7 @@ $(document).ready(function() {
   // }
 
     ///// SELECT DISTRITAL - Para subir Modificacion presupuestaria (vigente)
-    $(document).ready(function() {
+/*    $(document).ready(function() {
         pageSetUp();
         $("#dep_id").change(function () {
             $("#dep_id option:selected").each(function () {
@@ -104,7 +104,7 @@ $(document).ready(function() {
                 });     
             });
         });
-    })
+    })*/
 
 /*    $(document).ready(function() {
         pageSetUp();

@@ -87,42 +87,56 @@ var base = $('[name="base"]').val();
     });
 
     //// Actualiza montos en las partidas asigandas
-    function actualizarMontoAsignado(sp_id) {
-        // 1. Obtenemos el nuevo monto asignado que escribió el usuario
-        var nuevo_monto = parseFloat($('#monto_' + sp_id).val()) || 0;
+    function actualizarMontoAsignado(sp_id, tipo) {
+        tip_reg='revertido poa';
+        if(tipo==0){
+            tip_reg='asignacion poa';
+        }
+        // 1. Apuntamos al input dinámico según el tipo (0 o 1)
+        var input_elemento = $('#monto_' + tipo + '_' + sp_id);
+        var nuevo_monto    = parseFloat(input_elemento.val()) || 0;
         
-        // 2. Leemos el monto programado directamente desde el atributo data-programado
-        var programado = parseFloat($('#monto_' + sp_id).attr('data-programado')) || 0;
+        // 2. Obtenemos lo programado guardado en el data-programado correspondiente
+        var programado     = parseFloat(input_elemento.attr('data-programado')) || 0;
         
-        // 3. Calculamos el saldo matemáticamente en el navegador
-        var nuevo_saldo = (nuevo_monto - programado).toFixed(2);
-
-        // 4. Actualizamos la celda del saldo en caliente (UI)
-        var celda_saldo = $('#saldo_' + sp_id);
+        // 3. Calculamos el nuevo saldo en caliente (Monto - Programado)
+        var nuevo_saldo    = (nuevo_monto - programado).toFixed(2);
+        
+        // 4. Actualizamos el texto de la celda de saldo respectiva (saldo_0_... o saldo_1_...)
+        var celda_saldo    = $('#saldo_' + tipo + '_' + sp_id);
         celda_saldo.text(nuevo_saldo);
         
-        // Aplicamos el estilo de alerta cromática si queda sobregirado
+        // Control visual de colores si queda en sobregiro
         if (parseFloat(nuevo_saldo) < 0) {
             celda_saldo.css({ 'background': '#fef2f2', 'color': '#dc2626', 'font-weight': 'bold' });
         } else {
-            celda_saldo.css({ 'background': '#f8fafc', 'color': '#334155', 'font-weight': 'bold' });
+            if(tipo === 1) {
+                celda_saldo.css({ 'background': '#F5E9EA', 'color': '#334155', 'font-weight': 'bold' });
+            } else {
+                celda_saldo.css({ 'background': '#f8fafc', 'color': '#334155', 'font-weight': 'bold' });
+            }
         }
 
-        // 5. Enviamos a la base de datos en segundo plano
+        // 5. Enviamos la petición AJAX al servidor mandando la variable 'tipo'
         $.ajax({
             url: base + "index.php/mantenimiento/cptto_poa/actualizar_monto",
             type: 'POST',
-            data: { sp_id: sp_id, importe: nuevo_monto },
+            data: { 
+                sp_id: sp_id, 
+                importe: nuevo_monto,
+                tipo: tipo // 🎯 Enviamos si es 0 (Normal) o 1 (Revertido)
+            },
             dataType: 'json',
             success: function(response) {
                 if(response.status == 'success') {
-                    console.log('Monto guardado en la BD exitosamente.');
+                    //console.log('Monto de tipo ' + tipo + ' guardado en BD con éxito.');
+                    alert('Monto ' + tip_reg + ' de Bs. '+ nuevo_monto +' guardado en BD con éxito.');
                 } else {
-                    alert('El saldo cambió en pantalla, pero hubo un error al guardar en la base de datos.');
+                    alert('El cambio se reflejó en pantalla, pero hubo un error al guardar en la base de datos.');
                 }
             },
             error: function() {
-                alert('Error de red. No se pudo guardar el cambio en el servidor.');
+                alert('Error de red. No se pudo conectar con el servidor.');
             }
         });
     }
@@ -199,42 +213,80 @@ var base = $('[name="base"]').val();
     }
 
 
+ ///// Imprime el listado (Modal) de partidas por Unidad Organizacional 
+    function imprimirDetallePartidasModal() {
+        var contenido_tabla = document.getElementById("area_impresion_detalle_partidas").innerHTML;
+        var membrete_unidad = $(".modal-body div[style*='border-left']").html() || "DESGLOSE DE PARTIDAS";
+
+        var ventana_impresion = window.open('', '_blank', 'height=650,width=1000');
+
+        ventana_impresion.document.write('<html><head><title>SIIPLAS v2.0 - Detalle Partidas por Unidad Organizacional</title>');
+        ventana_impresion.document.write('<style>');
+        
+        // Fuerza la pre-configuración de hoja carta horizontal con márgenes de seguridad
+        ventana_impresion.document.write('@page { size: letter landscape; margin: 12mm 10mm; }');
+        
+        ventana_impresion.document.write('body { font-family: Arial, sans-serif; padding: 0; margin: 0; color: #000; background:#fff; }');
+        ventana_impresion.document.write('.header-print { border-bottom: 2px double #000; padding-bottom: 6px; margin-bottom: 15px; }');
+        
+        // Mantenemos el tamaño exacto del contenido original solicitado pero forzando el auto-ajuste de ancho
+        ventana_impresion.document.write('table { width: 100% !important; border-collapse: collapse; font-size: 10px; margin-top: 10px; table-layout: auto; }');
+        ventana_impresion.document.write('th, td { border: 1px solid #000000; padding: 5px;  }');
+        ventana_impresion.document.write('th { background: #cbd5e1 !important; color: #000 !important; text-align: center; font-weight: bold; font-size: 10px; height: 24px; }');
+        ventana_impresion.document.write('td:first-child, th:first-child { text-align: left; font-weight: bold; }');
+        
+        // Sombreado de resguardo de celdas rojas de sobregiro para la versión física impresa
+        ventana_impresion.document.write('td[style*="color: rgb(220, 38, 38)"], td[style*="color: #dc2626"] { background-color: #fee2e2 !important; color: #b91c1c !important; }');
+        
+        // Factor de escala elástico controlado para compactar el lote de columnas
+        ventana_impresion.document.write('@media print { body { zoom: 90%; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }');
+        ventana_impresion.document.write('</style></head><body>');
+        
+        // Membrete oficial de la Caja Nacional de Salud
+        ventana_impresion.document.write('<div class="header-print">');
+        ventana_impresion.document.write('<h3 style="margin:0; font-size:12px; text-transform:uppercase;">Caja Nacional de Salud</h3>');
+        ventana_impresion.document.write('<small style="color:#475569; font-size:9.5px; font-weight:600; display:block; margin-top:1px;">SIIPLAS v2.0 - Departamento Nacional de Planificación</small>');
+        ventana_impresion.document.write('<div style="margin-top:8px; font-size:11px; background:#f8fafc; padding:6px; border:1px solid #cbd5e1; border-radius:3px; font-weight:500;">' + membrete_unidad + '</div>');
+        ventana_impresion.document.write('</div>');
+        
+        ventana_impresion.document.write(contenido_tabla);
+        ventana_impresion.document.write('</body></html>');
+
+        ventana_impresion.document.close();
+        ventana_impresion.focus();
+        
+        setTimeout(function() {
+            ventana_impresion.print();
+            ventana_impresion.close();
+        }, 380);
+    }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ///// Eliminar registro de la partida asignada
     function eliminarPartidaAsignada(sp_id) {
         if (confirm('¿Está completamente seguro de eliminar esta asignación presupuestaria?')) {
             $.ajax({
-                url: 'partidas/eliminar_asignacion', // Modifica esta URL según tu enrutamiento/controlador
+                // 🎯 URL ajustada al controlador ejecutivo correcto
+                url: base + "index.php/mantenimiento/cptto_poa/eliminar_asignacion",
                 type: 'POST',
                 data: { sp_id: sp_id },
                 dataType: 'json',
                 success: function(response) {
                     if(response.status == 'success') {
-                        // Remueve la fila de la tabla de forma animada y automática
+                        // 🌟 Mensaje de confirmación OK al usuario
+                        alert('Registro eliminado correctamente.');
+                        
+                        // Remueve la fila de la tabla de forma animada y automática en caliente
                         $('#fila_partida_' + sp_id).fadeOut(400, function() {
                             $(this).remove();
+                            
+                            // Opcional: Si la tabla se queda vacía, puedes mostrar el aviso de "Sin requerimientos"
+                            if ($('#cuerpo_tabla_partidas tr').length === 0) {
+                                $('#cuerpo_tabla_partidas').html('<tr><td colspan="9" class="text-center" style="padding: 15px; font-weight: bold; color: #64748b;"><i class="fa fa-info-circle"></i> Sin requerimientos presupuestarios asignados en esta unidad.</td></tr>');
+                            }
                         });
                     } else {
-                        alert('Error al intentar eliminar el registro.');
+                        alert(response.msg || 'Error al intentar eliminar el registro.');
                     }
                 },
                 error: function() {

@@ -220,7 +220,7 @@ class Cmod_requerimientos extends CI_Controller {
       
       if($proyecto[0]['tp_id']==4){
         $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
-        $data['datos_proyecto']='<h1> '.$proyecto[0]['establecimiento'].' : <small> '.$proyecto[0]['aper_programa'].' '.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</small></h1>';
+        $data['datos_proyecto']='<h1> : <small> '.$proyecto[0]['aper_programa'].' '.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</small></h1>';
       }
 
       $data['formulario']='
@@ -330,7 +330,7 @@ class Cmod_requerimientos extends CI_Controller {
 
 
     /*------- Modificacion del Techo Presupuestario 2026 --------*/
-    public function techo($cppto_id){
+/*    public function techo($cppto_id){
       $data['menu']=$this->menu(3); //// genera menu
       $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
       $data['formulario']='';
@@ -358,11 +358,11 @@ class Cmod_requerimientos extends CI_Controller {
         redirect(site_url("").'/mod/cite_techo/'.$data['cite'][0]['proy_id']); 
       }
       
-    }
+    }*/
 
     /*------ Lista de Partidas a modificar 2026 -------*/
-    function detalle_lista_partidas_asignadas($cite){
-      $partidas=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($cite[0]['aper_id']);
+   /* function detalle_lista_partidas_asignadas($cite){
+      $partidas=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($cite[0]['aper_id']);
       $tabla='';
       $tabla.='   
           <article class="col-xs-12">
@@ -456,7 +456,7 @@ class Cmod_requerimientos extends CI_Controller {
         </article>';
 
       return $tabla;
-    }
+    }*/
 
 
 
@@ -635,42 +635,42 @@ class Cmod_requerimientos extends CI_Controller {
 
 
     /*-------- ELIMINAR MONTOS PARTIDA --------*/
-    function delete_partida(){
-      if ($this->input->is_ajax_request() && $this->input->post()) {
-          $post = $this->input->post();
-          $sp_id = $this->security->xss_clean($post['sp_id']);
-          $cite_id = $this->security->xss_clean($post['cite_id']);
+// /*    function delete_partida(){
+//       if ($this->input->is_ajax_request() && $this->input->post()) {
+//           $post = $this->input->post();
+//           $sp_id = $this->security->xss_clean($post['sp_id']);
+//           $cite_id = $this->security->xss_clean($post['cite_id']);
 
-          /*-------- Delete ppto_eliminado ----------*/
-            $data_to_store2 = array(
-              'cppto_id' => $cite_id,
-              'sp_id' => $sp_id,
-              'num_ip' => $this->input->ip_address(), 
-              'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-            );
-            $this->db->insert('ppto_del',$data_to_store2);
-            $dppto_id=$this->db->insert_id();
-            /*----------------------------------------*/
+//           /*-------- Delete ppto_eliminado ----------*/
+//             $data_to_store2 = array(
+//               'cppto_id' => $cite_id,
+//               'sp_id' => $sp_id,
+//               'num_ip' => $this->input->ip_address(), 
+//               'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+//             );
+//             $this->db->insert('ppto_del',$data_to_store2);
+//             $dppto_id=$this->db->insert_id();
+//             /*----------------------------------------*/
 
-            /*--------- Update ppto Sigep ----------*/
-            $update_ppto= array(
-              'estado' => 3,
-              'fun_id' => $this->fun_id
-            );
-            $this->db->where('sp_id', $sp_id);
-            $this->db->update('ptto_partidas_sigep', $this->security->xss_clean($update_ppto));
-            /*----------------------------------------*/
+//             /*--------- Update ppto Sigep ----------*/
+//             $update_ppto= array(
+//               'estado' => 3,
+//               'fun_id' => $this->fun_id
+//             );
+//             $this->db->where('sp_id', $sp_id);
+//             $this->db->update('ptto_partidas_sigep', $this->security->xss_clean($update_ppto));
+//             /*----------------------------------------*/
 
-          $result = array(
-            'respuesta' => 'correcto'
-          );
+//           $result = array(
+//             'respuesta' => 'correcto'
+//           );
 
-        echo json_encode($result);
+//         echo json_encode($result);
 
-      } else {
-          echo 'DATOS ERRONEOS';
-      }
-    }
+//       } else {
+//           echo 'DATOS ERRONEOS';
+//       }
+//     }*/
 
 
     /*----- REPORTE CITE TECHO -------*/

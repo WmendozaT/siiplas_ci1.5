@@ -17,9 +17,6 @@
         <link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/demo.min.css">
         <!--estiloh-->
         <link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/estilosh.css"> 
-            <!--para las alertas-->
-        <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.core.css" />
-        <link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
         <meta name="viewport" content="width=device-width">
     </head>
     <body class="">
@@ -99,28 +96,7 @@
             <!-- widget grid -->
                 <section id="widget-grid" class="">
                     <div class="row">
-                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-9">
-                            <section id="widget-grid" class="well">
-                                <div class="">
-                                  <h1><b>UNIDADES ORGANIZACIONALES - <?php echo $this->session->userdata("gestion");?></b>
-                                </div>
-                            </section>
-                        </article>
-                        <article class="col-xs-12 col-sm-12 col-md-12 col-lg-3">
-                            <section id="widget-grid" class="well">
-                                <?php
-                                    if($this->session->userData('tp_adm')==1){ ?>
-                                        <button type="button" class="btn btn-primary" style="width:100%;" data-toggle="modal" data-target="#exampleModalCenter">
-                                          SUBIR PRESUPUESTO
-                                        </button>
-                                        <?php
-                                    }
-                                ?>
-                            </section>
-                        </article>
-
                         <?php echo $lista_poa;?>
-                        <!-- WIDGET END -->
                     </div>
                 </section>
             </div>
@@ -136,53 +112,6 @@
             </div>
         </div>
         <!-- END PAGE FOOTER -->
-
-        <!-- Modal -->
-        <!-- Modal -->
-        <div class="modal fade" id="exampleModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog" id="csv">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-                    </div>
-                    <div class="modal-body">
-                        <h2><center>SUBIR ARCHIVO PPTO ASIGNADO.CSV</center></h2>
-                        <div class="row">
-                         <!--    <script src="<?php echo base_url(); ?>assets/file_nuevo/jquery.min.js"></script> -->
-                          <form action="<?php echo site_url().'/mantenimiento/cptto_poa/importar_archivo_sigep' ?>" method="post" enctype="multipart/form-data" id="form_subir_sigep" name="form_subir_sigep">
-                            <input name="tp" type="hidden" value="0">
-                            
-                            <div class="input-group">
-                              <span class="input-group-btn">
-                                <span class="btn btn-primary" onclick="$(this).parent().find('input[type=file]').click();">Browse</span>
-                                <input  id="archivo" accept=".csv" name="archivo" onchange="$(this).parent().parent().find('.form-control').html($(this).val().split(/[\\|/]/).pop());" style="display: none;" type="file">
-                                <input name="MAX_FILE_SIZE" type="hidden" value="20000" />
-                              </span>
-                              <span class="form-control"></span>
-                            </div>
-
-                          
-                            <section class="col col-3">
-                                <label class="label">TIPO DE GASTO</label>
-                                <select class="form-control" id="tp_id" name="tp_id" title="SELECCIONE TIPO DE GASTO">
-                                    <option value="0">Seleccione tipo de Gasto</option>
-                                    <option value="4">GASTO CORRIENTE</option>
-                                    <option value="1">PROYECTO DE INVERSIÓN</option>
-                                </select>
-                            </section>
-                           
-
-                            <hr>
-                            <div >
-                                <button type="button" name="subir_archivo" id="subir_archivo" class="btn btn-success" style="width:100%;">SUBIR REQUERIMIENTOS .CSV</button><br>
-                                <center><img id="loads" style="display: none" src="<?php echo base_url() ?>/assets/img/loading.gif" width="50" height="50"></center>
-                            </div>
-                          </form> 
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
         <script data-pace-options='{ "restartOnRequestAfter": true }' src="<?php echo base_url(); ?>assets/js/plugin/pace/pace.min.js"></script>
@@ -229,10 +158,6 @@
         <script src="<?php echo base_url(); ?>assets/js/demo.min.js"></script>
         <!-- MAIN APP JS FILE -->
         <script src="<?php echo base_url(); ?>assets/js/app.min.js"></script>
-        <!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
-        <!-- Voice command : plugin -->
-        <script src="<?php echo base_url(); ?>assets/js/speech/voicecommand.min.js"></script>
-        <script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
         <!-- PAGE RELATED PLUGIN(S) -->
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/jquery.dataTables.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.colVis.min.js"></script>
