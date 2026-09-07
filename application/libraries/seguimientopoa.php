@@ -1866,14 +1866,10 @@ class Seguimientopoa extends CI_Controller{
                   <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4/'.$com_id.'\');" >FORMULARIO N°4 (ACTIVIDADES)</a>
+                      <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$com_id.'\');" >FORMULARIO N°4 (ACTIVIDADES)</a>
                     </li>
                     <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/proy/orequerimiento_proceso/'.$proy_id.'/'.$com_id.'\');">FORMULARIO N°5 (REQUERIMIENTOS)</a>
-                    </li>
-                    <hr>
-                    <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/rep/rep_requerimientos_ejecucion_servicio/'.$com_id.'\');">FORMULARIO N°5 (EJECUCIÓN POA)</a>
+                      <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$com_id.'\');">FORMULARIO N°5 (REQUERIMIENTOS)</a>
                     </li>
                   </ul>
                 </div>';

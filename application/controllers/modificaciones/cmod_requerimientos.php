@@ -41,7 +41,7 @@ class Cmod_requerimientos extends CI_Controller {
 
 
     /*----------------- GET REQUERIMIENTO -------------------*/
-    public function get_requerimiento(){
+   /* public function get_requerimiento(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $ins_id = $this->security->xss_clean($post['ins_id']);
@@ -163,10 +163,10 @@ class Cmod_requerimientos extends CI_Controller {
       }else{
           show_404();
       }
-    }
+    }*/
 
     /*--- PARTIDAS DEPENDIENTES ---*/
-    function partidas_dependientes($insumo){
+/*    function partidas_dependientes($insumo){
       $tabla='';
       $get_partida=$this->model_partidas->get_partida($insumo[0]['par_id']); /// datos de la partda
       $lista_partidas=$this->model_partidas->lista_par_hijos($get_partida[0]['par_depende']);
@@ -180,11 +180,11 @@ class Cmod_requerimientos extends CI_Controller {
       }
 
       return $tabla;
-    }
+    }*/
 
 
     /*---------- GET MONTO PARTIDA ------------*/
-    public function get_monto_partida(){
+/*    public function get_monto_partida(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $par_id = $this->security->xss_clean($post['par_id']);
@@ -210,7 +210,7 @@ class Cmod_requerimientos extends CI_Controller {
       }else{
           show_404();
       }
-    }
+    }*/
 
     /*----------- Cite Techo Presupuestario -----------*/
     public function cite_techo($proy_id){
@@ -290,43 +290,43 @@ class Cmod_requerimientos extends CI_Controller {
     }
 
     /*--------- VALIDA CITES TECHO PRESUPUESTARIO (MODIFICACIONES)----------*/
-    public function valida_cite(){
-      if ($this->input->post()) {
-          $post = $this->input->post();
-          $proy_id = $this->security->xss_clean($post['proy_id']);
-          $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); 
-          $cite = $this->security->xss_clean($post['cite']);
-          $fecha = $this->security->xss_clean($post['fm']);
-          $tp = $this->security->xss_clean($post['tp']);
+    // public function valida_cite(){
+    //   if ($this->input->post()) {
+    //       $post = $this->input->post();
+    //       $proy_id = $this->security->xss_clean($post['proy_id']);
+    //       $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); 
+    //       $cite = $this->security->xss_clean($post['cite']);
+    //       $fecha = $this->security->xss_clean($post['fm']);
+    //       $tp = $this->security->xss_clean($post['tp']);
           
-          $obs='';
-          if($tp==1){ //// Reversion de Saldos
-            $obs = $this->security->xss_clean($post['observacion']);
-          }
+    //       $obs='';
+    //       if($tp==1){ //// Reversion de Saldos
+    //         $obs = $this->security->xss_clean($post['observacion']);
+    //       }
 
-        //  echo "proy ".$proy_id." - ".$cite." - ".$fecha." - ".$tp.' - '.$obs;
-          /*--------- GUARDANDO CITE PRESUPUESTO ---------*/
-            $data_to_store = array(
-              'proy_id' => $proy_id,
-              'cppto_cite' => strtoupper($cite),
-              'cppto_fecha' => $fecha,
-              'tp' => $tp,
-              'observacion' => $obs,
-              'fun_id' => $this->fun_id,
-              );
-            $this->db->insert('ppto_cite',$data_to_store);
-            $cppto_id=$this->db->insert_id();
-          /*----------------------------------------------*/
+    //     //  echo "proy ".$proy_id." - ".$cite." - ".$fecha." - ".$tp.' - '.$obs;
+    //       /*--------- GUARDANDO CITE PRESUPUESTO ---------*/
+    //         $data_to_store = array(
+    //           'proy_id' => $proy_id,
+    //           'cppto_cite' => strtoupper($cite),
+    //           'cppto_fecha' => $fecha,
+    //           'tp' => $tp,
+    //           'observacion' => $obs,
+    //           'fun_id' => $this->fun_id,
+    //           );
+    //         $this->db->insert('ppto_cite',$data_to_store);
+    //         $cppto_id=$this->db->insert_id();
+    //       /*----------------------------------------------*/
 
-          if(count($this->model_ptto_sigep->get_cite_techo($cppto_id))!=0 ){
-            redirect(site_url("").'/mod/techo/'.$cppto_id);
-          }
-          else{
-            $this->session->set_flashdata('danger','ERROR AL INGRESAR NRO CITE');
-            redirect(site_url("").'/mod/cite_techo/'.$proy_id); 
-          }
-      }
-    }
+    //       if(count($this->model_ptto_sigep->get_cite_techo($cppto_id))!=0 ){
+    //         redirect(site_url("").'/mod/techo/'.$cppto_id);
+    //       }
+    //       else{
+    //         $this->session->set_flashdata('danger','ERROR AL INGRESAR NRO CITE');
+    //         redirect(site_url("").'/mod/cite_techo/'.$proy_id); 
+    //       }
+    //   }
+    // }
 
 
     /*------- Modificacion del Techo Presupuestario 2026 --------*/
@@ -462,124 +462,124 @@ class Cmod_requerimientos extends CI_Controller {
 
 
     /*---- GET DATOS REQUERIMIENTO ----*/
-    public function get_partida(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $sp_id = $this->security->xss_clean($post['sp_id']);
-        $ppto_asignado=$this->model_ptto_sigep->get_sp_id($sp_id);
+    // public function get_partida(){
+    //   if($this->input->is_ajax_request() && $this->input->post()){
+    //     $post = $this->input->post();
+    //     $sp_id = $this->security->xss_clean($post['sp_id']);
+    //     $ppto_asignado=$this->model_ptto_sigep->get_sp_id($sp_id);
 
-          if(count($ppto_asignado)!=0){
-            $result = array(
-              'respuesta' => 'correcto',
-              'ppto_asignado' => $ppto_asignado,
-            );
-          }
-          else{
-            $result = array(
-              'respuesta' => 'error',
-            );
-          }
-          /// --------------------------------------
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }
+    //       if(count($ppto_asignado)!=0){
+    //         $result = array(
+    //           'respuesta' => 'correcto',
+    //           'ppto_asignado' => $ppto_asignado,
+    //         );
+    //       }
+    //       else{
+    //         $result = array(
+    //           'respuesta' => 'error',
+    //         );
+    //       }
+    //       /// --------------------------------------
+    //     echo json_encode($result);
+    //   }else{
+    //       show_404();
+    //   }
+    // }
 
 
 
     /*---- VALIDA SALDO NO EJECUTADO ----*/
-    public function guardar_saldo_ppto(){
-      if($this->input->post()){
-        $post = $this->input->post();
-        $sp_id = $this->security->xss_clean($post['sp_id']);
-        $cite_id = $this->security->xss_clean($post['cite_id']);
-        $saldo = $this->security->xss_clean($post['saldo']);
-        $partida_ppto=$this->model_ptto_sigep->get_sp_id($sp_id);
+    // public function guardar_saldo_ppto(){
+    //   if($this->input->post()){
+    //     $post = $this->input->post();
+    //     $sp_id = $this->security->xss_clean($post['sp_id']);
+    //     $cite_id = $this->security->xss_clean($post['cite_id']);
+    //     $saldo = $this->security->xss_clean($post['saldo']);
+    //     $partida_ppto=$this->model_ptto_sigep->get_sp_id($sp_id);
 
-        /*-------- Insert historial de saldos -------*/
-        $data_to_store = array(
-          'sp_id' => $sp_id,
-          'monto_revertido' => $saldo,
-          'ppto_anterior' => $partida_ppto[0]['importe'],
-          'cppto_id' => $cite_id,
-        );
-        $this->db->insert('saldo_partida',$data_to_store);
-        /*------------------------------------------*/
+    //     /*-------- Insert historial de saldos -------*/
+    //     $data_to_store = array(
+    //       'sp_id' => $sp_id,
+    //       'monto_revertido' => $saldo,
+    //       'ppto_anterior' => $partida_ppto[0]['importe'],
+    //       'cppto_id' => $cite_id,
+    //     );
+    //     $this->db->insert('saldo_partida',$data_to_store);
+    //     /*------------------------------------------*/
 
-        $saldo=$this->model_ptto_sigep->suma_saldo_revertido($sp_id);
+    //     $saldo=$this->model_ptto_sigep->suma_saldo_revertido($sp_id);
 
-        if(count($saldo)!=0){
-          $update_saldo = array(
-            'ppto_saldo_ncert' => $saldo[0]['saldo']
-          );
-          $this->db->where('sp_id', $sp_id);
-          $this->db->update('ptto_partidas_sigep', $update_saldo);
-        }
+    //     if(count($saldo)!=0){
+    //       $update_saldo = array(
+    //         'ppto_saldo_ncert' => $saldo[0]['saldo']
+    //       );
+    //       $this->db->where('sp_id', $sp_id);
+    //       $this->db->update('ptto_partidas_sigep', $update_saldo);
+    //     }
 
-        redirect(site_url("").'/mod/techo/'.$cite_id);
+    //     redirect(site_url("").'/mod/techo/'.$cite_id);
 
-      }else{
-          show_404();
-      }
-    }
+    //   }else{
+    //       show_404();
+    //   }
+    // }
 
 
     /*------------ ADICIONA PARTIDAS (MODIFICACIONES)--------------*/
-    public function valida_add_partida(){
-      if ($this->input->post()) {
-        $post = $this->input->post();
-        $cite_id = $this->security->xss_clean($post['cite_id']);
-        $par_id = $this->security->xss_clean($post['par_id']);
-        $monto = $this->security->xss_clean($post['monto']);
-        $cite=$this->model_ptto_sigep->get_cite_techo($cite_id);
-        $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); //// DATOS DEL PROYECTO
-        $partida=$this->model_partidas->dato_par($par_id);
+    // public function valida_add_partida(){
+    //   if ($this->input->post()) {
+    //     $post = $this->input->post();
+    //     $cite_id = $this->security->xss_clean($post['cite_id']);
+    //     $par_id = $this->security->xss_clean($post['par_id']);
+    //     $monto = $this->security->xss_clean($post['monto']);
+    //     $cite=$this->model_ptto_sigep->get_cite_techo($cite_id);
+    //     $proyecto = $this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); //// DATOS DEL PROYECTO
+    //     $partida=$this->model_partidas->dato_par($par_id);
 
-        /*-------- Insert ppto_adicionado ----------*/
-        $data_to_store = array(
-          'aper_id' => $proyecto[0]['aper_id'],
-          'aper_programa' => $proyecto[0]['aper_programa'],
-          'aper_proyecto' => $proyecto[0]['aper_proyecto'],
-          'aper_actividad' => $proyecto[0]['aper_actividad'],
-          'par_id' => $par_id,
-          'partida' => $partida[0]['par_codigo'],
-          'importe' => $monto,
-          'g_id' => $this->gestion,
-          'estado' => 1,
-          'fun_id' => $this->fun_id,
-        );
-        $this->db->insert('ptto_partidas_sigep',$data_to_store);
-        $sp_id=$this->db->insert_id();
-        /*------------------------------------------*/
+    //     /*-------- Insert ppto_adicionado ----------*/
+    //     $data_to_store = array(
+    //       'aper_id' => $proyecto[0]['aper_id'],
+    //       'aper_programa' => $proyecto[0]['aper_programa'],
+    //       'aper_proyecto' => $proyecto[0]['aper_proyecto'],
+    //       'aper_actividad' => $proyecto[0]['aper_actividad'],
+    //       'par_id' => $par_id,
+    //       'partida' => $partida[0]['par_codigo'],
+    //       'importe' => $monto,
+    //       'g_id' => $this->gestion,
+    //       'estado' => 1,
+    //       'fun_id' => $this->fun_id,
+    //     );
+    //     $this->db->insert('ptto_partidas_sigep',$data_to_store);
+    //     $sp_id=$this->db->insert_id();
+    //     /*------------------------------------------*/
 
-        /*-------- Insert ppto_modifcado ----------*/
-          $data_to_store2 = array(
-            'cppto_id' => $cite_id,
-            'sp_id' => $sp_id,
-            'ppto' => $monto,
-            'num_ip' => $this->input->ip_address(), 
-            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-          );
-          $this->db->insert('ppto_add',$data_to_store2);
-          $appto_id=$this->db->insert_id();
-        /*----------------------------------------*/
+    //     /*-------- Insert ppto_modifcado ----------*/
+    //       $data_to_store2 = array(
+    //         'cppto_id' => $cite_id,
+    //         'sp_id' => $sp_id,
+    //         'ppto' => $monto,
+    //         'num_ip' => $this->input->ip_address(), 
+    //         'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+    //       );
+    //       $this->db->insert('ppto_add',$data_to_store2);
+    //       $appto_id=$this->db->insert_id();
+    //     /*----------------------------------------*/
 
-          $p_add=$this->model_ptto_sigep->get_add_presupuesto($appto_id);
-          if(count($p_add)!=0){
-            $this->session->set_flashdata('success','SE REGISTRO CORRECTAMENTE');
-            redirect(site_url("").'/mod/techo/'.$cite_id);
-          }
-          else{
-            $this->session->set_flashdata('danger','ERROR AL REGISTRAR LA NUEVA PARTIDA');
-            redirect(site_url("").'/mod/techo/'.$cite_id);
-          }
+    //       $p_add=$this->model_ptto_sigep->get_add_presupuesto($appto_id);
+    //       if(count($p_add)!=0){
+    //         $this->session->set_flashdata('success','SE REGISTRO CORRECTAMENTE');
+    //         redirect(site_url("").'/mod/techo/'.$cite_id);
+    //       }
+    //       else{
+    //         $this->session->set_flashdata('danger','ERROR AL REGISTRAR LA NUEVA PARTIDA');
+    //         redirect(site_url("").'/mod/techo/'.$cite_id);
+    //       }
 
-      }
-      else{
-        echo "<center><font color=red>Error al Registrar la Nueva Partida</font></center>";
-      }
-    }
+    //   }
+    //   else{
+    //     echo "<center><font color=red>Error al Registrar la Nueva Partida</font></center>";
+    //   }
+    // }
 
 
     /*------------ UPDATE PARTIDAS (MODIFICACIONES) MODIFICACION DEL TECHO PRESUPUESTARIO ( a optimizar a borrar)--------------*/
@@ -674,389 +674,389 @@ class Cmod_requerimientos extends CI_Controller {
 
 
     /*----- REPORTE CITE TECHO -------*/
-    public function reporte_techo($cppto_id){
-      $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
-      if(count($cite)!=0){
-        $proyecto=$this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// PROY INVERSION
-        if($proyecto[0]['tp_id']==4){
-          $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// GASTO CORRIENTE
-        }
+    // public function reporte_techo($cppto_id){
+    //   $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
+    //   if(count($cite)!=0){
+    //     $proyecto=$this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// PROY INVERSION
+    //     if($proyecto[0]['tp_id']==4){
+    //       $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// GASTO CORRIENTE
+    //     }
 
-        $data['cabecera']=$this->cabecera($proyecto,$cite);  
-        $data['mes'] = $this->mes_nombre();
+    //     $data['cabecera']=$this->cabecera($proyecto,$cite);  
+    //     $data['mes'] = $this->mes_nombre();
         
-        if($cite[0]['tp']==0){
-          $data['consolidado']=$this->mis_modificaciones_techo($cppto_id); /// modificacion presupuestaria
-          $data['observacion']='';
-        }
-        else{
-          $data['consolidado']=$this->reversion_saldos($cite); /// reversion de saldos
-          $data['observacion']='<div style="font-size: 10px;font-family: Arial;">'.$cite[0]['observacion'].'<br><br><br>
-          Señor : <b>'.$cite[0]['fun_nombre'].' '.$cite[0]['fun_paterno'].'</b>, debe realizar la programacion de requerimientos a traves del modulo de Modificacion POA - <b>MOD. FORM. N° 5 (SALDOS REVERTIDOS) - '.$this->gestion.'</b>, segun el detalle del monto revertido a la partida correspondiente.</div>';
-        }
+    //     if($cite[0]['tp']==0){
+    //       $data['consolidado']=$this->mis_modificaciones_techo($cppto_id); /// modificacion presupuestaria
+    //       $data['observacion']='';
+    //     }
+    //     else{
+    //       $data['consolidado']=$this->reversion_saldos($cite); /// reversion de saldos
+    //       $data['observacion']='<div style="font-size: 10px;font-family: Arial;">'.$cite[0]['observacion'].'<br><br><br>
+    //       Señor : <b>'.$cite[0]['fun_nombre'].' '.$cite[0]['fun_paterno'].'</b>, debe realizar la programacion de requerimientos a traves del modulo de Modificacion POA - <b>MOD. FORM. N° 5 (SALDOS REVERTIDOS) - '.$this->gestion.'</b>, segun el detalle del monto revertido a la partida correspondiente.</div>';
+    //     }
         
-        $data['pie_rep']=$cite[0]['cppto_cite'];
+    //     $data['pie_rep']=$cite[0]['cppto_cite'];
 
-        $this->load->view('admin/modificacion/techo/reporte_mod_techo', $data);
-      }
-      else{
-        echo "ERROR";
-      }
-    }
+    //     $this->load->view('admin/modificacion/techo/reporte_mod_techo', $data);
+    //   }
+    //   else{
+    //     echo "ERROR";
+    //   }
+    // }
 
 
 
   //// Cabecera modificacion presupuestaria
-  public function cabecera($proyecto,$cite){
-    /// tp_rep 0 : modificacion presupuestaria
-    /// tp rep 1 : reversion de saldos
+  // public function cabecera($proyecto,$cite){
+  //   /// tp_rep 0 : modificacion presupuestaria
+  //   /// tp rep 1 : reversion de saldos
     
-    $titulo_rep='MODIFICACION PRESUPUESTARIA';
-    if($cite[0]['tp']==1){
-      $titulo_rep='REVERSION DE SALDOS';
-    }
+  //   $titulo_rep='MODIFICACION PRESUPUESTARIA';
+  //   if($cite[0]['tp']==1){
+  //     $titulo_rep='REVERSION DE SALDOS';
+  //   }
 
     
-    $tabla='';
-    $tabla.='
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px;">              
-            <td style="width:70%;height: 2%">
-                <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 13px;font-family: Arial;">
-                        <td style="width:40%;height: 20%;">&nbsp;&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
-                    </tr>
-                    <tr>
-                        <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-              '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </td>
-        </tr>
-      </table>
-      <hr>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-          <tr style="border: solid 0px black; text-align: center;">
-              <td style="width:12%; text-align:center;">';
-              if($proyecto[0]['proy_estado']==4 && $this->gestion>2021){
-                $tabla.='<qrcode value="'.$this->session->userdata('rd_poa').'" style="border: none; width: 14mm; color: #1c7368"></qrcode><br><b>POA APROBADO</b>';
-              }
-              $tabla.='
-              </td>
-              <td style="width:80%; height: 5%">
-                  <table align="center" border="0" style="width:100%;">
-                      <tr style="font-size: 23px;font-family: Arial;">
-                          <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
-                      </tr>
-                      <tr style="font-size: 20px;font-family: Arial;">
-                        <td style="height: 5%;">'.$titulo_rep.'</td>
-                      </tr>
-                  </table>
-              </td>
-              <td style="width:10%; text-align:center;">
-              </td>
-          </tr>
-      </table>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-          <tr style="border: solid 0px;">              
-              <td style="width:70%;">
-              </td>
-              <td style="width:30%; height: 3%">
-                  <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 13px;font-family: Arial;">
-                      <td align=center style="width:100%;height: 40%;"><b>'.$cite[0]['cppto_cite'].'</b></td>
-                    </tr>
-                </table>
-              </td>
-          </tr>
-      </table>
+  //   $tabla='';
+  //   $tabla.='
+  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //       <tr style="border: solid 0px;">              
+  //           <td style="width:70%;height: 2%">
+  //               <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //                   <tr style="font-size: 13px;font-family: Arial;">
+  //                       <td style="width:40%;height: 20%;">&nbsp;&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
+  //                   </tr>
+  //                   <tr>
+  //                       <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
+  //                   </tr>
+  //               </table>
+  //           </td>
+  //           <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
+  //             '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  //           </td>
+  //       </tr>
+  //     </table>
+  //     <hr>
+  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //         <tr style="border: solid 0px black; text-align: center;">
+  //             <td style="width:12%; text-align:center;">';
+  //             if($proyecto[0]['proy_estado']==4 && $this->gestion>2021){
+  //               $tabla.='<qrcode value="'.$this->session->userdata('rd_poa').'" style="border: none; width: 14mm; color: #1c7368"></qrcode><br><b>POA APROBADO</b>';
+  //             }
+  //             $tabla.='
+  //             </td>
+  //             <td style="width:80%; height: 5%">
+  //                 <table align="center" border="0" style="width:100%;">
+  //                     <tr style="font-size: 23px;font-family: Arial;">
+  //                         <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
+  //                     </tr>
+  //                     <tr style="font-size: 20px;font-family: Arial;">
+  //                       <td style="height: 5%;">'.$titulo_rep.'</td>
+  //                     </tr>
+  //                 </table>
+  //             </td>
+  //             <td style="width:10%; text-align:center;">
+  //             </td>
+  //         </tr>
+  //     </table>
+  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //         <tr style="border: solid 0px;">              
+  //             <td style="width:70%;">
+  //             </td>
+  //             <td style="width:30%; height: 3%">
+  //                 <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //                   <tr style="font-size: 13px;font-family: Arial;">
+  //                     <td align=center style="width:100%;height: 40%;"><b>'.$cite[0]['cppto_cite'].'</b></td>
+  //                   </tr>
+  //               </table>
+  //             </td>
+  //         </tr>
+  //     </table>
       
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-         <tr>
-            <td style="width:1.5%;"></td>
-            <td style="width:97%;height: 1%;">
-              <hr>
-            </td>
-            <td style="width:1.5%;"></td>
-        </tr>
-        <tr>
-            <td style="width:1.5%;"></td>
-            <td style="width:97%;height: 3%;">
+  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //        <tr>
+  //           <td style="width:1.5%;"></td>
+  //           <td style="width:97%;height: 1%;">
+  //             <hr>
+  //           </td>
+  //           <td style="width:1.5%;"></td>
+  //       </tr>
+  //       <tr>
+  //           <td style="width:1.5%;"></td>
+  //           <td style="width:97%;height: 3%;">
              
-              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                <tr>
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>REGIONAL / DEPARTAMENTO</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dep_cod'].' '.strtoupper ($proyecto[0]['dep_departamento']).'</td></tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>UNIDAD EJECUTORA</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dist_cod'].' '.strtoupper ($proyecto[0]['dist_distrital']).'</td></tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>';
-                  if($proyecto[0]['tp_id']==4){
-                    $tabla.='
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>'.$proyecto[0]['tipo_adm'].'</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.strtoupper ($proyecto[0]['proy_nombre']).' '.$proyecto[0]['abrev'].'</td></tr>
-                        </table>
-                    </td>';
-                  }
-                  else{
-                    $tabla.='
-                    <td style="width:20%;">
-                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>PROYECTO</b></td><td style="width:5%;"></td></tr>
-                        </table>
-                    </td>
-                    <td style="width:80%;">
-                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['proy_sisin'].''.$proyecto[0]['aper_actividad'].' - '.strtoupper ($proyecto[0]['proy_nombre']).'</td></tr>
-                        </table>
-                    </td>';
-                  }
-                $tabla.='
-                </tr>
+  //             <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //               <tr>
+  //                   <td style="width:20%;">
+  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>REGIONAL / DEPARTAMENTO</b></td><td style="width:5%;"></td></tr>
+  //                       </table>
+  //                   </td>
+  //                   <td style="width:80%;">
+  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dep_cod'].' '.strtoupper ($proyecto[0]['dep_departamento']).'</td></tr>
+  //                       </table>
+  //                   </td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="width:20%;">
+  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>UNIDAD EJECUTORA</b></td><td style="width:5%;"></td></tr>
+  //                       </table>
+  //                   </td>
+  //                   <td style="width:80%;">
+  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dist_cod'].' '.strtoupper ($proyecto[0]['dist_distrital']).'</td></tr>
+  //                       </table>
+  //                   </td>
+  //               </tr>
+  //               <tr>';
+  //                 if($proyecto[0]['tp_id']==4){
+  //                   $tabla.='
+  //                   <td style="width:20%;">
+  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>'.$proyecto[0]['tipo_adm'].'</b></td><td style="width:5%;"></td></tr>
+  //                       </table>
+  //                   </td>
+  //                   <td style="width:80%;">
+  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.strtoupper ($proyecto[0]['proy_nombre']).' '.$proyecto[0]['abrev'].'</td></tr>
+  //                       </table>
+  //                   </td>';
+  //                 }
+  //                 else{
+  //                   $tabla.='
+  //                   <td style="width:20%;">
+  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>PROYECTO</b></td><td style="width:5%;"></td></tr>
+  //                       </table>
+  //                   </td>
+  //                   <td style="width:80%;">
+  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['proy_sisin'].''.$proyecto[0]['aper_actividad'].' - '.strtoupper ($proyecto[0]['proy_nombre']).'</td></tr>
+  //                       </table>
+  //                   </td>';
+  //                 }
+  //               $tabla.='
+  //               </tr>
                
-            </table>
-          </td>
-          <td style="width:1.5%;"></td>
-        </tr>
-        <tr>
-          <td style="width:1.5%;"></td>
-          <td style="width:97%;height: 1%;">
-            <hr>
-            <br><b style="font-size: 8px;font-family: Arial;">DETALLE : </b>
-          </td>
-          <td style="width:1.5%;"></td>
-        </tr>
-      </table>';
-    return $tabla;
-  }
+  //           </table>
+  //         </td>
+  //         <td style="width:1.5%;"></td>
+  //       </tr>
+  //       <tr>
+  //         <td style="width:1.5%;"></td>
+  //         <td style="width:97%;height: 1%;">
+  //           <hr>
+  //           <br><b style="font-size: 8px;font-family: Arial;">DETALLE : </b>
+  //         </td>
+  //         <td style="width:1.5%;"></td>
+  //       </tr>
+  //     </table>';
+  //   return $tabla;
+  // }
 
 
   //// Reversion de saldos
-  function reversion_saldos($cite){
-      $saldos_revertidos_partidas=$this->model_ptto_sigep->lista_monto_partidas_revertidos($cite[0]['cppto_id']);
-      $tabla='';
+  // function reversion_saldos($cite){
+  //     $saldos_revertidos_partidas=$this->model_ptto_sigep->lista_monto_partidas_revertidos($cite[0]['cppto_id']);
+  //     $tabla='';
 
-       $tabla.='
-        <table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:90%;" align="center">
-          <thead>
-            <tr style="font-size: 7px;" bgcolor=#1c7368 align=center>
-              <th style="width:2%;height:15px;color:#FFF;">#</th>
-              <th style="width:20%;color:#FFF;">CERT. POA</th>
-              <th style="width:20%;color:#FFF;">PARTIDA</th>
-              <th style="width:20%;color:#FFF;">PPTO. REVERTIDO</th>
+  //      $tabla.='
+  //       <table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:90%;" align="center">
+  //         <thead>
+  //           <tr style="font-size: 7px;" bgcolor=#1c7368 align=center>
+  //             <th style="width:2%;height:15px;color:#FFF;">#</th>
+  //             <th style="width:20%;color:#FFF;">CERT. POA</th>
+  //             <th style="width:20%;color:#FFF;">PARTIDA</th>
+  //             <th style="width:20%;color:#FFF;">PPTO. REVERTIDO</th>
 
-            </tr>
-          </thead>
-          <tbody>';
-          $nro=0;$suma=0;
-            foreach($saldos_revertidos_partidas as $row){
-              $suma=$suma+(($row['ppto_inicial']+$row['presupuesto_revertido']));
-              $certificacion=$this->model_certificacion->get_datos_certificacion_poa($row['cpoa_id']); /// Datos Certificacion
-              $codigo='S/C';
-              if(count($certificacion)!=0){
-                $codigo=$certificacion[0]['cpoa_codigo'];
-              }
-              $nro++;
-              $tabla.='
-              <tr>
-                <td style="height:10px;" align="center">'.$nro.'</td>
-                <td style="font-size:13px; text-align:center"><b>'.$codigo.'</b></td>
-                <td style="font-size:15px; text-align:center"><b>'.$row['partida'].'</b></td>
-                <td style="font-size:12px; text-align:right">'.number_format($row['presupuesto_revertido'], 2, ',', '.').'</td>
-              </tr>';
-            }
-          $tabla.='
-          </tbody>
+  //           </tr>
+  //         </thead>
+  //         <tbody>';
+  //         $nro=0;$suma=0;
+  //           foreach($saldos_revertidos_partidas as $row){
+  //             $suma=$suma+(($row['ppto_inicial']+$row['presupuesto_revertido']));
+  //             $certificacion=$this->model_certificacion->get_datos_certificacion_poa($row['cpoa_id']); /// Datos Certificacion
+  //             $codigo='S/C';
+  //             if(count($certificacion)!=0){
+  //               $codigo=$certificacion[0]['cpoa_codigo'];
+  //             }
+  //             $nro++;
+  //             $tabla.='
+  //             <tr>
+  //               <td style="height:10px;" align="center">'.$nro.'</td>
+  //               <td style="font-size:13px; text-align:center"><b>'.$codigo.'</b></td>
+  //               <td style="font-size:15px; text-align:center"><b>'.$row['partida'].'</b></td>
+  //               <td style="font-size:12px; text-align:right">'.number_format($row['presupuesto_revertido'], 2, ',', '.').'</td>
+  //             </tr>';
+  //           }
+  //         $tabla.='
+  //         </tbody>
             
-          </table>';
-      return $tabla;
-    }
+  //         </table>';
+  //     return $tabla;
+  //   }
 
 
 
  /*--------- REPORTE MODIFICACION TECHO ---------*/
-    function mis_modificaciones_techo($cppto_id){
-      $tabla='';
-      $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
-      $proyecto=$this->model_proyecto->get_id_proyecto($cite[0]['proy_id']);
-      $monto_asig=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],1);
+    // function mis_modificaciones_techo($cppto_id){
+    //   $tabla='';
+    //   $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
+    //   $proyecto=$this->model_proyecto->get_id_proyecto($cite[0]['proy_id']);
+    //   $monto_asig=$this->model_ptto_sigep->suma_ptto_accion($proyecto[0]['aper_id'],1);
 
-      $add=$this->model_ptto_sigep->partida_add_techo($cppto_id); // add
-      $mod=$this->model_ptto_sigep->partida_mod_techo($cppto_id); // mod
-      $del=$this->model_ptto_sigep->partida_del_techo($cppto_id); // del
+    //   $add=$this->model_ptto_sigep->partida_add_techo($cppto_id); // add
+    //   $mod=$this->model_ptto_sigep->partida_mod_techo($cppto_id); // mod
+    //   $del=$this->model_ptto_sigep->partida_del_techo($cppto_id); // del
 
-      if(count($add)!=0){
-        $sum=0;
-        $tabla.='
-              <table border="0" style="width:81%;" align="center">
-                <tr>
-                  <td style="width:97%; font-size: 8pt;" text-align: left;">PARTIDAS AGREGADAS ('.count($add).')</td>
-                </tr>
-              </table>
-              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:70%;" align="center">
-                <thead>
-                  <tr class="modo1" align="center">
-                    <th style="width:2%;" style="background-color: #1c7368; color: #FFFFFF" style="height:12px;">#</th>
-                    <th style="width:10%;" style="background-color: #1c7368; color: #FFFFFF">C&Oacute;DIGO</th>
-                    <th style="width:55%;" style="background-color: #1c7368; color: #FFFFFF">PARTIDA</th>
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO INICIAL</th> 
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO MODIFICADO</th> 
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO ACTUAL</th> 
-                  </tr>
-                </thead>
-                <tbody>';
-                $nro=0;
-                foreach($add  as $row){
-                  $sum=$sum+$row['ppto'];
-                  $nro++;
-                  $tabla.='
-                  <tr class="modo1">
-                    <td style="width: 2%; text-align: left;" style="height:11px;">'.$nro.'</td>
-                    <td style="width: 10%; text-align: left;">'.$row['par_codigo'].'</td>
-                    <td style="width: 55%; text-align: left;">'.$row['par_nombre'].'</td>
-                    <td style="width: 15%; text-align: right;">0.00</td>
-                    <td style="width: 15%; text-align: right;">'.number_format($row['ppto'], 2, ',', '.').'</td>
-                    <td style="width: 15%; text-align: right;">'.number_format($row['ppto'], 2, ',', '.').'</td>
-                  </tr>';
-                }
-                $tabla.='
-                  <tr>
-                    <td colspan=3>MONTO TOTAL : </td>
-                    <td style="text-align: right;"></td>
-                    <td style="text-align: right;"></td>
-                    <td style="text-align: right;">'.number_format($sum, 2, ',', '.').'</td>
-                  </tr>';
-        $tabla.='</tbody>
-              </table><br>';
-      }
+    //   if(count($add)!=0){
+    //     $sum=0;
+    //     $tabla.='
+    //           <table border="0" style="width:81%;" align="center">
+    //             <tr>
+    //               <td style="width:97%; font-size: 8pt;" text-align: left;">PARTIDAS AGREGADAS ('.count($add).')</td>
+    //             </tr>
+    //           </table>
+    //           <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:70%;" align="center">
+    //             <thead>
+    //               <tr class="modo1" align="center">
+    //                 <th style="width:2%;" style="background-color: #1c7368; color: #FFFFFF" style="height:12px;">#</th>
+    //                 <th style="width:10%;" style="background-color: #1c7368; color: #FFFFFF">C&Oacute;DIGO</th>
+    //                 <th style="width:55%;" style="background-color: #1c7368; color: #FFFFFF">PARTIDA</th>
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO INICIAL</th> 
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO MODIFICADO</th> 
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO ACTUAL</th> 
+    //               </tr>
+    //             </thead>
+    //             <tbody>';
+    //             $nro=0;
+    //             foreach($add  as $row){
+    //               $sum=$sum+$row['ppto'];
+    //               $nro++;
+    //               $tabla.='
+    //               <tr class="modo1">
+    //                 <td style="width: 2%; text-align: left;" style="height:11px;">'.$nro.'</td>
+    //                 <td style="width: 10%; text-align: left;">'.$row['par_codigo'].'</td>
+    //                 <td style="width: 55%; text-align: left;">'.$row['par_nombre'].'</td>
+    //                 <td style="width: 15%; text-align: right;">0.00</td>
+    //                 <td style="width: 15%; text-align: right;">'.number_format($row['ppto'], 2, ',', '.').'</td>
+    //                 <td style="width: 15%; text-align: right;">'.number_format($row['ppto'], 2, ',', '.').'</td>
+    //               </tr>';
+    //             }
+    //             $tabla.='
+    //               <tr>
+    //                 <td colspan=3>MONTO TOTAL : </td>
+    //                 <td style="text-align: right;"></td>
+    //                 <td style="text-align: right;"></td>
+    //                 <td style="text-align: right;">'.number_format($sum, 2, ',', '.').'</td>
+    //               </tr>';
+    //     $tabla.='</tbody>
+    //           </table><br>';
+    //   }
 
-      if(count($mod)!=0){
-        $sum=0;
-        $tabla.='
-              <table border="0" style="width:81%;" align="center">
-                <tr>
-                  <td style="width:97%; font-size: 8pt;" text-align: left;">PARTIDAS MODIFICADAS ('.count($mod).')</td>
-                </tr>
-              </table>
-              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:70%;" align="center">
-                <thead>
-                  <tr class="modo1" align="center">
-                    <th style="width:2%;" style="background-color: #1c7368; color: #FFFFFF" style="height:12px;">#</th>
-                    <th style="width:10%;" style="background-color: #1c7368; color: #FFFFFF">C&Oacute;DIGO</th>
-                    <th style="width:55%;" style="background-color: #1c7368; color: #FFFFFF">PARTIDA</th>
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO INICIAL</th> 
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO MODIFICADO</th> 
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO ACTUAL</th> 
-                  </tr>
-                </thead>
-                <tbody>';
-                $nro=0;
-                foreach($mod  as $row){
-                  $sum=$sum+$row['importe'];
-                  $nro++;
-                  $tabla.='
-                  <tr class="modo1">
-                    <td style="width: 2%; text-align: left;" style="height:11px;">'.$nro.'</td>
-                    <td style="width: 10%; text-align: left;">'.$row['par_codigo'].'</td>
-                    <td style="width: 55%; text-align: left;">'.$row['par_nombre'].'</td>
-                    <td style="width: 15%; text-align: right;">'.number_format($row['ppto_ini'], 2, ',', '.').'</td>
-                    <td style="width: 15%; text-align: right;">'.number_format($row['monto_dif'], 2, ',', '.').'</td>
-                    <td style="width: 15%; text-align: right;">'.number_format($row['ppto_final'], 2, ',', '.').'</td>
-                  </tr>';
-                }
-                $tabla.='
-                  <tr>
-                    <td colspan=3>MONTO TOTAL : </td>
-                    <td style="text-align: right;"></td>
-                    <td style="text-align: right;"></td>
-                    <td style="text-align: right;">'.number_format($sum, 2, ',', '.').'</td>
-                  </tr>';
-        $tabla.='</tbody>
-              </table><br>';
-      }
+    //   if(count($mod)!=0){
+    //     $sum=0;
+    //     $tabla.='
+    //           <table border="0" style="width:81%;" align="center">
+    //             <tr>
+    //               <td style="width:97%; font-size: 8pt;" text-align: left;">PARTIDAS MODIFICADAS ('.count($mod).')</td>
+    //             </tr>
+    //           </table>
+    //           <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:70%;" align="center">
+    //             <thead>
+    //               <tr class="modo1" align="center">
+    //                 <th style="width:2%;" style="background-color: #1c7368; color: #FFFFFF" style="height:12px;">#</th>
+    //                 <th style="width:10%;" style="background-color: #1c7368; color: #FFFFFF">C&Oacute;DIGO</th>
+    //                 <th style="width:55%;" style="background-color: #1c7368; color: #FFFFFF">PARTIDA</th>
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO INICIAL</th> 
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO MODIFICADO</th> 
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO ACTUAL</th> 
+    //               </tr>
+    //             </thead>
+    //             <tbody>';
+    //             $nro=0;
+    //             foreach($mod  as $row){
+    //               $sum=$sum+$row['importe'];
+    //               $nro++;
+    //               $tabla.='
+    //               <tr class="modo1">
+    //                 <td style="width: 2%; text-align: left;" style="height:11px;">'.$nro.'</td>
+    //                 <td style="width: 10%; text-align: left;">'.$row['par_codigo'].'</td>
+    //                 <td style="width: 55%; text-align: left;">'.$row['par_nombre'].'</td>
+    //                 <td style="width: 15%; text-align: right;">'.number_format($row['ppto_ini'], 2, ',', '.').'</td>
+    //                 <td style="width: 15%; text-align: right;">'.number_format($row['monto_dif'], 2, ',', '.').'</td>
+    //                 <td style="width: 15%; text-align: right;">'.number_format($row['ppto_final'], 2, ',', '.').'</td>
+    //               </tr>';
+    //             }
+    //             $tabla.='
+    //               <tr>
+    //                 <td colspan=3>MONTO TOTAL : </td>
+    //                 <td style="text-align: right;"></td>
+    //                 <td style="text-align: right;"></td>
+    //                 <td style="text-align: right;">'.number_format($sum, 2, ',', '.').'</td>
+    //               </tr>';
+    //     $tabla.='</tbody>
+    //           </table><br>';
+    //   }
 
-      if(count($del)!=0){
-        $sum=0;
-        $tabla.='
-              <table border="0" style="width:81%;" align="center">
-                <tr>
-                  <td style="width:97%; font-size: 8pt;" text-align: left;">PARTIDAS ELIMINADAS ('.count($del).')</td>
-                </tr>
-              </table>
-              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:70%;" align="center">
-                <thead>
-                  <tr class="modo1" align="center">
-                    <th style="width:2%;" style="background-color: #1c7368; color: #FFFFFF" style="height:12px;">#</th>
-                    <th style="width:10%;" style="background-color: #1c7368; color: #FFFFFF">C&Oacute;DIGO</th>
-                    <th style="width:65%;" style="background-color: #1c7368; color: #FFFFFF">PARTIDA</th>
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO INICIAL</th> 
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO MODIFICADO</th> 
-                    <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO ACTUAL</th> 
-                  </tr>
-                </thead>
-                <tbody>';
-                $nro=0;
-                foreach($del as $row){
-                  $sum=$sum+$row['importe'];
-                  $nro++;
-                  $tabla.='
-                  <tr class="modo1">
-                    <td style="width: 2%; text-align: left;" style="height:11px;">'.$nro.'</td>
-                    <td style="width: 10%; text-align: left;">'.$row['par_codigo'].'</td>
-                    <td style="width: 55%; text-align: left;">'.$row['par_nombre'].'</td>
-                    <td style="width: 15%; text-align: right;">0.00</td>
-                    <td style="width: 15%; text-align: right;">0.00</td>
-                    <td style="width: 15%; text-align: right;">'.number_format($row['importe'], 2, ',', '.').'</td>
-                  </tr>';
-                }
-                $tabla.='
-                  <tr>
-                    <td colspan=3>MONTO TOTAL : </td>
-                    <td style="text-align: right;"></td>
-                    <td style="text-align: right;"></td>
-                    <td style="text-align: right;">'.number_format($sum, 2, ',', '.').'</td>
-                  </tr>';
-        $tabla.='</tbody>
-              </table><br>';
-      }
+    //   if(count($del)!=0){
+    //     $sum=0;
+    //     $tabla.='
+    //           <table border="0" style="width:81%;" align="center">
+    //             <tr>
+    //               <td style="width:97%; font-size: 8pt;" text-align: left;">PARTIDAS ELIMINADAS ('.count($del).')</td>
+    //             </tr>
+    //           </table>
+    //           <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:70%;" align="center">
+    //             <thead>
+    //               <tr class="modo1" align="center">
+    //                 <th style="width:2%;" style="background-color: #1c7368; color: #FFFFFF" style="height:12px;">#</th>
+    //                 <th style="width:10%;" style="background-color: #1c7368; color: #FFFFFF">C&Oacute;DIGO</th>
+    //                 <th style="width:65%;" style="background-color: #1c7368; color: #FFFFFF">PARTIDA</th>
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO INICIAL</th> 
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO MODIFICADO</th> 
+    //                 <th style="width:15%;" style="background-color: #1c7368; color: #FFFFFF">PPTO ACTUAL</th> 
+    //               </tr>
+    //             </thead>
+    //             <tbody>';
+    //             $nro=0;
+    //             foreach($del as $row){
+    //               $sum=$sum+$row['importe'];
+    //               $nro++;
+    //               $tabla.='
+    //               <tr class="modo1">
+    //                 <td style="width: 2%; text-align: left;" style="height:11px;">'.$nro.'</td>
+    //                 <td style="width: 10%; text-align: left;">'.$row['par_codigo'].'</td>
+    //                 <td style="width: 55%; text-align: left;">'.$row['par_nombre'].'</td>
+    //                 <td style="width: 15%; text-align: right;">0.00</td>
+    //                 <td style="width: 15%; text-align: right;">0.00</td>
+    //                 <td style="width: 15%; text-align: right;">'.number_format($row['importe'], 2, ',', '.').'</td>
+    //               </tr>';
+    //             }
+    //             $tabla.='
+    //               <tr>
+    //                 <td colspan=3>MONTO TOTAL : </td>
+    //                 <td style="text-align: right;"></td>
+    //                 <td style="text-align: right;"></td>
+    //                 <td style="text-align: right;">'.number_format($sum, 2, ',', '.').'</td>
+    //               </tr>';
+    //     $tabla.='</tbody>
+    //           </table><br>';
+    //   }
 
-      $tabla .='<table border="0" style="width:80%;" align="center">
-                  <tr>
-                    <td colspan=2><hr></td>
-                  </tr>
-                  <tr>
-                    <td style="width:70%; font-size: 8pt;" text-align: left;">TOTAL TECHO PRESUPUESTARIO : </td>
-                    <td style="width:30%; font-size: 8pt;"><div align="right">'.number_format($monto_asig[0]['monto'], 2, ',', '.').'</div></td>
-                  </tr>
-                </table>';
-      return $tabla;
-    }
+    //   $tabla .='<table border="0" style="width:80%;" align="center">
+    //               <tr>
+    //                 <td colspan=2><hr></td>
+    //               </tr>
+    //               <tr>
+    //                 <td style="width:70%; font-size: 8pt;" text-align: left;">TOTAL TECHO PRESUPUESTARIO : </td>
+    //                 <td style="width:30%; font-size: 8pt;"><div align="right">'.number_format($monto_asig[0]['monto'], 2, ',', '.').'</div></td>
+    //               </tr>
+    //             </table>';
+    //   return $tabla;
+    // }
 
 
     /*----------------------- GENERAR MENU --------------------*/

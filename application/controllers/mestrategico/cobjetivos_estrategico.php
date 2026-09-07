@@ -383,7 +383,6 @@ class Cobjetivos_estrategico extends CI_Controller {
                 <tr style="font-size: 7px;" bgcolor=#1c7368 align=center>
                   <th style="width:1%;height:15px;color:#FFF;">#</th>
                   <th style="width:15%;color:#FFF;">OBJETIVO ESTRATEGICO</th>
-                  <th style="width:84%;color:#FFF;">ACCI&Oacute;N ESTRATEGICA</th>
                 </tr>
                 </thead>
                 <tbody>';

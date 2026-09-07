@@ -47,7 +47,7 @@ class Cmod_presupuestario extends CI_Controller {
   }
 
 
-  /*---- Lista de Proyectos de Inversion (2020) -----*/
+  /*---- Lista de Modificaciones Presupuestarias -----*/
     public function lista_cites_modificados(){
       $cites=$this->model_modrequerimiento->list_cites_mod_presupuestaria();
       $tabla='';
@@ -57,14 +57,14 @@ class Cmod_presupuestario extends CI_Controller {
         <table id="dt_basic" class="table table-bordered" style="width:100%;">
             <thead>
               <tr>
-                <th style="width:1%;" bgcolor="#474544" title="#">#</th>
-                <th style="width:10%;" bgcolor="#474544" title="DA">DA</th>
-                <th style="width:10%;" bgcolor="#474544" title="UE">UE</th>
-                <th style="width:10%;" bgcolor="#474544" title="RESOLUCION">RESOLUCI&Oacute;N</th>
-                <th style="width:5%;" bgcolor="#474544" title=""></th>
-                <th style="width:5%;" bgcolor="#474544" title=""></th>
-                <th style="width:5%;" bgcolor="#474544" title=""></th>
-                <th style="width:5%;" bgcolor="#474544" title=""></th>
+                <th style="width:1%; text-align:center;" title="#">#</th>
+                <th style="width:10%; text-align:center;" title="DA">DA</th>
+                <th style="width:10%; text-align:center;" title="UE">UE</th>
+                <th style="width:10%; text-align:center;" title="RESOLUCION">RESOLUCI&Oacute;N</th>
+                <th style="width:5%; text-align:center;" >ELIMINAR</th>
+                <th style="width:5%; text-align:center;" >VER DETALLE</th>
+                <th style="width:5%; text-align:center;" >REPORTE</th>
+                <th style="width:5%; text-align:center;" >CLASIFICAR</th>
               </tr>
             </thead>
             <tbody>';
@@ -104,7 +104,7 @@ class Cmod_presupuestario extends CI_Controller {
 
 
 
-  /*---- Obtiene Datos la solicitud de Certificacion POA ---*/
+  /*---- Obtiene Datos para calsiifcar el reporte de modificacion presupuestaria por distrital 2027 ---*/
   public function get_datos_modificacion_presupuestaria(){
     if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
@@ -150,7 +150,7 @@ class Cmod_presupuestario extends CI_Controller {
 
 
 
-  /*--- LISTA DE PARTIDAS MODIFICADAS 2020-2021 ---*/
+  /*--- LISTA DE PARTIDAS MODIFICADAS 2026 ---*/
   public function partidas_modificadas($mp_id){
     $data['menu'] = $this->menu->genera_menu();
     $data['cite'] = $this->model_modrequerimiento->get_cites_mod_presupuestaria($mp_id);
@@ -715,13 +715,12 @@ class Cmod_presupuestario extends CI_Controller {
 
 
 
-    /*------- REPORTE MODIFICACION POR PARTIDAS (2020) Consolidado------*/
+    /*------- REPORTE MODIFICACION POR PARTIDAS Consolidado------*/
     public function reporte_mod_ppto($mp_id){
-        $data['mes'] = $this->mes_nombre();
-        $data['cite'] = $this->model_modrequerimiento->get_cites_mod_presupuestaria($mp_id); /// DATOS CITE MOD PPTO
-        
-        if(count($data['cite'])!=0){
-          $data['cabecera']='<table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:99.5%;">
+        $cite = $this->model_modrequerimiento->get_cites_mod_presupuestaria($mp_id);
+
+        if(count($cite)!=0){
+          $cabecera='<table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:99.5%;">
                             <tr style="width: 100%; border: solid 0px black; text-align: center; font-size: 8pt; font-style: oblique;">
                               <td width=15%; text-align:center;>
                                
@@ -733,25 +732,59 @@ class Cmod_presupuestario extends CI_Controller {
                                     </tr>
                                     <tr style="font-size: 8pt;">
                                         <td style="width:10%; height: 1%"><b>DIR. ADM.</b></td>
-                                        <td style="width:90%;">: '.strtoupper($data['cite'][0]['dep_departamento']).'</td>
+                                        <td style="width:90%;">: '.strtoupper($cite[0]['dep_departamento']).'</td>
                                     </tr>
                                     <tr style="font-size: 8pt;">
                                         <td style="width:10%; height: 1%"><b>UNI. EJEC.</b></td>
-                                        <td style="width:90%;">: '.strtoupper($data['cite'][0]['dist_distrital']).'</td>
+                                        <td style="width:90%;">: '.strtoupper($cite[0]['dist_distrital']).'</td>
                                     </tr>
                                     <tr style="font-size: 8pt;">
                                         <td style="width:10%; height: 1%"><b>No. y FECHA DISPOSICI&Oacute;N</b></td>
-                                        <td style="width:90%;">: '.strtoupper($data['cite'][0]['resolucion']).'</td>
+                                        <td style="width:90%;">: '.strtoupper($cite[0]['resolucion']).'</td>
                                     </tr>
                                 </table>
                               </td>
                               <td width=20%; align=left style="font-size: 7.5px;">
                               </td>
                             </tr>
-                        </table>';
-          $data['reduccion']=$this->mis_partidas_modificadas($mp_id,1,0);
-          $data['incremento']=$this->mis_partidas_modificadas($mp_id,0,0);
-          $this->load->view('admin/modificacion/presupuesto/reporte_modificacion_presupuesto', $data);
+                        </table>
+                        <hr>';
+
+          $data['pie_rep'] = strtoupper ($cite[0]['abrev'].' - '.$cite[0]['dist_distrital']).' MOD PPTO - RD '.strtoupper($cite[0]['resolucion']);
+
+          $data['informacion'] = '
+            <page backtop="35mm" backbottom="16mm" backleft="8mm" backright="8mm" pagegroup="new">
+              <page_header>
+                  <br><div class="verde"></div>
+                  ' . $cabecera . '
+              </page_header>
+
+              ' . $this->mis_partidas_modificadas($mp_id,1,0) . '<br>'.$this->mis_partidas_modificadas($mp_id,0,0).'
+            </page>';
+
+            // 1. Capturamos el HTML estructurado de la vista en una variable
+            $html_reporte = $this->load->view('admin/modificacion/presupuesto/reporte_modificacion_presupuesto', $data, true); 
+
+            // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+            if (ob_get_length()) ob_clean();
+
+            // 3. Importación segura del motor conversor usando la ruta física del servidor
+            require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+            
+            try {
+                // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+                $html2pdf = new HTML2PDF('P', 'Letter', 'fr', true, 'UTF-8', 0);
+                $html2pdf->pdf->SetDisplayMode('fullpage');
+                $html2pdf->writeHTML($html_reporte);
+                
+                // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+                $html2pdf->Output($data['pie_rep'] . '.pdf', 'I');
+            }
+            catch(HTML2PDF_exception $e) {
+                echo "Error al compilar el reporte: " . $e;
+            }
+            exit;
+
         }
         else{
             echo "<b>ERROR !!!!!</b>";
@@ -759,7 +792,7 @@ class Cmod_presupuestario extends CI_Controller {
     }
 
 
-    /*----- REPORTE - MODIFICACION DE PARTIDAS -----*/
+    /*----- REPORTE - MODIFICACION DE PARTIDAS 2027 -----*/
     public function mis_partidas_modificadas($mp_id,$tp,$dist_id){
       $cite = $this->model_modrequerimiento->get_cites_mod_presupuestaria($mp_id);
       if($dist_id==0){
@@ -778,6 +811,7 @@ class Cmod_presupuestario extends CI_Controller {
 
         $tabla='';
         $tabla.='
+
             <table cellpadding="0" cellspacing="0" class="tabla" border=0.2 style="width:100%;" align=center>
                 <thead>
                     <tr style="font-size: 8px;">
@@ -845,47 +879,78 @@ class Cmod_presupuestario extends CI_Controller {
 
 
 
-    /*-- REPORTE MODIFICACION PPTO Clasificado por Regional --*/
+    /*-- REPORTE MODIFICACION PPTO Clasificado por Distrital 2027 --*/
     public function reporte_mod_ppto_clasificado($mp_id,$dist_id){
-      $data['mes'] = $this->mes_nombre();
-      $data['cite'] = $this->model_modrequerimiento->get_cites_mod_presupuestaria($mp_id); /// DATOS CITE MOD PPTO
-      
-      if(count($data['cite'])!=0){
-        $distrital=$this->model_proyecto->dep_dist($dist_id);
-        $data['cabecera']='
-        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:99.5%;">
-          <tr style="width: 100%; border: solid 0px black; text-align: center; font-size: 8pt; font-style: oblique;">
-            <td width=15%; text-align:center;>
-             
-            </td>
-            <td width=65%; align=left>
-              <table>
-                  <tr>
-                      <td colspan="2" style="width:100%; height: 1.2%; font-size: 16pt;"><b>'.$this->session->userdata('entidad').'</b></td>
-                  </tr>
-                  <tr style="font-size: 8pt;">
-                      <td style="width:10%; height: 1%"><b>No. RESOLUCIÓN : </b></td>
-                      <td style="width:90%;">: '.strtoupper($data['cite'][0]['resolucion']).'</td>
-                  </tr>
-                  <tr style="font-size: 8pt;">
-                      <td style="width:10%; height: 1%"><b>FILTRADO POR : </b></td>
-                      <td style="width:90%;">: '.strtoupper($distrital[0]['dist_distrital']).'</td>
-                  </tr>
-              </table>
-            </td>
-            <td width=20%; align=left style="font-size: 7.5px;">
-            </td>
-          </tr>
-        </table>';
+      $cite = $this->model_modrequerimiento->get_cites_mod_presupuestaria($mp_id);
 
-        $data['reduccion']=$this->mis_partidas_modificadas($mp_id,1,$dist_id);
-        $data['incremento']=$this->mis_partidas_modificadas($mp_id,0,$dist_id);
-      
-        $this->load->view('admin/modificacion/presupuesto/reporte_modificacion_presupuesto', $data);
-      }
-      else{
-          echo "<b>ERROR !!!!!</b>";
-      }
+        if(count($cite)!=0){
+          $distrital=$this->model_proyecto->dep_dist($dist_id);
+          $cabecera='
+          <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:99.5%;">
+              <tr style="width: 100%; border: solid 0px black; text-align: center; font-size: 8pt; font-style: oblique;">
+                <td width=15%; text-align:center;>
+                 
+                </td>
+                <td width=65%; align=left>
+                  <table>
+                      <tr>
+                          <td colspan="2" style="width:100%; height: 1.2%; font-size: 14pt;"><b>'.$this->session->userdata('entidad').'</b></td>
+                      </tr>
+                      <tr style="font-size: 8pt;">
+                          <td style="width:10%; height: 1%"><b>DIR. ADM.</b></td>
+                          <td style="width:90%;">: '.strtoupper($cite[0]['dep_departamento']).'</td>
+                      </tr>
+                      <tr style="font-size: 8pt;">
+                          <td style="width:10%; height: 1%"><b>UNI. EJEC.</b></td>
+                          <td style="width:90%;">: '.strtoupper($distrital[0]['dist_distrital']).'</td>
+                      </tr>
+                  </table>
+                </td>
+                <td width=20%; align=left style="font-size: 7.5px;">
+                </td>
+              </tr>
+          </table>
+          <hr>';
+
+          $data['pie_rep'] = strtoupper ($cite[0]['abrev'].' - '.$distrital[0]['dist_distrital']).' MOD PPTO - RD '.strtoupper($cite[0]['resolucion']);
+
+          $data['informacion'] = '
+            <page backtop="35mm" backbottom="16mm" backleft="8mm" backright="8mm" pagegroup="new">
+              <page_header>
+                  <br><div class="verde"></div>
+                  ' . $cabecera . '
+              </page_header>
+
+              ' . $this->mis_partidas_modificadas($mp_id,1,$dist_id) . '<br>'.$this->mis_partidas_modificadas($mp_id,0,$dist_id).'
+            </page>';
+
+            // 1. Capturamos el HTML estructurado de la vista en una variable
+            $html_reporte = $this->load->view('admin/modificacion/presupuesto/reporte_modificacion_presupuesto', $data, true); 
+
+            // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+            if (ob_get_length()) ob_clean();
+
+            // 3. Importación segura del motor conversor usando la ruta física del servidor
+            require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+            
+            try {
+                // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+                $html2pdf = new HTML2PDF('P', 'Letter', 'fr', true, 'UTF-8', 0);
+                $html2pdf->pdf->SetDisplayMode('fullpage');
+                $html2pdf->writeHTML($html_reporte);
+                
+                // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+                $html2pdf->Output($data['pie_rep'] . '.pdf', 'I');
+            }
+            catch(HTML2PDF_exception $e) {
+                echo "Error al compilar el reporte: " . $e;
+            }
+            exit;
+
+        }
+        else{
+            echo "<b>ERROR !!!!!</b>";
+        }
     }
 
 

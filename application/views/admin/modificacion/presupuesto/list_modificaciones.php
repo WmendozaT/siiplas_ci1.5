@@ -21,7 +21,7 @@
 		<script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script>
 		<!--para las alertas-->
     	<meta name="viewport" content="width=device-width">
-		<style>
+<!-- 		<style>
 			table{font-size: 10px;
             width: 100%;
             max-width:1550px;;
@@ -39,33 +39,12 @@
             #mdialTamanio{
               width: 35% !important;
             }
-		</style>
+		</style> -->
 	</head>
 	<body class="">
 		<!-- possible classes: minified, fixed-ribbon, fixed-header, fixed-width-->
 		<!-- HEADER -->
 		<header id="header">
-			<div id="logo-group">
-				<!-- <span id="logo"> <img src="<?php echo base_url(); ?>assets/img/logo.png" alt="SmartAdmin"> </span> -->
-			</div>
-			<div class="col-md-4 " style="font-size:18px;margin-top:10px;margin-bottom:-10px;">
-				<span>
-					&nbsp;&nbsp;&nbsp; 
-					<div class="badge bg-color-blue">
-						<span style="font-size:15px;"><b>Fecha Sesi&oacute;n: <?php echo $this->session->userdata('desc_mes').' / '.$this->session->userdata('gestion');?></b></span>
-					</div>
-				</span>
-				<div class="project-context hidden-xs">
-					<span class="project-selector dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="font-size:19px;">
-						<i class="fa fa-lg fa-fw fa-calendar txt-color-blue"></i>
-					</span>
-					<ul class="dropdown-menu">
-						<li>
-							<a href="<?php echo base_url();?>index.php/cambiar_gestion">Cambiar Gestión</a>
-						</li>
-					</ul>
-				</div>
-			</div>
 			<!-- pulled right: nav area -->
 			<div class="pull-right">
 				<!-- collapse menu button -->
@@ -361,7 +340,7 @@
 		<!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
 		<!-- Voice command : plugin -->
 		<script src="<?php echo base_url(); ?>assets/js/speech/voicecommand.min.js"></script>
-		<script src="<?php echo base_url(); ?>mis_js/modificacionpoa/modppto.js"></script> 
+		<script src="<?php echo base_url(); ?>mis_js/modificacionpoa/Jsmod_techoppto.js"></script> 
 		<!-- PAGE RELATED PLUGIN(S) -->
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/jquery.dataTables.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.colVis.min.js"></script>
@@ -369,65 +348,6 @@
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
 
-        <script type="text/javascript">
-        $(function () {
-            $("#subir_archivo").on("click", function () {
-            	var $validator = $("#form_subir_sigep").validate({
-                    rules: {
-                        ue_id: { //// ue
-                            required: true,
-                        },
-                        rd: { //// Resolucion
-                            required: true,
-                        },
-                        archivo: { //// Archivo
-                            required: true,
-                        }
-                    },
-                    messages: {
-                        ue_id: "<font color=red>SELECCIONE UNIDAD EJECUTORA</font>",
-                        rd: "<font color=red>REGISTRE RESOLUCION</font>", 
-                        archivo: "<font color=red>SELECCIONE ARCHIVO</font>",                    
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'help-block',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else {
-                            error.insertAfter(element);
-                        }
-                    }
-                });
-
-                var $valid = $("#form_subir_sigep").valid();
-                if (!$valid) {
-                    $validator.focusInvalid();
-                } else {
-                	if(document.getElementById('archivo').value==''){
-                        alertify.alert('POR FAVOR SELECCIONE ARCHIVO .CSV');
-                        return false;
-                    }
-                    alertify.confirm("SUBIR ARCHIVO ?", function (a) {
-                        if (a) {
-                            document.getElementById("loads").style.display = 'block';
-                            document.getElementById('subir_archivo').disabled = true;
-                            document.getElementById("subir_archivo").value = "Subiendo Archivo...";
-                            document.forms['form_subir_sigep'].submit();
-                        } else {
-                            alertify.error("OPCI\u00D3N CANCELADA");
-                        }
-                    });
-                }
-            });
-        });
-        </script>
         <script type="text/javascript">
             $(function () {
                 function reset() {
