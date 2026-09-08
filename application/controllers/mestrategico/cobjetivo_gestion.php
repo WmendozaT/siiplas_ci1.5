@@ -182,31 +182,140 @@ class Cobjetivo_gestion extends CI_Controller {
         return $tabla;
     }
 
-
-
-    /*----- REPORTE DE ACCION CORTO PLAZO 2027 ----*/
+    //// Reporte Form N° 1 ACP
     public function reporte_ogestion($tp){
-      // tp : 1 distribucion Regional
-      // tp : 2 distribuacion mensual
-      $data['mes'] = $this->acortoplazo->mes_nombre();
-
-      $data['gestion']=$this->gestion;
-      $data['cabecera']=$this->acortoplazo->cabecera_acp();
-      if($tp==0){
-        if($this->gestion>2023){
-          $data['lista1']= $this->acortoplazo->distribucion_regional_2024(); /// lista 1
+        // 1. Ampliación y control de recursos de hardware en el servidor
+        ini_set('memory_limit', '2048M'); 
+        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        
+        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        if (ob_get_length()) ob_clean();
+        $cabecera=$this->acortoplazo->cabecera_acp();
+        $pie=$this->acortoplazo->pie_form1();
+        $pie_report='FORM_SPO_N1_'.$this->gestion;
+        if($tp==0){
+            $form1= $this->acortoplazo->reporte_form1(); /// lista 1
         }
         else{
-          $data['lista1']= $this->acortoplazo->distribucion_regional_2023(); /// lista 1
+            $form1= $this->acortoplazo->reporte_form1_ppto(); /// lista 1 con ppto
         }
-        
-      }
-      else{
-        $data['lista1']= $this->acortoplazo->distribucion_regional_ppto(); /// lista 1 con ppto
-      }
       
-      $data['lista2']= $this->acortoplazo->distribucion_mensual(); /// lista 2
-      $data['pie']=$this->acortoplazo->pie_form1();
+        $form2= $this->acortoplazo->reporte_form1_distribucion_mensual(); /// lista 2
+
+        $data['lista'] = '
+              <page orientation="landscape" backtop="50mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                <!-- Cabecera Institucional Inalterada -->
+                <page_header>
+                    <br><div class="verde"></div>
+                    '.$cabecera.'
+                </page_header>
+                
+                <!-- Pie de Página Fijo en la Base de la Hoja -->
+                <page_footer>
+                    <div style="width: 100%; display: block;">
+                    '.$pie.'
+                    </div>
+                </page_footer>
+                    '.$form1.'
+              </page>
+
+              <page orientation="landscape" backtop="50mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
+                <!-- Cabecera Institucional Inalterada -->
+                <page_header>
+                    <br><div class="verde"></div>
+                    '.$cabecera.'
+                </page_header>
+                
+                <!-- Pie de Página Fijo en la Base de la Hoja -->
+                <page_footer>
+                    <div style="width: 100%; display: block;">
+                    '.$pie.'
+                    </div>
+                </page_footer>
+                    '.$form2.'
+              </page>';
+
+
+          // 1. Capturamos el HTML estructurado de la vista en una variable
+          $html_reporte = $this->load->view('admin/mestrategico/objetivos_gestion/reporte_form1', $data, true); 
+          // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+          if (ob_get_length()) ob_clean();
+          // 3. Importación segura del motor conversor usando la ruta física del servidor
+          require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+          try {
+              // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+              $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+              $html2pdf->pdf->SetDisplayMode('fullpage');
+              $html2pdf->writeHTML($html_reporte);
+              
+              // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+              $html2pdf->Output($pie_report. '.pdf', 'I');
+          }
+          catch(HTML2PDF_exception $e) {
+              echo "Error al compilar el reporte: " . $e;
+          }
+          exit;
+    }
+
+
+
+
+    /*----- REPORTE FORMULARIO N° 1 ----*/
+    public function reporte_ogestion2($tp){
+      // tp : 1 distribucion Regional
+      // tp : 2 distribuacion mensual
+      //$data['mes'] = $this->acortoplazo->mes_nombre();
+
+      //$data['gestion']=$this->gestion;
+        $cabecera=$this->acortoplazo->cabecera_acp();
+        $pie=$this->acortoplazo->pie_form1();
+        if($tp==0){
+            $form1= $this->acortoplazo->reporte_form1(); /// lista 1
+        }
+        else{
+            $form1= $this->acortoplazo->reporte_form1_ppto(); /// lista 1 con ppto
+        }
+      
+        $lista2= $this->acortoplazo->reporte_form1_distribucion_mensual(); /// lista 2
+
+
+        $data['lista'] = '
+              <page orientation="landscape" backtop="62.5mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
+                <!-- Cabecera Institucional Inalterada -->
+                <page_header>
+                    <br><div class="verde"></div>
+                    '.$cabecera.'
+                </page_header>
+                
+                <!-- Pie de Página Fijo en la Base de la Hoja -->
+                <page_footer>
+                    <div style="width: 100%; display: block;">
+                    '.$pie.'
+                    </div>
+                </page_footer>
+                    '.$form1.'
+              </page>
+
+              <page orientation="landscape" backtop="62.5mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
+                <!-- Cabecera Institucional Inalterada -->
+                <page_header>
+                    <br><div class="verde"></div>
+                    '.$cabecera.'
+                </page_header>
+                
+                <!-- Pie de Página Fijo en la Base de la Hoja -->
+                <page_footer>
+                    <div style="width: 100%; display: block;">
+                    '.$pie.'
+                    </div>
+                </page_footer>
+                    '.$form2.'
+              </page>';
+
+
+
+     // $data['cabecera']=$this->acortoplazo->cabecera_acp();
+      
       $this->load->view('admin/mestrategico/objetivos_gestion/reporte_form1', $data);
       
     }

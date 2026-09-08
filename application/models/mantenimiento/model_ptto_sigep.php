@@ -1165,39 +1165,39 @@ class Model_ptto_sigep extends CI_Model{
     }
 
 
-    /*-------------------- Get Partida Accion Regional programado (a eliminar)------------------------*/
-    public function get_partida_prog_unidad($dep_id,$aper_id,$par_id){
-        $sql = 'select i.aper_id,i.par_id, i.par_codigo as codigo, i.par_nombre as nombre, SUM(i.ins_costo_total) as ppto_programado
-                from vlista_insumos i
-                Inner Join aperturaproyectos as ap On ap.aper_id=i.aper_id
+    // /*-------------------- Get Partida Accion Regional programado (a eliminar)------------------------*/
+    // public function get_partida_prog_unidad($dep_id,$aper_id,$par_id){
+    //     $sql = 'select i.aper_id,i.par_id, i.par_codigo as codigo, i.par_nombre as nombre, SUM(i.ins_costo_total) as ppto_programado
+    //             from vlista_insumos i
+    //             Inner Join aperturaproyectos as ap On ap.aper_id=i.aper_id
                   
-                where i.aper_id='.$aper_id.' and i.aper_id!=\'0\' and par_id='.$par_id.' 
-                group by i.aper_id,i.par_id, i.par_codigo, i.par_nombre
-                order by i.par_codigo';
+    //             where i.aper_id='.$aper_id.' and i.aper_id!=\'0\' and par_id='.$par_id.' 
+    //             group by i.aper_id,i.par_id, i.par_codigo, i.par_nombre
+    //             order by i.par_codigo';
         
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
-    /*---------- Get ppto asignado x Partida unidad (vigente) Modulo : Modificacion Presupuestaria-------------*/
-    public function get_ppto_partida_asig_unidad($dep_id,$aper_id,$par_id){
-        $sql = 'select p.dep_id,pg.par_id,pg.partida as codigo,par.par_nombre as nombre,SUM(pg.importe) as ppto_asignado ,pg.ppto_saldo_ncert as ppto_revertido
-                    from ptto_partidas_sigep pg 
-                    Inner Join aperturaproyectos as ap On ap.aper_id=pg.aper_id 
-                    Inner Join _proyectos as p On p.proy_id=ap.proy_id 
-                    Inner Join partidas as par On par.par_id=pg.par_id 
-                    where p.dep_id='.$dep_id.' and p.estado!=\'3\' and pg.aper_id='.$aper_id.' and par.par_id='.$par_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.'
-                    group by p.dep_id,pg.par_id,pg.partida,par.par_nombre,pg.importe,pg.ppto_saldo_ncert
-                    order by pg.partida';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    // /*---------- Get ppto asignado x Partida unidad (vigente) Modulo : Modificacion Presupuestaria-------------*/
+    // public function get_ppto_partida_asig_unidad($dep_id,$aper_id,$par_id){
+    //     $sql = 'select p.dep_id,pg.par_id,pg.partida as codigo,par.par_nombre as nombre,SUM(pg.importe) as ppto_asignado ,pg.ppto_saldo_ncert as ppto_revertido
+    //                 from ptto_partidas_sigep pg 
+    //                 Inner Join aperturaproyectos as ap On ap.aper_id=pg.aper_id 
+    //                 Inner Join _proyectos as p On p.proy_id=ap.proy_id 
+    //                 Inner Join partidas as par On par.par_id=pg.par_id 
+    //                 where p.dep_id='.$dep_id.' and p.estado!=\'3\' and pg.aper_id='.$aper_id.' and par.par_id='.$par_id.' and pg.estado!=\'3\' and pg.g_id='.$this->gestion.'
+    //                 group by p.dep_id,pg.par_id,pg.partida,par.par_nombre,pg.importe,pg.ppto_saldo_ncert
+    //                 order by pg.partida';
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
 /*============ MODULO DE MODIFICACIONES =============*/
 
-    /*-------- Get Cite Techo Presupuestario 2026 --------*/
+    /*-------- Get Cite Techo Presupuestario 2027 --------*/
     public function get_cite_techo($cppto_id){
         $sql = 'SELECT *
                 from ppto_cite cit

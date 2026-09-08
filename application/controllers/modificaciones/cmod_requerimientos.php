@@ -673,230 +673,229 @@ class Cmod_requerimientos extends CI_Controller {
 //     }*/
 
 
-    /*----- REPORTE CITE TECHO -------*/
-    // public function reporte_techo($cppto_id){
-    //   $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
-    //   if(count($cite)!=0){
-    //     $proyecto=$this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// PROY INVERSION
-    //     if($proyecto[0]['tp_id']==4){
-    //       $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// GASTO CORRIENTE
-    //     }
+    /*----- REPORTE REVSERSION DE SALDOS POR CERTIFICACION POA -------*/
+    public function reporte_techo($cppto_id){
+      $cite=$this->model_ptto_sigep->get_cite_techo($cppto_id);
+      if(count($cite)!=0){
+        $proyecto=$this->model_proyecto->get_id_proyecto($cite[0]['proy_id']); /// PROY INVERSION
+        if($proyecto[0]['tp_id']==4){
+          $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cite[0]['proy_id']); /// GASTO CORRIENTE
+        }
 
-    //     $data['cabecera']=$this->cabecera($proyecto,$cite);  
-    //     $data['mes'] = $this->mes_nombre();
+        $data['cabecera']=$this->cabecera($proyecto,$cite);  
+        $data['mes'] = $this->mes_nombre();
         
-    //     if($cite[0]['tp']==0){
-    //       $data['consolidado']=$this->mis_modificaciones_techo($cppto_id); /// modificacion presupuestaria
-    //       $data['observacion']='';
-    //     }
-    //     else{
-    //       $data['consolidado']=$this->reversion_saldos($cite); /// reversion de saldos
-    //       $data['observacion']='<div style="font-size: 10px;font-family: Arial;">'.$cite[0]['observacion'].'<br><br><br>
-    //       Señor : <b>'.$cite[0]['fun_nombre'].' '.$cite[0]['fun_paterno'].'</b>, debe realizar la programacion de requerimientos a traves del modulo de Modificacion POA - <b>MOD. FORM. N° 5 (SALDOS REVERTIDOS) - '.$this->gestion.'</b>, segun el detalle del monto revertido a la partida correspondiente.</div>';
-    //     }
+        if($cite[0]['tp']==0){
+          $data['consolidado']=$this->mis_modificaciones_techo($cppto_id); /// modificacion presupuestaria
+          $data['observacion']='';
+        }
+        else{
+          $data['consolidado']=$this->reversion_saldos($cite); /// reversion de saldos
+          $data['observacion']='<div style="font-size: 10px;font-family: Arial;">'.$cite[0]['observacion'].'<br><br><br>
+          Señor : <b>'.$cite[0]['fun_nombre'].' '.$cite[0]['fun_paterno'].'</b>, debe realizar la programacion de requerimientos a traves del modulo de Modificacion POA - <b>MOD. FORM. N° 5 (SALDOS REVERTIDOS) - '.$this->gestion.'</b>, segun el detalle del monto revertido a la partida correspondiente.</div>';
+        }
         
-    //     $data['pie_rep']=$cite[0]['cppto_cite'];
+        $data['pie_rep']=$cite[0]['cppto_cite'];
 
-    //     $this->load->view('admin/modificacion/techo/reporte_mod_techo', $data);
-    //   }
-    //   else{
-    //     echo "ERROR";
-    //   }
-    // }
+        $this->load->view('admin/modificacion/techo/reporte_mod_techo', $data);
+      }
+      else{
+        echo "ERROR";
+      }
+    }
 
 
 
   //// Cabecera modificacion presupuestaria
-  // public function cabecera($proyecto,$cite){
-  //   /// tp_rep 0 : modificacion presupuestaria
-  //   /// tp rep 1 : reversion de saldos
+  public function cabecera($proyecto,$cite){
+    /// tp_rep 0 : modificacion presupuestaria
+    /// tp rep 1 : reversion de saldos
     
-  //   $titulo_rep='MODIFICACION PRESUPUESTARIA';
-  //   if($cite[0]['tp']==1){
-  //     $titulo_rep='REVERSION DE SALDOS';
-  //   }
+    $titulo_rep='MODIFICACION PRESUPUESTARIA';
+    if($cite[0]['tp']==1){
+      $titulo_rep='REVERSION DE SALDOS';
+    }
 
-    
-  //   $tabla='';
-  //   $tabla.='
-  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //       <tr style="border: solid 0px;">              
-  //           <td style="width:70%;height: 2%">
-  //               <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //                   <tr style="font-size: 13px;font-family: Arial;">
-  //                       <td style="width:40%;height: 20%;">&nbsp;&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
-  //                   </tr>
-  //                   <tr>
-  //                       <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-  //                   </tr>
-  //               </table>
-  //           </td>
-  //           <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-  //             '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  //           </td>
-  //       </tr>
-  //     </table>
-  //     <hr>
-  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //         <tr style="border: solid 0px black; text-align: center;">
-  //             <td style="width:12%; text-align:center;">';
-  //             if($proyecto[0]['proy_estado']==4 && $this->gestion>2021){
-  //               $tabla.='<qrcode value="'.$this->session->userdata('rd_poa').'" style="border: none; width: 14mm; color: #1c7368"></qrcode><br><b>POA APROBADO</b>';
-  //             }
-  //             $tabla.='
-  //             </td>
-  //             <td style="width:80%; height: 5%">
-  //                 <table align="center" border="0" style="width:100%;">
-  //                     <tr style="font-size: 23px;font-family: Arial;">
-  //                         <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
-  //                     </tr>
-  //                     <tr style="font-size: 20px;font-family: Arial;">
-  //                       <td style="height: 5%;">'.$titulo_rep.'</td>
-  //                     </tr>
-  //                 </table>
-  //             </td>
-  //             <td style="width:10%; text-align:center;">
-  //             </td>
-  //         </tr>
-  //     </table>
-  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //         <tr style="border: solid 0px;">              
-  //             <td style="width:70%;">
-  //             </td>
-  //             <td style="width:30%; height: 3%">
-  //                 <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //                   <tr style="font-size: 13px;font-family: Arial;">
-  //                     <td align=center style="width:100%;height: 40%;"><b>'.$cite[0]['cppto_cite'].'</b></td>
-  //                   </tr>
-  //               </table>
-  //             </td>
-  //         </tr>
-  //     </table>
+    $tabla='';
+    $tabla.='
+      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+        <tr style="border: solid 0px;">              
+            <td style="width:70%;height: 2%">
+                <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+                    <tr style="font-size: 13px;font-family: Arial;">
+                        <td style="width:40%;height: 20%;">&nbsp;&nbsp;<b> '.$this->session->userData('entidad').'</b></td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
+                    </tr>
+                </table>
+            </td>
+            <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
+              '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+        </tr>
+      </table>
+      <hr>
+      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+          <tr style="border: solid 0px black; text-align: center;">
+              <td style="width:12%; text-align:center;">';
+              if($proyecto[0]['proy_estado']==4 && $this->gestion>2021){
+                $tabla.='<qrcode value="'.$this->session->userdata('rd_poa').'" style="border: none; width: 14mm; color: #1c7368"></qrcode><br><b>POA APROBADO</b>';
+              }
+              $tabla.='
+              </td>
+              <td style="width:80%; height: 5%">
+                  <table align="center" border="0" style="width:100%;">
+                      <tr style="font-size: 23px;font-family: Arial;">
+                          <td style="height: 30%;"><b>PLAN OPERATIVO ANUAL GESTIÓN - '.$this->gestion.'</b></td>
+                      </tr>
+                      <tr style="font-size: 20px;font-family: Arial;">
+                        <td style="height: 5%;">'.$titulo_rep.'</td>
+                      </tr>
+                  </table>
+              </td>
+              <td style="width:10%; text-align:center;">
+              </td>
+          </tr>
+      </table>
+      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+          <tr style="border: solid 0px;">              
+              <td style="width:70%;">
+              </td>
+              <td style="width:30%; height: 3%">
+                  <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+                    <tr style="font-size: 13px;font-family: Arial;">
+                      <td align=center style="width:100%;height: 40%;"><b>'.$cite[0]['cppto_cite'].'</b></td>
+                    </tr>
+                </table>
+              </td>
+          </tr>
+      </table>
       
-  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //        <tr>
-  //           <td style="width:1.5%;"></td>
-  //           <td style="width:97%;height: 1%;">
-  //             <hr>
-  //           </td>
-  //           <td style="width:1.5%;"></td>
-  //       </tr>
-  //       <tr>
-  //           <td style="width:1.5%;"></td>
-  //           <td style="width:97%;height: 3%;">
+      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+         <tr>
+            <td style="width:1.5%;"></td>
+            <td style="width:97%;height: 1%;">
+              <hr>
+            </td>
+            <td style="width:1.5%;"></td>
+        </tr>
+        <tr>
+            <td style="width:1.5%;"></td>
+            <td style="width:97%;height: 3%;">
              
-  //             <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //               <tr>
-  //                   <td style="width:20%;">
-  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>REGIONAL / DEPARTAMENTO</b></td><td style="width:5%;"></td></tr>
-  //                       </table>
-  //                   </td>
-  //                   <td style="width:80%;">
-  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dep_cod'].' '.strtoupper ($proyecto[0]['dep_departamento']).'</td></tr>
-  //                       </table>
-  //                   </td>
-  //               </tr>
-  //               <tr>
-  //                   <td style="width:20%;">
-  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>UNIDAD EJECUTORA</b></td><td style="width:5%;"></td></tr>
-  //                       </table>
-  //                   </td>
-  //                   <td style="width:80%;">
-  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dist_cod'].' '.strtoupper ($proyecto[0]['dist_distrital']).'</td></tr>
-  //                       </table>
-  //                   </td>
-  //               </tr>
-  //               <tr>';
-  //                 if($proyecto[0]['tp_id']==4){
-  //                   $tabla.='
-  //                   <td style="width:20%;">
-  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>'.$proyecto[0]['tipo_adm'].'</b></td><td style="width:5%;"></td></tr>
-  //                       </table>
-  //                   </td>
-  //                   <td style="width:80%;">
-  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.strtoupper ($proyecto[0]['proy_nombre']).' '.$proyecto[0]['abrev'].'</td></tr>
-  //                       </table>
-  //                   </td>';
-  //                 }
-  //                 else{
-  //                   $tabla.='
-  //                   <td style="width:20%;">
-  //                       <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
-  //                           <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>PROYECTO</b></td><td style="width:5%;"></td></tr>
-  //                       </table>
-  //                   </td>
-  //                   <td style="width:80%;">
-  //                       <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
-  //                           <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['proy_sisin'].''.$proyecto[0]['aper_actividad'].' - '.strtoupper ($proyecto[0]['proy_nombre']).'</td></tr>
-  //                       </table>
-  //                   </td>';
-  //                 }
-  //               $tabla.='
-  //               </tr>
+              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+                <tr>
+                    <td style="width:20%;">
+                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>REGIONAL / DEPARTAMENTO</b></td><td style="width:5%;"></td></tr>
+                        </table>
+                    </td>
+                    <td style="width:80%;">
+                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dep_cod'].' '.strtoupper ($proyecto[0]['dep_departamento']).'</td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width:20%;">
+                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>UNIDAD EJECUTORA</b></td><td style="width:5%;"></td></tr>
+                        </table>
+                    </td>
+                    <td style="width:80%;">
+                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['dist_cod'].' '.strtoupper ($proyecto[0]['dist_distrital']).'</td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>';
+                  if($proyecto[0]['tp_id']==4){
+                    $tabla.='
+                    <td style="width:20%;">
+                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>'.$proyecto[0]['tipo_adm'].'</b></td><td style="width:5%;"></td></tr>
+                        </table>
+                    </td>
+                    <td style="width:80%;">
+                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.strtoupper ($proyecto[0]['proy_nombre']).' '.$proyecto[0]['abrev'].'</td></tr>
+                        </table>
+                    </td>';
+                  }
+                  else{
+                    $tabla.='
+                    <td style="width:20%;">
+                        <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 8px;">
+                            <tr><td style="width:95%;height: 40%;" bgcolor="#e6e5e5"><b>PROYECTO</b></td><td style="width:5%;"></td></tr>
+                        </table>
+                    </td>
+                    <td style="width:80%;">
+                        <table border="0.4" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;font-size: 7.5px;">
+                            <tr><td style="width:100%;height: 40%;" bgcolor="#f9f9f9">&nbsp;'.$proyecto[0]['aper_programa'].''.$proyecto[0]['proy_sisin'].''.$proyecto[0]['aper_actividad'].' - '.strtoupper ($proyecto[0]['proy_nombre']).'</td></tr>
+                        </table>
+                    </td>';
+                  }
+                $tabla.='
+                </tr>
                
-  //           </table>
-  //         </td>
-  //         <td style="width:1.5%;"></td>
-  //       </tr>
-  //       <tr>
-  //         <td style="width:1.5%;"></td>
-  //         <td style="width:97%;height: 1%;">
-  //           <hr>
-  //           <br><b style="font-size: 8px;font-family: Arial;">DETALLE : </b>
-  //         </td>
-  //         <td style="width:1.5%;"></td>
-  //       </tr>
-  //     </table>';
-  //   return $tabla;
-  // }
+            </table>
+          </td>
+          <td style="width:1.5%;"></td>
+        </tr>
+        <tr>
+          <td style="width:1.5%;"></td>
+          <td style="width:97%;height: 1%;">
+            <hr>
+            <br><b style="font-size: 8px;font-family: Arial;">DETALLE : </b>
+          </td>
+          <td style="width:1.5%;"></td>
+        </tr>
+      </table>';
+    return $tabla;
+  }
 
 
-  //// Reversion de saldos
-  // function reversion_saldos($cite){
-  //     $saldos_revertidos_partidas=$this->model_ptto_sigep->lista_monto_partidas_revertidos($cite[0]['cppto_id']);
-  //     $tabla='';
+  //// Detalle de Reversion de saldos x certificacion poa
+  function reversion_saldos($cite){
+      $saldos_revertidos_partidas=$this->model_ptto_sigep->lista_monto_partidas_revertidos($cite[0]['cppto_id']);
+      $tabla='';
 
-  //      $tabla.='
-  //       <table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:90%;" align="center">
-  //         <thead>
-  //           <tr style="font-size: 7px;" bgcolor=#1c7368 align=center>
-  //             <th style="width:2%;height:15px;color:#FFF;">#</th>
-  //             <th style="width:20%;color:#FFF;">CERT. POA</th>
-  //             <th style="width:20%;color:#FFF;">PARTIDA</th>
-  //             <th style="width:20%;color:#FFF;">PPTO. REVERTIDO</th>
+       $tabla.='
+        <table border="0.2" cellpadding="0" cellspacing="0" class="tabla" style="width:90%;" align="center">
+          <thead>
+            <tr style="font-size: 7px;" bgcolor=#1c7368 align=center>
+              <th style="width:2%;height:15px;color:#FFF;">#</th>
+              <th style="width:20%;color:#FFF;">CERT. POA</th>
+              <th style="width:20%;color:#FFF;">PARTIDA</th>
+              <th style="width:20%;color:#FFF;">PPTO. REVERTIDO</th>
 
-  //           </tr>
-  //         </thead>
-  //         <tbody>';
-  //         $nro=0;$suma=0;
-  //           foreach($saldos_revertidos_partidas as $row){
-  //             $suma=$suma+(($row['ppto_inicial']+$row['presupuesto_revertido']));
-  //             $certificacion=$this->model_certificacion->get_datos_certificacion_poa($row['cpoa_id']); /// Datos Certificacion
-  //             $codigo='S/C';
-  //             if(count($certificacion)!=0){
-  //               $codigo=$certificacion[0]['cpoa_codigo'];
-  //             }
-  //             $nro++;
-  //             $tabla.='
-  //             <tr>
-  //               <td style="height:10px;" align="center">'.$nro.'</td>
-  //               <td style="font-size:13px; text-align:center"><b>'.$codigo.'</b></td>
-  //               <td style="font-size:15px; text-align:center"><b>'.$row['partida'].'</b></td>
-  //               <td style="font-size:12px; text-align:right">'.number_format($row['presupuesto_revertido'], 2, ',', '.').'</td>
-  //             </tr>';
-  //           }
-  //         $tabla.='
-  //         </tbody>
+            </tr>
+          </thead>
+          <tbody>';
+          $nro=0;$suma=0;
+            foreach($saldos_revertidos_partidas as $row){
+              $suma=$suma+(($row['ppto_inicial']+$row['presupuesto_revertido']));
+              $certificacion=$this->model_certificacion->get_datos_certificacion_poa($row['cpoa_id']); /// Datos Certificacion
+              $codigo='S/C';
+              if(count($certificacion)!=0){
+                $codigo=$certificacion[0]['cpoa_codigo'];
+              }
+              $nro++;
+              $tabla.='
+              <tr>
+                <td style="height:10px;" align="center">'.$nro.'</td>
+                <td style="font-size:13px; text-align:center"><b>'.$codigo.'</b></td>
+                <td style="font-size:15px; text-align:center"><b>'.$row['partida'].'</b></td>
+                <td style="font-size:12px; text-align:right">'.number_format($row['presupuesto_revertido'], 2, ',', '.').'</td>
+              </tr>';
+            }
+          $tabla.='
+          </tbody>
             
-  //         </table>';
-  //     return $tabla;
-  //   }
+          </table>';
+      return $tabla;
+    }
 
 
 

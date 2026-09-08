@@ -71,7 +71,7 @@ class Cmod_presupuestario extends CI_Controller {
             $nro=0;
             foreach($cites as $row){
               $tabla.='<tr>
-              <td style="height:30px;" align=center>'.$nro.'</td>
+              <td style="height:30px;" align=center title="'.$row['mp_id'].'">'.$nro.'</td>
               <td>'.$row['dep_cod'].' .-'.strtoupper($row['dep_departamento']).'</td>
               <td>'.$row['dist_cod'].' .-'.strtoupper($row['dist_distrital']).'</td>
               <td>'.strtoupper($row['resolucion']).'</td>
@@ -187,7 +187,7 @@ class Cmod_presupuestario extends CI_Controller {
     $tabla.='
               <table id='.$tab.' class="table table-bordered" style="width:100%;">
                 <thead>
-                    <tr style="height:45px;">
+                    <tr style="height:45px; font-size:10px;">
                         <th style="width:1%;">DA</th>
                         <th style="width:1%;">UE</th>
                         <th style="width:1%;">PROG.</th>
@@ -204,7 +204,7 @@ class Cmod_presupuestario extends CI_Controller {
                 </thead>
                 <tbody>';
                 foreach ($partidas as $row){
-                  $partida_actual=$this->model_ptto_sigep->get_ppto_partida_asig_unidad($row['dep_id'],$row['aper_id'],$row['par_id']);
+                  $partida_actual=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($row['aper_id'],$row['par_id']);
                   $presupuesto_actual_registrado=0;
                   if(count($partida_actual)!=0){
                     $presupuesto_actual_registrado=$partida_actual[0]['ppto_asignado'];
@@ -218,7 +218,7 @@ class Cmod_presupuestario extends CI_Controller {
                   }
 
                   $tabla.='
-                  <tr title="'.$row['mpa_id'].'">
+                  <tr title="'.$row['mpa_id'].'" style="font-size:10px;">
                       <td align=center>'.strtoupper($row['dep_cod']).'</td>
                       <td align=center>'.strtoupper($row['dist_cod']).'</td>
                       <td align=center>'.$row['aper_programa'].'</td>
@@ -247,7 +247,7 @@ class Cmod_presupuestario extends CI_Controller {
                         
                         $tabla.='<td>';
                         if($tp==1){
-                          $tabla.='<a href="javascript:abreVentana(\''.site_url("").'/proy/ptto_consolidado_comparativo/'.$row['proy_id'].'\');"  title="REPORTE CONSOLIDADO COMPARATIVO PTTO POR PARTIDAS"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/></a>';
+                          $tabla.='<a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_ptto_consolidado_comparativo_programa/'.$row['proy_id'].'\');"  title="REPORTE CONSOLIDADO COMPARATIVO PTTO POR PARTIDAS"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="25" HEIGHT="25"/></a>';
                         }
                         else{
                           $tabla.='';
@@ -289,15 +289,15 @@ class Cmod_presupuestario extends CI_Controller {
             $cppto_id=$verif_cite_modificacion[0]['cppto_id'];
           }
 
-          $partida_actual=$this->model_ptto_sigep->get_partida_asignado_unidad($get_partida[0]['aper_id'],$get_partida[0]['par_id']);
+          $partida_actual=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($get_partida[0]['aper_id'],$get_partida[0]['par_id']);
           if(count($partida_actual)!=0){ /// Existe partida registrado
               if($get_partida[0]['tipo']==0){
                 $signo='';
-                $monto_final=($partida_actual[0]['importe']+$get_partida[0]['importe']);
+                $monto_final=($partida_actual[0]['ppto_asignado']+$get_partida[0]['importe']);
               }
               else{
                 $signo='-';
-                $monto_final=($partida_actual[0]['importe']-$get_partida[0]['importe']);
+                $monto_final=($partida_actual[0]['ppto_asignado']-$get_partida[0]['importe']);
               }
 
 
@@ -306,7 +306,7 @@ class Cmod_presupuestario extends CI_Controller {
                 'sp_id' => $partida_actual[0]['sp_id'],
                 'num_ip' => $this->input->ip_address(), 
                 'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                'ppto_ini' => $partida_actual[0]['importe'], 
+                'ppto_ini' => $partida_actual[0]['ppto_asignado'], 
                 'monto_dif' => $signo.''.$get_partida[0]['importe'],
                 'ppto_final' => $monto_final,
               );
@@ -586,17 +586,17 @@ class Cmod_presupuestario extends CI_Controller {
             $cppto_id=$verif_cite_modificacion[0]['cppto_id'];
           }
 
-          $partida_actual=$this->model_ptto_sigep->get_partida_asignado_unidad($get_partida[0]['aper_id'],$get_partida[0]['par_id']);
+          $partida_actual=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($get_partida[0]['aper_id'],$get_partida[0]['par_id']);
 
 
           if(count($partida_actual)!=0){ /// Existe partida registrado
               if($get_partida[0]['tipo']==0){
                 $signo='';
-                $monto_final=($partida_actual[0]['importe']+$get_partida[0]['importe']);
+                $monto_final=($partida_actual[0]['ppto_asignado']+$get_partida[0]['importe']);
               }
               else{
                 $signo='-';
-                $monto_final=($partida_actual[0]['importe']-$get_partida[0]['importe']);
+                $monto_final=($partida_actual[0]['ppto_asignado']-$get_partida[0]['importe']);
               }
 
 
@@ -605,7 +605,7 @@ class Cmod_presupuestario extends CI_Controller {
                 'sp_id' => $partida_actual[0]['sp_id'],
                 'num_ip' => $this->input->ip_address(), 
                 'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-                'ppto_ini' => $partida_actual[0]['importe'], 
+                'ppto_ini' => $partida_actual[0]['ppto_asignado'], 
                 'monto_dif' => $signo.''.$get_partida[0]['importe'],
                 'ppto_final' => $monto_final,
               );
