@@ -180,7 +180,7 @@ class User extends CI_Controller{
 
 
 
-    /// ====== DASDHBOARD ADMINISTRATIVO 2026
+    /// ====== DASDHBOARD ADMINISTRATIVO 2027
     public function dashboard_index(){
         if($this->session->userdata('fun_id')!=null & $this->session->userdata('fun_estado')!=3){
             $data['menu_disponible'] = $this->dashboard->menu_disponibles_administrativo(); //// MENU SEGUN EL ROL DEL USUARIO
@@ -323,23 +323,14 @@ class User extends CI_Controller{
                             <span class="icon-bar"></span>
                           </button>
                           <a class="navbar-brand" href="#"><font color="#1c7368"><b>'.$this->session->userdata('name').'</b></font></a>
-                        </div>
-                        <div class="navbar-collapse collapse">
+                        </div>';
+                        if($this->rol!=10 && $this->rol!=11){
+                            $data['cabecera'].='
+                            <div class="navbar-collapse collapse">
                           <ul class="nav navbar-nav">
                             <li class="active"><a href="#"><b>Home</b></a></li>
                             <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" title="CAMBIAR GESTI&Oacute;N">Gesti&oacute;n</a></li>
-                            <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>';
-                            /*if($this->tp_adm==1){
-                                $data['cabecera'].='
-                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" title="CAMBIAR GESTI&Oacute;N">Gesti&oacute;n</a></li>
-                                <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>
-                                <li><a href="#" data-toggle="modal" data-target="#modal_seguimiento_nacional" title="SEGUIMIENTO POA NACIONAL" class="seg_uni"><b>Seguimiento POA NACIONAL</b></a></li>';
-                            }
-                            else{
-                                $data['cabecera'].='<li><a href="#" data-toggle="modal" data-target="#modal_seguimiento" id="'.$this->dist_id.'" title="SEGUIMIENTO POA" class="seg_uni"><b>Seguimiento POA</b></a></li>';
-                            }*/
-
-                            $data['cabecera'].='
+                            <li><a href="#" data-toggle="modal" data-target="#modal_nuevo_tr" title="CAMBIAR TRIMESTRE">Trimestre</a></li>
                             <li class="dropdown">
                               <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Descarga de Archivos / Documentos">Descargas <b class="caret"></b></a>
                               <ul class="dropdown-menu">
@@ -347,11 +338,14 @@ class User extends CI_Controller{
                                 <li><a href="'.base_url().'assets/video/FORMULARIOS_APROY2026/Plan_de_Trabajo_y_Directrices_Formulacion_POA_2026.pdf" style="cursor: pointer;" download><b>1.- Plan de Trabajo y Directrices Formulacion poa 2026</b></a></li>
                               </ul>
                             </li>
-                          </ul>
+                          </ul>';
+                        }
+                        $data['cabecera'].='
                           <ul class="nav navbar-nav navbar-right">
                             <li class="active"><a href="'.base_url().'index.php/admin/logout" title="CERRAR SESI&Oacute;N"><b>SALIR</b></a></li>
                           </ul>
                         </div>
+                        
                     </div>';
 
 

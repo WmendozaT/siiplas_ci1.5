@@ -484,7 +484,7 @@ class Dashboard extends CI_Controller{
         </div>';
 
         $tabla.='<div class="row">';
-        if($this->rol==10){
+        if($this->rol==10){ /// Consulta POA
             $tabla.='<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
                             <!-- Mantenemos tus clases originales y añadimos onclick -->
                             <a href="'.base_url().'index.php/gasto_corriente" 
@@ -504,6 +504,30 @@ class Dashboard extends CI_Controller{
                                 <div class="well1" align="center">
                                     <img class="img-circle" src="'.base_url().'assets/img/gerencia.png" style="margin-left:0px; width: 95px"/>
                                     <h1 style="font-size: 11px;"><b>PROYECTOS DE INVERSIÓN</b></h1>
+                                </div>
+                            </a>
+                        </div>';
+        }
+        elseif($this->rol==11){
+            $tabla.='<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                            <!-- Mantenemos tus clases originales y añadimos onclick -->
+                            <a href="'.base_url().'index.php/ejec_fin_pi" 
+                               class="jarvismetro-tile big-cubes bg-color-greenLight" 
+                               onclick="showFormalLoading(\'INVERSIÓN\')">
+                                <div class="well1" align="center">
+                                    <img class="img-circle" src="'.base_url().'assets/img/ejecucion.png"  style="margin-left:0px; width: 95px"/>
+                                    <h1 style="font-size: 11px;"><b>FORMULARIO DE EJECUCIÓN</b></h1>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+                            <!-- Mantenemos tus clases originales y añadimos onclick -->
+                            <a href="'.base_url().'index.php/ejecucion_proyectos_inversion" 
+                               class="jarvismetro-tile big-cubes bg-color-greenLight" 
+                               onclick="showFormalLoading(\'INVERSIÓN\')">
+                                <div class="well1" align="center">
+                                    <img class="img-circle" src="'.base_url().'assets/img/gerencia.png" style="margin-left:0px; width: 95px"/>
+                                    <h1 style="font-size: 11px;"><b>CONSOLIDADO INVERSIÓN</b></h1>
                                 </div>
                             </a>
                         </div>';

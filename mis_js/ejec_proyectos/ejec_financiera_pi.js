@@ -174,10 +174,14 @@ function abreVentana(PDF){
 
 
 /// Funcion para guardar datos de Ejecucion Proy Inversion
+/*  function guardar_pi(proy_id,tp,id_partida,mes_id,ejec_ppto_id,partida){
+    alert('hola mundo')
+  }*/
 function guardar_pi(proy_id,tp,id_partida,mes_id,ejec_ppto_id,partida){
+ //alert('hola mundo')
   ejec=parseFloat($('[id="ejec'+id_partida+'"]').val());
   obs=$('[id="obs_pi'+id_partida+'"]').val();
-
+ 
   alertify.confirm("GUARDAR EJECUCION EN LA PARTIDA "+partida+" ?", function (a) {
     if (a) {
       var url = base+"index.php/ejecucion/cejecucion_pi/guardar_datos_ejecucion_pinversion";

@@ -738,7 +738,7 @@ class Cejecucion_pi extends CI_Controller {
                 </td>
                 <td>
                   <div id="but'.$partida['sp_id'].'" style="display:none;" align="center">
-                    <button type="button" name="'.$partida['sp_id'].'" id="'.$nro.'" onclick="guardar_pi('.$proyecto[0]['proy_id'].','.$tp.','.$partida['sp_id'].','.$this->verif_mes[1].','.$id_ejec.','.$partida['partida'].');"  class="btn btn-default"><img src="'.base_url().'assets/Iconos/disk.png" WIDTH="37" HEIGHT="37"/><br>GUARDAR</button>
+                    <button type="button" name="'.$partida['sp_id'].'" id="'.$nro.'" onclick="guardar_pi('.$proyecto[0]['proy_id'].','.$tp.','.$partida['sp_id'].','.$this->verif_mes[1].','.$id_ejec.','.$partida['codigo_partida'].');"  class="btn btn-default"><img src="'.base_url().'assets/Iconos/disk.png" WIDTH="37" HEIGHT="37"/><br>GUARDAR</button>
                   </div>
                 </td>
                 <td align="right" style="font-size:20px"><b><div id="ppto'.$partida['sp_id'].'">'.number_format($ppto_ejecutado, 0, ',', '.').'</div></b></td>
@@ -983,7 +983,7 @@ public function guardar_datos_ejecucion_pinversion(){
       ////
 
       $proyecto = $this->model_proyecto->get_proyecto_inversion($proy_id);
-      $calificacion=$this->calificacion_proyecto($proyecto);
+      //$calificacion=$this->calificacion_proyecto($proyecto);
 
 
       //// CUADRO
@@ -1004,7 +1004,8 @@ public function guardar_datos_ejecucion_pinversion(){
         'porcentaje_ejecucion_total_partida'=>$porcentaje,
         'dato_ejec'=>$ejec,
         'dato_obs'=>$detalle_observacion,
-        'eficacia'=>$calificacion,
+        'eficacia'=>$this->cumplimiento_trimestre($proyecto,0),
+        //'eficacia'=>'',
 
         'proyecto' => $proyecto,
         'datos_proyecto' => $proyecto[0]['proy'].' - '.$proyecto[0]['proyecto'],
@@ -1856,7 +1857,6 @@ public function menu_rep_ejecucion_ppto(){
       </div>';
 
   $data['titulo_modulo']=$tabla;
-
   $this->load->view('admin/ejecucion_pi/rep_menu', $data);
 }
 
@@ -1904,7 +1904,7 @@ public function get_tp_reporte(){
 
       //// s4
       $vector_meses=$this->ejecucion_finpi->vector_consolidado_ppto_mensual_regional($dep_id); /// ejecutado mensual
-      $vector_meses_acumulado=$this->ejecucion_finpi->vector_consolidado_ppto_acumulado_mensual_regional($dep_id); /// ejecutado mensual Acumulado
+      //$vector_meses_acumulado=$this->ejecucion_finpi->vector_consolidado_ppto_acumulado_mensual_regional($dep_id); /// ejecutado mensual Acumulado
       $tabla1=$this->ejecucion_finpi->detalle_temporalidad_mensual_regional($vector_meses,$dep_id);
       $grafico_mes='<div id="graf_ppto_mensual"><div id="ejec_mensual" style="width: 680px; height: 420px; margin: 2 auto"></div></div>';
       $grafico_mes_acumulado='<div id="graf_ppto_mensual_acumulado"><div id="ejec_acumulado_mensual" style="width: 680px; height: 420px; margin: 2 auto"></div></div>';
@@ -2042,7 +2042,7 @@ public function get_tp_reporte(){
       'nro'=>$nro,
       'matriz'=>$matriz_partidas,
       'vector_meses'=>$vector_meses,
-      'vector_meses_acumulado'=>$vector_meses_acumulado,
+      //'vector_meses_acumulado'=>0,
 
       'nro_proy'=>$nro_proy,
       'matriz_proy'=>$matriz_proyectos,

@@ -257,7 +257,7 @@ class ejecucion_finpi extends CI_Controller{
         <tbody>';
         $nro=0;
         foreach($proyectos as $row){
-          $componentes=$this->model_componente->lista_subactividad($row['proy_id']);
+          $componentes=$this->model_componente->lista_UnidadesResponsables($row['proy_id']);
           $img=$this->model_proyecto->get_img_ficha_tecnica($row['proy_id']);
           $bgcolor='';
           if(count($img)!=0){
@@ -269,7 +269,7 @@ class ejecucion_finpi extends CI_Controller{
             <td style="width:1%; text-align:center" title='.$row['proy_id'].'>'.$nro.'</td>
             <td align=center bgcolor="#deebfb">';
             foreach($componentes as $rowc){
-              if(count($this->model_producto->list_prod($rowc['com_id']))!=0){
+              if(count($this->model_producto->lista_productos($rowc['com_id']))!=0){
                 $tabla.='
                   <a href="'.site_url("").'/form_ejec_pinversion/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-default" title="REALIZAR REGISTRO DE EJECUCION">
                      <img src="'.base_url().'assets/ifinal/faseetapa.png" WIDTH="40" HEIGHT="40"/></a>
@@ -875,7 +875,7 @@ class ejecucion_finpi extends CI_Controller{
                 <td style="font-size: 11px;font-family: Arial;" align=right><b>'.round($row['avance_fisico'],2).' %</b></td>
                 <td style="font-size: 11px;font-family: Arial;" align=right><b>'.round($row['avance_financiero'],2).' %</b></td>
               </tr>';
-              $ppto_asig=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($row['aper_id']); /// lista de partidas asignados por proyectos
+              $ppto_asig=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($row['aper_id']); /// lista de partidas asignados por proyectos
               foreach($ppto_asig as $partida){
                   /// ------ Datos de Modifcacion de la partida
                   $monto_partida=$this->detalle_modificacion_partida($partida);
@@ -1916,7 +1916,7 @@ class ejecucion_finpi extends CI_Controller{
     for ($i=1; $i <=3 ; $i++) { 
       $datos[$i]=0;
     }
-    $ppto_asig=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($aper_id); /// lista de partidas asignados por proyectos
+    $ppto_asig=$this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($aper_id); /// lista de partidas asignados por proyectos
     for ($i=1; $i <=3 ; $i++) { 
       $datos[$i]=0;
     }

@@ -208,8 +208,8 @@ class Model_ptto_sigep extends CI_Model{
         return $query->result_array();
     }
 
-    //// Get datos partida - ppto_sigep
-/*    public function get_sp_id($sp_id){
+    //// Get datos partida - ppto_sigep MOD EJEC PI
+    public function get_sp_id($sp_id){
         $sql = 'select *
                 from ptto_partidas_sigep pg
                 Inner Join partidas as p On p.par_id=pg.par_id
@@ -217,7 +217,7 @@ class Model_ptto_sigep extends CI_Model{
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }*/
+    }
 
     public function dep_dist($dist_id){
         $sql = 'select *
@@ -563,51 +563,51 @@ class Model_ptto_sigep extends CI_Model{
     // }
 
 
-    // /*----- EJECUCION DE PRESUPUESTO POR PARTIDA PI (vigente) -----*/
-    // public function get_monto_ejecutado_ppto_sigep($sp_id,$mes_id){
-    //     $sql = '
-    //         select *
-    //         from ejecucion_financiera_sigep ejec
-    //         Inner Join mes as m On m.m_id=ejec.m_id
-    //         where ejec.sp_id='.$sp_id.' and ejec.m_id='.$mes_id.'';
+    /*----- EJECUCION DE PRESUPUESTO POR PARTIDA PI (vigente) MOD EJEC PI -----*/
+    public function get_monto_ejecutado_ppto_sigep($sp_id,$mes_id){
+        $sql = '
+            SELECT *
+            from ejecucion_financiera_sigep ejec
+            Inner Join mes as m On m.m_id=ejec.m_id
+            where ejec.sp_id='.$sp_id.' and ejec.m_id='.$mes_id.'';
     
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
-    // /*----- GET EJECUCION PARTIDA x MES PI (vigente) -----*/
-    // public function get_datos_ejecucion_partidas($ejec_ppto_id){
-    //     $sql = '
-    //         select *
-    //         from ejecucion_financiera_sigep ejec
-    //         Inner Join ptto_partidas_sigep as part On part.sp_id=ejec.sp_id
-    //         Inner Join mes as m On m.m_id=ejec.m_id
-    //         Inner Join aperturaproyectos as ap On ap.aper_id=part.aper_id
-    //         Inner Join _proyectos as p On ap.proy_id=p.proy_id
-    //         where ejec.ejec_ppto_id='.$ejec_ppto_id.'';
+    /*----- GET EJECUCION PARTIDA x MES PI (vigente) -----*/
+    public function get_datos_ejecucion_partidas($ejec_ppto_id){
+        $sql = '
+            SELECT *
+            from ejecucion_financiera_sigep ejec
+            Inner Join ptto_partidas_sigep as part On part.sp_id=ejec.sp_id
+            Inner Join mes as m On m.m_id=ejec.m_id
+            Inner Join aperturaproyectos as ap On ap.aper_id=part.aper_id
+            Inner Join _proyectos as p On ap.proy_id=p.proy_id
+            where ejec.ejec_ppto_id='.$ejec_ppto_id.'';
     
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
-    // /*----- EJECUCION DE PRESUPUESTO POR PROYECTO MENSUAL (vigente)-----*/
-    // public function suma_monto_ejecutado_mes_ppto_sigep($aper_id,$mes_id){
-    //     $sql = '
-    //         select ppto.aper_id,ejec.m_id, SUM(ejec.ppto_ejec) ejecutado_mes
-    //         from ptto_partidas_sigep ppto
-    //         Inner Join ejecucion_financiera_sigep as ejec On ppto.sp_id=ejec.sp_id
-    //         where ppto.aper_id='.$aper_id.' and ejec.m_id='.$mes_id.' and ppto.estado!=\'3\'
-    //         group by ppto.aper_id,ejec.m_id';
+    /*----- EJECUCION DE PRESUPUESTO POR PROYECTO MENSUAL (vigente)-----*/
+    public function suma_monto_ejecutado_mes_ppto_sigep($aper_id,$mes_id){
+        $sql = '
+            SELECT ppto.aper_id,ejec.m_id, SUM(ejec.ppto_ejec) ejecutado_mes
+            from ptto_partidas_sigep ppto
+            Inner Join ejecucion_financiera_sigep as ejec On ppto.sp_id=ejec.sp_id
+            where ppto.aper_id='.$aper_id.' and ejec.m_id='.$mes_id.' and ppto.estado!=\'3\'
+            group by ppto.aper_id,ejec.m_id';
     
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
 
-    /*----- OBSERVACION A LA EJECUCION DE PRESUPUESTO POR PARTIDA (vigente) -----*/
+    /*----- OBSERVACION A LA EJECUCION DE PRESUPUESTO POR PARTIDA (vigente) MODULO EJEC PI-----*/
     public function get_obs_ejecucion_financiera_sigep($sp_id,$mes_id){
         $sql = '
             select *
@@ -685,7 +685,7 @@ class Model_ptto_sigep extends CI_Model{
         return $query->result_array();
     }
 
-    /*----- SUMA MONTO EJECUTADO DE PRESUPUESTO POR PARTIDA (vigente) -----*/
+    /*----- SUMA MONTO EJECUTADO DE PRESUPUESTO POR PARTIDA (vigente) MODULO EJEC PI -----*/
     public function suma_monto_ppto_ejecutado_partida($sp_id){
         $sql = '
             select ejec.sp_id,par.par_id,SUM(ejec.ppto_ejec) ejecutado
@@ -1044,34 +1044,34 @@ class Model_ptto_sigep extends CI_Model{
 
     
 
-    /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO INSTITUCIONAL PINVERSION (2023) VIGENTE-----*/
-    // public function suma_ptto_institucional_pi_aprobados($tp){
-    //     // 1 : PTO ASIGNADO
-    //     // 2 : PTO PROGRAMADO
-    //     if($tp==1){
-    //         $sql = 'select SUM(partidas_asig.importe) as asignado
-    //                 FROM lista_poa_pinversion_nacional('.$this->gestion.') p
-    //                 Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
-    //                  and partidas_asig.estado!=\'3\'';
-    //     }
-    //     else{
-    //        /* $sql = 'select SUM(temp.ipm_fis) programado
-    //                 from lista_poa_pinversion_nacional('.$this->gestion.') poa
-    //                 Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-    //                 Inner Join _productos as prod On prod.com_id=c.com_id
-    //                 Inner Join _insumoproducto as insp On insp.prod_id=prod.prod_id
-    //                 Inner Join temporalidad_prog_insumo as temp On temp.ins_id=insp.ins_id
-    //                 where prod.estado!=\'3\'';*/
+    /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO INSTITUCIONAL PINVERSION (2023) VIGENTE OPTIMIZAR PARA 2027 - MODULO DE CONSULTAS POA INVERSION-----*/
+    public function suma_ptto_institucional_pi_aprobados($tp){
+        // 1 : PTO ASIGNADO
+        // 2 : PTO PROGRAMADO
+        if($tp==1){
+            $sql = 'select SUM(partidas_asig.importe) as asignado
+                    FROM lista_poa_pinversion_nacional('.$this->gestion.') p
+                    Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
+                     and partidas_asig.estado!=\'3\'';
+        }
+        else{
+           /* $sql = 'select SUM(temp.ipm_fis) programado
+                    from lista_poa_pinversion_nacional('.$this->gestion.') poa
+                    Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+                    Inner Join _productos as prod On prod.com_id=c.com_id
+                    Inner Join _insumoproducto as insp On insp.prod_id=prod.prod_id
+                    Inner Join temporalidad_prog_insumo as temp On temp.ins_id=insp.ins_id
+                    where prod.estado!=\'3\'';*/
 
-    //         $sql = 'select SUM(i.ins_costo_total) as programado
-    //                 FROM lista_poa_pinversion_nacional('.$this->gestion.') p
-    //                 Inner Join insumos as i On i.aper_id=p.aper_id
-    //                 where i.ins_tipo_modificacion=\'0\'';
-    //     }
+            $sql = 'select SUM(i.ins_costo_total) as programado
+                    FROM lista_poa_pinversion_nacional('.$this->gestion.') p
+                    Inner Join insumos as i On i.aper_id=p.aper_id
+                    where i.ins_tipo_modificacion=\'0\'';
+        }
     
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
     /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO POR REGIONAL PINVERSION (2023) VIGENTE-----*/

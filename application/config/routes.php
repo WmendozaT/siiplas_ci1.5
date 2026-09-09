@@ -671,7 +671,7 @@ $route['rep/resumen_act_programa'] = 'reporte_resumen_alineacion_poa/crep_actpro
 $route['rep/rep_alineacion_poa/(:any)'] = 'reporte_resumen_alineacion_poa/crep_actprog/reporte_alineacion_poa/$1';  //// Reporte Alineacion POA (2020-2021)
 $route['rep/exportar_alineacion_poa/(:any)'] = 'reporte_resumen_alineacion_poa/crep_actprog/exportar_alineacion_poa/$1';  //// Exportar Alineacion POA (2020-2021)
 
-//// MODULO EJECUCION FINANCIERA DE PROYECTOS DE INVERSION 2022-2023 POR REGIONAL
+//// MODULO EJECUCION FINANCIERA DE PROYECTOS DE INVERSION 2027 POR REGIONAL
 $route['ejec_fin_pi'] = 'ejecucion/cejecucion_pi/lista_pinversion_regional'; ///// listado de Proyectos de Inversion (Ejecucion PI)
 //$route['form_ejecucion_pi/(:any)'] = 'ejecucion/cejecucion_pi/formulario_ejecucion_pi/$1'; ///// formulario de Ejecucion PI (Ejecucion PI)
 

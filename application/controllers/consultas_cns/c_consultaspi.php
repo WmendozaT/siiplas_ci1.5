@@ -1,6 +1,6 @@
 <?php
 class C_consultaspi extends CI_Controller {  
-    public $rol = array('1' => '1','2' => '10'); 
+    public $rol = array('1' => '1','2' => '10','3' => '11'); 
     public function __construct (){
         parent::__construct();
         if($this->session->userdata('fun_id')!=null){

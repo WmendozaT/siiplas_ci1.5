@@ -1279,3 +1279,83 @@ $BODY$
   ROWS 1000;
 ALTER FUNCTION public.fn_lista_poa_nacional(integer)
   OWNER TO postgre
+
+
+
+  ////////////////// QUERY CONSOLIDADO FORM 5 INSTITUCIONAL
+  ---------------
+CREATE INDEX IF NOT EXISTS idx_productos_com_estado ON _productos (com_id, estado);
+CREATE INDEX IF NOT EXISTS idx_insumos_par_estado ON insumos (par_id, ins_estado);
+CREATE INDEX IF NOT EXISTS idx_insumoprod_prod_ins ON _insumoproducto (prod_id, ins_id);
+   ---------------
+
+
+
+
+    WITH cte_objetivos AS (
+    -- Clausula DISTINCT optimizada usando GROUP BY para facilitar el uso de índices en Postgres
+    SELECT ore.or_id, ore.or_codigo, ore.or_objetivo, og.og_id, og.og_codigo
+    FROM objetivos_regionales ore
+    INNER JOIN objetivo_programado_mensual opm ON ore.pog_id = opm.pog_id
+    INNER JOIN objetivo_gestion og ON og.og_id = opm.og_id
+    GROUP BY ore.or_id, ore.or_codigo, ore.or_objetivo, og.og_id, og.og_codigo
+)
+SELECT
+    -- [1 al 24] Datos de la Apertura / POA (Evitamos conversiones redundantes de tipos de datos en el SELECT)
+    poa.dep_id::numeric, poa.dep_cod::varchar, poa.dep_departamento::varchar,
+    poa.dist_id, poa.dist_cod::varchar, poa.dist_distrital::varchar,
+    poa.abrev::varchar, poa.da::varchar, poa.ue::varchar,
+    poa.aper_id::numeric, poa.aper_programa::varchar, poa.aper_proyecto::varchar,
+    poa.aper_actividad::varchar, poa.proy_id::numeric, poa.proy_sisin::varchar,
+    poa.proy_estado, poa.tipo::varchar, poa.proy_nombre::varchar,
+    poa.aper_proy_estado, poa.pfec_id::numeric, poa.pfec_estado,
+    poa.aper_gestion, poa.tipo_gasto_nombre::varchar, poa.por_id,
+    
+    -- [25 al 28] Componentes y Subactividad
+    c.com_id::numeric, c.com_componente, c.tp_sact, sa.tipo_subactividad::varchar,
+    
+    -- [29 al 47] Datos del Producto / Formulario 4
+    p.prod_id::numeric, p.prod_priori, p.prod_producto, p.prod_ppto::numeric, p.indi_id::numeric,
+    p.prod_indicador, p.prod_linea_base::numeric, p.prod_meta::numeric,
+    p.prod_fuente_verificacion, p.prod_unidades::varchar, p.estado,
+    p.prod_mod, p.prod_resultado, p.prod_cod, p.uni_resp::varchar,
+    p.prod_observacion, p.mt_id, i_meta.mt_tipo::varchar, p.or_id, p.sigep_priori,
+    CONCAT(uresp.proy_nombre, '.', uresp.abrev, ' - ', uresp.tipo_subactividad, ' ', uresp.com_componente)::varchar AS unidad_responsable,
+    
+    -- [48 al 52] Indicadores y Objetivos
+    i.indi_descripcion::varchar, i.indi_abreviacion::varchar,
+    obj.or_codigo, obj.or_objetivo::varchar, obj.og_id, obj.og_codigo,
+
+    -- [53+] Datos de Insumos, Partidas y Temporalidad
+    ins.ins_id, ins.ins_detalle, ins.ins_unidad_medida, ins.ins_cant_requerida, ins.ins_costo_unitario, ins.ins_costo_total, 
+    ins.ins_monto_certificado AS ins_monto_certificado, ins.ins_tp_reg, ins.ins_tipo_modificacion, ins.par_id, par.par_codigo, par.par_nombre, ins.ins_observacion,
+    itemp.*
+    
+FROM fn_lista_poa_nacional(2026) poa
+-- 🛠️ OPTIMIZACIÓN 1: Cambiado a INNER JOIN porque filtras abajo c.estado != 3 (Ahorra evaluación nula)
+INNER JOIN _componentes c ON c.pfec_id = poa.pfec_id AND c.estado != 3
+INNER JOIN tipo_subactividad sa ON sa.tp_sact = c.tp_sact
+
+-- 🛠️ OPTIMIZACIÓN 2: Cambiado a INNER JOIN general encadenado. 
+-- Como filtras p.estado != 3 e ins.ins_estado != 3, un LEFT JOIN aquí era destructivo para el rendimiento.
+INNER JOIN _productos p ON p.com_id = c.com_id AND p.estado != 3
+INNER JOIN indicador i ON i.indi_id = p.indi_id
+INNER JOIN meta_relativo i_meta ON i_meta.mt_id = p.mt_id
+
+-- 🛠️ OPTIMIZACIÓN 3: Unión relacional directa compacta para el subgrupo Insumo-Producto
+INNER JOIN _insumoproducto i_prod ON i_prod.prod_id = p.prod_id
+INNER JOIN insumos ins ON ins.ins_id = i_prod.ins_id AND ins.ins_estado != 3
+INNER JOIN partidas par ON par.par_id = ins.par_id
+
+-- LEFT JOINS estrictamente al final para no alterar los índices de la consulta interna (Nested Loops)
+LEFT JOIN vista_ver_uresp_proyecto uresp ON uresp.com_id = p.uni_resp
+LEFT JOIN vista_temporalidad_insumo2 itemp ON itemp.ins_id = ins.ins_id
+LEFT JOIN cte_objetivos obj ON obj.or_id = p.or_id
+
+ORDER BY 
+    poa.dep_id ASC, 
+    poa.dist_id ASC, 
+    c.com_id ASC, 
+    p.prod_cod ASC, 
+    par.par_codigo ASC, 
+    ins.ins_id ASC;
