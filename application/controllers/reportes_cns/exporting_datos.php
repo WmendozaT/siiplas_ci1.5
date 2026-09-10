@@ -509,28 +509,226 @@
     }
 
 
-    /*--- EXPORTAR CONSOLIDADO FORMULARIO N 5 INSTITUCIONAL ---*/
-    public function requerimientos_institucional($tp_id){
-      date_default_timezone_set('America/Lima');
-      $fecha = date("d-m-Y H:i:s");
-      $titulo='INSTITUCIONAL';
-      $requerimientos=$this->mrep_operaciones->consolidado_poa_formulario5_institucional($tp_id); /// Consolidado formulario N5 completo INSTITUCIONAL
-      $tabla=$this->genera_informacion->lista_requerimientos_regional_distrital_excel($requerimientos,$titulo,$tp_id); // Requerimientos Regional 2023
+    ///// Listado Requerimientos Consolidado Institucional, Regional, Distrital
+    public function matriz_lista_excel_requerimientos($tp_id,$form5) {
+      $tabla='';
+      $tabla .= '
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+            <table border="0.5">
+            <thead>
+              <tr style="background-color: #1a237e; color: #ffffff; font-weight: bold; height: 35px;">
+                  <th style="background-color: #1a237e; color: #ffffff;">REG.</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. REG.</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">REGIONAL</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. DIST</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. DISTRITAL</th>
 
-      header('Content-type: application/vnd.ms-excel');
-      header("Content-Disposition: attachment; filename=Consolidado_Requerimiento_".$titulo."_$fecha.xls"); //Indica el nombre del archivo resultante
-      header("Pragma: no-cache");
-      header("Expires: 0");
-      echo "";
-      ini_set('max_execution_time', 0); 
-      ini_set('memory_limit','3072M');
-      echo $tabla;
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. DA</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. UE</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. PROG.-'.$this->gestion.'</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. PROY.-'.$this->gestion.'</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. ACT.-'.$this->gestion.'</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">TIPO GASTO</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. SISIN</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">GASTO CORRIENTE / INVERSIÓN</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COMPONENTE / UNIDAD RESPONSABLE</th>
+                  
+                  <th style="background-color: #1a237e; color: #ffffff;">ID</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. ACP</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. OPE</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">DESCRIPCIÓN OPERACIÓN '.$this->gestion.'</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. ACT. POA</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">PRIORIDAD POA</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">PRIORIDAD SIGEP</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">DESCRIPCIÓN DE LA ACTIVIDAD</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">RESULTADO ESPERADO</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">TIPO INDICADOR</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">TIPO META</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">FÓRMULA DEL INDICADOR</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">UNIDAD RESPONSABLE</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">META ANUAL</th>
+                  
+                  <!-- Requerimientos -->
+                  <th style="background-color: #1a237e; color: #ffffff;">ID</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">PARTIDA</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">REQUERIMIENTO</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">UNIDAD MEDIDA</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">CANTIDAD</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">PRECIO</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COSTO TOTAL</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">TOTAL CERTIFICADO</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">TOTAL PROGRAMADO</th>
+                  <!-- Meses Programados -->
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. ENE</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. FEB</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. MAR</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. ABR</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. MAY</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. JUN</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. JUL</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. AGO</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. SEP</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. OCT</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. NOV</th>
+                  <th style="background-color: #2e7d32; color: #ffffff;">P. DIC</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">OBSERVACION</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;"></th>
+                  <th style="background-color: #1a237e; color: #ffffff;"></th>
+                </tr>
+              </thead>
+              <tbody>';
+
+            foreach ($form5 as $row) {
+                $priori = (intval($row['prod_priori']) === 1) ? 'SÍ' : 'NO';
+                $priori_sigep = (intval($row['sigep_priori']) === 1) ? 'SÍ' : 'NO';
+
+                $tabla .= '<tr>';
+                    // Formato de texto estricto (@) para amarrar ceros a la izquierda (ej. "01")
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . strtoupper($row['dep_id']) . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;"></b>' . (!empty($row['dep_cod']) ? strtoupper($row['dep_cod']) : '0') . '</b></td>';
+                    $tabla .= '<td><b>' . strtoupper(htmlspecialchars(!empty($row['dep_departamento']) ? $row['dep_departamento'] : 'S/R', ENT_QUOTES, 'UTF-8')) . '</b></td>';
+
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;"></b>' . (!empty($row['dist_cod']) ? strtoupper($row['dist_cod']) : '0') . '</b></td>';
+                    $tabla .= '<td><b>' . strtoupper(htmlspecialchars(!empty($row['dist_distrital']) ? $row['dist_distrital'] : 'S/R', ENT_QUOTES, 'UTF-8')) . '</b></td>';
+
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . (!empty($row['da']) ? strtoupper($row['da']) : '0') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . (!empty($row['ue']) ? strtoupper($row['ue']) : '0') . '</td>';
+
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['aper_programa'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['aper_proyecto'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['aper_actividad'] . '</td>';
+
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['tipo_gasto_nombre']) ? $row['tipo_gasto_nombre'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    
+                    // 🌟 REPARADO CORE 1: Se corrige la variable cortada $r por $row y se blinda el SISIN
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: left;">' . (!empty($row['proy_sisin']) ? strtoupper($row['proy_sisin']) : '0') . '</td>';
+
+                    $tabla .= '<td>' . htmlspecialchars($row['tipo'] . ' ' . $row['proy_nombre'] . ' ' . $row['abrev'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars($row['tipo_subactividad'] . ' ' . $row['com_componente'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    
+                    $tabla .= '<td style="text-align: center; font-weight: bold;">' . intval($row['prod_id']) . '</td>';
+                    
+                    $tabla .= '<td style="text-align: center;">' . intval($row['og_codigo']) . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . intval($row['or_codigo']) . '</td>';
+                    $tabla .= '<td ><b>' . htmlspecialchars(!empty($row['or_objetivo']) ? $row['or_objetivo'] : 'Sin Alineacion ..', ENT_QUOTES, 'UTF-8') . '</b></td>';
+                    $tabla .= '<td style="text-align: center; font-weight: bold; color: blue;">' . intval($row['prod_cod']) . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . $priori . '</td>';
+                    $tabla .= '<td style="text-align: center;color: green;"><b>' . $priori_sigep . '</b></td>';
+
+                    // 🌟 COMPLETADO CORE: Columnas descriptivas blindadas contra caracteres especiales XML/Excel
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_producto']) ? $row['prod_producto'] : 'S/D', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_resultado']) ? $row['prod_resultado'] : 'S/D', ENT_QUOTES, 'UTF-8') . '</td>';
+
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['indi_descripcion']) ? $row['indi_descripcion'] : 'S/I', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['mt_tipo']) ? $row['mt_tipo'] : 'S/I', ENT_QUOTES, 'UTF-8') . '</td>';
+                    
+
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_indicador']) ? $row['prod_indicador'] : 'S/D', ENT_QUOTES, 'UTF-8') . '</td>';
+
+                    // Evaluación de tipo de estructura (Normal / Bolsa)
+                    if (intval($row['por_id']) === 0) {
+                        $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_unidades']) ? $row['prod_unidades'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    } else {
+                        $tabla .= '<td>' . htmlspecialchars(!empty($row['unidad_responsable']) ? $row['unidad_responsable'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    }
+
+                    // Meta Anual formateada como número contable válido
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . number_format($row['prod_meta'], 2, '.', '') . '</td>';
+
+                    // Requerimientos
+                    $tabla .= '<td style="text-align: center;">' . intval($row['ins_id']) . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . intval($row['par_codigo']) . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['ins_detalle']) ? $row['ins_detalle'] : 'S/I', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['ins_unidad_medida']) ? $row['ins_unidad_medida'] : 'S/I', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . number_format($row['ins_cant_requerida'], 2, '.', '') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . number_format($row['ins_costo_unitario'], 2, '.', '') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . number_format($row['ins_costo_total'], 2, '.', '') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . number_format($row['ins_monto_certificado'], 2, '.', '') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . number_format($row['programado_total'], 2, '.', '') . '</td>';
+
+
+                    // 🌟 COMPLETADO MÁSTER BUCLE 1: Programación Física Mensual (P. ENE a P. DIC)
+                    for ($i = 1; $i <= 12; $i++) {
+                        $val_mes = isset($row['mes' . $i]) ? $row['mes' . $i] : 0;
+                        $estilo_mes = ($val_mes > 0) ? 'background-color: #e8f5e9; font-weight: bold;' : '';
+                        
+                        $tabla .= '<td style="text-align: right; ' . $estilo_mes . '">' . number_format($val_mes, 2, '.', '') . '</td>';
+                    }
+                    $tabla .= '<td>' . htmlspecialchars($p_ver  = !empty($row['ins_observacion']) ? $row['ins_observacion'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+
+                    $tabla .= '<td>' . htmlspecialchars($p_ver  = !empty($row['tipo_registro_poa']) ? $row['tipo_registro_poa'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars($p_ver  = !empty($row['tipo_insumo_poa']) ? $row['tipo_insumo_poa'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                $tabla .= '</tr>';
+            } // 🔒 FIN DEL FOREACH GENERAL DE REGIONALES
+
+            $tabla .= '
+            </tbody>
+            </table>';
+
+      return $tabla;
+    }
+
+
+    /*--- EXPORTAR CONSOLIDADO FORMULARIO N 5 INSTITUCIONAL ---*/
+    public function exportar_formularioN5_Institucional($tp_id) {
+        // 1. Configuración y ampliación drástica de recursos del servidor
+        @set_time_limit(1200);             // 20 minutos de ejecución interna elástica
+        ini_set('memory_limit', '2048M'); // 2 GB de memoria RAM asignada para alta densidad
+
+        // 2. Extracción de datos nacionales parametrizados por la función SQL corregida
+        $form5 = $this->model_insumo->list_requerimientos_Institucional($tp_id); 
+        $titulo='Inversion';
+        if($tp_id==4){
+          $titulo='Gcorriente';
+        }
+
+        if (!empty($form5)) {
+            // Estructuración formal del nombre del archivo según el estándar del PEI
+            $nombre_archivo = "Consolidado_Formulario_N5_" . $this->gestion . "_Institucional_".$titulo.".xls";
+
+            // 3. Limpieza radical de buffers fantasmas para blindar el binario
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_start();
+
+            // 4. Protocolo de cabeceras HTTP rígidas para forzar descarga directa
+            header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
+            header("Content-Disposition: attachment; filename=\"" . $nombre_archivo . "\"");
+            header("Cache-Control: max-age=0, no-cache, must-revalidate, post-check=0, pre-check=0");
+            header("Pragma: public");
+            header("Expires: 0");
+
+            // 5. Inyección de la directiva BOM UTF-8 para proteger acentos y Ñs en Windows
+            echo "\xEF\xBB\xBF";
+
+            // 6. Construcción idéntica de la sábana de datos en una sola variable string
+            $tabla = $this->matriz_lista_excel_requerimientos($tp_id,$form5);
+            
+
+            // 7. Despacho directo del buffer de datos purificado hacia la red institucional
+            echo $tabla;
+            ob_end_flush();
+            exit; // Detiene la ejecución física impidiendo layouts o filtraciones del framework
+        } else {
+            echo "<center><br><h3>🚨 Error de Consistencia: No se registran datos disponibles del Formulario N° 4 Nacional para la gestión activa " . $this->gestion . ".</h3></center>";
+        }
     }
 
 
     /*--- EXPORTAR REQUERIMIENTOS A DETALLE 2026 a mejorar (Reporte Gerencial) ---*/
     public function exportar_formularioN5($dep_id,$dist_id,$tp_id){
-      date_default_timezone_set('America/Lima');
+/*      date_default_timezone_set('America/Lima');
       $fecha = date("d-m-Y H:i:s");
 
      if($dist_id==0){
@@ -554,7 +752,7 @@
       echo "";
       ini_set('max_execution_time', 0); 
       ini_set('memory_limit','3072M');
-      echo $tabla;
+      echo $tabla;*/
     }
 
     

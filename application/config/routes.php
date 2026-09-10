@@ -154,7 +154,7 @@ $route['exportar_consulta_ppto_poa/(:any)'] = 'reportes_cns/crep_consultafinanci
 
 
 
-$route['rep/exportar_requerimientos_institucional/(:any)'] = 'reportes_cns/exporting_datos/requerimientos_institucional/$1'; ///// Exportar Requerimientos Institucional
+$route['rep/exportar_form5_institucional/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN5_Institucional/$1'; ///// Exportar Requerimientos Institucional
 $route['rep/exportar_form5/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN5/$1/$2/$3'; ///// Exportar Requerimientos regional- distrital 2026
 $route['rep/exportar_poa_oregional/(:any)']='reportes_cns/exporting_datos/ver_poa_oregional_distrital/$1/$2';// Consolidado operaciones por Objetivo Regional 2020-2021 (Distrital)
 
