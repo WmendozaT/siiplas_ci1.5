@@ -1443,7 +1443,7 @@ class Mrep_operaciones extends CI_Model {
     }
 
 
-    ///// -- CONSOLIDADO FORMULARIO 5 (2023) LISTADO DIRECTO APER_ID = INS_ID (REPORTES POA VISTA)
+    ///// -- CONSOLIDADO FORMULARIO 5 (2023) LISTADO DIRECTO APER_ID = INS_ID (REPORTES POA VISTA) vigente llevar a model insumo
     public function consolidado_requerimientos_regional_distrital_directo($tp_regional, $id, $tp_id){
         /// tp_regional -> 0 : Regional, 1 : Distrital
         /// id_regional -> dep_id, dist_id
@@ -1469,7 +1469,7 @@ class Mrep_operaciones extends CI_Model {
 
 
     ///// -- CONSOLIDADO COMPLETO FORMULARIO 5 (INSTITUCIONAL) 2023
-    public function consolidado_poa_formulario5_institucional($tp_id){
+/*    public function consolidado_poa_formulario5_institucional($tp_id){
         if($tp_id==1){
             $sql = 'select *
             from lista_requerimientos_institucional_pinversion('.$this->gestion.')';
@@ -1482,10 +1482,10 @@ class Mrep_operaciones extends CI_Model {
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     ///// -- CONSOLIDADO COMPLETO FORMULARIO 5 (REGIONAL) 2023
-    public function consolidado_poa_formulario5_regional($dep_id,$tp_id){
+/*    public function consolidado_poa_formulario5_regional($dep_id,$tp_id){
         if($tp_id==1){
             $sql = 'select  *
             from lista_requerimientos_institucional_pinversion('.$this->gestion.')
@@ -1499,10 +1499,10 @@ class Mrep_operaciones extends CI_Model {
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
     ///// -- CONSOLIDADO COMPLETO FORMULARIO 5 (DISTRITAL) 2023
-    public function consolidado_poa_formulario5_distrital($dist_id,$tp_id){
+/*    public function consolidado_poa_formulario5_distrital($dist_id,$tp_id){
         if($tp_id==1){
             $sql = 'select  *
             from lista_requerimientos_institucional_pinversion('.$this->gestion.')
@@ -1517,11 +1517,11 @@ class Mrep_operaciones extends CI_Model {
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     ///// -- LISTA INSUMO POR SUBACTIVIDAD (2020-2021)
-    public function consolidado_poa_formulario5_componente($com_id,$tp_id){
+/*    public function consolidado_poa_formulario5_componente($com_id,$tp_id){
         $sql = '
             select *
             from lista_requerimientos_institucional_gcorriente('.$this->gestion.')
@@ -1530,7 +1530,7 @@ class Mrep_operaciones extends CI_Model {
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 

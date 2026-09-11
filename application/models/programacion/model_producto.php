@@ -353,7 +353,14 @@ class model_producto extends CI_Model {
                     ELSE \'0\'
                 END, 
                 \'0\'
-            ) AS unidad_responsable
+            ) AS unidad_responsable,
+            COALESCE(
+                CASE 
+                    WHEN uresp.com_id IS NOT NULL THEN CONCAT(uresp.tipo_subactividad, \' \', uresp.com_componente, \' - \', uresp.proy_nombre, \' \', uresp.abrev, \'\')
+                    ELSE \'0\'
+                END, 
+                \'0\'
+            ) AS unidad_asignado_bolsa
         FROM public._productos AS p
         left JOIN public.objetivos_regionales AS ore ON ore.or_id = p.or_id
         left JOIN public.indicador AS tp ON p.indi_id = tp.indi_id

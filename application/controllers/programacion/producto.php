@@ -41,13 +41,13 @@ class Producto extends CI_Controller {
     }
 
     //// Actualizar los codigos de Actividades
-    public function update_codigo($form4) {
+    public function update_codigo($form4,$por_id) {
         $nro = 0;
         
         // Iniciamos un bloque de transacción rápida para acelerar los updates masivos en lote
         $this->db->trans_start();
-        
-        foreach($form4 as $rowp) {
+        if($por_id==0){
+          foreach($form4 as $rowp) {
             $nro++;
             $update_data = array(
                 'prod_cod' => $nro,
@@ -56,7 +56,27 @@ class Producto extends CI_Controller {
             
             $this->db->where('prod_id', $rowp['prod_id']);
             $this->db->update('_productos', $update_data);
+          }
         }
+        else{ //// bolsa
+          foreach($form4 as $rowp) {
+            $nro++;
+            $info='';
+            if($rowp['uni_resp']!=0){
+              $info=$rowp['unidad_asignado_bolsa'];
+            }
+            $update_data = array(
+                'prod_cod' => $nro,
+                'prod_unidades' => $info,
+                'fecha'    => date('Y-m-d H:i:s') // Marcador de auditoría
+            );
+            
+            $this->db->where('prod_id', $rowp['prod_id']);
+            $this->db->update('_productos', $update_data);
+          }
+        }
+        
+        
         
         $this->db->trans_complete();
     }
@@ -73,7 +93,7 @@ class Producto extends CI_Controller {
             
             // 🌟 MOTOR AUTOMÁTICO: Re-enumeramos el correlativo prod_cod (1, 2, 3...) en caliente
             if (!empty($form4_crudo) && count($form4_crudo) > 0) {
-                $this->update_codigo($form4_crudo);
+                $this->update_codigo($form4_crudo,$data['componente'][0]['por_id']);
             }
 
             // B. 🛠️ REPARADO: Volvemos a consultar la lista ya re-ordenada para que la vista reciba el correlativo nuevo

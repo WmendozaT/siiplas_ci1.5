@@ -773,17 +773,11 @@
         echo '<th style="background-color: #1a237e; color: #ffffff;">PRIORIDAD POA</th>';
         echo '<th style="background-color: #1a237e; color: #ffffff;">PRIORIDAD SIGEP</th>';
         echo '<th style="background-color: #1a237e; color: #ffffff;">DESCRIPCIÓN DE LA ACTIVIDAD</th>';
-        echo '<th style="background-color: #1a237e; color: #ffffff;">RESULTADO ESPERADO</th>';
-        echo '<th style="background-color: #1a237e; color: #ffffff;">TIPO INDICADOR</th>';
-        echo '<th style="background-color: #1a237e; color: #ffffff;">TIPO META</th>';
-        echo '<th style="background-color: #1a237e; color: #ffffff;">FÓRMULA DEL INDICADOR</th>';
         echo '<th style="background-color: #1a237e; color: #ffffff;">UNIDAD RESPONSABLE</th>';
         echo '<th style="background-color: #1a237e; color: #ffffff;">META ANUAL</th>';
         
         // Secciones de Requerimientos (Verde)
         echo '<th style="background-color: #2e7d32; color: #ffffff;">ID INS</th>';
-        echo '<th style="background-color: #2e7d32; color: #ffffff;">TIPO REGISTRO</th>';
-        echo '<th style="background-color: #2e7d32; color: #ffffff;">TIPO INSUMO</th>';
         echo '<th style="background-color: #2e7d32; color: #ffffff;">PARTIDA</th>';
         echo '<th style="background-color: #2e7d32; color: #ffffff;">REQUERIMIENTO</th>';
         echo '<th style="background-color: #2e7d32; color: #ffffff;">UNIDAD MEDIDA</th>';
@@ -807,15 +801,22 @@
         echo '<th style="background-color: #2e7d32; color: #ffffff;">P. NOV</th>';
         echo '<th style="background-color: #2e7d32; color: #ffffff;">P. DIC</th>';
         echo '<th style="background-color: #2e7d32; color: #ffffff;">OBSERVACION</th>';
+        echo '<th style="background-color: #2e7d32; color: #ffffff;">TIPO REGISTRO</th>';
+        echo '<th style="background-color: #2e7d32; color: #ffffff;">TIPO INSUMO</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
 
         $contador = 0;
         foreach ($form5 as $row) {
-             $contador++;
+            $contador++;
             $priori = (intval($row['prod_priori']) === 1) ? 'SÍ' : 'NO';
             $priori_sigep = (intval($row['sigep_priori']) === 1) ? 'SÍ' : 'NO';
+
+            $unidad_responsable=strtoupper(htmlspecialchars(!empty($row['unidad_responsable']) ? $row['unidad_responsable'] : 'S/R', ENT_QUOTES, 'UTF-8'));
+            if (intval($row['por_id']) === 0) {
+                $unidad_responsable=strtoupper(htmlspecialchars(!empty($row['prod_unidades']) ? $row['prod_unidades'] : 'S/R', ENT_QUOTES, 'UTF-8'));
+              }
 
             echo '<tr style="height:40px; vertical-align:middle;font-size:9.5px;">';
             
@@ -850,18 +851,11 @@
             echo '<td style="text-align: center; font-weight: bold; background-color:#E6EAFA;">' . $priori . '</td>';
             echo '<td style="text-align: center; font-weight: bold; background-color:#E6EAFA;">' . $priori_sigep . '</td>';
             echo '<td style="background-color:#E6EAFA;">' . htmlspecialchars($row['prod_producto'], ENT_QUOTES, 'UTF-8') . '</td>';
-            echo '<td style="background-color:#E6EAFA;">' . htmlspecialchars($row['prod_resultado'], ENT_QUOTES, 'UTF-8') . '</td>';
-            
-            echo '<td style="background-color:#E6EAFA;">' . htmlspecialchars($row['indi_descripcion'], ENT_QUOTES, 'UTF-8') . '</td>';
-            echo '<td style="background-color:#E6EAFA;">' . htmlspecialchars($row['mt_tipo'], ENT_QUOTES, 'UTF-8') . '</td>';
-            echo '<td style="background-color:#E6EAFA;">' . htmlspecialchars($row['prod_indicador'], ENT_QUOTES, 'UTF-8') . '</td>';
-            echo '<td style="background-color:#E6EAFA;">' . htmlspecialchars($row['unidad_responsable'], ENT_QUOTES, 'UTF-8') . '</td>';
+            echo '<td style="background-color:#E6EAFA;">' .$unidad_responsable. '</td>';
             echo '<td style="text-align: right; mso-number-format:\'#,##0.00\'; background-color:#E6EAFA;">' . floatval($row['prod_meta']) . '</td>';
 
             // --- SECCIÓN REQUERIMIENTOS FORMULARIO 5 (Campos del PL/pgSQL) ---
             echo '<td style="text-align: center; font-weight: bold; background-color:#F4F7F0;">' . $row['ins_id'] . '</td>';
-            echo '<td style="background-color:#F4F7F0;">' . htmlspecialchars($row['tipo_registro_poa'], ENT_QUOTES, 'UTF-8') . '</td>';
-            echo '<td style="background-color:#F4F7F0;">' . htmlspecialchars($row['tipo_insumo_poa'], ENT_QUOTES, 'UTF-8') . '</td>';
             echo '<td style="text-align: center;background-color:#F4F7F0;">' . $row['par_codigo'] . '</td>';
             echo '<td style="background-color:#F4F7F0;">' . htmlspecialchars($row['ins_detalle'], ENT_QUOTES, 'UTF-8') . '</td>';
             echo '<td style="background-color:#F4F7F0;">' . htmlspecialchars($row['ins_unidad_medida'], ENT_QUOTES, 'UTF-8') . '</td>';
@@ -882,8 +876,8 @@
             echo '<td style="background-color:#F4F7F0;">' . htmlspecialchars($row['ins_observacion'], ENT_QUOTES, 'UTF-8') . '</td>';
             
             // 🛠️ Cierre de las dos columnas vacías adicionales declaradas al final de tu cabecera <thead>
-            echo '<td style="background-color:#F4F7F0;"></td>';
-            echo '<td style="background-color:#F4F7F0;"></td>';
+            echo '<td style="background-color:#F4F7F0;">' . htmlspecialchars($row['tipo_registro_poa'], ENT_QUOTES, 'UTF-8') . '</td>';
+            echo '<td style="background-color:#F4F7F0;">' . htmlspecialchars($row['tipo_insumo_poa'], ENT_QUOTES, 'UTF-8') . '</td>';
             echo '</tr>';
 
             // 🎯 LIBERACIÓN ASÍNCRONA DE RAM (Streaming Real):
