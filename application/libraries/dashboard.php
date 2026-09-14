@@ -601,6 +601,11 @@ class Dashboard extends CI_Controller{
                         <h4><i class="fa fa-user"></i> <b>PERFIL:</b> SEGUIMIENTO AL POA</h4>
                         <h4><i class="fa fa-calendar"></i> <b>MES / GESTI&Oacute;N:</b> '.$this->verif_mes[2].' / '.$this->session->userdata("gestion").'</h4>
                         <h4><i class="fa fa-clock-o"></i> <b>TRIMESTRE:</b> '.$this->model_evaluacion->trimestre()[0]['trm_descripcion'].'</h4>
+                        ';
+                        if($this->fun_id==1215){
+                            $formulario.='<a href="'.site_url("").'/rep/exportar_form5_institucional/4" style="font-size:12px;" target=_blank title="EXPORTAR FORM. N 5 - GASTO CORRIENTE">Descargar Requerimientos (Form N° 5) Institucional.Xls</a>';
+                        }
+                    $formulario.='
                     </div>
                     <div class="col-md-4" align="center">
                         <img src="'.base_url('assets/img_v1.1/logo_CNS_header.png').'" 

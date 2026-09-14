@@ -474,24 +474,35 @@ class Producto extends CI_Controller {
                     return;
                 }
 
-                if ($campo == 'prod_cod' || $campo == 'or_id' || $campo == 'indi_id' || $campo == 'mt_id') {
-                    $detalle = ($valor_raw === '') ? 0 : intval($valor_raw);
-                } elseif ($campo == 'prod_meta' || $campo == 'uni_resp') {
-                    $detalle = ($valor_raw === '') ? 0.00 : floatval($valor_raw);
-                } else {
-                    $detalle = strtoupper($this->security->xss_clean($valor_raw));
-                }
-
-                // 🌟 INICIO DE TRANSACCIÓN CONTROLADA PARA REPLICACIÓN EN CASCADA
-                $this->db->trans_start();
-
-                $update_form4 = array(
-                    $campo   => $detalle,
+                 $update_form4 = array(
                     'fecha'  => date('Y-m-d H:i:s'),
                     'num_ip' => $this->input->ip_address(),
                     'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
                 );
-                
+
+                if ($campo == 'prod_cod' || $campo == 'or_id' || $campo == 'indi_id' || $campo == 'mt_id') {
+                    $detalle = ($valor_raw === '') ? 0 : intval($valor_raw);
+                    $update_form4[$campo] = $detalle;
+                } elseif ($campo == 'prod_meta') {
+                    $detalle = ($valor_raw === '') ? 0.00 : floatval($valor_raw);
+                    $update_form4[$campo] = $detalle;
+                } elseif ($campo == 'uni_resp') {
+                    // 🛠️ REPARADO SINTAXIS CORE 1: Guardado en cascada de Unidad Responsable y su glosa textual concatenada
+                    $id_uresp = ($valor_raw === '') ? 0 : intval($valor_raw);
+                    $prod_unidades = $this->model_producto->get_unidadResponsable_programaBolsa($id_uresp);
+                    
+                    $detalle = $id_uresp;
+                    $update_form4['uni_resp'] = $id_uresp;
+                    if (!empty($prod_unidades)) {
+                        $update_form4['prod_unidades'] = $prod_unidades[0]['proy_nombre'].' - '.$prod_unidades[0]['tipo_subactividad'].' '.$prod_unidades[0]['com_componente'];
+                    }
+                } else {
+                    $detalle = strtoupper($this->security->xss_clean($valor_raw));
+                    $update_form4[$campo] = $detalle;
+                }
+
+                // 🌟 INICIO DE TRANSACCIÓN CONTROLADA PARA REPLICACIÓN EN CASCADA
+                $this->db->trans_start();
                 $this->db->where('prod_id', $prod_id);
                 $this->db->update('_productos', $update_form4);
 
@@ -729,6 +740,11 @@ class Producto extends CI_Controller {
             'num_ip' => $this->input->ip_address(),
             'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR'])
         );
+
+        if($tp == 2){ /// Asignando Unidad responsable
+         $get_unidad=$this->model_producto->get_unidadResponsable_programaBolsa($id);
+         $update_prod['prod_unidades'] = $prod_unidades[0]['proy_nombre'].' - '.$prod_unidades[0]['tipo_subactividad'].' '.$prod_unidades[0]['com_componente'];
+        }
 
         if($tp == 3){ // Si estamos alterando el Tipo de Indicador abolsuto, relativo->acumulado (defecto)
               $suma_temp = $this->model_producto->suma_programado_producto($prod_id, $this->gestion);

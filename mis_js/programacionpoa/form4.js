@@ -99,6 +99,7 @@ $(document).ready(function() {
      * LÓGICA A: CAMBIO EN EL TIPO DE INDICADOR (Dinamizado por fila)
      */
     $(document).on('change', '.auto-save-field-indicador', function() {
+
         var $combo_indi = $(this);
         var prod_id = $combo_indi.data('id');
         var val_id  = $combo_indi.val(); // 1 = Absoluto, 2 = Relativo

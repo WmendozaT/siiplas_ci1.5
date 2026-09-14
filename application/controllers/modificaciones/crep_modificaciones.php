@@ -38,12 +38,12 @@ class Crep_modificaciones extends CI_Controller {
     /*-------------- Requerimientos ---------------*/
     public function consolidado_xls_requerimientos($proy_id){
      $tabla='';
-     $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
+     /*$proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
      $titulo=''.$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].'-'.$proyecto[0]['proy_nombre'].'';
      if($proyecto[0]['tp_id']==4){
       $unidad=$this->model_proyecto->get_UnidadOrganizacional($proy_id);
       $titulo=''.$unidad[0]['aper_programa'].''.$unidad[0]['aper_proyecto'].''.$unidad[0]['aper_actividad'].'-'.$unidad[0]['tipo'].' '.$unidad[0]['act_descripcion'].' '.$unidad[0]['abrev'].'';
-     }
+     }*/
 
 
      $requerimientos_add=$this->model_modrequerimiento->lista_requerimientos_modificados_unidad($proy_id,1); 

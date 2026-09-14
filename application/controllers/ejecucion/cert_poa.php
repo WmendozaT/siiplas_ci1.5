@@ -743,42 +743,18 @@ class Cert_poa extends CI_Controller {
         $cpoaa_id = $this->security->xss_clean($post['cpoaa_id']);
         $cert_editado=$this->model_certificacion->get_cert_poa_editado($cpoaa_id); /// Datos de la Certificacion Anulado
         $cpoa=$this->model_certificacion->get_datos_certificacion_poa($cert_editado[0]['cpoa_id']); /// Datos de la Certificacion POA
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($cpoa[0]['proy_id']);
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($cpoa[0]['proy_id']);
         $insumo= $this->model_insumo->get_requerimiento($ins_id); /// Datos requerimientos 
-        
-        if($insumo[0]['ins_tipo_modificacion']==0){
-          $asig=$this->model_ptto_sigep->get_partida_asignado_sigep($insumo[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Asignado)
-          $prog=$this->model_ptto_sigep->get_partida_programado_poa($insumo[0]['aper_id'],$insumo[0]['par_id']); /// Get partida -> Unidad (Programado)
-          
-          /// -------------------------
-          $monto_prog=0;
-          if(count($prog)!=0){
-            $monto_prog=$prog[0]['ppto_programado'];
-          }
+        $ppto_partida=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($proyecto[0]['aper_id'],$insumo[0]['par_id']);
 
-          $monto_asig=0;
-          if(count($asig)!=0){
-            $monto_asig=$asig[0]['ppto_asignado'];
-          }
-          /// ------------------------
+        if($insumo[0]['ins_tipo_modificacion']==0){ /// Poa Normal
+          $saldo=$ppto_partida[0]['saldo_poa'];
+          //$partida_padres = $this->model_modificacion->list_part_padres_asig($cite[0]['aper_id']);// Lista partidas padres          
         }
-        else{
-          $asig=$this->model_ptto_sigep->get_ppto_partida_revertido_unidad($insumo[0]['par_id'],$proyecto[0]['aper_id']); /// Get partida -> Unidad (Asignado reversion)
-          $prog=$this->model_ptto_sigep->get_ppto_poa_partida_x_reversion($insumo[0]['par_id'],$proyecto[0]['aper_id']); /// Get partida -> Unidad (Programado reversion)
-        
-           /// -------------------------
-          $monto_prog=0;
-          if(count($prog)!=0){
-            $monto_prog=$prog[0]['monto_programado_revertido'];
-          }
-
-          $monto_asig=0;
-          if(count($asig)!=0){
-            $monto_asig=$asig[0]['monto_revertido'];
-          }
+        else{ /// Poa Revertido
+          $saldo=$ppto_partida[0]['saldo_revertido'];
+          //$partida_padres = $this->model_ptto_sigep->lista_partidas_padres_revertidos($cite[0]['aper_id']);// Lista partidas padres REVERTIDO
         }
-
-          $saldo=$monto_asig-$monto_prog;
 
           $prog=$this->model_insumo->list_temporalidad_insumo($insumo[0]['ins_id']); /// Temporalidad Requerimiento 2020
 

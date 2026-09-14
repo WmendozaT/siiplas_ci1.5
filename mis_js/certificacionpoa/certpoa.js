@@ -83,6 +83,7 @@
 
     $(function () {
       $(".update_eval").on("click", function (e) {
+
           prod_id = $(this).attr('name');
           cpoa_id = $(this).attr('id');
           document.getElementById("load_insumo").style.display = 'block';
@@ -294,6 +295,7 @@
 
   //// EDITAR CERTIFICACION POA (NOTA CITE)
     function editar_certpoa(cert_id) {
+
         document.getElementById("cert_id").value = cert_id;
         var url = base+"index.php/ejecucion/cert_poa/get_datos_certificado";
         var request;
@@ -1101,8 +1103,8 @@
 
     //// Valida formulario de Modificacion POA
       $(function () {
-
           $(".mod_ins").on("click", function (e) {
+
             ins_id = $(this).attr('name');
             document.getElementById("ins_id").value=ins_id;
             cpoaa_id=document.getElementById("cpoaa_id").value;
