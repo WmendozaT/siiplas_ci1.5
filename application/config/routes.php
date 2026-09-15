@@ -504,13 +504,20 @@ $route['ejec/verificar_reformulacion/(:any)'] = 'ejecucion/cert_poa/ver_requerim
 
 $route['ejec/detalle_ediciones'] = 'ejecucion/cert_poa/reporte_ediciones_cpoas'; //// Reporte Consolidado de ediciones al POA
 
-/*------------ MODIFICACIONES DE OPERACIONES (ULTIMO)--------------*/
+/*------------ MODIFICACIONES POA HISTORIAL DE MODIFICACIONES 2026 A OPTIMIZAR (ULTIMO)--------------*/
 $route['mod/ope_aprobadas'] = 'modificaciones/cmodificaciones/operaciones_aprobadas';  ///// lista de operaciones aprobadas
 $route['mod/derivar_operacion'] = 'modificaciones/cmodificaciones/derivar_operacion';  ///// derivar Operacion a TOP
 $route['mod/list_top'] = 'modificaciones/cmodificaciones/list_poas_aprobados';  ///// Lista de POas Aprobados
 $route['mod/exportar_mod_requerimientos_institucional'] = 'modificaciones/cmodificaciones/consolidado_modificacion_requerimientos_institucional'; ///// Exportar Consolidado de Modificaciones POA (form 5)
 
 $route['mod/list_cites/(:any)'] = 'modificaciones/cmodificaciones/lista_cites/$1';  ///// Lista de Modificaciones POA 
+
+/*------------- Consolidado historial de Modificaciones por UnidadOrganizacional (2027) -----------------*/
+$route['mod/consolidado_mod_requerimiento/(:any)'] = 'modificaciones/cmodificaciones/Xls_historial_mod_formN5_UnidadOrganizacional/$1'; //// Excel 2027
+
+
+
+
 
 /*------- Modificar Techo - Partidas Asignadas (TECHO PRESUPUESTARIO)-------*/
 $route['mod/cite_techo/(:any)'] = 'modificaciones/cmod_requerimientos/cite_techo/$1'; //// Cite Techo 
@@ -552,8 +559,7 @@ $route['mod/reporte_modfis/(:any)'] = 'modificaciones/cmod_fisica/reporte_modifi
 $route['mod/ver_mod_poa_fis/(:any)'] = 'modificaciones/cmod_fisica/ver_modificacion_poa/$1';  ///// Ver Modificacion POA (FIS)
 
 
-/*------------- Consolidado Modificaciones en Excel (2021) -----------------*/
-$route['mod/consolidado_mod_requerimiento/(:any)'] = 'modificaciones/crep_modificaciones/consolidado_xls_requerimientos/$1'; //// Consolidado XLS Requerimientos
+
 
 
 /*------------------------------------ FUNCIONARIOS --------------------------------------*/

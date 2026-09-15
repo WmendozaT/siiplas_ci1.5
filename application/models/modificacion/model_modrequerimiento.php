@@ -1,4 +1,5 @@
 <?php
+//// Model para el historial de las modificaciones poa x cite de modificacion
 class Model_modrequerimiento extends CI_Model{
     var $gestion;
     public function __construct(){
@@ -488,7 +489,7 @@ class Model_modrequerimiento extends CI_Model{
         return $query->result_array();
     }
 
-    /*--- tipos de acciones - requerimientos ---*/
+    /*--- tipos de acciones - requerimientos vigente aun---*/
     public function numero_de_modificaciones_requerimientos($cite_id,$tp_accion){
         //// 1 : Adicion
         //// 2 : Modificacion
@@ -529,7 +530,7 @@ class Model_modrequerimiento extends CI_Model{
 
 
     /*--- XLS LISTA DE REQUERIMIENTOS ADICIONADOS, MODIFICADOS, ELIMINADOS ---*/
-    public function lista_requerimientos_modificados_unidad($proy_id,$tp_accion){
+/*    public function lista_requerimientos_modificados_unidad($proy_id,$tp_accion){
         //// 1 : Adicion
         //// 2 : Modificacion
         //// 3 : Eliminacion
@@ -566,7 +567,7 @@ class Model_modrequerimiento extends CI_Model{
         
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
 

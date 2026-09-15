@@ -1,4 +1,5 @@
 <?php
+ ////// CONTROLADOR PARA LOS CITES DE MODIFICACION POA DE FORM 4 Y FORM 5
 class Cmodificaciones extends CI_Controller {  
     public $rol = array('1' => '3','2' => '6','3' => '4'); 
     public function __construct (){
@@ -252,7 +253,7 @@ class Cmodificaciones extends CI_Controller {
 
 
 
-    /*--- LISTA DE MODIFCACIONES (FORMULARIO 4 - FORMULARIO 5 - TECHO PRESUPUESTARIO) 2026 ---*/
+    /*--- LISTA DE MODIFCACIONES (FORMULARIO 4 - FORMULARIO 5 - TECHO PRESUPUESTARIO) 2027 ---*/
     public function list_cites_generados($proy_id,$tp){
       $tabla='';
       // === LIST CITES REQUERIMIENTOS 
@@ -357,69 +358,218 @@ class Cmodificaciones extends CI_Controller {
     }
 
 
-    /*------------------------- TEMPORALIDAD PRODUCTOS ----------------------------*/
-    public function temporalizacion_prod($prod_id,$gestion){
-        $prod=$this->model_producto->get_producto_id($prod_id); /// Producto Id
-        $programado=$this->model_producto->producto_programado($prod_id,$gestion); /// Producto Programado
+    //// Historial de Modificacion de Requerimientos por Unidad Organizacional 2027
+    public function Xls_historial_mod_formN5_UnidadOrganizacional($proy_id){
+        // 1. Configuración y ampliación drástica de recursos del servidor
+        set_time_limit(1200);             // 20 minutos de ejecución interna
+        ini_set('memory_limit', '1024M'); // 1 GB de memoria RAM asignada
 
-        $m[0]='g_id';
-        $m[1]='enero';
-        $m[2]='febrero';
-        $m[3]='marzo';
-        $m[4]='abril';
-        $m[5]='mayo';
-        $m[6]='junio';
-        $m[7]='julio';
-        $m[8]='agosto';
-        $m[9]='septiembre';
-        $m[10]='octubre';
-        $m[11]='noviembre';
-        $m[12]='diciembre';
+        $historial_form5=$this->model_modificacion->get_lista_historial_modPoa_formN5_UnidadOrganizacional($proy_id); /// historial por Unidad Organizacional
 
-        for ($i=1; $i <=12 ; $i++) { 
-          $prog[1][$i]=0;
-          $prog[2][$i]=0;
-          $prog[3][$i]=0;
-        }
+        if (!empty($historial_form5)) {
+          // Estructuración formal del nombre del archivo según el estándar del PEI
+          $nombre_archivo = "Historial_Modificacion_form5_".$this->gestion. ".xls";
 
-        $pa=0;
-        if(count($programado)!=0){
-            for ($i=1; $i <=12 ; $i++) { 
-              $prog[1][$i]=$programado[0][$m[$i]];
-            } 
-        }
-        
-        $tr_return = '';
-        $tr_return .= '<table class="table table-bordered">
-                        <thead>
-                        <tr >
-                            <th style="width:6%;" bgcolor="#6ec7bc"><font color=#fff></font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>ENE.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>FEB.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>MAR.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>ABR.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>MAY.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>JUN.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>JUL</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>AGO.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>SEPT.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>OCT.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>NOV.</font></th>
-                            <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>DIC.</font></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                          <tr >
-                          <td>P.</td>';
-                          for($i = 1 ;$i<=12 ;$i++){
-                            $tr_return .= '<td>'.$prog[1][$i].'</td>';
-                          }
-                          $tr_return .= '
-                          </tr>
-                        </tbody>
-                    </table>';
-        return $tr_return;
+          // 3. Limpieza radical de buffers fantasmas para blindar el binario
+          if (ob_get_length()) {
+              ob_clean();
+          }
+          ob_start();
+
+          // 4. Protocolo de cabeceras HTTP rígidas para forzar descarga directa
+          header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
+          header("Content-Disposition: attachment; filename=\"" . $nombre_archivo . "\"");
+          header("Cache-Control: max-age=0, no-cache, must-revalidate");
+          header("Pragma: public");
+
+          // 5. Inyección de la directiva BOM UTF-8 para proteger acentos y Ñs en Windows
+          echo "\xEF\xBB\xBF";
+
+          // 6. Construcción idéntica de la sábana de datos en una sola variable string
+          $tabla = '';
+          $tabla .= '
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+          <table border="0.5" cellpadding="4" cellspacing="0">
+            <thead>
+              <tr style="background-color: #1a237e; color: #ffffff; font-weight: bold; height: 35px; font-family: Arial, sans-serif; font-size: 10px; text-transform: uppercase;">
+                <th style="background-color: #1a237e; color: #ffffff;">COD. DA.</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COD. UE.</th>
+                <th style="background-color: #1a237e; color: #ffffff;">APER. PROG.</th>
+                <th style="background-color: #1a237e; color: #ffffff;">APER. PROY.</th>
+                <th style="background-color: #1a237e; color: #ffffff;">APER. ACT.</th>
+                <th style="background-color: #1a237e; color: #ffffff;">UNIDAD ORGANIZACIONAL</th>
+                <th style="background-color: #1a237e; color: #ffffff;">UNIDAD OPERATIVA</th>
+
+                <th style="background-color: #1a237e; color: #ffffff;">CITE ID</th>
+                <th style="background-color: #1a237e; color: #ffffff;">NOTA CITE</th>
+                <th style="background-color: #1a237e; color: #ffffff;">FECHA CITE</th>
+                <th style="background-color: #1a237e; color: #ffffff;">FECHA REGISTRO</th>
+                <th style="background-color: #1a237e; color: #ffffff;">CODIGO MODIFICACIÓN POA</th>
+                <th style="background-color: #1a237e; color: #ffffff;">ESTADO MODIFICACIÓN</th>
+                <th style="background-color: #1a237e; color: #ffffff;">CITE OBSERVACIÓN</th>
+                <th style="background-color: #1a237e; color: #ffffff;">TIPO DE REGISTRO</th>
+
+                <th style="background-color: #1a237e; color: #ffffff;">COD. ACT.</th>
+                <th style="background-color: #1a237e; color: #ffffff;">PARTIDA</th>
+                <th style="background-color: #1a237e; color: #ffffff;">DETALLE REQUERIMIENTO</th>
+                <th style="background-color: #1a237e; color: #ffffff;">UNIDAD MEDIDA</th>
+                <th style="background-color: #1a237e; color: #ffffff;">CANTIDAD</th>
+                <th style="background-color: #1a237e; color: #ffffff;">PRECIO</th>
+                <th style="background-color: #1a237e; color: #ffffff;">COSTO TOTAL</th>
+                
+                <!-- Meses Programados -->
+                <th style="background-color: #2e7d32; color: #ffffff;">ENE.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">FEB.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">MAR.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">ABR.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">MAY.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">JUN.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">JUL.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">AGO.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">SEP.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">OCT.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">NOV.</th>
+                <th style="background-color: #2e7d32; color: #ffffff;">DIC.</th>
+                <th style="background-color: #1a237e; color: #ffffff;">OBSERVACIÓN</th>
+                <th style="background-color: #1a237e; color: #ffffff;">TIPO DE ACCIÓN</th>
+                <th style="background-color: #1a237e; color: #ffffff;">RESPONSABLE</th>
+              </tr>
+            </thead>
+            <tbody style="font-family: Arial, sans-serif; font-size: 9px;">';
+
+            foreach ($historial_form5 as $row) {
+                $tabla .= '<tr style="vertical-align: middle;">';
+                    // Formato de texto estricto (vnd.ms-excel.numberformat:@) para amarrar ceros a la izquierda
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . (!empty($row['dep_cod']) ? strtoupper($row['dep_cod']) : '0') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . (!empty($row['dist_cod']) ? strtoupper($row['dist_cod']) : '0') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . $row['aper_programa'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . $row['aper_proyecto'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . $row['aper_actividad'] . '</td>';
+                    
+                    $tabla .= '<td>' . htmlspecialchars($row['tipo'] . ' ' . $row['proy_nombre'] . ' - ' . $row['abrev'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars($row['tipo_subactividad'] . ' ' . $row['com_componente'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    
+                    $tabla .= '<td style="text-align: center;">' . intval($row['cite_id']) . '</td>';
+                    $tabla .= '<td>' . htmlspecialchars($row['cite_nota'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . $row['cite_fecha'] . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . $row['cite_creacion'] . '</td>';
+
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . htmlspecialchars($row['cite_codigo'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . htmlspecialchars($row['estado_modificacion'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['cite_observacion']) ? $row['cite_observacion'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . htmlspecialchars($row['tipo_modificacion_poa'], ENT_QUOTES, 'UTF-8') . '</td>';
+
+                    // 🛠️ SINCRO: 'prod_cod' mapeado desde tu última función relacional SQL de Postgres
+                    $tabla .= '<td style="text-align: center; font-weight: bold; color: #1e3a8a;">' . intval($row['prod_cod']) . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['par_codigo'] . '</td>';
+                    
+                    // 🌟 REPARADO: Protección perimetral htmlspecialchars contra caracteres comerciales rotos
+                    $tabla .= '<td>' . htmlspecialchars($row['ins_detalle'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . htmlspecialchars($row['ins_unidad_medida'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    
+                    $tabla .= '<td style="text-align: right; mso-number-format:\'#,##0.00\';">' . floatval($row['ins_cant_requerida']) . '</td>';
+                    $tabla .= '<td style="text-align: right; mso-number-format:\'#,##0.00\';">' . floatval($row['ins_costo_unitario']) . '</td>';
+                    $tabla .= '<td style="text-align: right; mso-number-format:\'#,##0.00\'; font-weight: bold;">' . floatval($row['ins_costo_total']) . '</td>';
+
+                    // 🌟 REPARADO CORE: Corrección sintáctica del text-align y limpieza del style de meses
+                    for ($i = 1; $i <= 12; $i++) {
+                        $val_mes = isset($row['mes' . $i]) ? floatval($row['mes' . $i]) : 0.00;
+                        $estilo_mes = ($val_mes > 0) ? 'background-color: #f0fdf4; font-weight: bold; color: #15803d;' : 'color: #94a3b8;';
+                        
+                        $tabla .= '<td style="text-align: right; mso-number-format:\'#,##0.00\'; ' . $estilo_mes . '">' . ($val_mes > 0 ? $val_mes : '0') . '</td>';
+                    }
+                    
+                    $tabla .= '<td>' . htmlspecialchars(!empty($row['ins_observacion']) ? $row['ins_observacion'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: center; font-weight: bold;">' . htmlspecialchars($row['tipo_de_accion'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: left; text-transform: uppercase;">' . htmlspecialchars($row['fun_usuario'], ENT_QUOTES, 'UTF-8') . '</td>';
+                $tabla .= '</tr>';
+            }
+
+          $tabla .= '
+            </tbody>
+          </table>';
+
+          // Imprimimos la variable que contiene el HTML y vaciamos el buffer
+          echo $tabla;
+          ob_end_flush();
+          exit;
+      } else {
+          echo "<h3>⚠️ Error SIIPLAS: No se encontraron registros de modificacion cargados para los criterios seleccionados.</h3>";
+      }
     }
+
+
+
+
+
+
+
+
+
+    /*------------------------- TEMPORALIDAD PRODUCTOS ----------------------------*/
+    // public function temporalizacion_prod($prod_id,$gestion){
+    //     $prod=$this->model_producto->get_producto_id($prod_id); /// Producto Id
+    //     $programado=$this->model_producto->producto_programado($prod_id,$gestion); /// Producto Programado
+
+    //     $m[0]='g_id';
+    //     $m[1]='enero';
+    //     $m[2]='febrero';
+    //     $m[3]='marzo';
+    //     $m[4]='abril';
+    //     $m[5]='mayo';
+    //     $m[6]='junio';
+    //     $m[7]='julio';
+    //     $m[8]='agosto';
+    //     $m[9]='septiembre';
+    //     $m[10]='octubre';
+    //     $m[11]='noviembre';
+    //     $m[12]='diciembre';
+
+    //     for ($i=1; $i <=12 ; $i++) { 
+    //       $prog[1][$i]=0;
+    //       $prog[2][$i]=0;
+    //       $prog[3][$i]=0;
+    //     }
+
+    //     $pa=0;
+    //     if(count($programado)!=0){
+    //         for ($i=1; $i <=12 ; $i++) { 
+    //           $prog[1][$i]=$programado[0][$m[$i]];
+    //         } 
+    //     }
+        
+    //     $tr_return = '';
+    //     $tr_return .= '<table class="table table-bordered">
+    //                     <thead>
+    //                     <tr >
+    //                         <th style="width:6%;" bgcolor="#6ec7bc"><font color=#fff></font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>ENE.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>FEB.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>MAR.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>ABR.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>MAY.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>JUN.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>JUL</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>AGO.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>SEPT.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>OCT.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>NOV.</font></th>
+    //                         <th style="width:7%;" bgcolor="#6ec7bc"><font color=#fff>DIC.</font></th>
+    //                     </tr>
+    //                     </thead>
+    //                     <tbody>
+    //                       <tr >
+    //                       <td>P.</td>';
+    //                       for($i = 1 ;$i<=12 ;$i++){
+    //                         $tr_return .= '<td>'.$prog[1][$i].'</td>';
+    //                       }
+    //                       $tr_return .= '
+    //                       </tr>
+    //                     </tbody>
+    //                 </table>';
+    //     return $tr_return;
+    // }
 
     /*==============================================================================*/
 
@@ -427,36 +577,36 @@ class Cmodificaciones extends CI_Controller {
 
 
     /*------ TEMPORALIZACION DE PRODUCTOS (nose esta tomando encuenta lb) ------*/
-    public function temporalizacion_productos($prod_id){
-      $producto = $this->model_producto->get_producto_id($prod_id);
-      $prod_prog= $this->model_producto->producto_programado($prod_id,$this->gestion);//// Temporalidad Programado
+    // public function temporalizacion_productos($prod_id){
+    //   $producto = $this->model_producto->get_producto_id($prod_id);
+    //   $prod_prog= $this->model_producto->producto_programado($prod_id,$this->gestion);//// Temporalidad Programado
 
-      $mp[1]='enero';
-      $mp[2]='febrero';
-      $mp[3]='marzo';
-      $mp[4]='abril';
-      $mp[5]='mayo';
-      $mp[6]='junio';
-      $mp[7]='julio';
-      $mp[8]='agosto';
-      $mp[9]='septiembre';
-      $mp[10]='octubre';
-      $mp[11]='noviembre';
-      $mp[12]='diciembre';
+    //   $mp[1]='enero';
+    //   $mp[2]='febrero';
+    //   $mp[3]='marzo';
+    //   $mp[4]='abril';
+    //   $mp[5]='mayo';
+    //   $mp[6]='junio';
+    //   $mp[7]='julio';
+    //   $mp[8]='agosto';
+    //   $mp[9]='septiembre';
+    //   $mp[10]='octubre';
+    //   $mp[11]='noviembre';
+    //   $mp[12]='diciembre';
 
-      for ($i=1; $i <=12 ; $i++) { 
-        $matriz[1][$i]=0; /// Programado
-      }
+    //   for ($i=1; $i <=12 ; $i++) { 
+    //     $matriz[1][$i]=0; /// Programado
+    //   }
       
-      $pa=0; $ea=0;
-      if(count($prod_prog)!=0){
-        for ($i=1; $i <=12 ; $i++) { 
-          $matriz[1][$i]=$prod_prog[0][$mp[$i]];
-        }
-      }
+    //   $pa=0; $ea=0;
+    //   if(count($prod_prog)!=0){
+    //     for ($i=1; $i <=12 ; $i++) { 
+    //       $matriz[1][$i]=$prod_prog[0][$mp[$i]];
+    //     }
+    //   }
 
-      return $matriz;
-    }
+    //   return $matriz;
+    // }
     /*-------------------------------- GENERAR MENU -------------------------------------*/
     function menu($mod){
       $enlaces=$this->menu_modelo->get_Modulos($mod);

@@ -1,4 +1,5 @@
 <?php
+//// controlador para Modificaciones Presupuestarias, Techos, optimizar con cmod_requerimientos
 class Cmod_presupuestario extends CI_Controller {  
     public $rol = array('1' => '3','2' => '6','3' => '4'); 
     public function __construct (){

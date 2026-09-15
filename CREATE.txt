@@ -1643,3 +1643,120 @@ ALTER TABLE public.vista_temporalidad_insumo_historial2
                 Inner Join vista_temporalidad_insumo_historial2 as temp On temp.insh_id=ih.insh_id
                 where mod.cite_activo=1
                 order by mod.cite_id desc
+
+
+                --------------------------
+
+                HISTORIAL DE MODIFICACION DE REQUERIMIENTOS POR UNIDAD ORGANIZACIONAL
+
+                CREATE OR REPLACE FUNCTION public.fn_historial_modificaciones_poa_form5(
+  IN p_proy_id numeric, -- 🛠️ REPARADO: Prefijo p_ para extinguir ambigüedad de variables
+  IN p_gestion integer
+)
+  RETURNS TABLE(
+    -- [1 al 17] Cabecera contextual del CITE de Modificación
+    proy_id numeric, aper_id numeric, cite_id numeric, com_id numeric,
+    cite_nota character varying, cite_fecha timestamp without time zone,
+    cite_creacion timestamp without time zone, cite_codigo text,
+    cite_estado integer, estado_modificacion text, cite_observacion character varying,
+    tipo_modificacion integer, tipo_modificacion_poa text,
+    tipo_subactividad character varying, com_componente character varying,
+    prod_id numeric, prod_cod integer,
+
+    -- [18 al 27] Detalle Técnico del Insumo Histórico
+    ins_codigo character varying, ins_cant_requerida numeric, ins_costo_unitario numeric,
+    ins_costo_total numeric, ins_detalle character varying, ins_unidad_medida character varying,
+    ins_observacion character varying, par_id integer, par_codigo integer,
+    par_nombre character varying,
+    
+    -- [28 al 41] Sábana Horizontal de Distribución Mensual (Mapeada de temp.*)
+    insh_id integer, programado_total numeric,
+    mes1 numeric, mes2 numeric, mes3 numeric, mes4 numeric, mes5 numeric, mes6 numeric,
+    mes7 numeric, mes8 numeric, mes9 numeric, mes10 numeric, mes11 numeric, mes12 numeric,
+    
+    -- [42 al 44] Auditoría de Firmas y Acciones del Operador
+    tipo_mod integer, tipo_de_accion text, fun_usuario character varying
+  ) AS
+$BODY$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        mod.proy_id::numeric,
+        mod.aper_id::numeric,
+        mod.cite_id::numeric,
+        mod.com_id::numeric,
+        mod.cite_nota::character varying,
+        mod.cite_fecha::timestamp without time zone,
+        mod.fecha_creacion::timestamp without time zone,
+        mod.cite_codigo::text,
+        mod.cite_estado::integer,
+        CASE 
+            WHEN mod.cite_estado = 0 THEN 'NO CERRADO'::text
+            WHEN mod.cite_estado = 1 THEN 'CONCLUIDO'::text
+            ELSE 'NINGUNO'::text
+        END AS estado_modificacion,
+        mod.cite_observacion::character varying,
+        mod.tipo_modificacion::integer,
+        CASE 
+            WHEN mod.tipo_modificacion = 0 THEN 'REGISTRO POA'::text
+            WHEN mod.tipo_modificacion = 1 THEN 'REVERSION POA'::text
+            ELSE 'NINGUNO'::text
+        END AS tipo_modificacion_poa,
+        mod.tipo_subactividad::character varying,
+        mod.com_componente::character varying,
+        mod.prod_id::numeric, 
+        -- 🛠️ REPARADO: Control de nulos si la actividad física fue purgada del Form 4
+        COALESCE(p.prod_cod, 0)::integer AS prod_cod,
+      
+        ih.ins_codigo::character varying,
+        ih.ins_cant_requerida::numeric,
+        ih.ins_costo_unitario::numeric,
+        ih.ins_costo_total::numeric,
+        ih.ins_detalle::character varying,
+        ih.ins_unidad_medida::character varying,
+        ih.ins_observacion::character varying,
+        ih.par_id::integer,
+        par.par_codigo::integer,
+        par.par_nombre::character varying,
+        
+        -- 🛠️ REPARADO: Desglose explícito posicional de la vista mensual (Evita temp.*)
+        temp.insh_id::integer,
+        COALESCE(temp.programado_total, 0.00)::numeric,
+        COALESCE(temp.mes1, 0.00)::numeric, COALESCE(temp.mes2, 0.00)::numeric,
+        COALESCE(temp.mes3, 0.00)::numeric, COALESCE(temp.mes4, 0.00)::numeric,
+        COALESCE(temp.mes5, 0.00)::numeric, COALESCE(temp.mes6, 0.00)::numeric,
+        COALESCE(temp.mes7, 0.00)::numeric, COALESCE(temp.mes8, 0.00)::numeric,
+        COALESCE(temp.mes9, 0.00)::numeric, COALESCE(temp.mes10, 0.00)::numeric,
+        COALESCE(temp.mes11, 0.00)::numeric, COALESCE(temp.mes12, 0.00)::numeric,
+        
+        ih.tipo_mod::integer,
+        CASE 
+            WHEN ih.tipo_mod = 1 THEN 'ITEM ADICIONADO'::text
+            WHEN ih.tipo_mod = 2 THEN 'ITEM MODIFICADO'::text
+            WHEN ih.tipo_mod = 3 THEN 'ITEM ELIMINADO'::text
+            ELSE 'NINGUNO'::text
+        END AS tipo_de_accion,
+        f.fun_usuario::character varying
+        
+    FROM public.lista_modificacion_requerimiento(p_proy_id, p_gestion) mod
+    INNER JOIN public.insumos_historial ih ON ih.cite_id = mod.cite_id
+    INNER JOIN public.partidas par ON par.par_id = ih.par_id
+    
+    -- 🛠️ REPARADO CORE: Mutado de INNER a LEFT JOIN. Si el producto se borró de la grilla web, 
+    -- la traza de auditoría del requerimiento histórico permanece intacta al 100% contable
+    LEFT JOIN public._productos p ON p.prod_id = ih.id
+    
+    INNER JOIN public.vista_temporalidad_insumo_historial2 temp ON temp.insh_id = ih.insh_id
+    INNER JOIN public.funcionario f ON mod.fun_id = f.fun_id
+    
+    WHERE mod.cite_activo = 1
+    ORDER BY mod.cite_id DESC, ih.insh_id ASC;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- Sello institucional de propiedad
+ALTER FUNCTION public.fn_historial_modificaciones_poa_form5(numeric, integer)
+  OWNER TO postgres;

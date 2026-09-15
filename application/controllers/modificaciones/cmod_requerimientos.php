@@ -1,5 +1,5 @@
 <?php
-//// TECHO PRESUPUESTARIO 
+//// TECHO PRESUPUESTARIO unir con Cmod_requerimiento
 class Cmod_requerimientos extends CI_Controller {  
     public $rol = array('1' => '3','2' => '6','3' => '4'); 
     public function __construct (){
