@@ -1530,3 +1530,116 @@ BEGIN
         ins.ins_id ASC;
 END;
 $BODY$;
+
+
+--------------------------------
+
+CREATE OR REPLACE VIEW public.vista_temporalidad_insumo_historial2 AS 
+ SELECT t.insh_id,
+    COALESCE(sum(t.ipm_fis), 0.00)::numeric(18,2) AS programado_total,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 1 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes1,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 2 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes2,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 3 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes3,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 4 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes4,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 5 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes5,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 6 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes6,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 7 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes7,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 8 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes8,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 9 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes9,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 10 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes10,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 11 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes11,
+    COALESCE(sum(
+        CASE
+            WHEN t.mes_id = 12 THEN t.ipm_fis
+            ELSE NULL::numeric
+        END), 0.00)::numeric(18,2) AS mes12
+   FROM temporalidad_prog_insumo_historial t
+  GROUP BY t.insh_id;
+
+ALTER TABLE public.vista_temporalidad_insumo_historial2
+  OWNER TO postgres;
+
+
+  -----------------------------
+
+
+  select 
+        mod.proy_id,
+        mod.aper_id,
+        mod.cite_id,
+        mod.com_id,
+        mod.cite_nota,
+        mod.cite_fecha,
+        mod.fecha_creacion,
+        mod.cite_codigo,
+        mod.cite_estado,
+        mod.tipo_modificacion,
+        mod.tipo_subactividad,
+        mod.com_componente,
+        mod.prod_id, 
+        p.prod_cod,
+        ih.insh_id,
+        ih.ins_codigo,
+        ih.ins_cant_requerida,
+        ih.ins_costo_unitario,
+        ih.ins_costo_total,
+        ih.ins_detalle,
+        ih.ins_unidad_medida,
+        ih.ins_observacion,
+        ih.tipo_mod,
+        ih.par_id,
+        par.par_codigo,
+        par.par_nombre,
+        temp.*
+        
+                from lista_modificacion_requerimiento(4009,2026) mod
+                Inner Join insumos_historial as ih On ih.cite_id=mod.cite_id
+                Inner Join partidas as par On par.par_id=ih.par_id
+                Inner Join _productos as p On p.prod_id=ih.id
+                Inner Join vista_temporalidad_insumo_historial2 as temp On temp.insh_id=ih.insh_id
+                where mod.cite_activo=1
+                order by mod.cite_id desc
