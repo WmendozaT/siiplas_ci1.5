@@ -583,7 +583,7 @@
 
             // 6. Construcción idéntica de la sábana de datos en una sola variable string
             $tabla = '';
-            $tabla .= $this->stream_lista_excel_requerimientos($form5,$tp_id);
+            $tabla .= $this->stream_lista_excel_requerimientos($form5,$tp_id); /// lista de requerimientos Insitucional segun el tipo de gasto
             
 
             // 7. Despacho directo del buffer de datos purificado hacia la red institucional
@@ -607,31 +607,33 @@
 
       $tabla='';
       $tabla .= '
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-            <table border="0.5">
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+          <table border="0.5" cellpadding="4" cellspacing="0">
             <thead>
-              <tr style="background-color: #1a237e; color: #ffffff; font-weight: bold; height: 35px;">
-                  <th style="background-color: #1a237e; color: #ffffff;">REG.</th>
+              <tr style="background-color: #1a237e; color: #ffffff; font-weight: bold; height: 35px; font-family: Arial, sans-serif; font-size: 10px; text-transform: uppercase;">
+                  <th style="background-color: #1a237e; color: #ffffff;">DEP. ID.</th>
                   <th style="background-color: #1a237e; color: #ffffff;">COD. REG.</th>
                   <th style="background-color: #1a237e; color: #ffffff;">REGIONAL</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. DIST</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. DISTRITAL</th>
 
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. DA</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. UE</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">DIST. ID.</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. DIST.</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">DISTRITAL</th>
 
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. PROG.-'.$this->gestion.'</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. PROY.-'.$this->gestion.'</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. ACT.-'.$this->gestion.'</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. DA.</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. UE.</th>
+
+                  <th style="background-color: #1a237e; color: #ffffff;">APER. PROG.-'.$this->gestion.'</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">APER. PROY.-'.$this->gestion.'</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">APER. ACT.-'.$this->gestion.'</th>
 
                   <th style="background-color: #1a237e; color: #ffffff;">TIPO GASTO</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. SISIN</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">CÓDIGO SISIN</th>
 
                   <th style="background-color: #1a237e; color: #ffffff;">'.$titulo_tpgasto.'</th>
                   <th style="background-color: #1a237e; color: #ffffff;">'.$titulo_tpcomponente.'</th>
                   
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. ACP</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">COD. OPE</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. ACP.</th>
+                  <th style="background-color: #1a237e; color: #ffffff;">COD. OPE.</th>
 
                   <th style="background-color: #1a237e; color: #ffffff;">DESCRIPCIÓN OPERACIÓN '.$this->gestion.'</th>
 
@@ -639,7 +641,6 @@
                   <th style="background-color: #1a237e; color: #ffffff;">PRIORIDAD POA</th>
                   <th style="background-color: #1a237e; color: #ffffff;">PRIORIDAD SIGEP</th>
                   <th style="background-color: #1a237e; color: #ffffff;">DESCRIPCIÓN DE LA ACTIVIDAD</th>
-                  <th style="background-color: #1a237e; color: #ffffff;">TIPO INDICADOR</th>
                   <th style="background-color: #1a237e; color: #ffffff;">UNIDAD RESPONSABLE</th>
                   <th style="background-color: #1a237e; color: #ffffff;">META ANUAL</th>
                   
@@ -670,64 +671,68 @@
                   <th style="background-color: #1a237e; color: #ffffff;">TP. POA</th>
                 </tr>
               </thead>
-              <tbody>';
+              <tbody style="font-family: Arial, sans-serif; font-size: 9px;">';
 
             foreach ($form4 as $row) {
                 $priori = (intval($row['prod_priori']) === 1) ? 'SÍ' : 'NO';
                 $priori_sigep = (intval($row['sigep_priori']) === 1) ? 'SÍ' : 'NO';
 
-                $tabla .= '<tr>';
+                $tabla .= '<tr style="vertical-align: middle;">';
                     // Formato de texto estricto (@) para amarrar ceros a la izquierda (ej. "01")
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . strtoupper($row['dep_id']) . '</td>';
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;"></b>' . (!empty($row['dep_cod']) ? strtoupper($row['dep_cod']) : '0') . '</b></td>';
-                    $tabla .= '<td><b>' . strtoupper(htmlspecialchars(!empty($row['dep_departamento']) ? $row['dep_departamento'] : 'S/R', ENT_QUOTES, 'UTF-8')) . '</b></td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . strtoupper($row['dep_id']) . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;"></b>' . (!empty($row['dep_cod']) ? strtoupper($row['dep_cod']) : '0') . '</b></td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;"><b>' . strtoupper(htmlspecialchars(!empty($row['dep_departamento']) ? $row['dep_departamento'] : 'S/R', ENT_QUOTES, 'UTF-8')) . '</b></td>';
 
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;"></b>' . (!empty($row['dist_cod']) ? strtoupper($row['dist_cod']) : '0') . '</b></td>';
-                    $tabla .= '<td><b>' . strtoupper(htmlspecialchars(!empty($row['dist_distrital']) ? $row['dist_distrital'] : 'S/R', ENT_QUOTES, 'UTF-8')) . '</b></td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . strtoupper($row['dist_id']) . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;"></b>' . (!empty($row['dist_cod']) ? strtoupper($row['dist_cod']) : '0') . '</b></td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;"><b>' . strtoupper(htmlspecialchars(!empty($row['dist_distrital']) ? $row['dist_distrital'] : 'S/R', ENT_QUOTES, 'UTF-8')) . '</b></td>';
 
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . (!empty($row['da']) ? strtoupper($row['da']) : '0') . '</td>';
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . (!empty($row['ue']) ? strtoupper($row['ue']) : '0') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . (!empty($row['da']) ? strtoupper($row['da']) : '0') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . (!empty($row['ue']) ? strtoupper($row['ue']) : '0') . '</td>';
 
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['aper_programa'] . '</td>';
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['aper_proyecto'] . '</td>';
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['aper_actividad'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . $row['aper_programa'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . $row['aper_proyecto'] . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . $row['aper_actividad'] . '</td>';
 
-                    $tabla .= '<td>' . htmlspecialchars(!empty($row['tipo_gasto_nombre']) ? $row['tipo_gasto_nombre'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . htmlspecialchars(!empty($row['tipo_gasto_nombre']) ? $row['tipo_gasto_nombre'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
                     
                     // 🌟 REPARADO CORE 1: Se corrige la variable cortada $r por $row y se blinda el SISIN
-                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: left;">' . (!empty($row['proy_sisin']) ? strtoupper($row['proy_sisin']) : '0') . '</td>';
+                    $tabla .= '<td style="text-align: center; font-weight: bold;">' . (!empty($row['proy_sisin']) ? strtoupper($row['proy_sisin']) : '0') . '</td>';
 
-                    $tabla .= '<td>' . htmlspecialchars($row['tipo'] . ' ' . $row['proy_nombre'] . ' ' . $row['abrev'], ENT_QUOTES, 'UTF-8') . '</td>';
-                    $tabla .= '<td>' . htmlspecialchars($row['tipo_subactividad'] . ' ' . $row['com_componente'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . htmlspecialchars($row['tipo'] . ' ' . $row['proy_nombre'] . ' ' . $row['abrev'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . htmlspecialchars($row['tipo_subactividad'] . ' ' . $row['com_componente'], ENT_QUOTES, 'UTF-8') . '</td>';
                     
-                    $tabla .= '<td style="text-align: center; font-weight: bold;">' . intval($row['prod_id']) . '</td>';
-                    
-                    $tabla .= '<td style="text-align: center;">' . intval($row['og_codigo']) . '</td>';
-                    $tabla .= '<td style="text-align: center;">' . intval($row['or_codigo']) . '</td>';
-                    $tabla .= '<td ><b>' . htmlspecialchars(!empty($row['or_objetivo']) ? $row['or_objetivo'] : 'Sin Alineacion ..', ENT_QUOTES, 'UTF-8') . '</b></td>';
+                    $tabla .= '<td style="text-align: center; font-weight: bold;">' . intval($row['og_codigo']) . '</td>';
+                    $tabla .= '<td style="text-align: center; font-weight: bold;">' . intval($row['or_codigo']) . '</td>';
+                    $tabla .= '<td style="text-align: right; font-weight: bold;"><b>' . htmlspecialchars(!empty($row['or_objetivo']) ? $row['or_objetivo'] : 'Sin Alineacion ..', ENT_QUOTES, 'UTF-8') . '</b></td>';
                     $tabla .= '<td style="text-align: center; font-weight: bold; color: blue;">' . intval($row['prod_cod']) . '</td>';
                     $tabla .= '<td style="text-align: center;">' . $priori . '</td>';
                     $tabla .= '<td style="text-align: center;color: green;"><b>' . $priori_sigep . '</b></td>';
 
                     // 🌟 COMPLETADO CORE: Columnas descriptivas blindadas contra caracteres especiales XML/Excel
-                    $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_producto']) ? $row['prod_producto'] : 'S/D', ENT_QUOTES, 'UTF-8') . '</td>';
-                    $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_resultado']) ? $row['prod_resultado'] : 'S/D', ENT_QUOTES, 'UTF-8') . '</td>';
-
-                    $tabla .= '<td>' . htmlspecialchars(!empty($row['indi_descripcion']) ? $row['indi_descripcion'] : 'S/I', ENT_QUOTES, 'UTF-8') . '</td>';
-                    $tabla .= '<td>' . htmlspecialchars(!empty($row['mt_tipo']) ? $row['mt_tipo'] : 'S/I', ENT_QUOTES, 'UTF-8') . '</td>';
-                    
-
-                    $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_indicador']) ? $row['prod_indicador'] : 'S/D', ENT_QUOTES, 'UTF-8') . '</td>';
-
+                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . htmlspecialchars(!empty($row['prod_producto']) ? $row['prod_producto'] : 'S/D', ENT_QUOTES, 'UTF-8') . '</td>';
                     // Evaluación de tipo de estructura (Normal / Bolsa)
                     if (intval($row['por_id']) === 0) {
-                        $tabla .= '<td>' . htmlspecialchars(!empty($row['prod_unidades']) ? $row['prod_unidades'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                        $tabla .= '<td style="text-align: right; font-weight: bold;">' . htmlspecialchars(!empty($row['prod_unidades']) ? $row['prod_unidades'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
                     } else {
-                        $tabla .= '<td>' . htmlspecialchars(!empty($row['unidad_responsable']) ? $row['unidad_responsable'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
+                        $tabla .= '<td style="text-align: right; font-weight: bold;">' . htmlspecialchars(!empty($row['unidad_responsable']) ? $row['unidad_responsable'] : 'S/R', ENT_QUOTES, 'UTF-8') . '</td>';
                     }
 
                     // Meta Anual formateada como número contable válido
-                    $tabla .= '<td style="text-align: right; font-weight: bold;">' . number_format($row['prod_meta'], 2, '.', '') . '</td>';
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center; font-weight: bold;">' . $row['prod_meta'] . '</td>';
+
+                    $tabla .= '<td style="vnd.ms-excel.numberformat:@; text-align: center;">' . $row['par_codigo'] . '</td>';
+                    
+                    // 🌟 REPARADO: Protección perimetral htmlspecialchars contra caracteres comerciales rotos
+                    $tabla .= '<td>' . htmlspecialchars($row['ins_detalle'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    $tabla .= '<td style="text-align: center;">' . htmlspecialchars($row['ins_unidad_medida'], ENT_QUOTES, 'UTF-8') . '</td>';
+                    
+                    $tabla .= '<td style="text-align: right; mso-number-format:\'#,##0.00\';">' . floatval($row['ins_cant_requerida']) . '</td>';
+                    $tabla .= '<td style="text-align: right; mso-number-format:\'#,##0.00\';">' . floatval($row['ins_costo_unitario']) . '</td>';
+                    $tabla .= '<td style="text-align: right; mso-number-format:\'#,##0.00\'; font-weight: bold;">' . floatval($row['ins_costo_total']) . '</td>';
+
+
+
 
                     // 🌟 COMPLETADO MÁSTER BUCLE 1: Programación Física Mensual (P. ENE a P. DIC)
                     for ($i = 1; $i <= 12; $i++) {
