@@ -460,7 +460,7 @@ class model_producto extends CI_Model {
     function lista_form4_x_regional_completo($dep_id,$tp_id){
         $sql = 'SELECT poa.*
                 from get_formulario4_consolidado_nacional('.$this->gestion.') poa
-                where poa.dep_id='.$dep_id.' and poa.tp_id='.$tp_id.'
+                where poa.dep_id='.$dep_id.'
                 ORDER BY poa.dep_id,poa.dist_id,poa.aper_programa,poa.aper_proyecto,poa.aper_actividad,poa.proy_id,poa.com_id,poa.prod_id,poa.prod_cod asc'; 
 
         $query = $this->db->query($sql);
@@ -470,7 +470,7 @@ class model_producto extends CI_Model {
     function lista_form4_x_distrital_completo($dep_id,$tp_id){
         $sql = 'SELECT poa.*
                 from get_formulario4_consolidado_nacional('.$this->gestion.') poa
-                where dist_id='.$dist_id.' and tp_id='.$dist_id.'
+                where dist_id='.$dist_id.'
                 ORDER BY poa.dist_id,poa.aper_programa,poa.aper_proyecto,poa.aper_actividad,poa.proy_id,poa.com_id,poa.prod_id,poa.prod_cod asc'; 
 
         $query = $this->db->query($sql);

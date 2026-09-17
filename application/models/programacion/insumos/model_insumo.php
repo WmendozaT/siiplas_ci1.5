@@ -722,12 +722,36 @@ class Model_insumo extends CI_Model{
     }
 
 
-    // Lista Consolidado Institucional Form N5 - 2027
+    // Excel Lista Consolidado Institucional Form N5 - 2027
     function list_requerimientos_Institucional($tp_id){
         $sql = '
             SELECT *
             from fn_reporte_poa_nacional_detalle('.$this->gestion.')
             where tp_id='.$tp_id.'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    // Excel Lista Consolidado Regional Form N5 - 2027
+    function list_requerimientos_regional($dep_id,$tp_id){
+        $sql = '
+            SELECT *
+            from fn_reporte_poa_nacional_detalle('.$this->gestion.')
+            where dep_id='.$dep_id.' and tp_id='.$tp_id.'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    // Excel Lista Consolidado Distrital Form N5 - 2027
+    function list_requerimientos_distrital($dist_id,$tp_id){
+        $sql = '
+            SELECT *
+            from fn_reporte_poa_nacional_detalle('.$this->gestion.')
+            where dist_id='.$dist_id.' and tp_id='.$tp_id.'';
 
         $query = $this->db->query($sql);
         return $query->result_array();

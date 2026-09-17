@@ -137,7 +137,7 @@ $route['prog/update_insumos/(:any)'] = 'programacion/crequerimiento/update_id_re
 ///=== Reporte Consolidado POA 2021
 $route['rep/list_operaciones_req'] = 'reportes_cns/rep_operaciones/list_regiones'; ///// Menu Lista de Regiones Consolidado POA (2020-2021)
 $route['rep/get_uadministrativas'] = 'reportes_cns/rep_operaciones/get_unidades_administrativas'; ////// Combo Unidades Administrativas (CONSOLIDADO REPORTES 2020-2021)
-$route['rep/exportar_form4/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN4/$1/$2/$3'; ///// Exportar Form4 2026
+$route['rep/exportar_form4/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN4_regional/$1/$2/$3'; ///// Exportar Form4 2026
 $route['rep/exportar_form4_institucional'] = 'reportes_cns/exporting_datos/exportar_formularioN4_Institucional'; ///// Exportar formulario N 4 Institucional
 $route['rep/exportar_detalle_reg_dist_partidas_asignadas_institucional'] = 'reportes_cns/exporting_datos/consolidado_partidas_reg_dist_asignadas_institucional'; ///// Exportar Consolidado Partidas Reg Dist (PPto Asignado) Institucional
 $route['rep/exportar_detalle_partidas_asignadas_regional'] = 'reportes_cns/exporting_datos/consolidado_partidas_regional'; ///// Exportar Consolidado Partidas (PPto Asignado) Institucional
@@ -155,8 +155,8 @@ $route['exportar_consulta_ppto_poa/(:any)'] = 'reportes_cns/crep_consultafinanci
 
 
 $route['rep/exportar_form5_institucional/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN5_Institucional/$1'; ///// Exportar Requerimientos Institucional
-$route['rep/exportar_form5/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN5/$1/$2/$3'; ///// Exportar Requerimientos regional- distrital 2026
-$route['rep/exportar_poa_oregional/(:any)']='reportes_cns/exporting_datos/ver_poa_oregional_distrital/$1/$2';// Consolidado operaciones por Objetivo Regional 2020-2021 (Distrital)
+$route['rep/exportar_form5/(:any)'] = 'reportes_cns/exporting_datos/exportar_formularioN5_regional/$1/$2/$3'; ///// Exportar Requerimientos regional- distrital 2027
+//$route['rep/exportar_poa_oregional/(:any)']='reportes_cns/exporting_datos/ver_poa_oregional_distrital/$1/$2';// Consolidado operaciones por Objetivo Regional 2020-2021 (Distrital)
 
 $route['rep/exportar_poa_uorganizacional/(:any)'] = 'reportes_cns/exporting_datos/exportar_poa_unidad_organizacional/$1/$2'; ///// Exportar POa 2026 Unidad Organizacional (Excel)
 $route['rep/exportar_poa_uresponsable/(:any)'] = 'reportes_cns/exporting_datos/exportar_poa_uresponsable/$1/$2'; ///// Exportar POa 2026 Unidad Responsable (Excel)

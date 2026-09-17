@@ -15,45 +15,45 @@ class Mrep_operaciones extends CI_Model {
     }
 
 
-    /*------ Lista Establecimientos de Salud 2021 ------*/
-    public function establecimientos_salud_distrital($dist_id){
-         $sql = 'select *
-                from vlista_establecimientos_salud es
-                Inner Join _proyectos as p On p.act_id=es.act_id
-                Inner Join aperturaproyectos as pp On pp.proy_id=p.proy_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=pp.aper_id
-                where es.dist_id='.$dist_id.' and es.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'';
+    // /*------ Lista Establecimientos de Salud 2021 ------*/
+    // public function establecimientos_salud_distrital($dist_id){
+    //      $sql = 'select *
+    //             from vlista_establecimientos_salud es
+    //             Inner Join _proyectos as p On p.act_id=es.act_id
+    //             Inner Join aperturaproyectos as pp On pp.proy_id=p.proy_id
+    //             Inner Join aperturaprogramatica as apg On apg.aper_id=pp.aper_id
+    //             where es.dist_id='.$dist_id.' and es.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
-    /*------ Lista Establecimientos de Salud 2021 ------*/
-    public function establecimientos_salud_regional($dep_id){
-         $sql = 'select *
-                from vlista_establecimientos_salud es
-                Inner Join _proyectos as p On p.act_id=es.act_id
-                Inner Join aperturaproyectos as pp On pp.proy_id=p.proy_id
-                Inner Join aperturaprogramatica as apg On apg.aper_id=pp.aper_id
-                where es.dep_id='.$dep_id.' and es.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'
-                order by es.dist_cod asc';
+    // /*------ Lista Establecimientos de Salud 2021 ------*/
+    // public function establecimientos_salud_regional($dep_id){
+    //      $sql = 'select *
+    //             from vlista_establecimientos_salud es
+    //             Inner Join _proyectos as p On p.act_id=es.act_id
+    //             Inner Join aperturaproyectos as pp On pp.proy_id=p.proy_id
+    //             Inner Join aperturaprogramatica as apg On apg.aper_id=pp.aper_id
+    //             where es.dep_id='.$dep_id.' and es.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and apg.aper_gestion='.$this->gestion.'
+    //             order by es.dist_cod asc';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*------ LISTA DE UNIDADES/PROYECTOS POR DISTRITAL 2020-2021 ------*/
-    public function list_unidades($dist_id,$tp_id){
-        if($tp_id==1){ /// Proyecto de Inversion
-            $sql = 'select * from lista_poa_pinversion_distrital('.$dist_id.','.$this->gestion.')';
-        }
-        else{
-            $sql = 'select * from lista_poa_gastocorriente_distrital('.$dist_id.','.$this->gestion.')';
-        }
+    // public function list_unidades($dist_id,$tp_id){
+    //     if($tp_id==1){ /// Proyecto de Inversion
+    //         $sql = 'select * from lista_poa_pinversion_distrital('.$dist_id.','.$this->gestion.')';
+    //     }
+    //     else{
+    //         $sql = 'select * from lista_poa_gastocorriente_distrital('.$dist_id.','.$this->gestion.')';
+    //     }
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*------ LISTA DE UNIDADES/PROYECTOS POR REGIONAL 2020-2021 ------*/
     // public function list_poa_gacorriente_pinversion_regional($dep_id,$tp_id){
@@ -70,7 +70,7 @@ class Mrep_operaciones extends CI_Model {
 
 
     /*------ LISTA DE POA (GASTO CORRIENTE / PROYECTO DE INVERSION - NACIONAL) 2020-2021 ------*/
-    public function list_poa_gastocorriente_pinversion($tp_id){
+/*    public function list_poa_gastocorriente_pinversion($tp_id){
         if($tp_id==1){ /// Proyecto de Inversion
             $sql = 'select * from lista_poa_pinversion_nacional('.$this->gestion.')';
         }
@@ -80,7 +80,7 @@ class Mrep_operaciones extends CI_Model {
 
         $query = $this->db->query($sql);
         return $query->result_array();
-    }
+    }*/
 
 
     /*------- OPERACIONES POR SERVICIO --------*/

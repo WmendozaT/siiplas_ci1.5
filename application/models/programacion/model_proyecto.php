@@ -956,7 +956,7 @@ class Model_proyecto extends CI_Model{
         return $query->result_array();
     }
 
-    /*=========== GET DEPARTAMENTO ============*/
+    /*=========== GET DEPARTAMENTO vigente 2027============*/
     public function get_departamento($dep_id){
         $sql = '
             select *
