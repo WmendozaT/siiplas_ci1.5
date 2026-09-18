@@ -34,7 +34,7 @@ class Genera_informacion extends CI_Controller{
 
     }
 
-    ////// LIBRERIAS PARA REPORTES GERENCIALES
+    ////// CONSULTA POA - LIBRERIAS PARA REPORTES GERENCIALES
 
     /*-- REPORTE 1 (LISTA DE UNIDADES/PROYECTOS DE INVERSIÓN) 2026 --*/
     public function lista_gastocorriente_pinversion($dep_id,$dist_id,$tp_id){

@@ -364,44 +364,44 @@ class Rep_operaciones extends CI_Controller {
 
 
     /* FORM 4 --- GET LISTA ACTIVIDADES / PROYECTOS DE INVERSION (2020 - 2021)---*/
-    public function get_unidades(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
+    // public function get_unidades(){
+    //   if($this->input->is_ajax_request() && $this->input->post()){
+    //     $post = $this->input->post();
        
-        $dep_id = $this->security->xss_clean($post['dep_id']);
-        $dist_id = $this->security->xss_clean($post['dist_id']);
-        $rep_id = $this->security->xss_clean($post['rep_id']);
-        $tp_id = $this->security->xss_clean($post['tp_id']);
+    //     $dep_id = $this->security->xss_clean($post['dep_id']);
+    //     $dist_id = $this->security->xss_clean($post['dist_id']);
+    //     $rep_id = $this->security->xss_clean($post['rep_id']);
+    //     $tp_id = $this->security->xss_clean($post['tp_id']);
        
-        if($dist_id==0){
-          $unidades=$this->mrep_operaciones->lista_unidad_pinversion_regional_distrital(0,$dep_id,$tp_id);
-        }
-        else{
-          $unidades=$this->mrep_operaciones->lista_unidad_pinversion_regional_distrital(1,$dist_id,$tp_id);
-        }
+    //     if($dist_id==0){
+    //       $unidades=$this->mrep_operaciones->lista_unidad_pinversion_regional_distrital(0,$dep_id,$tp_id);
+    //     }
+    //     else{
+    //       $unidades=$this->mrep_operaciones->lista_unidad_pinversion_regional_distrital(1,$dist_id,$tp_id);
+    //     }
         
-        $salida='';
-        if($tp_id==1){
-          foreach ($unidades as $row){
-            $salida.= "<option value='".$row['proy_id']."'>".strtoupper ($row['proyecto'])."</option>";
-          }
-        }
-        else{
-          foreach ($unidades as $row){
-            $salida.= "<option value='".$row['proy_id']."'>".$row['tipo']." ".strtoupper ($row['actividad'])." ".$row['abrev']."</option>";
-          }
-        }
+    //     $salida='';
+    //     if($tp_id==1){
+    //       foreach ($unidades as $row){
+    //         $salida.= "<option value='".$row['proy_id']."'>".strtoupper ($row['proyecto'])."</option>";
+    //       }
+    //     }
+    //     else{
+    //       foreach ($unidades as $row){
+    //         $salida.= "<option value='".$row['proy_id']."'>".$row['tipo']." ".strtoupper ($row['actividad'])." ".$row['abrev']."</option>";
+    //       }
+    //     }
 
-        $result = array(
-          'respuesta' => 'correcto',
-          'lista_actividad' => $salida,
-        );
+    //     $result = array(
+    //       'respuesta' => 'correcto',
+    //       'lista_actividad' => $salida,
+    //     );
           
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }
+    //     echo json_encode($result);
+    //   }else{
+    //       show_404();
+    //   }
+    // }
 
 
     /*--- get lista de Requerimientos por Unidad Responsable (Componente) (2020 - 2021)---*/
