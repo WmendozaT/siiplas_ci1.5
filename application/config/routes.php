@@ -367,8 +367,8 @@ $route['eval/valida_meval_act'] = 'ejecucion/cevaluacion/valida_mod_evaluar_acti
 /*--- SEGUIMIENTO POA (GASTO CORRIENTE-PROYECTO DE INVERSION 2021) ---*/
 $route['seg/seguimiento_poa'] = 'ejecucion/cseguimiento/lista_poa'; ///// lista de operaciones aprobadas
 $route['seg/tipo_seguimiento/(:any)'] = 'ejecucion/cseguimiento/tipo_seguimiento_poa/$1'; ///// Tipo de seguimiento POA
-$route['seg/formulario_seguimiento_poa/(:any)'] = 'ejecucion/cseguimiento/formulario_segpoa/$1'; ///// formulario de seguimiento
-$route['seg/formulario_seguimiento_poa_gc/(:any)'] = 'ejecucion/cseguimiento/formulario_segpoa_gasto_corriente/$1'; ///// formulario de seguimiento GASTO CORRIENTE
+$route['seg/formulario_seguimiento_poa/(:any)'] = 'ejecucion/cseguimiento/formulario_segpoa/$1'; ///// formulario de seguimiento Anterior
+$route['seg/formulario_seguimiento_poa_gc/(:any)'] = 'ejecucion/cseguimiento/formulario_segpoa_gasto_corriente/$1'; ///// formulario de seguimiento GASTO CORRIENTE Anterior
 $route['seg/ver_seguimientopoa/(:any)'] = 'ejecucion/cseguimiento/ver_evaluacion_poa/$1'; ///// Ver Evaluacion POA
 $route['seg/ver_reporte_seguimientopoa/(:any)'] = 'ejecucion/cseguimiento/ver_reportesegpoa/$1'; ///// Ver Reporte Seguimiento POA Mensual
 $route['seg/ver_reporte_evaluacionpoa/(:any)'] = 'ejecucion/cseguimiento/ver_reporteevalpoa/$1/$2'; ///// Ver Reporte Evaluacion POA Trimestral
@@ -378,8 +378,17 @@ $route['seg/notificacion_operaciones_mensual/(:any)'] = 'ejecucion/cseguimiento/
 $route['seg/notificacion_poa_componente_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_poa_mensual_componente/$1'; ///// Reporte Notificacion Seguimiento POA Mensual COMPONENTE
 $route['seg/reporte_consolidado_seguimientopoa_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_consolidadopoa_operaciones_mensual/$1/$2'; ///// Reporte formulario Seguimiento POA Mensual
 
+//// formulario de Seguimiento y Evaluacion POA 2027
+$route['formulario_seguimiento_poa/(:any)'] = 'ejecucion/cevaluacion_form4/formulario_seguimiento_poa/$1'; ///// formulario de seguimiento POa 2027
+
+
+
+
+
+
+
 /*--- SEGUIMIENTO EVALUACION POA (GASTO CORRIENTE-PROYECTO DE INVERSION 2021) ---*/
-$route['evalpoa/formulario_evaluacion_poa/(:any)'] = 'ejecucion/cevaluacion_poa/formulario_evaluacionpoa/$1'; ///// formulario de Evaluacion POA
+//$route['evalpoa/formulario_evaluacion_poa/(:any)'] = 'ejecucion/cevaluacion_poa/formulario_evaluacionpoa/$1'; ///// formulario de Evaluacion POA
 
 //====== REPORTE SEGUIMIENTO EVALUACION POA 2021
 $route['rep_seguimiento_poa'] = 'reporte_seguimiento_poa/crep_seguimientopoa/list_regiones';  /// MENU SEGUIMIENTO POA 2021

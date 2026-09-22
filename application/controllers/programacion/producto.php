@@ -87,6 +87,13 @@ class Producto extends CI_Controller {
       $data['componente'] = $this->model_componente->get_componente($com_id,$this->gestion);
       $data['stylo']=$this->programacionpoa->estilo_tabla_form4();
 
+      if($this->tp_adm==0){
+        if($this->conf_form4==0){
+          redirect('admin/proy/list_proy');
+        }
+      }
+   
+
       if (!empty($data['componente']) && count($data['componente']) != 0) {
           // A. Recuperamos la matriz cruda de actividades registradas actualmente
             $form4_crudo = $this->model_producto->lista_productos($com_id);

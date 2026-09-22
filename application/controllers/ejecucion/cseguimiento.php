@@ -274,9 +274,15 @@ class Cseguimiento extends CI_Controller {
                       <a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">
                        EJECUCION POA '.$this->verif_mes[2].' / '.$this->gestion.'
                       </a>';
+
                     }
                     else{
                       $tabla.='<center>'.$this->btn_seguimiento_evaluacion_poa($rowc['com_id']).'</center>';
+                      //$tabla.='<a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">REALIZAR SEGUIMIENTO POA v2</a>';
+                      //// Wilmer
+                      if($this->fun_id==399){
+                        $tabla.='<br><a href="'.site_url("").'/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">REALIZAR SEGUIMIENTO POA v2</a>';
+                      }
                     }
                     
                   $tabla.='
@@ -840,13 +846,38 @@ class Cseguimiento extends CI_Controller {
     }
   }
 
+  /// Actualizando Unidad Responsable
+  public function update_uresponsable($form4) {
+    foreach($form4 as $rowp) {
+      $info='';
+      if($rowp['uni_resp']!=0){
+        $info=$rowp['unidad_asignado_bolsa'];
+      }
+      $update_data = array(
+        'prod_unidades' => $info
+      );
+      
+      $this->db->where('prod_id', $rowp['prod_id']);
+      $this->db->update('_productos', $update_data);
+    }
+      
+    $this->db->trans_complete();
+  }
+
 
   //// FORMULARIO DE SEGUIMIENTO Y EVALUACION GASTO CORRIENTE
   public function formulario_segpoa_gasto_corriente($com_id){
-    $data['menu'] = $this->seguimientopoa->menu(4);
-    //$data['base'] = $this->seguimientopoa->menu(4);
+    //$data['menu'] = $this->seguimientopoa->menu(4);
     $componente = $this->model_componente->get_componente($com_id,$this->gestion); ///// DATOS DEL COMPONENTE
     if(count($componente)!=0){
+          $form4=$this->model_producto->lista_productos($com_id); /// lISTA DE FORM 4
+
+          /// ---- Actualizando Unidad responsable
+          if($componente[0]['por_id']==1){
+            $this->update_uresponsable($form4);
+          }
+          /// ------------------------------------
+
       $s1=' <input type="hidden" name="mes_activo" value='.$this->verif_mes[1].'>';
       $s2='';
       $s4='';
@@ -865,7 +896,7 @@ class Cseguimiento extends CI_Controller {
             '.$this->seguimientopoa->button_rep_evaluacion($com_id).'
           </div>
         <div class="jarviswidget jarviswidget-color-darken" >
-          '.$this->seguimientopoa->lista_operaciones_programados($com_id,$this->verif_mes[1]).' 
+          '.$this->seguimientopoa->lista_operaciones_programados($form4,$this->verif_mes[1]).' 
         </div>
       </div>';
 

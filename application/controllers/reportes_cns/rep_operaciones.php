@@ -301,8 +301,8 @@ class Rep_operaciones extends CI_Controller {
                 <hr>
                 <p class="mb-0">'.$titulo_reporte.' (NO PUEDE SER GENERADO POR LA DIMESION DEL ARCHIVO, PARA OBTENER LA INFORMACION SOLICITADA LE SUGERIMOS DESCARGARLO EN FORMATO EXCEL.)</p>
               </div>
-              
-              <a href="'.site_url("").'/rep/exportar_requerimientos_distrital/'.$dep_id.'/'.$dist_id.'/'.$tp_id.'" target=_blank class="btn btn-default" title="CONSOLIDADO REQUERIMIENTOS"><img src="'.base_url().'assets/Iconos/page_excel.png" WIDTH="20" HEIGHT="20"/>&nbsp;DESCARGAR CONSOLIDADO FORM. N° 5</a>&nbsp;&nbsp;&nbsp;&nbsp;
+
+              <a href="'.site_url("").'/rep/exportar_form5/'.$dep_id.'/'.$dist_id.'/'.$tp_id.'" target=_blank class="btn btn-default" title="CONSOLIDADO REQUERIMIENTOS"><img src="'.base_url().'assets/Iconos/page_excel.png" WIDTH="20" HEIGHT="20"/>&nbsp;DESCARGAR CONSOLIDADO FORM. N° 5</a>&nbsp;&nbsp;&nbsp;&nbsp;
               <hr>';
           }
           else{

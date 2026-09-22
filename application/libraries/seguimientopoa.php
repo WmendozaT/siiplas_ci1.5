@@ -1932,9 +1932,9 @@ class Seguimientopoa extends CI_Controller{
 
 
 
-    /*--- LISTA DE FORMULARIO N 4 PROGRAMADOS AL MES ACTUAL 2021-2023 ---*/
-    function lista_operaciones_programados($com_id,$mes_id){
-      $form4=$this->model_producto->lista_productos($com_id); /// lISTA DE FORM 4
+    /*--- LISTA DE FORMULARIO N 4 PROGRAMADOS AL MES ACTUAL 2027 ---*/
+    function lista_operaciones_programados($form4,$mes_id){
+      
       $tabla='';
       $tabla.=' 
       <form class="smart-form" method="post">
@@ -1985,22 +1985,6 @@ class Seguimientopoa extends CI_Controller{
                 if($row['indi_id']==2){
                   $indi_id='%';
                 }
-          
-                ///----------------
-                ///---------- unidad responsable
-                if($row['uni_resp']==0){
-                  $uresp=strtoupper($row['prod_unidades']);
-                }
-                else{
-                  $unidad=$this->model_componente->get_componente($row['uni_resp'],$this->gestion);
-                  
-                  $uresp='';
-                  if(count($unidad)!=0){
-                    $proy = $this->model_proyecto->get_UnidadOrganizacional($unidad[0]['proy_id']);
-                    $uresp='<font size=1.5px;><b>'.strtoupper($proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion']).'</b></font>';
-                  }
-                }
-                /// ------------------------------
 
                 $diferencia=$this->verif_valor_no_ejecutado($row['prod_id'],$mes_id,$row['mt_id']);
                 if($diferencia[1]!=0 || $diferencia[2]!=0){
@@ -2039,7 +2023,7 @@ class Seguimientopoa extends CI_Controller{
                     <td style="width:0.5%;font-size: 20px;" align=center title="'.$row['prod_id'].'"><b>'.$row['prod_cod'].'</b></td>
                     <td style="font-size:10.5px;"><b>'.$row['prod_producto'].'</b></td>
                     <td style="font-size:10px;"><b>'.$row['prod_indicador'].'</b></td>
-                    <td style="font-size:10px;"><b>'.$uresp.'</b></td>
+                    <td style="font-size:10px;"><b>'.strtoupper($row['prod_unidades']).'</b></td>
                     <td style="font-size:11px;" align=right title="'.$row['mt_tipo'].' : '.$row['mt_descripcion'].'"><b>'.round($row['prod_meta'],2).' '.$indi_id.'</b></td>
                     <td align=center bgcolor="#f7e1e2">';
                     if($row['mt_id']==3){
@@ -2107,7 +2091,7 @@ class Seguimientopoa extends CI_Controller{
 
 
 
-    /*---- CALIFICACIÓN POR CADA OPERACION ----*/
+    /*---- CALIFICACIÓN POR CADA ACTIVIDAD ----*/
     public function calificacion_form4($prod_id,$valor){
       $programado=($valor[1]+$valor[2]);
       $ejecutado=$valor[3];

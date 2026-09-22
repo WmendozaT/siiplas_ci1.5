@@ -390,18 +390,21 @@ class Componente extends CI_Controller {
                     // 🌟 COLUMNA: FORMULARIO N° 4 - GESTIÓN DE ACTIVIDADES Y EXPORTACIÓN INDIVIDUAL
                     $tabla .= '
                     <td style="text-align: center; vertical-align: middle; white-space: nowrap; background: #ffffff; border: 1px solid #cbd5e1;">
-                      <div style="display: inline-flex; gap: 4px; justify-content: center; width: 100%;">
-                        <!-- 👁️ Abrir Actividades -->
-                        <a href="' . site_url("admin/prog/list_prod/" . $com_id_actual) . '" 
-                           title="VER MIS ACTIVIDADES (FORM 4)" 
-                           class="btn btn-sm" 
-                           target="_blank" 
-                           style="font-family: Arial, sans-serif; height:50px; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
-                           onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\'; this.style.color=\'#0f172a\';"
-                           onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\'; this.style.color=\'#334155\';">
-                            <i class="fa fa-list text-muted" style="font-size: 12px;"></i> ACTIVIDADES
-                        </a>
-                        
+                      <div style="display: inline-flex; gap: 4px; justify-content: center; width: 100%;">';
+                      if($this->conf_form4==1 || $this->tp_adm==1){
+                        $tabla.='
+                          <!-- 👁️ Abrir Actividades -->
+                          <a href="' . site_url("admin/prog/list_prod/" . $com_id_actual) . '" 
+                             title="VER MIS ACTIVIDADES (FORM 4)" 
+                             class="btn btn-sm" 
+                             target="_blank" 
+                             style="font-family: Arial, sans-serif; height:50px; font-weight: 600; font-size: 11px; padding: 5px 11px; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.15s ease;"
+                             onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\'; this.style.color=\'#0f172a\';"
+                             onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\'; this.style.color=\'#334155\';">
+                              <i class="fa fa-list text-muted" style="font-size: 12px;"></i> ACTIVIDADES
+                          </a>';
+                      } 
+                      $tabla.='
                         <!-- 🖨️ Exportar PDF Form 4 - AZUL AUDITORÍA -->
                         <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $com_id_actual) . '\');" 
                            title="GENERAR REPORTE POA FORMULARIO N° 4 (PDF)" 

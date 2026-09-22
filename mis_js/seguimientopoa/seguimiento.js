@@ -973,7 +973,7 @@ function graf_regresion_pastel(matriz,trimestre) {
     $(function () {
         $(".enlace").on("click", function (e) {
           prod_id = $(this).attr('name');
-          //alert(prod_id)
+         // alert(prod_id)
            //$('#temporalidad').html('<div class="loading" align="center"><img src='+base+'"/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Cargando Información</div>');
             var url = base+"index.php/ejecucion/cseguimiento/get_temporalidad";
             var request;
