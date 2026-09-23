@@ -82,47 +82,7 @@
                                 <div class="widget-body no-padding">
                                     <div style="display: flex; flex-direction: column; width: 100%;">
                                         <div class="table-responsive" style="overflow-x: auto;">
-                                            <table id="datatable_fixed_column" class="table table-bordered" style="width: 130%; table-layout: fixed;">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="hasinput" style="width:1%; text-align: center;"></th>
-                                                        <th class="hasinput" style="width:1.5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="COD. ACT."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:4%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="ACTIVIDAD"/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:4%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="UNIDAD RESPONSABLE"/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:4%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="MEDIO DE VERIFICACION"/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:1.5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="META"/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:25%; text-align: center;"></th>
-                                                        <th class="hasinput" style="width:25%; text-align: center;"></th>
-                                                        <th class="hasinput" style="width:25%; text-align: center;"></th>
-                                                    </tr>                          
-                                                    <tr>
-                                                        <th style="width:1%; text-align: center;">COD.<br>OPE.</th>
-                                                        <th style="width:1.5%; text-align: center;">COD.<br> ACT.</th>
-                                                        
-                                                        <th style="width:4%; text-align: center;">ACTIVIDAD</th>
-                                                        <th style="width:4%; text-align: center;">UNIDAD RESPONSABLE</th>
-                                                        <th style="width:4%; text-align: center;">MEDIO DE VERIFICACIÓN</th>
-                                                        <th style="width:1.5%; text-align: center;">META</th>
-                                                        <th style="width:25%; text-align: center;">MES 1</th>
-                                                        <th style="width:25%; text-align: center;">MES 2</th>
-                                                        <th style="width:25%; text-align: center;">MES 3</th>
-                                                        
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php echo $tabla; ?>
-                                                </tbody>
-                                            </table>
+                                            <?php echo $tabla; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -441,8 +401,7 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/jquery.dataTables.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-        <script src="<?php echo base_url(); ?>mis_js/programacionpoa/form4.js"></script> 
-        <script src="<?php echo base_url(); ?>mis_js/programacionpoa/form5.js"></script> 
-        <script src="<?php echo base_url(); ?>mis_js/programacionpoa/programacionpoa.js"></script> 
+        <script src="<?php echo base_url(); ?>mis_js/seguimientopoa/Js_seguimiento_evaluacionpoa.js"></script> 
+        
     </body>
 </html>

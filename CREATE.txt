@@ -1760,3 +1760,63 @@ $BODY$
 -- Sello institucional de propiedad
 ALTER FUNCTION public.fn_historial_modificaciones_poa_form5(numeric, integer)
   OWNER TO postgres;
+
+
+  ======================= PARA EVALUACION POA 2027
+  CREATE OR REPLACE VIEW public.vista_formN4_para_evaluacionPoa_x_UniResponsable AS
+SELECT 
+    p.prod_id, 
+    p.com_id,
+    p.or_id,
+    og.og_codigo,
+    p.prod_cod,
+    p.prod_priori, 
+    p.prod_producto,
+    p.prod_unidades,
+    p.prod_fuente_verificacion,
+    p.prod_meta,
+    p.indi_id,
+    p.mt_id,
+    p.estado, -- Agregado para que puedas filtrar por estado fuera de la vista
+    temp.mes1, temp.mes2, temp.mes3, 
+    temp.mes4, temp.mes5, temp.mes6, 
+    temp.mes7, temp.mes8, temp.mes9, 
+    temp.mes10, temp.mes11, temp.mes12,
+
+    -- Cálculos directos usando los acumulados limpios de la subconsulta
+    (COALESCE(temp.mes1, 0) + COALESCE(temp.mes2, 0) + COALESCE(temp.mes3, 0)) AS prog_trimestre1,
+    (calc.prog_ac_t1 - calc.ejec_ac_t1) AS saldo_acumulado_trimestre1,
+    (COALESCE(temp.mes4, 0) + COALESCE(temp.mes5, 0) + COALESCE(temp.mes6, 0)) AS prog_trimestre2,
+    (calc.prog_ac_t2 - calc.ejec_ac_t2) AS saldo_acumulado_trimestre2,
+    (COALESCE(temp.mes7, 0) + COALESCE(temp.mes8, 0) + COALESCE(temp.mes9, 0)) AS prog_trimestre3,
+    (calc.prog_ac_t3 - calc.ejec_ac_t3) AS saldo_acumulado_trimestre3,
+    (COALESCE(temp.mes10, 0) + COALESCE(temp.mes11, 0) + COALESCE(temp.mes12, 0)) AS prog_trimestre4,
+    (calc.prog_ac_t4 - calc.ejec_ac_t4) AS saldo_acumulado_trimestre4
+FROM _productos p 
+LEFT JOIN public.objetivos_regionales ore ON ore.or_id = p.or_id
+LEFT JOIN (
+    SELECT DISTINCT pog_id, og_id FROM public.objetivo_programado_mensual
+) opm ON ore.pog_id = opm.pog_id
+LEFT JOIN public.objetivo_gestion og ON og.og_id = opm.og_id
+            
+LEFT JOIN vista_temporalidad_form4_programado_uresp AS temp ON temp.prod_id = p.prod_id 
+LEFT JOIN vista_temporalidad_form4_ejecutado_uresp AS ejec ON ejec.prod_id = p.prod_id 
+-- Unificamos y acumulamos en un solo LATERAL para optimizar CPU
+CROSS JOIN LATERAL (
+    SELECT 
+        -- Trimestre 1 de corrido
+        (COALESCE(temp.mes1, 0) + COALESCE(temp.mes2, 0) + COALESCE(temp.mes3, 0)) AS prog_ac_t1,
+        (COALESCE(ejec.e_mes1, 0) + COALESCE(ejec.e_mes2, 0) + COALESCE(ejec.e_mes3, 0)) AS ejec_ac_t1,
+        
+        -- Trimestre 2 acumulado (Meses 1 al 6)
+        (COALESCE(temp.mes1, 0) + COALESCE(temp.mes2, 0) + COALESCE(temp.mes3, 0) + COALESCE(temp.mes4, 0) + COALESCE(temp.mes5, 0) + COALESCE(temp.mes6, 0)) AS prog_ac_t2,
+        (COALESCE(ejec.e_mes1, 0) + COALESCE(ejec.e_mes2, 0) + COALESCE(ejec.e_mes3, 0) + COALESCE(ejec.e_mes4, 0) + COALESCE(ejec.e_mes5, 0) + COALESCE(ejec.e_mes6, 0)) AS ejec_ac_t2,
+        
+        -- Trimestre 3 acumulado (Meses 1 al 9)
+        (COALESCE(temp.mes1, 0) + COALESCE(temp.mes2, 0) + COALESCE(temp.mes3, 0) + COALESCE(temp.mes4, 0) + COALESCE(temp.mes5, 0) + COALESCE(temp.mes6, 0) + COALESCE(temp.mes7, 0) + COALESCE(temp.mes8, 0) + COALESCE(temp.mes9, 0)) AS prog_ac_t3,
+        (COALESCE(ejec.e_mes1, 0) + COALESCE(ejec.e_mes2, 0) + COALESCE(ejec.e_mes3, 0) + COALESCE(ejec.e_mes4, 0) + COALESCE(ejec.e_mes5, 0) + COALESCE(ejec.e_mes6, 0) + COALESCE(ejec.e_mes7, 0) + COALESCE(ejec.e_mes8, 0) + COALESCE(ejec.e_mes9, 0)) AS ejec_ac_t3,
+        
+        -- Trimestre 4 acumulado (Meses 1 al 12)
+        (COALESCE(temp.mes1, 0) + COALESCE(temp.mes2, 0) + COALESCE(temp.mes3, 0) + COALESCE(temp.mes4, 0) + COALESCE(temp.mes5, 0) + COALESCE(temp.mes6, 0) + COALESCE(temp.mes7, 0) + COALESCE(temp.mes8, 0) + COALESCE(temp.mes9, 0) + COALESCE(temp.mes10, 0) + COALESCE(temp.mes11, 0) + COALESCE(temp.mes12, 0)) AS prog_ac_t4,
+        (COALESCE(ejec.e_mes1, 0) + COALESCE(ejec.e_mes2, 0) + COALESCE(ejec.e_mes3, 0) + COALESCE(ejec.e_mes4, 0) + COALESCE(ejec.e_mes5, 0) + COALESCE(ejec.e_mes6, 0) + COALESCE(ejec.e_mes7, 0) + COALESCE(ejec.e_mes8, 0) + COALESCE(ejec.e_mes9, 0) + COALESCE(ejec.e_mes10, 0) + COALESCE(ejec.e_mes11, 0) + COALESCE(ejec.e_mes12, 0)) AS ejec_ac_t4
+) calc;

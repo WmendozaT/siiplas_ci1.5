@@ -1,4 +1,5 @@
 <?php
+///// model antiguo a depurar poco a poco
 class Model_evaluacion extends CI_Model{
     public function __construct(){
         $this->load->database();
