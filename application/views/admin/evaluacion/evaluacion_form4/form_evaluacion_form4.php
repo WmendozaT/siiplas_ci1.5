@@ -61,7 +61,7 @@
                 </span>
                 <!-- breadcrumb -->
                 <ol class="breadcrumb">
-                    <li><a href="<?php echo base_url().'index.php/admin/dashboard';?>" title="MENU PRINCIPAL">DASHBOARD</a></li><li><a href="<?php echo base_url().'index.php/admin/proy/list_proy';?>" title="Lista POA">Programacion POA</a></li><li>Formulario N° 4</li><li>Ante Proyecto POA</li>
+                    <li><a href="<?php echo base_url().'index.php/admin/dashboard';?>" title="MENU PRINCIPAL">DASHBOARD</a></li><li><a href="<?php echo base_url().'index.php/admin/proy/list_proy';?>" title="Lista POA">Evaluación POA</a></li><li>Formulario N° 4</li>
                 </ol>
             </div>
             <!-- MAIN CONTENT -->
@@ -85,94 +85,38 @@
                                             <table id="datatable_fixed_column" class="table table-bordered" style="width: 130%; table-layout: fixed;">
                                                 <thead>
                                                     <tr>
-                                                        <th class="hasinput" style="width:4%; text-align: center;"></th>
-                                                        <th class="hasinput" style="width:4%; text-align: center;"></th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
+                                                        <th class="hasinput" style="width:1%; text-align: center;"></th>
+                                                        <th class="hasinput" style="width:1.5%; text-align: center;">
                                                             <input type="text" class="form-control" placeholder="COD. ACT."/>
                                                         </th>
-                                                        <th class="hasinput" style="width:10%; text-align: center;"></th>
-                                                        <th class="hasinput" style="width:12%; text-align: center;">
+                                                        <th class="hasinput" style="width:4%; text-align: center;">
                                                             <input type="text" class="form-control" placeholder="ACTIVIDAD"/>
                                                         </th>
-                                                        <th class="hasinput" style="width:12%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="RESULTADO"/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:10%; text-align: center;">
+                                                        <th class="hasinput" style="width:4%; text-align: center;">
                                                             <input type="text" class="form-control" placeholder="UNIDAD RESPONSABLE"/>
                                                         </th>
-                                                        <th class="hasinput" style="width:8%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="TIP. INDI."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:8%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="INDICADOR"/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:8%; text-align: center;">
+                                                        <th class="hasinput" style="width:4%; text-align: center;">
                                                             <input type="text" class="form-control" placeholder="MEDIO DE VERIFICACION"/>
                                                         </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
+                                                        <th class="hasinput" style="width:1.5%; text-align: center;">
                                                             <input type="text" class="form-control" placeholder="META"/>
                                                         </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="ENE."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="FEB."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="MAR."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="ABR."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="MAY."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="JUN."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="JUL."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="AGO."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="SEPT."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="OCT."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="NOV."/>
-                                                        </th>
-                                                        <th class="hasinput" style="width:5%; text-align: center;">
-                                                            <input type="text" class="form-control" placeholder="DIC."/>
-                                                        </th>
+                                                        <th class="hasinput" style="width:25%; text-align: center;"></th>
+                                                        <th class="hasinput" style="width:25%; text-align: center;"></th>
+                                                        <th class="hasinput" style="width:25%; text-align: center;"></th>
                                                     </tr>                          
                                                     <tr>
-                                                        <th style="width:4%; text-align: center;">FORM N 5</th>
-                                                        <th style="width:4%; text-align: center;">ELIMINAR</th>
-                                                        <th style="width:5%; text-align: center;">CÓDIGO<br> ACTIVIDAD</th>
-                                                        <th style="width:10%; text-align: center;">CÓDIGO<br>OPERACIÓN</th>
-                                                        <th style="width:12%; text-align: center;">ACTIVIDAD</th>
-                                                        <th style="width:12%; text-align: center;">RESULTADO</th>
-                                                        <th style="width:10%; text-align: center;">UNIDAD RESPONSABLE</th>
-                                                        <th style="width:8%; text-align: center;">TIPO INDICADOR</th>
-                                                        <th style="width:8%; text-align: center;">INDICADOR</th>
-                                                        <th style="width:8%; text-align: center;">MEDIO DE VERIFICACIÓN</th>
-                                                        <th style="width:5%; text-align: center;">META</th>
-                                                        <th style="width:5%; text-align: center;">ENE.</th>
-                                                        <th style="width:5%; text-align: center;">FEB.</th>
-                                                        <th style="width:5%; text-align: center;">MAR.</th>
-                                                        <th style="width:5%; text-align: center;">ABR.</th>
-                                                        <th style="width:5%; text-align: center;">MAY.</th>
-                                                        <th style="width:5%; text-align: center;">JUN.</th>
-                                                        <th style="width:5%; text-align: center;">JUL.</th>
-                                                        <th style="width:5%; text-align: center;">AGO.</th>
-                                                        <th style="width:5%; text-align: center;">SEPT.</th>
-                                                        <th style="width:5%; text-align: center;">OCT.</th>
-                                                        <th style="width:5%; text-align: center;">NOV.</th>
-                                                        <th style="width:5%; text-align: center;">DIC.</th>
+                                                        <th style="width:1%; text-align: center;">COD.<br>OPE.</th>
+                                                        <th style="width:1.5%; text-align: center;">COD.<br> ACT.</th>
+                                                        
+                                                        <th style="width:4%; text-align: center;">ACTIVIDAD</th>
+                                                        <th style="width:4%; text-align: center;">UNIDAD RESPONSABLE</th>
+                                                        <th style="width:4%; text-align: center;">MEDIO DE VERIFICACIÓN</th>
+                                                        <th style="width:1.5%; text-align: center;">META</th>
+                                                        <th style="width:25%; text-align: center;">MES 1</th>
+                                                        <th style="width:25%; text-align: center;">MES 2</th>
+                                                        <th style="width:25%; text-align: center;">MES 3</th>
+                                                        
                                                     </tr>
                                                 </thead>
                                                 <tbody>
