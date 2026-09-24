@@ -56,4 +56,24 @@ class Model_evaluacionpoa extends CI_Model{
         $query = $this->db->query($sql);
         return $query->result_array();
     }
+
+    /*----- TRIMESTRE VIGENTE 2027-------*/
+    public function trimestre(){
+        $sql = 'SELECT *
+                from trimestre_mes
+                where trm_id='.$this->tmes.' and estado!=\'0\'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    /*----------- GET TRIMESTRE VIGENTE ------*/
+    public function get_trimestre($trm_id){
+        $sql = 'SELECT *
+                from trimestre_mes
+                where trm_id='.$trm_id.' and estado!=\'0\'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 }

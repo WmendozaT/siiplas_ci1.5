@@ -13,6 +13,7 @@ class Cevaluacion_form4 extends CI_Controller {
             $this->load->model('programacion/model_producto');
             $this->load->model('programacion/model_componente');
             $this->load->model('mevaluacion_poa/model_evaluacionpoa');
+            $this->load->model('mantenimiento/model_configuracion');
             
             $this->gestion = $this->session->userData('gestion');
             $this->adm = $this->session->userData('adm');
@@ -309,9 +310,63 @@ class Cevaluacion_form4 extends CI_Controller {
       return;
   }
 
+      /*-- FORMULARIOS POA ACTUALIZADOS FORM 4, FORM 5 --*/
+    public function formularios_poa($com_id){
+      $tabla='';
+      $meses = $this->model_configuracion->get_mes();
 
+      $tabla.='<div class="btn-group" >
+                  <a class="btn btn-default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMULARIOS POA GESTIÓN - '.$this->gestion.'&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                  <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$com_id.'\');" >FORMULARIO N°4 (ACTIVIDADES)</a>
+                    </li>
+                    <li>
+                      <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$com_id.'\');">FORMULARIO N°5 (REQUERIMIENTOS)</a>
+                    </li>
+                  </ul>
+                </div>';
 
-    //// Verifica tipo de formulario Seguimiento o Evaluacion (a implementar)
+      return $tabla;
+    }
+
+    /*-- LISTA DE FORMULARIOS REPORTE DE SEGUIMIENTO Y EVALUACION POA LLEVAR A LIBRERIA--*/
+    public function formularios_mensual($com_id){
+      $tabla='';
+      $meses = $this->model_configuracion->get_mes();
+
+      $tabla.='
+          <div class="btn-group">
+            <a class="btn btn-default"><img src="'.base_url().'assets/Iconos/application_cascade.png" WIDTH="19" HEIGHT="18"/>&nbsp; FORM. SEGUIMIENTO Y EVALUACIÓN POA </a>
+            <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+            <ul class="dropdown-menu">';
+              foreach($meses as $rowm){
+              if($rowm['m_id']<=$this->mes_sistema){
+                $tabla.='
+                <li>
+                  <a href="'.site_url("").'/seguimiento_poa/reporte_seguimientopoa_mensual/'.$com_id.'/'.$rowm['m_id'].'" target="_blank">REPORTE SEGUIMIENTO POA - '.$rowm['m_descripcion'].'</a>
+                </li>';
+              }                     
+            }
+            $tabla.='
+            <hr>';
+              for ($i=1; $i <=$this->tmes; $i++) { 
+                $trimestre=$this->model_evaluacionpoa->get_trimestre($i); /// Datos del Trimestre
+                $tabla.='
+                <li>
+                  <a href="javascript:abreVentana(\''.site_url("").'/seg/ver_reporte_evaluacionpoa/'.$com_id.'/'.$i.'\');" >REP. EVAL. POA - '.$trimestre[0]['trm_descripcion'].'</a>
+                </li>';
+              }
+            
+            $tabla.='
+            </ul>
+          </div>';
+
+      return $tabla;
+    }
+
+    //// Verifica tipo de formulario Seguimiento o Evaluacion (a implementar) LLEVAR A LIBRERIA
     function verif_btn_evaluacionpoa(){
       $tabla='';
 
@@ -385,43 +440,34 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
 
-    /// Titulo
+    /// Titulo LLEVAR A LIBRERIA
     public function titulo($componente){
+        $trimestre=$this->model_evaluacionpoa->trimestre();
         $tabla='';
         $tabla.='<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
             <input type="hidden" name="base" value="'.base_url().'">
-            '.$this->tmes.' -> '.$this->mes_sistema.'
+      
               <div class="well">
                 <h2>'.$componente[0]['aper_programa'].' '.$componente[0]['aper_proyecto'].' '.$componente[0]['aper_actividad'].' - '.$componente[0]['tipo'].' '.$componente[0]['act_descripcion'].' - '.$componente[0]['abrev'].'  / <b>'.$componente[0]['serv_cod'].' </b>'.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</h2>
-                  <a href="#" data-toggle="modal" data-target="#modal_nuevo_form" class="btn btn-default nuevo_form" title="NUEVO REGISTRO FORM N 4" >
-                    <img src="'.base_url().'assets/Iconos/add.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>NUEVO REGISTRO (ACTIVIDAD)</b>
-                  </a>
+                <h1><small>TRIMESTRE VIGENTE : </small> '.$trimestre[0]['trm_descripcion'].'</h1>
 
-                  <a href="#" data-toggle="modal" data-target="#modal_importar" class="btn btn-default importar_ff" title="SUBIR ARCHIVO EXCEL">
-                    <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="25" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO ACTIVIDADES.Xls </b>
-                  </a>
+                '.$this->formularios_poa($componente[0]['com_id']).'
+                '.$this->formularios_mensual($componente[0]['com_id']).'
 
-                 
                     <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-                      <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>SUBIR ARCHIVO REQUERIMIENTOS.Xls</b>
+                      <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>IMPRIMIR SEGUIMIENTO/EVALUACION</b>
                     </a>
-                    <a href="#" data-toggle="modal" data-target="#modal_ver_form5" class="btn btn-default ver_requerimientos" name="'.$componente[0]['com_id'].'" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-                      <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>VER MIS REQUERIMIENTOS</b>
+                    <a href="#" data-toggle="modal" data-target="#modal_ver_form5" class="btn btn-default ver_requerimientos" name="2" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
+                      <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>GENERAR GRAFICOS</b>
                     </a>
-                    <a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$componente[0]['com_id'].'\');" class="btn btn-primary" title="REPORTE FORM. 4"> <img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>REPORTE FORM N 4</a>
-                    <a onclick="eliminar_form4_todos(this)" class="btn btn-danger" title="Eliminar Actividades de la unidad (todos)">
-                        <img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 4 (TODOS)</b>
-                    </a>
-                    <a onclick="eliminar_requerimientos_UnidadReponsable(this)" class="btn btn-danger" title="Eliminar Solo Requerimientos de la unidad (todos)">
-                        <img src="'.base_url().'assets/Iconos/application_delete.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>ELIMINAR FORM 5 (TODOS)</b>
-                    </a>
+
               </div>
             </article>';
     
         return $tabla;
     }
 
-    /// Estilo Formulario
+    /// Estilo Formulario LLEVAR A LIBRERIA
     public function estilo_tabla_form4(){
       $tabla='';
       $tabla.='
