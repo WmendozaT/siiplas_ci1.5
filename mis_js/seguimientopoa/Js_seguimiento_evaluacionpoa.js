@@ -128,114 +128,258 @@ base   = $('[name="base"]').val();
 
     //// Guardar Informacion POA mensual
     function guardarSeguimiento(prodId, mes) {
-    // 1. Capturar los valores de los elementos del bloque
-    var ejecVal   = jQuery('#ejec_' + prodId + '_' + mes).val();
-    var mverifVal = jQuery('#mverif_' + prodId + '_' + mes).val().trim();
-    var probVal   = jQuery('#prob_' + prodId + '_' + mes).val().trim();
-    var accVal    = jQuery('#acc_' + prodId + '_' + mes).val().trim();
+        // 1. Capturar los valores de los elementos del bloque
+        var ejecVal   = jQuery('#ejec_' + prodId + '_' + mes).val();
+        var mverifVal = jQuery('#mverif_' + prodId + '_' + mes).val().trim();
+        var probVal   = jQuery('#prob_' + prodId + '_' + mes).val().trim();
+        var accVal    = jQuery('#acc_' + prodId + '_' + mes).val().trim();
 
-    // 2. 🚨 VALIDACIÓN ESTRICTA: Si la ejecución es 0, Problemas y Acciones son obligatorios
-    if (ejecVal.trim() === '' || isNaN(ejecVal) || parseFloat(ejecVal) === 0) {
-        if (probVal === '' || accVal === '') {
-            
-            // Creamos un contenedor de alerta moderno directamente en el HTML
-            var alertId = 'custom_alert_' + prodId + '_' + mes;
-            // Si ya existe una alerta abierta, no duplicarla
-            if (!document.getElementById(alertId)) {
-                var alertHtml = '<div id="' + alertId + '" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 13px; font-weight: bold; min-width: 300px; text-align: center;">' +
-                    '<i class="fa fa-exclamation-triangle" style="margin-right: 8px;"></i> Si la ejecución mensual es cero (0), debe registrar "PROBLEMAS PRESENTADOS" y "ACCIONES REALIZADAS".' +
-                    '<br><button type="button" onclick="jQuery(\'#' + alertId + '\').remove();" style="margin-top: 10px; background-color: #856404; color: #fff; border: none; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;">Entendido</button>' +
-                '</div>';
-                jQuery('body').append(alertHtml);
-            }
+        // 2. 🚨 VALIDACIÓN ESTRICTA: Si la ejecución es 0 o vacía, Problemas y Acciones son obligatorios
+        if (ejecVal.trim() === '' || isNaN(ejecVal) || parseFloat(ejecVal) === 0) {
+            if (probVal === '' || accVal === '') {
+                
+                // Creamos un contenedor de alerta moderno directamente en el HTML
+                var alertId = 'custom_alert_' + prodId + '_' + mes;
+                // Si ya existe una alerta abierta, no duplicarla
+                if (!document.getElementById(alertId)) {
+                    var alertHtml = '<div id="' + alertId + '" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 13px; font-weight: bold; min-width: 300px; text-align: center;">' +
+                        '<i class="fa fa-exclamation-triangle" style="margin-right: 8px;"></i> Si la ejecución mensual es cero (0) o está vacía, debe registrar "PROBLEMAS PRESENTADOS" y "ACCIONES REALIZADAS".' +
+                        '<br><button type="button" onclick="jQuery(\'#' + alertId + '\').remove();" style="margin-top: 10px; background-color: #856404; color: #fff; border: none; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;">Entendido</button>' +
+                    '</div>';
+                    jQuery('body').append(alertHtml);
+                }
 
-            // Enfocar el campo vacío automáticamente
-            if (probVal === '') {
-                jQuery('#prob_' + prodId + '_' + mes).focus();
-            } else {
-                jQuery('#acc_' + prodId + '_' + mes).focus();
+                // Enfocar el campo vacío automáticamente
+                if (probVal === '') {
+                    jQuery('#prob_' + prodId + '_' + mes).focus();
+                } else {
+                    jQuery('#acc_' + prodId + '_' + mes).focus();
+                }
+                return false;
             }
-            return false;
         }
-    }
-    else{
-        if (mverifVal === '') {
-            var alertId = 'custom_alert_' + prodId + '_' + mes;
-            // Si ya existe una alerta abierta, no duplicarla
-            if (!document.getElementById(alertId)) {
-                var alertHtml = '<div id="' + alertId + '" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 13px; font-weight: bold; min-width: 300px; text-align: center;">' +
-                    '<i class="fa fa-exclamation-triangle" style="margin-right: 8px;"></i> debe registrar el "MEDIO DE VERIFICACIÓN".' +
-                    '<br><button type="button" onclick="jQuery(\'#' + alertId + '\').remove();" style="margin-top: 10px; background-color: #856404; color: #fff; border: none; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;">Entendido</button>' +
-                '</div>';
-                jQuery('body').append(alertHtml);
-            }
-            
-            // Focusear automáticamente el campo vacío para ayudar al usuario
+        else {
             if (mverifVal === '') {
+                var alertId = 'custom_alert_' + prodId + '_' + mes;
+                // Si ya existe una alerta abierta, no duplicarla
+                if (!document.getElementById(alertId)) {
+                    var alertHtml = '<div id="' + alertId + '" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 13px; font-weight: bold; min-width: 300px; text-align: center;">' +
+                        '<i class="fa fa-exclamation-triangle" style="margin-right: 8px;"></i> Debe registrar el "MEDIO DE VERIFICACIÓN".' +
+                        '<br><button type="button" onclick="jQuery(\'#' + alertId + '\').remove();" style="margin-top: 10px; background-color: #856404; color: #fff; border: none; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 11px;">Entendido</button>' +
+                    '</div>';
+                    jQuery('body').append(alertHtml);
+                }
+                
+                // Focusear automáticamente el campo vacío para ayudar al usuario
                 jQuery('#mverif_' + prodId + '_' + mes).focus();
+                return false;
             }
-            return false;
         }
+
+        // 3. ⏳ ACTIVAR LOADING CON FONDO OPACO TOTAL (PANTALLA COMPLETA)
+        var loadingId = 'loading_screen_overlay';
+        var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
+            '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+                '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #1e3a8a; margin-bottom: 10px; display: block;"></i>' +
+                '<span style="font-size: 14px; font-weight: bold; color: #334155;">Procesando y guardando seguimiento...</span>' +
+            '</div>' +
+        '</div>';
+        jQuery('body').append(loadingHtml);
+     // 4. ⏳ EFECTO LOADING LOCAL: Seleccionamos el contenedor y los componentes del mes
+        var celdaTd = jQuery('#ejec_' + prodId + '_' + mes).closest('td');
+        var wrapper = jQuery('.wrapper-mes-' + mes, celdaTd);
+        wrapper.css('opacity', '0.5');
+
+        // 5. Envío AJAX al servidor
+        jQuery.ajax({
+            type: "POST",
+            url: base + "index.php/ejecucion/cevaluacion_form4/guardar_seguimiento",
+            data: {
+                prod_id: prodId,
+                mes: mes,
+                ejecutado: ejecVal,
+                verificacion: mverifVal,
+                problemas: probVal,
+                acciones: accVal
+            },
+            dataType: 'json',
+            success: function(response) {
+                // 🔓 Quitar pantalla de Loading inmediatamente
+                jQuery('#' + loadingId).remove();
+                wrapper.css('opacity', '1');
+
+                if (response.status === 'success') {
+                    // 🎨 CAMBIO DE COLOR EN CALIENTE:
+                    if (parseFloat(ejecVal) !== 0) {
+                        celdaTd.css('background-color', '#bbf7d0'); // Verde suave (Con ejecución)
+                    } else {
+                        celdaTd.css('background-color', '#fef08a'); // Amarillo suave (Cero con justificación)
+                    }
+
+                    // Configurar el botón de eliminación por si el registro es nuevo o cambió
+                    var btnEliminar = jQuery('#btn_del_' + prodId + '_' + mes);
+                    if (response.id_seguimiento) {
+                        btnEliminar.attr('onclick', 'eliminarSeguimiento(' + prodId + ', ' + mes + ', ' + response.id_seguimiento + ')');
+                        btnEliminar.fadeIn();
+                    }
+                    
+                    // 🔔 MENSAJE FLOTANTE DE GUARDADO EXITOSO AUTOMÁTICO (Estilo Toast sin librerías)
+                    var toastId = 'toast_success_' + prodId + '_' + mes;
+                    var toastHtml = '<div id="' + toastId + '" style="position: fixed; top: 20px; right: 20px; z-index: 999999; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 14px; font-weight: bold;">' +
+                        '<i class="fa fa-check-circle" style="margin-right: 8px; color: #28a745;"></i> ¡Seguimiento guardado correctamente!' +
+                    '</div>';
+                    jQuery('body').append(toastHtml);
+                    
+                    // Se desvanece y se elimina solo tras 2 segundos
+                    setTimeout(function(){
+                        jQuery('#' + toastId).fadeOut(400, function(){ jQuery(this).remove(); });
+                    }, 2000);
+                } else {
+                    alert('No se pudo guardar: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                // 🔓 Quitar pantalla de Loading ante errores de red
+                jQuery('#' + loadingId).remove();
+                wrapper.css('opacity', '1');
+                
+                alert('Ocurrió un error de comunicación con el servidor. Intente nuevamente.');
+                console.error(error);
+            }
+        });
     }
 
-    // 3. ⏳ EFECTO LOADING: Seleccionamos el contenedor y los componentes del mes
-    var celdaTd = jQuery('#ejec_' + prodId + '_' + mes).closest('td');
-    var wrapper = jQuery('.wrapper-mes-' + mes, celdaTd);
-    var botonGuardar = jQuery('button[onclick*="guardarSeguimiento(' + prodId + '"]', celdaTd);
 
-    // Guardamos el HTML original del botón para restaurarlo después
-    var htmlOriginalBoton = botonGuardar.html();
 
-    // Bloqueamos los elementos visualmente poniendo opacidad y un spinner
-    wrapper.css('opacity', '0.5');
-    botonGuardar.prop('disabled', true).html('<i class="fa fa-refresh fa-spin"></i> Guardando...');
+    ///// Eliminar Registro de Seguimiento
+    function eliminarSeguimiento(prodId, mes, idSeguimiento) {
+    // 1. Validar que exista un ID de seguimiento válido para borrar
+    if (!idSeguimiento || idSeguimiento === 0) {
+        alert('No se puede eliminar un registro que no ha sido guardado previamente.');
+        return false;
+    }
 
-    // 4. Envío AJAX al servidor
+    // 2. Alerta de confirmación flotante estilizada (CSS Puro)
+    var confirmId = 'custom_confirm_' + prodId + '_' + mes;
+    if (!document.getElementById(confirmId)) {
+        var confirmHtml = '<div id="' + confirmId + '" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">' +
+            '<div style="background: #ffffff; padding: 25px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center; max-width: 380px; width: 90%;">' +
+                '<i class="fa fa-trash-o" style="font-size: 36px; color: #dc3545; margin-bottom: 12px; display: block;"></i>' +
+                '<h4 style="margin: 0 0 10px 0; font-size: 16px; color: #1e293b; font-weight: bold;">¿Eliminar Seguimiento?</h4>' +
+                '<p style="margin: 0 0 20px 0; font-size: 13px; color: #64748b; line-height: 1.5;">Esta acción borrará la ejecución, los medios de verificación, problemas y acciones de este mes por completo.</p>' +
+                '<button type="button" id="btn_conf_si_' + prodId + '" style="background-color: #dc3545; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 10px;">Sí, eliminar</button>' +
+                '<button type="button" onclick="jQuery(\'#' + confirmId + '\').remove();" style="background-color: #64748b; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Cancelar</button>' +
+            '</div>' +
+        '</div>';
+        jQuery('body').append(confirmHtml);
+    }
+
+    // 3. Asignar el evento del botón "Sí, eliminar" para arrancar el AJAX
+    jQuery('#btn_conf_si_' + prodId).on('click', function() {
+        // Removemos la ventana de confirmación
+        jQuery('#' + confirmId).remove();
+
+        // 4. ⏳ ACTIVAR LOADING CON FONDO OPACO TOTAL (PANTALLA COMPLETA)
+        var loadingId = 'loading_screen_overlay_delete';
+        var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
+            '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+                '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #dc3545; margin-bottom: 10px; display: block;"></i>' +
+                '<span style="font-size: 14px; font-weight: bold; color: #334155;">Eliminando registro de seguimiento...</span>' +
+            '</div>' +
+        '</div>';
+        jQuery('body').append(loadingHtml);
+
+        var celdaTd = jQuery('#ejec_' + prodId + '_' + mes).closest('td');
+
+        // 5. Envío AJAX al Servidor
+        jQuery.ajax({
+            type: "POST",
+            url: base + "index.php/ejecucion/cevaluacion_form4/eliminar_seguimiento", // Ruta esperada en tu controlador
+            data: {
+                id_seguimiento: idSeguimiento,
+                prod_id: prodId,
+                mes: mes
+            },
+            dataType: 'json',
+            success: function(response) {
+                // 🔓 Quitar pantalla de Loading inmediatamente
+                jQuery('#' + loadingId).remove();
+
+                if (response.status === 'success') {
+                    // 🌟 LIMPIEZA DE CAMPOS EN CALIENTE
+                    jQuery('#ejec_' + prodId + '_' + mes).val(0);
+                    jQuery('#mverif_' + prodId + '_' + mes).val('');
+                     jQuery('#prob_' + prodId + '_' + mes).val('');
+                    jQuery('#acc_' + prodId + '_' + mes).val('');
+
+                    // 🎨 RESTABLECER COLOR A AMARILLO (Vuelve a estar pendiente de registro)
+                    celdaTd.css('background-color', '#fef08a');
+
+                    // Ocultar el botón de eliminar por completo
+                    var btnEliminar = jQuery('#btn_del_' + prodId + '_' + mes);
+                    btnEliminar.fadeOut().attr('onclick', '');
+
+                    // 🔔 TOAST FLOTANTE DE NOTIFICACIÓN DE ELIMINACIÓN (Rojo Suave)
+                    var toastId = 'toast_delete_' + prodId + '_' + mes;
+                    var toastHtml = '<div id="' + toastId + '" style="position: fixed; top: 20px; right: 20px; z-index: 999999; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 14px; font-weight: bold;">' +
+                        '<i class="fa fa-trash" style="margin-right: 8px; color: #dc3545;"></i> Registro eliminado correctamente.' +
+                    '</div>';
+                    jQuery('body').append(toastHtml);
+                    
+                    setTimeout(function(){
+                        jQuery('#' + toastId).fadeOut(400, function(){ jQuery(this).remove(); });
+                    }, 2000);
+
+                } else {
+                    alert('No se pudo eliminar el registro: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                jQuery('#' + loadingId).remove();
+                alert('Ocurrió un error al intentar comunicarse con el servidor.');
+                console.error(error);
+            }
+        });
+    });
+}
+
+//// get seguimiento de actividad en modal
+function abrirModalDetalleConAjax(prodId) {
+    // A. Mostrar pantalla opaca completa de Loading
+    var loadingId = 'loading_modal_ajax';
+    var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">' +
+        '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+            '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #0284c7; margin-bottom: 10px; display: block;"></i>' +
+            '<span style="font-size: 13px; font-weight: bold; color: #334155;">Consultando base de datos...</span>' +
+        '</div>' +
+    '</div>';
+    jQuery('body').append(loadingHtml);
+
+    // B. Petición asíncrona al Servidor
     jQuery.ajax({
         type: "POST",
-        url: base + "index.php/ejecucion/cevaluacion_form4/guardar_seguimiento",
+        url: base + "index.php/ejecucion/cevaluacion_form4/obtener_detalle_actividad", // Ruta en tu controlador
         data: {
-            prod_id: prodId,
-            mes: mes,
-            ejecutado: ejecVal,
-            verificacion: mverifVal,
-            problemas: probVal,
-            acciones: accVal
+            prod_id: prodId
         },
         dataType: 'json',
         success: function(response) {
-            // Restaurar estados normales al finalizar la petición
-            wrapper.css('opacity', '1');
-            botonGuardar.prop('disabled', false).html(htmlOriginalBoton);
+            // Quitar pantalla de carga
+            jQuery('#' + loadingId).remove();
 
             if (response.status === 'success') {
-                alert(response.status)
-                // 🎨 CAMBIO DE COLOR EN CALIENTE:
-                if (parseFloat(ejecVal) !== 0) {
-                    celdaTd.css('background-color', '#bbf7d0'); // Verde suave (Con ejecución)
-                } else {
-                    celdaTd.css('background-color', '#fef08a'); // Amarillo suave (Cero con justificación)
-                }
+                var act = response.actividad;
+               
+                jQuery('#detalle').html(act);
+                jQuery('#modalDetalleActividadAjax').modal('show');
 
-                // Configurar el botón de eliminación por si el registro es nuevo
-                var btnEliminar = jQuery('#btn_del_' + prodId + '_' + mes);
-                if (response.id_seguimiento) {
-                    btnEliminar.attr('onclick', 'eliminarSeguimiento(' + prodId + ', ' + mes + ', ' + response.id_seguimiento + ')');
-                    btnEliminar.fadeIn();
-                }
-                
-                console.log('Mes ' + mes + ' guardado exitosamente.');
             } else {
-                alert('No se pudo guardar: ' + response.message);
+                alert('Error al consultar los detalles: ' + response.message);
             }
         },
-        error: function(xhr, status, error) {
-            // Restaurar estados normales ante un error de red
-            wrapper.css('opacity', '1');
-            botonGuardar.prop('disabled', false).html(htmlOriginalBoton);
-            
-            alert('Ocurrió un error de comunicación con el servidor. Intente nuevamente.');
-            console.error(error);
+        error: function() {
+            jQuery('#' + loadingId).remove();
+            alert('Error crítico de red: No se pudo conectar con el servidor.');
         }
     });
 }

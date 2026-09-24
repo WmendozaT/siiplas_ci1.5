@@ -1,11 +1,8 @@
 <?php
 class Cevaluacion_form4 extends CI_Controller {
-    
     public $rol = array('1' => '3','2' => '4');
-    
     public function __construct (){
         parent::__construct();
-        
         // 1. Corregido el operador AND lógico (&&)
         if($this->session->userdata('fun_id') != null && $this->session->userdata('fun_estado') != 3){
 
@@ -83,13 +80,14 @@ class Cevaluacion_form4 extends CI_Controller {
 
     // Arreglo de nombres de meses para las etiquetas superiores de la subtabla
     $nombres_meses = array(1=>'ENERO', 2=>'FEBRERO', 3=>'MARZO', 4=>'ABRIL', 5=>'MAYO', 6=>'JUNIO', 7=>'JULIO', 8=>'AGOSTO', 9=>'SEPTIEMBRE', 10=>'OCTUBRE', 11=>'NOVIEMBRE', 12=>'DICIEMBRE');
-
     $tabla.='
     <input type="hidden" name="base" value="'.base_url().'">
     <table id="datatable_fixed_column" class="table table-bordered" style="width: 130%; table-layout: fixed;">
         <thead>
             <tr style="vertical-align: middle;">
-                <th class="hasinput" style="width:1%; text-align: center;"></th>
+                <th class="hasinput" style="width:1.5%; text-align: center;"></th>
+                <th class="hasinput" style="width:3%; text-align: center;"></th>
+                <th class="hasinput" style="width:1.5%; text-align: center;"></th>
                 <th class="hasinput" style="width:1.5%; text-align: center;">
                     <input type="text" class="form-control" placeholder="COD. ACT."/>
                 </th>
@@ -117,11 +115,13 @@ class Cevaluacion_form4 extends CI_Controller {
                 $tabla.='
             </tr>                          
             <tr>
-                <th style="width:1%; text-align: center;">COD.<br>OPE.</th>
-                <th style="width:1.5%; text-align: center;">COD.<br> ACT.</th>
-                <th style="width:7%; text-align: center;">ACTIVIDAD</th>
-                <th style="width:4%; text-align: center;">UNIDAD RESPONSABLE</th>
-                <th style="width:4%; text-align: center;">MEDIO DE VERIFICACIÓN</th>
+                <th style="width:1.5%; text-align: center;"></th>
+                <th style="width:3%; text-align: center;"></th>
+                <th style="width:1.5%; text-align: center;" title="CÓDIGO OPERACIÓN">COD.<br>OPE.</th>
+                <th style="width:1.5%; text-align: center;" title="CÓDIGO ACTIVIDAD">COD.<br> ACT.</th>
+                <th style="width:7%; text-align: center;" title="DETALLE ACTIVIDAD">ACTIVIDAD</th>
+                <th style="width:4%; text-align: center;" title="UNIDAD RESPONSABLE">UNIDAD RESPONSABLE</th>
+                <th style="width:4%; text-align: center;" title="FUENTE VERIFICACION">MEDIO DE VERIFICACIÓN</th>
                 <th style="width:3%; text-align: center;">META</th>';
                 for ($m = $mes_inicio; $m <= $mes_fin; $m++) {
                   // 🌟 SEGUNDA FILA DE CABECERA (Nombres de los meses)
@@ -134,8 +134,12 @@ class Cevaluacion_form4 extends CI_Controller {
             </tr>
         </thead>
         <tbody>';
-        
+
         foreach($form4 as $rowp){
+          $priori='';
+          if($rowp['prod_priori']==1){
+            $priori='<img src="'.base_url().'assets/ifinal/ok.png" WIDTH="20" HEIGHT="25"/ title="ACTIVIDAD PRIORIZADA AL CUMPLIMIENTO DEL POA">';
+          }
           $tp_indi='';
           if($rowp['indi_id']==2){
             $tp_indi='%';
@@ -144,13 +148,23 @@ class Cevaluacion_form4 extends CI_Controller {
           
           $tabla .= '
           <tr id="fila_prod_'.$prod_id.'" style="vertical-align: middle;">
-              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;"><b>'.round($rowp['og_codigo'],2).'</b></td>
-              <td style="width: 5%; text-align: center; font-size:15px; vertical-align: middle;" bgcolor="#eceaea" title="'.$prod_id.'">
-                  <b>'.round($rowp['prod_cod'],2).'</b>
+              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;" title="'.$prod_id.'"></td>
+              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;">
+               <button type="button" 
+                      class="btn btn-info btn-xs" 
+                      title="Ver detalle completo de la Actividad" 
+                      onclick="abrirModalDetalleConAjax('.$prod_id.')" 
+                      style="padding: 3px 6px;">
+                  <i class="fa fa-search"></i> Detalle
+              </button>
               </td>
-              <td style="width: 15%; text-align: left; font-size:9.5px;vertical-align: middle;">'.$rowp['prod_producto'].'</td>
-              <td style="width: 10%; text-align: left; font-size:9.5px;vertical-align: middle;">'.$rowp['prod_unidades'].'</td>
-              <td style="width: 10%; text-align: left; font-size:9.5px;vertical-align: middle;">'.$rowp['prod_fuente_verificacion'].'</td>
+              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;" title="'.$prod_id.'"><b>'.round($rowp['og_codigo'],2).'</b></td>
+              <td style="width: 5%; text-align: center; font-size:15px; vertical-align: middle;" bgcolor="#eceaea" ">
+                  <b>'.round($rowp['prod_cod'],2).'</b><br>'.$priori.'
+              </td>
+              <td style="width: 15%; text-align: left; font-size:9.5px;vertical-align: middle;">'.strtoupper($rowp['prod_producto']).'</td>
+              <td style="width: 10%; text-align: left; font-size:9.5px;vertical-align: middle;">'.strtoupper($rowp['prod_unidades']).'</td>
+              <td style="width: 10%; text-align: left; font-size:9.5px;vertical-align: middle;">'.strtoupper($rowp['prod_fuente_verificacion']).'</td>
               <td style="width: 5%; text-align: right; font-weight: bold; color: #1e3a8a; padding-right:8px;vertical-align: middle; font-size:15px;">'.round($rowp['prod_meta'], 2).' '.$tp_indi.'</td>';
               
               for ($m = $mes_inicio; $m <= $mes_fin; $m++) {
@@ -162,7 +176,7 @@ class Cevaluacion_form4 extends CI_Controller {
                   
                   $ejec=$this->model_evaluacionpoa->get_seguimiento_poa_mes($prod_id,$m); 
                   if(count($ejec)!=0){ 
-                    $id_seguimiento = isset($ejec[0]['pe_id']) ? intval($ejec[0]['pe_id']) : 0;
+                    $id_seguimiento = isset($ejec[0]['peg_id']) ? intval($ejec[0]['peg_id']) : 0;
                     $mes_ejec=round($ejec[0]['pejec_fis'],2);
                     $mverificacion=$ejec[0]['medio_verificacion'];
                     $prob_presentados=$ejec[0]['observacion'];
@@ -216,29 +230,39 @@ class Cevaluacion_form4 extends CI_Controller {
                                   </td>
                                   <td style="padding: 2px; width:32%; vertical-align: middle;">
                                     <label class="textarea">
-                                      <textarea style="font-size: 11px; height: 80px; padding: 2px; resize: vertical;" id="mverif_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$mverificacion.'</textarea>
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="mverif_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$mverificacion.'</textarea>
                                     </label>
                                   </td>
                                   <td style="padding: 2px; width:32%; vertical-align: middle;">
                                     <label class="textarea">
-                                      <textarea style="font-size: 11px; height: 80px; padding: 2px; resize: vertical;" id="prob_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$prob_presentados.'</textarea>
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="prob_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$prob_presentados.'</textarea>
                                     </label>
                                   </td>
                                   <td style="padding: 2px; width:32%; vertical-align: middle;">
                                     <label class="textarea">
-                                      <textarea style="font-size: 11px; height: 80px; padding: 2px; resize: vertical;" id="acc_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$acciones.'</textarea>
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="acc_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$acciones.'</textarea>
                                     </label>
                                   </td>
                                   <td style="text-align: center; vertical-align: middle; padding: 4px; width: 5%;">
-                                    <!-- 💾 Botón Guardar -->
-                                    <button type="button" class="btn btn-success btn-xs" title="Guardar Mes '.$m.'" onclick="guardarSeguimiento('.$prod_id.', '.$m.')" style="margin-bottom: 5px; width: 100%; padding: 3px 2px;" '.$es_deshabilitado.'>
-                                        <i class="fa fa-save"></i> Guardar
-                                    </button>
-                                    
-                                    <!-- 🗑️ Botón Eliminar (Visible solo si ya existe un registro guardado en BD) -->
-                                    <button type="button" class="btn btn-danger btn-xs" title="Eliminar Mes '.$m.'" onclick="eliminarSeguimiento('.$prod_id.', '.$m.', '.$id_seguimiento.')" style="width: 100%; padding: 3px 2px; '.($id_seguimiento == 0 ? 'display:none;' : '').'" id="btn_del_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>
-                                        <i class="fa fa-trash-o"></i> Quitar
-                                    </button>
+                                      <!-- 💾 Botón Guardar (Solo Icono para optimizar el 5% de ancho) -->
+                                      <button type="button" 
+                                              class="btn btn-success btn-xs" 
+                                              title="Guardar Registro - Mes '.$m.'" 
+                                              onclick="guardarSeguimiento('.$prod_id.', '.$m.')" 
+                                              style="margin-bottom: 5px; width: 100%; padding: 4px 2px;" 
+                                              '.$es_deshabilitado.'>
+                                          <i class="fa fa-save"></i>
+                                      </button>
+                                      
+                                      <!-- 🗑️ Botón Eliminar (Se oculta por completo si id es 0 O si la celda está deshabilitada) -->
+                                      <button type="button" 
+                                              class="btn btn-danger btn-xs" 
+                                              title="Eliminar Registro - Mes '.$m.'" 
+                                              onclick="eliminarSeguimiento('.$prod_id.', '.$m.', '.$id_seguimiento.')" 
+                                              style="width: 100%; padding: 4px 2px; '.($id_seguimiento == 0 || $v_prog == 0 ? 'display:none;' : '').'" 
+                                              id="btn_del_'.$prod_id.'_'.$m.'">
+                                          <i class="fa fa-trash-o"></i>
+                                      </button>
                                   </td>
                                 </tr>
                               </tbody>
@@ -247,68 +271,243 @@ class Cevaluacion_form4 extends CI_Controller {
                       </div>
                   </td>';
               }
-              
           $tabla .= '</tr>';
         }
 
+        $tabla.='
+        </tbody>
+        </table>';
+
+        $tabla.=$this->modal_seguimiento_x_form4();
         return $tabla;
     }
 
 
-    public function guardar_seguimiento() {
-      // 1. Capturar de forma segura las variables enviadas por el POST de jQuery
-      $prod_id = intval($this->input->post('prod_id'));
-      $mes     = intval($this->input->post('mes'));
-      $ejecutado = floatval($this->input->post('ejecutado'));
-      
-      // Sanitizar cadenas de texto quitando espacios innecesarios
-      $verificacion = trim($this->input->post('verificacion'));
-      $problemas    = trim($this->input->post('problemas'));
-      $acciones     = trim($this->input->post('acciones'));
 
-      // 2. Validación de seguridad del lado del Servidor (Duplica la seguridad del JS)
-      if ($ejecutado == 0 && (empty($problemas) || empty($acciones))) {
+
+
+
+    /// Modal Para ver la ejecucion de la Actividad llevar a Libreria
+    public function modal_seguimiento_x_form4() {
+      $tabla='';
+      $tabla.='
+      <div class="modal fade" id="modalDetalleActividadAjax" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                  <div class="modal-header" style="background: #1e3a8a; color: #fff;">
+                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
+                      <h4 class="modal-title" style="font-weight: bold;">
+                          <i class="fa fa-database"></i> Detalle de Actividad y Seguimiento en BD
+                      </h4>
+                  </div>
+                  <div class="modal-body" style="padding: 20px;">
+                      <div id="detalle"></div>
+                  </div>
+                  <div class="modal-footer" style="background: #f8fafc;">
+                      <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold;">Cerrar Ventana</button>
+                  </div>
+              </div>
+          </div>
+      </div>';
+      return $tabla;
+    }
+
+
+    //// Get Obtiene Seguimiento por Actividad
+    public function obtener_detalle_actividad() {
+        $prod_id    = intval($this->input->post('prod_id'));
+
+        // 1. Obtener los datos estáticos de la actividad (Reutiliza tu consulta a la vista o tabla_producto)
+        // Aquí asumo que tu vista se llama vista_formN4_para_evaluacionPoa_x_UniResponsable o similar
+        $sql_act = "SELECT prod_id, og_codigo, prod_cod, prod_producto, prod_unidades, prod_fuente_verificacion, prod_meta, indi_id 
+                    FROM vista_formN4_para_evaluacionPoa_x_UniResponsable 
+                    WHERE prod_id = ? LIMIT 1";
+        $q_act = $this->db->query($sql_act, array($prod_id));
+        
+        if ($q_act->num_rows() == 0) {
+            echo json_encode(array('status' => 'error', 'message' => 'Actividad no encontrada.'));
+            return;
+        }
+        $actividad = $q_act->row_array();
+        $tabla='
+        <table class="table table-striped table-bordered" style="width: 100%; margin-bottom: 0;">
+                          <tbody>
+                              <tr>
+                                  <th style="width: 35%; background: #f1f5f9; font-weight: bold;">ID Sistema / Actividad:</th>
+                                  <td><span id="md_ajax_id" style="font-weight: bold;"></span> (<span id="md_ajax_og_codigo"></span> / <span id="md_ajax_prod_cod"></span>)</td>
+                              </tr>
+                              <tr>
+                                  <th style="background: #f1f5f9; font-weight: bold;">Descripción de la Actividad:</th>
+                                  <td id="md_ajax_producto" style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;"></td>
+                              </tr>
+                              <tr>
+                                  <th style="background: #f1f5f9; font-weight: bold;">Unidad Responsable:</th>
+                                  <td id="md_ajax_unidades"></td>
+                              </tr>
+                              <tr>
+                                  <th style="background: #f1f5f9; font-weight: bold;">Medio de Verificación Base:</th>
+                                  <td id="md_ajax_verificacion" style="white-space: normal; text-align: justify;"></td>
+                              </tr>
+                              <tr>
+                                  <th style="background: #f1f5f9; font-weight: bold;">Meta Anual Programada:</th>
+                                  <td><span id="md_ajax_meta" style="font-weight: bold; color: #1e3a8a; font-size: 14px;"></span></td>
+                              </tr>
+                                          <!-- Resumen Dinámico traído por AJAX -->
+                              <tr style="background: #f8fafc;">
+                                  <th colspan="2" style="background: #cbd5e1; font-weight: bold; text-align: center; padding: 6px;">
+                                      <i class="fa fa-calendar"></i> Estado Actual de Seguimiento Mensual en Base de Datos
+                                  </th>
+                              </tr>
+                              <tr>
+                                  <td colspan="2" style="padding: 0;">
+                                      <div id="md_ajax_resumen_meses" style="padding: 10px;">
+                                          <!-- Aquí se inyectará la subtabla generada por JS -->
+                                      </div>
+                                  </td>
+                              </tr>
+                          </tbody>
+                      </table>';
+        
+        $respuesta = array(
+            'status'             => 'success',
+            'actividad'          => $tabla
+        );
+
+        echo json_encode($respuesta);
+        return;
+    }
+
+
+    /// Guardar Registro Mensual para Seguimiento o Evaluacion POA
+    public function guardar_seguimiento() {
+    // 1. Capturar de forma segura las variables enviadas por el POST de jQuery
+    $prod_id   = intval($this->input->post('prod_id'));
+    $mes       = intval($this->input->post('mes'));
+    $ejecutado = floatval($this->input->post('ejecutado'));
+    
+    // Sanitizar cadenas de texto quitando espacios innecesarios
+    $verificacion = trim($this->input->post('verificacion'));
+    $problemas    = trim($this->input->post('problemas'));
+    $acciones     = trim($this->input->post('acciones'));
+
+    // 2. Validación de seguridad del lado del Servidor (Duplica la seguridad del JS)
+    if ($ejecutado == 0 && (empty($problemas) || empty($acciones))) {
+        $respuesta = array(
+            'status'  => 'error',
+            'message' => 'Los campos problemas y acciones son obligatorios cuando la ejecución es cero o está vacía.'
+        );
+        echo json_encode($respuesta);
+        return;
+    }
+
+    // 3. Limpiar registros previos en ambas tablas para evitar duplicidad de estados
+    $this->db->where('prod_id', $prod_id);
+    $this->db->where('m_id', $mes);
+    $this->db->where('g_id', $this->gestion);
+    $this->db->delete('prod_ejecutado_mensual');
+
+    $this->db->where('prod_id', $prod_id);
+    $this->db->where('m_id', $mes);
+    $this->db->where('g_id', $this->gestion);
+    $this->db->delete('prod_no_ejecutado_mensual');
+
+    // Inicializamos la variable para capturar el ID de inserción
+    $id_seguimiento = 0;
+    
+    $producto = $this->model_producto->get_producto_id($prod_id);
+
+    // 4. Inserción según el valor de ejecución
+    if ($ejecutado > 0) {
+        $data = array(
+            'prod_id'            => $prod_id,
+            'm_id'               => $mes,
+            'pejec_fis'          => $ejecutado,
+            'g_id'               => $this->gestion,
+            'fun_id'             => $this->fun_id,
+            'medio_verificacion' => strtoupper($verificacion),
+            'observacion'        => strtoupper($problemas),
+            'acciones'           => strtoupper($acciones),
+        );
+        $this->db->insert('prod_ejecutado_mensual', $data);
+        // 🌟 CAPTURA DEL ID AUTOINCREMENTAL DE LA TABLA EJECUTADO
+        $id_seguimiento = intval($this->db->insert_id());
+    } 
+     else {
+            $data = array(
+                'prod_id'            => $prod_id,
+                'm_id'               => $mes,
+                'g_id'               => $this->gestion,
+                'medio_verificacion' => strtoupper($verificacion),
+                'observacion'        => strtoupper($problemas),
+                'acciones'           => strtoupper($acciones),
+            );
+            $this->db->insert('prod_no_ejecutado_mensual', $data);
+            // 🌟 CAPTURA DEL ID AUTOINCREMENTAL DE LA TABLA NO EJECUTADO
+            $id_seguimiento = intval($this->db->insert_id());
+        }
+
+        // 5. Retornar la respuesta JSON correcta esperada por el AJAX
+        $respuesta = array(
+            'status'         => 'success',
+            'id_seguimiento' => $id_seguimiento
+        );
+
+        echo json_encode($respuesta);
+        return;
+    }
+
+    //// eliminar Registro
+    public function eliminar_seguimiento() {
+      // 1. Capturar de manera segura las variables enviadas por el método POST de jQuery
+      $id_seguimiento = intval($this->input->post('id_seguimiento'));
+      $prod_id        = intval($this->input->post('prod_id'));
+      $mes            = intval($this->input->post('mes'));
+
+      // 2. Validación de seguridad básica
+      if ($prod_id == 0 || $mes == 0) {
           $respuesta = array(
               'status'  => 'error',
-              'message' => 'Los campos problemas y acciones son obligatorios cuando la ejecución es cero.'
+              'message' => 'Parámetros insuficientes para procesar la eliminación.'
           );
           echo json_encode($respuesta);
           return;
       }
 
-      // // 3. Evaluar si ya existe un registro previo para este producto, mes y gestión
-      // // Nota: Reutiliza el método que ya tienes en tu modelo
-      // $existe_ejec = $this->model_evaluacionpoa->get_seguimiento_poa_mes($prod_id, $mes);
-      // $existe_no_ejec = $this->model_evaluacionpoa->get_seguimiento_poa_mes_noejec($prod_id, $mes);
+      // 3. Ejecutar el borrado físico en la tabla de ejecutados
+      // Buscamos por la llave primaria si vino en el request, u ocupamos el par prod_id/m_id
+      if ($id_seguimiento > 0) {
+          $this->db->where('peg_id', $id_seguimiento);
+      }
+      $this->db->where('prod_id', $prod_id);
+      $this->db->where('m_id', $mes);
+      $this->db->where('g_id', $this->gestion);
+      $this->db->delete('prod_ejecutado_mensual');
 
-      // $id_seguimiento = 0;
+      // 4. Ejecutar el borrado físico en la tabla de no ejecutados (justificaciones)
+      if ($id_seguimiento > 0) {
+          $this->db->where('ne_id', $id_seguimiento);
+      }
+      $this->db->where('prod_id', $prod_id);
+      $this->db->where('m_id', $mes);
+       $this->db->where('g_id', $this->gestion);
+      $this->db->delete('prod_no_ejecutado_mensual');
 
-      // // Supongamos que decides guardar todo en la tabla correspondiente:
-      // if ($ejecutado > 0) {
-      //     // Lógica para 'prod_ejecutado_mensual'
-      //     // Si existe haces UPDATE, si no haces INSERT.
-      //     // $id_seguimiento = $this->model_evaluacionpoa->guardar_ejecutado($prod_id, $mes, $ejecutado, $verificacion, $problemas, $acciones);
-          
-      //     // *Simulación de ID insertado/actualizado para el ejemplo*
-      //     $id_seguimiento = (count($existe_ejec) > 0) ? intval($existe_ejec[0]['pe_id']) : 999; 
-      // } else {
-      //     // Lógica para 'prod_no_ejecutado_mensual' (Ejecución cero con justificación)
-      //     // Si existe haces UPDATE, si no haces INSERT.
-      //     // $id_seguimiento = $this->model_evaluacionpoa->guardar_no_ejecutado($prod_id, $mes, $verificacion, $problemas, $acciones);
-          
-      //     // *Simulación de ID insertado/actualizado para el ejemplo*
-      //     $id_seguimiento = (count($existe_no_ejec) > 0) ? intval($existe_no_ejec[0]['ne_id']) : 888;
-      // }
-
-      // 4. Retornar la respuesta JSON esperada por tu script JS
+      // 5. Retornar respuesta de éxito en formato JSON para el frontend
       $respuesta = array(
-          'status'         => 'success',
-          'id_seguimiento' => 1
+          'status'  => 'success',
+          'message' => 'El registro fue eliminado correctamente de la base de datos.'
       );
 
       echo json_encode($respuesta);
       return;
   }
+
+
+
+
+
+
+
 
       /*-- FORMULARIOS POA ACTUALIZADOS FORM 4, FORM 5 --*/
     public function formularios_poa($com_id){

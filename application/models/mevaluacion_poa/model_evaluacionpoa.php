@@ -76,4 +76,15 @@ class Model_evaluacionpoa extends CI_Model{
         $query = $this->db->query($sql);
         return $query->result_array();
     }
+
+    /*----------- GET FORM 4 + PROG + EJEC ------*/
+    public function get_form4_seguimiento_poa($prod_id){
+        $sql = 'SELECT *
+                from vista_formN4_para_evaluacionPoa_x_UniResponsable p
+                left JOIN vista_temporalidad_form4_ejecutado_uresp AS ejec ON ejec.prod_id = p.prod_id
+                where p.prod_id='.$prod_id.'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 }
