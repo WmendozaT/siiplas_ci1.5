@@ -1,5 +1,43 @@
 base   = $('[name="base"]').val();
 
+function abreVentana(url) {
+    var elemento = window.event ? window.event.target.closest('a') : null;
+    var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";
+    var ancho = 1000;
+    var alto = 800;
+    var posicion_x = (screen.width / 2) - (ancho / 2);
+    var posicion_y = (screen.height / 2) - (alto / 2);
+
+    // 1. Abrimos la ventana vacía primero
+    var nuevaVentana = window.open('', '_blank', "width=" + ancho + ",height=" + alto + ",menubar=0,toolbar=0,directories=0,scrollbars=no,resizable=no,left=" + posicion_x + ",top=" + posicion_y);
+
+    // 2. Inyectamos un HTML de carga estético mientras llega la respuesta del servidor
+    nuevaVentana.document.write(`
+        <html>
+            <head>
+                <title>Cargando Reporte POA...</title>
+                <style>
+                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+                    .loader-container { text-align: center; }
+                    .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #5B9360; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    h2 { color: #333; }
+                </style>
+            </head>
+            <body>
+                <div class="loader-container">
+                    <div class="spinner"></div>
+                    <h2>Generando ${tituloFinal}</h2>
+                    <p>Por favor, espere un momento.</p>
+                </div>
+            </body>
+        </html>
+    `);
+
+    // 3. Redirigimos la ventana a la URL real del reporte
+    nuevaVentana.location.href = url;
+}
+
     function doSearch(){
       var tableReg = document.getElementById('datos');
       var searchText = document.getElementById('searchTerm').value.toLowerCase();
@@ -343,43 +381,190 @@ base   = $('[name="base"]').val();
     });
 }
 
-//// get seguimiento de actividad en modal
-function abrirModalDetalleConAjax(prodId) {
-    // A. Mostrar pantalla opaca completa de Loading
-    var loadingId = 'loading_modal_ajax';
-    var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">' +
-        '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
-            '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #0284c7; margin-bottom: 10px; display: block;"></i>' +
-            '<span style="font-size: 13px; font-weight: bold; color: #334155;">Consultando base de datos...</span>' +
+    //// get seguimiento x actividad en modal
+    function abrirModalDetalleConAjax(prodId) {
+        // A. Mostrar pantalla opaca completa de Loading
+        var loadingId = 'loading_modal_ajax';
+        var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">' +
+            '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+                '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #0284c7; margin-bottom: 10px; display: block;"></i>' +
+                '<span style="font-size: 13px; font-weight: bold; color: #334155;">Consultando base de datos...</span>' +
+            '</div>' +
+        '</div>';
+        jQuery('body').append(loadingHtml);
+
+        // B. Petición asíncrona al Servidor
+        jQuery.ajax({
+            type: "POST",
+            url: base + "index.php/ejecucion/cevaluacion_form4/obtener_detalle_seguimiento_x_actividad", 
+            data: {
+                prod_id: prodId
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Quitar pantalla de carga
+                jQuery('#' + loadingId).remove();
+
+                if (response.status === 'success') {
+                    var act = response.actividad;
+                   
+                    jQuery('#detalle').html(act);
+                    jQuery('#modalDetalleActividadAjax').modal('show');
+
+                } else {
+                    alert('Error al consultar los detalles: ' + response.message);
+                }
+            },
+            error: function() {
+                jQuery('#' + loadingId).remove();
+                alert('Error crítico de red: No se pudo conectar con el servidor.');
+            }
+        });
+    }
+
+    //// get seguimiento de Actividades x Unidad Responsable en modal
+    function abrirModalDetalle_UresponsableConAjax(comId) {
+        // A. Mostrar pantalla opaca completa de Loading
+        var loadingId = 'loading_modal_ajax';
+        var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">' +
+            '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+                '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #0284c7; margin-bottom: 10px; display: block;"></i>' +
+                '<span style="font-size: 13px; font-weight: bold; color: #334155;">Consultando base de datos...</span>' +
+            '</div>' +
+        '</div>';
+        jQuery('body').append(loadingHtml);
+
+        // B. Petición asíncrona al Servidor
+        jQuery.ajax({
+            type: "POST",
+            url: base + "index.php/ejecucion/cevaluacion_form4/obtener_detalle_seguimiento_de_actividad_x_UnidadResponsable", 
+            data: {
+                com_id: comId
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Quitar pantalla de carga
+                jQuery('#' + loadingId).remove();
+
+                if (response.status === 'success') {
+                    var act = response.actividad;
+                   
+                    jQuery('#detalle').html(act);
+                    jQuery('#modalDetalleActividadAjax').modal('show');
+
+                } else {
+                    alert('Error al consultar los detalles: ' + response.message);
+                }
+            },
+            error: function() {
+                jQuery('#' + loadingId).remove();
+                alert('Error crítico de red: No se pudo conectar con el servidor.');
+            }
+        });
+    }
+
+
+
+
+///// Cuadros de Evaluacion POA
+var chartPastel = null;
+var chartBarras = null;
+
+function cargarCuadrosEvaluacion(elemento, comId) {
+    // 1. ⏳ ACTIVAR LOADING CON PANTALLA COMPLETA OPACA
+    var loadingId = 'loading_screen_overlay_graficos';
+    var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
+        '<div style="background: #ffffff; padding: 25px 45px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+            '<i class="fa fa-refresh fa-spin" style="font-size: 34px; color: #1e3a8a; margin-bottom: 12px; display: block;"></i>' +
+            '<span style="font-size: 14px; font-weight: bold; color: #334155;">Procesando consolidados y generando gráficos...</span>' +
         '</div>' +
     '</div>';
     jQuery('body').append(loadingHtml);
 
-    // B. Petición asíncrona al Servidor
+    // 2. Ejecutar petición AJAX al servidor
     jQuery.ajax({
         type: "POST",
-        url: base + "index.php/ejecucion/cevaluacion_form4/obtener_detalle_actividad", // Ruta en tu controlador
-        data: {
-            prod_id: prodId
-        },
+        url: base + "index.php/ejecucion/cevaluacion_form4/obtener_graficos_cumplimiento", // Define esta ruta en tu controlador
+        data: { com_id: comId },
         dataType: 'json',
         success: function(response) {
-            // Quitar pantalla de carga
-            jQuery('#' + loadingId).remove();
+    jQuery("#" + loadingId).remove();
 
-            if (response.status === 'success') {
-                var act = response.actividad;
-               
-                jQuery('#detalle').html(act);
-                jQuery('#modalDetalleActividadAjax').modal('show');
+    if (response.status === "success") {
+        // 1. Inyectar primero los datos de texto en la tabla
+        jQuery("#lbl_total_prog").text(response.datos.total_programado);
+        jQuery("#lbl_total_ejec").text(response.datos.total_ejecutado);
+        jQuery("#lbl_total_porcentaje").text(response.datos.porcentaje_eficacia + "%");
+        
+        if(response.datos.porcentaje_eficacia >= 75) {
+            jQuery("#lbl_total_porcentaje").css("color", "#16a34a");
+        } else if(response.datos.porcentaje_eficacia >= 50) {
+            jQuery("#lbl_total_porcentaje").css("color", "#ca8a04");
+        } else {
+            jQuery("#lbl_total_porcentaje").css("color", "#dc2626");
+        }
 
+        // 2. 🌟 PRIMERO MOSTRAR EL MODAL
+        jQuery("#modal_graficos").modal("show");
+
+        // 3. ⏳ ESPERAR A QUE EL MODAL TERMINE DE CARGAR EN PANTALLA
+        // Usamos el evento nativo de Bootstrap 'shown.bs.modal' para garantizar que los canvas existan en el DOM
+        jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
+            
+            // Destruir instancias previas si existen
+            if (chartPastel) chartPastel.destroy();
+            if (chartBarras) chartBarras.destroy();
+  // Ahora sí, capturar los contextos con la seguridad de que no serán null
+            var canvasPastel = document.getElementById("grafico_pastel_cumplimiento");
+            var canvasBarras = document.getElementById("grafico_barras_temporalidad");
+
+            if (canvasPastel && canvasBarras) {
+                var ctxPastel = canvasPastel.getContext("2d");
+                chartPastel = new Chart(ctxPastel, {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Cumplido (%)", "Pendiente (%)"],
+                        datasets: [{
+                            data: [response.datos.porcentaje_eficacia, (100 - response.datos.porcentaje_eficacia)],
+                            backgroundColor: ["#22c55e", "#cbd5e1"],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                var ctxBarras = canvasBarras.getContext("2d");
+                chartBarras = new Chart(ctxBarras, {
+                    type: "bar",
+                    data: {
+                        labels: ["Prog. Total", "Ejec. Total"],
+                        datasets: [{
+                            label: "Unidades POA",
+                            data: [response.datos.total_programado, response.datos.total_ejecutado],
+                            backgroundColor: ["#0284c7", "#16a34a"]
+                        }]
+                    },
+           options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { yAxes: [{ ticks: { beginAtZero: true } }] }
+                    }
+                });
             } else {
-                alert('Error al consultar los detalles: ' + response.message);
+                console.error("Error: No se encontraron los elementos canvas en el DOM del modal.");
             }
-        },
+        });
+
+    } else {
+        alert("No se pudieron consolidar los cuadros: " + response.message);
+    }
+},
+
+
+
         error: function() {
             jQuery('#' + loadingId).remove();
-            alert('Error crítico de red: No se pudo conectar con el servidor.');
+            alert('Error de comunicación asíncrona con el servidor.');
         }
     });
 }

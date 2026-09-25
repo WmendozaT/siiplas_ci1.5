@@ -1374,8 +1374,8 @@ class Cseguimiento extends CI_Controller {
 
 
 
-    /*----- REPORTE SEGUIMIENTO POA PDF 2021 -------*/
-    public function ver_reporteevalpoa_consolidado_temporalidad($com_id){
+    /*----- REPORTE SEGUIMIENTO POA PDF 2021 (A ELIMINAR)-------*/
+/*    public function ver_reporteevalpoa_consolidado_temporalidad($com_id){
       $data['componente'] = $this->model_componente->get_componente($com_id,$this->gestion); ///// DATOS DEL COMPONENTE
       if(count($data['componente'])!=0){
         $data['mes'] = $this->seguimientopoa->mes_nombre();
@@ -1396,7 +1396,7 @@ class Cseguimiento extends CI_Controller {
       else{
         echo "Error !!!";
       }
-    }
+    }*/
 
 
 

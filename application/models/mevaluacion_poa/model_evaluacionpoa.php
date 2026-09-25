@@ -14,7 +14,7 @@ class Model_evaluacionpoa extends CI_Model{
     
 
     /*------- Lista formN4 para Evaluacion POA --------*/
-    public function list_formN4_para_evaluacion_UnidadResponsable($com_id, $trimestre) {
+    public function list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id, $trimestre) {
         // 1. Validar el trimestre (si no es 1, 2 o 3, por defecto es 4)
         $t = in_array($trimestre, array(1, 2, 3, 4)) ? intval($trimestre) : 4;
 
@@ -35,6 +35,31 @@ class Model_evaluacionpoa extends CI_Model{
         
         return $query->result_array();
     }
+
+    /*----------- GET FORM 4 + PROG + EJEC ------*/
+    public function list_formN4_para_evaluacion_UnidadResponsable_anual($com_id){
+        $sql = 'SELECT *
+                from vista_formN4_para_evaluacionPoa_x_UniResponsable p
+                left JOIN vista_temporalidad_form4_ejecutado_uresp AS ejec ON ejec.prod_id = p.prod_id
+                where p.com_id='.$com_id.'
+                ORDER BY p.prod_id, p.prod_cod ASC';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*----------- GET FORM 4 + PROG + EJEC ------*/
+    public function get_form4_seguimiento_poa($prod_id){
+        $sql = 'SELECT *
+                from vista_formN4_para_evaluacionPoa_x_UniResponsable p
+                left JOIN vista_temporalidad_form4_ejecutado_uresp AS ejec ON ejec.prod_id = p.prod_id
+                where p.prod_id='.$prod_id.'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
 
     /*-- GET SEGUIMIENTO (EJECUTADO) POA MENSUAL (Cumplidas, En proceso) 2027 --*/
     public function get_seguimiento_poa_mes($prod_id,$mes_id){
@@ -77,14 +102,5 @@ class Model_evaluacionpoa extends CI_Model{
         return $query->result_array();
     }
 
-    /*----------- GET FORM 4 + PROG + EJEC ------*/
-    public function get_form4_seguimiento_poa($prod_id){
-        $sql = 'SELECT *
-                from vista_formN4_para_evaluacionPoa_x_UniResponsable p
-                left JOIN vista_temporalidad_form4_ejecutado_uresp AS ejec ON ejec.prod_id = p.prod_id
-                where p.prod_id='.$prod_id.'';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
 }

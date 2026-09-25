@@ -372,7 +372,7 @@ $route['seg/formulario_seguimiento_poa_gc/(:any)'] = 'ejecucion/cseguimiento/for
 $route['seg/ver_seguimientopoa/(:any)'] = 'ejecucion/cseguimiento/ver_evaluacion_poa/$1'; ///// Ver Evaluacion POA
 $route['seg/ver_reporte_seguimientopoa/(:any)'] = 'ejecucion/cseguimiento/ver_reportesegpoa/$1'; ///// Ver Reporte Seguimiento POA Mensual
 $route['seg/ver_reporte_evaluacionpoa/(:any)'] = 'ejecucion/cseguimiento/ver_reporteevalpoa/$1/$2'; ///// Ver Reporte Evaluacion POA Trimestral
-$route['seg/ver_reporte_evaluacionpoa_temporalidad/(:any)'] = 'ejecucion/cseguimiento/ver_reporteevalpoa_consolidado_temporalidad/$1'; ///// Ver Reporte Evaluacion POA Consolidado de todos los meses
+//$route['seg/ver_reporte_evaluacionpoa_temporalidad/(:any)'] = 'ejecucion/cseguimiento/ver_reporteevalpoa_consolidado_temporalidad/$1'; ///// Ver Reporte Evaluacion POA Consolidado de todos los meses
 
 $route['seg/notificacion_operaciones_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_UnidadOrganizacional_mensual/$1'; ///// Reporte Notificacion Seguimiento POA Mensual UNIDAD/PROY 1
 $route['seg/notificacion_poa_componente_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_poa_mensual_componente/$1'; ///// Reporte Notificacion Seguimiento POA Mensual COMPONENTE

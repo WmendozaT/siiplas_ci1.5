@@ -26,7 +26,8 @@ class Cevaluacion_form4 extends CI_Controller {
             $this->com_id=$this->session->userdata('com_id');
             $this->mes_sistema=$this->session->userData('mes'); /// mes sistema
             
-            $this->load->library('seguimientopoa');
+            //$this->load->library('seguimientopoa');
+            $this->load->library('lib_seguimientopoa');
             
         } else {
             $this->session->sess_destroy();
@@ -56,8 +57,8 @@ class Cevaluacion_form4 extends CI_Controller {
     public function formulario_seguimiento_poa($com_id){
         $componente = $this->model_componente->get_componente($com_id,$this->gestion);
         // 3. Ahora el objeto $this->programacionpoa existirá correctamente y sin conflictos
-        $data['stylo'] = $this->estilo_tabla_form4(); 
-        $data['titulo']=$this->titulo($componente);
+        $data['stylo'] = $this->lib_seguimientopoa->estilo_tabla_form4(); 
+        $data['titulo']=$this->lib_seguimientopoa->titulo($componente);
 
         $form4_crudo=$this->model_producto->lista_productos($com_id);
         //$form4 = $this->model_producto->lista_form4_x_unidadresponsable($com_id);
@@ -65,14 +66,15 @@ class Cevaluacion_form4 extends CI_Controller {
             $this->update_uresponsable($form4_crudo);
           }
 
-        $form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable($com_id,$this->tmes);
-        $data['tabla'] = $this->formulario($form4);
+        
+        $data['tabla'] = $this->formulario($componente);
         $this->load->view('admin/evaluacion/evaluacion_form4/form_evaluacion_form4', $data);
     }
 
 
     /// formulario de SEguimiento / Evaluacion
-    function formulario($form4){
+    function formulario($componente){
+    $form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_trimestre($componente[0]['com_id'],$this->tmes); //// listado de actividades por trimestre programados
     $tabla='';
     $trimestre = $this->tmes; // Puedes parametrizarlo dinámicamente según tu vista ($this->input->post('trimestre'))
     $mes_inicio = (($trimestre - 1) * 3) + 1;
@@ -86,7 +88,7 @@ class Cevaluacion_form4 extends CI_Controller {
         <thead>
             <tr style="vertical-align: middle;">
                 <th class="hasinput" style="width:1.5%; text-align: center;"></th>
-                <th class="hasinput" style="width:3%; text-align: center;"></th>
+                <th style="width:4%; text-align: center;"></th>
                 <th class="hasinput" style="width:1.5%; text-align: center;"></th>
                 <th class="hasinput" style="width:1.5%; text-align: center;">
                     <input type="text" class="form-control" placeholder="COD. ACT."/>
@@ -116,7 +118,15 @@ class Cevaluacion_form4 extends CI_Controller {
             </tr>                          
             <tr>
                 <th style="width:1.5%; text-align: center;"></th>
-                <th style="width:3%; text-align: center;"></th>
+                <th style="width:4%; text-align: center;">
+                  <button type="button" 
+                      class="btn btn-default btn-xs" 
+                      title="Ver detalle seguimiento por Unidad Operativa" 
+                      onclick="abrirModalDetalle_UresponsableConAjax('.$componente[0]['com_id'].')" 
+                      style="padding: 6px 9px;vertical-align: middle;">
+                      <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="20" HEIGHT="20"/>&nbsp;&nbsp;<b>VER</b>
+                  </button>
+                </th>
                 <th style="width:1.5%; text-align: center;" title="CÓDIGO OPERACIÓN">COD.<br>OPE.</th>
                 <th style="width:1.5%; text-align: center;" title="CÓDIGO ACTIVIDAD">COD.<br> ACT.</th>
                 <th style="width:7%; text-align: center;" title="DETALLE ACTIVIDAD">ACTIVIDAD</th>
@@ -278,7 +288,8 @@ class Cevaluacion_form4 extends CI_Controller {
         </tbody>
         </table>';
 
-        $tabla.=$this->modal_seguimiento_x_form4();
+        $tabla.=$this->lib_seguimientopoa->modal_seguimiento_x_form4();
+        $tabla.=$this->lib_seguimientopoa->modal_evaluacion_poa_x_UnidadResponsable();
         return $tabla;
     }
 
@@ -287,166 +298,278 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
 
-    /// Modal Para ver la ejecucion de la Actividad llevar a Libreria
-    public function modal_seguimiento_x_form4() {
-      $tabla='';
-      $tabla.='
-      <div class="modal fade" id="modalDetalleActividadAjax" tabindex="-1" role="dialog" aria-hidden="true" >
-          <div class="modal-dialog modal-lg" style="width:90%;">
-              <div class="modal-content">
-                  <div class="modal-header" style="background: #1e3a8a; color: #fff;">
-                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
-                      <h4 class="modal-title" style="font-weight: bold;">
-                          <i class="fa fa-database"></i> Detalle de Actividad y Seguimiento en BD
-                      </h4>
-                  </div>
-                  <div class="modal-body" style="padding: 20px;">
-                      <div id="detalle"></div>
-                  </div>
-                  <div class="modal-footer" style="background: #f8fafc;">
-                      <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold;">Cerrar Ventana</button>
-                  </div>
-              </div>
-          </div>
-      </div>';
-      return $tabla;
-    }
+
 
 
     //// Get Obtiene Seguimiento por Actividad
-    public function obtener_detalle_actividad() {
-        $prod_id    = intval($this->input->post('prod_id'));
-        $get_form4=$this->model_evaluacionpoa->get_form4_seguimiento_poa($prod_id);
-        if(count($get_form4)==0){
-            echo json_encode(array('status' => 'error', 'message' => 'Actividad no encontrada.'));
-            return;
-        }
-        
-        $tp_indi='';
-        if($get_form4[0]['indi_id']==2){
-          $tp_indi='%';
-        }
-        $tabla='
-        <table class="table table-striped table-bordered" style="width: 100%; margin-bottom: 0;">
-          <thead>
-                <tr style="font-size: 10px;">
-                  <th style="width: 2%; background: #f1f5f9; font-weight: bold; text-align:center;">COD.</th>
-                  <th style="width: 7%; background: #f1f5f9; font-weight: bold; text-align:center;">ACTIVIDAD</th>
-                  <th style="width: 7%; background: #f1f5f9; font-weight: bold; text-align:center;">UNIDAD RESPONSABLE</th>
-                  <th style="width: 7%; background: #f1f5f9; font-weight: bold; text-align:center;">MEDIO DE VERIFICACIÓN</th>
-                  <th style="width: 3%; background: #f1f5f9; font-weight: bold; text-align:center;">META</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">ENE.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">FEB.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">MAR.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">ABR.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">MAY.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">JUN.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">JUL.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">AGO.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">SEPT.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">OCT.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">NOV.</th>
-                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">DIC.</th>
-                </tr>
-              </thead>
-              <tbody>
-              <tr>
-                <td style="white-space: normal; line-height: 1.5; text-align: center; font-weight: bold; color: #1e293b;">'.$get_form4[0]['og_codigo'].'.'.$get_form4[0]['prod_cod'].'</td>
-                <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">'.$get_form4[0]['prod_producto'].'</td>
-                <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">'.$get_form4[0]['prod_unidades'].'</td>
-                <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">'.$get_form4[0]['prod_fuente_verificacion'].'</td>
-                <td style="white-space: normal; line-height: 1.5; text-align: center; font-weight: bold; color: #1e293b;">'.round($get_form4[0]['prod_meta'],2).' '.$tp_indi.'</td>';
-                for ($i=1; $i <=12 ; $i++) {
-                  $tabla.='
-                  <td style="white-space: normal; line-height: 1.5; text-align: center; font-weight: bold; color: #1e293b;">
-                    <table>
-                      <tr>
-                        <td>P : </td>
-                        <td>'.round($get_form4[0]['mes'.$i],2).' '.$tp_indi.'</td>
-                      </tr>
-                      <tr>
-                        <td>E : </td>
-                        <td>'.round($get_form4[0]['e_mes'.$i],2).' '.$tp_indi.'</td>
-                      </tr>
-                    </table>
-                  </td>';
-                }
-              $tabla.='
+    public function obtener_detalle_seguimiento_x_actividad() {
+      $prod_id = intval($this->input->post('prod_id'));
+      $get_form4 = $this->model_evaluacionpoa->get_form4_seguimiento_poa($prod_id);
+      
+      if (count($get_form4) == 0) {
+          echo json_encode(array('status' => 'error', 'message' => 'Actividad no encontrada.'));
+          return;
+      }
+      
+      $trimestre  = $this->tmes; // Puedes cambiarlo por: intval($this->input->post('trimestre')) si viaja por POST
+      $mes_inicio = (($trimestre - 1) * 3) + 1;
+      $mes_fin    = $trimestre * 3;
+
+      $tp_indi = ($get_form4[0]['indi_id'] == 2) ? '%' : '';
+
+      // 2. DISEÑO MODERNO: Estructura de cabeceras de la tabla con colores profesionales
+      $tabla = '
+      <div class="table-responsive">
+          <table class="table table-bordered table-condensed" style="width: 100%; margin-bottom: 0; font-family: sans-serif; table-layout: fixed;">
+            <thead>
+              <tr style="font-size: 11px; background: #334155; color: #ffffff;">
+                <th style="width: 3%; text-align:center; vertical-align: middle;">COD.</th>
+                <th style="width: 15%; text-align:center; vertical-align: middle;">ACTIVIDAD</th>
+                <th style="width: 10%; text-align:center; vertical-align: middle;">UNIDAD RESPONSABLE</th>
+                <th style="width: 10%; text-align:center; vertical-align: middle;">
+                 <th style="width: 3%; text-align:center; vertical-align: middle;">META</th>
+                
+                <!-- Cabeceras de meses simplificadas -->
+                <th style="width: 9%; text-align:center; vertical-align: middle;">ENE</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">FEB</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">MAR</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">ABR</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">MAY</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">JUN</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">JUL</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">AGO</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">SEP</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">OCT</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">NOV</th>
+                <th style="width: 9%; text-align:center; vertical-align: middle;">DIC</th>
               </tr>
+            </thead>
+            <tbody>
+              <!-- FILA 1: DATOS GENERALES Y METAS DE CADA MES -->
               <tr>
-              <td colspan=5></td>';
-              for ($i=1; $i <=12 ; $i++) {
-                $ejec=$this->model_evaluacionpoa->get_seguimiento_poa_mes($prod_id,$i);
-                $info='';
-                if(count($ejec)!=0){
-                  $info='<div style="color:green;">*'.$ejec[0]['medio_verificacion'].'</div>';
-                }
-                else{
-                  $no_ejec=$this->model_evaluacionpoa->get_seguimiento_poa_mes_noejec($prod_id,$i);
-                  if(count($no_ejec)!=0){
-                    $info='<div style="color:red;">*'.$no_ejec[0]['medio_verificacion'].'<br>*'.$no_ejec[0]['observacion'].'<br>*'.$no_ejec[0]['acciones'].'</div>';
-                  }
-                }
-                  $tabla.='
-                  <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">
-                    '.$info.'
+                <td style="white-space: normal; line-height: 1.4; text-align: center; font-weight: bold; color: #1e293b; vertical-align: middle; font-size:11.5px; background: #f8fafc;">
+                  '.$get_form4[0]['og_codigo'].'.'.$get_form4[0]['prod_cod'].'
+                </td>
+                <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
+                  '.strtoupper($get_form4[0]['prod_producto']).'
+                </td>
+                <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
+                  '.strtoupper($get_form4[0]['prod_unidades']).'
+                </td>
+                <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
+                  '.strtoupper($get_form4[0]['prod_fuente_verificacion']).'
+                </td>
+                           <td style="white-space: normal; text-align: center; font-weight: bold; color: #1e3a8a; vertical-align: middle; font-size:13px; background: #f1f5f9;">
+                  '.round($get_form4[0]['prod_meta'], 2).' '.$tp_indi.'
+                </td>';
+                
+                // Renderizar Metas de Programado vs Ejecutado de corrido
+                for ($i = 1; $i <= 12; $i++) {
+                  // Alerta visual de color celeste claro si pertenece al trimestre actual evaluado
+                  $color = ($i >= $mes_inicio && $i <= $mes_fin) ? '#e0f2fe' : '#ffffff';
+                  
+                  $tabla .= '
+                  <td style="white-space: normal; padding: 4px; vertical-align: middle; background: '.$color.'; font-size: 11.5px;">
+                    <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; margin-bottom: 2px;">
+                      <span style="color:#64748b; font-weight:bold;">P:</span> 
+                      <span style="font-weight:bold; float:right; color:#0284c7;">'.round($get_form4[0]['mes'.$i], 2).$tp_indi.'</span>
+                      <div style="clear:both;"></div>
+                    </div>
+                    <div>
+                      <span style="color:#64748b; font-weight:bold;">E:</span> 
+                      <span style="font-weight:bold; float:right; color:#16a34a;">'.round($get_form4[0]['e_mes'.$i], 2).$tp_indi.'</span>
+                      <div style="clear:both;"></div>
+                    </div>
                   </td>';
                 }
-              $tabla.='
+                
+              $tabla .= '
+              </tr>
+            <!-- FILA 2: DETALLES EXTRA, JUSTIFICACIONES Y MEDIOS DE VERIFICACIÓN -->
+              <tr style="background: #ffffff;">
+                <td colspan="5" style="background: #f1f5f9; text-align: right; font-weight: bold; font-size: 10px; color: #475569; vertical-align: middle; padding-right: 8px;">
+                  <i class="fa fa-paperclip"></i> REGISTRO MENSUAL:
+                </td>';
+                
+                // Renderizar los bloques informativos extrayéndolos del Caché en memoria RAM de PHP
+                for ($i = 1; $i <= 12; $i++) {
+                  $color = ($i >= $mes_inicio && $i <= $mes_fin) ? '#e0f2fe' : '#ffffff';
+                  $info = '<span style="color: #94a3b8; font-style: italic; font-size:10px;">Sin datos</span>';
+
+                  $ejec=$this->model_evaluacionpoa->get_seguimiento_poa_mes($prod_id,$i);
+                  if(count($ejec)!=0){
+                    $info='
+                                  <div style="font-size: 10px; line-height: 1.3; color: #16a34a; text-align: justify;">
+                                      <strong style="color:#155724;"><i class="fa fa-check-circle"></i> MV:</strong> '.$ejec[0]['medio_verificacion'].'
+                                  </div>';
+                  }
+                  else{
+                    $no_ejec=$this->model_evaluacionpoa->get_seguimiento_poa_mes_noejec($prod_id,$i);
+                    if(count($no_ejec)!=0){
+                      $info = '<div style="font-size: 10px; line-height: 1.3; color: #b45309; text-align: justify; background: #fef9c3; padding: 3px; border-radius:3px; border: 1px solid #fef08a;">
+                                      <strong style="color:#795203;"><i class="fa fa-times-circle"></i> JUSTIFICADO:</strong><br>
+                                      <b style="color:#475569;">MV:</b> '.strtoupper($no_ejec[0]['medio_verificacion']).'<br>
+                                      <b style="color:#475569;">Obs:</b> '.strtoupper($no_ejec[0]['observacion']).'<br>
+                                      <b style="color:#475569;">Acc:</b> '.strtoupper($no_ejec[0]['acciones']).'
+                                </div>';
+                    }
+                  }
+
+                $tabla .= '
+                  <td style="white-space: normal; padding: 4px; vertical-align: top; background: '.$color.'; border: 1px solid #cbd5e1;">
+                    ' . $info . '
+                  </td>';
+                }
+                
+              $tabla .= '
               </tr>
             </tbody>
-        </table>';
+          </table>
+      </div>';
+
+      $respuesta = array(
+          'status'    => 'success',
+          'actividad' => $tabla
+      );
+
+      echo json_encode($respuesta);
+      return;
+  }
 
 
+    //// Get Obtiene Seguimiento de Actividades por Unidad Responsable
+    public function obtener_detalle_seguimiento_de_actividad_x_UnidadResponsable() {
+      $com_id = intval($this->input->post('com_id'));
+      $componente = $this->model_componente->get_componente($com_id,$this->gestion);
+      $form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_anual($com_id);
+      
+      if (count($form4) == 0) {
+          echo json_encode(array('status' => 'error', 'message' => 'Listado no encontrada.'));
+          return;
+      }
+      
+      $trimestre  = $this->tmes; // Puedes cambiarlo por: intval($this->input->post('trimestre')) si viaja por POST
+      $mes_inicio = (($trimestre - 1) * 3) + 1;
+      $mes_fin    = $trimestre * 3;
 
-        // $tabla='
-        // <table class="table table-striped table-bordered" style="width: 100%; margin-bottom: 0;">
-        //                   <tbody>
-        //                       <tr>
-        //                           <th style="width: 35%; background: #f1f5f9; font-weight: bold;">ID Sistema / Actividad:</th>
-        //                           <td><span id="md_ajax_id" style="font-weight: bold;"></span> (<span id="md_ajax_og_codigo"></span> / <span id="md_ajax_prod_cod"></span>)</td>
-        //                       </tr>
-        //                       <tr>
-        //                           <th style="background: #f1f5f9; font-weight: bold;">Descripción de la Actividad:</th>
-        //                           <td id="md_ajax_producto" style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;"></td>
-        //                       </tr>
-        //                       <tr>
-        //                           <th style="background: #f1f5f9; font-weight: bold;">Unidad Responsable:</th>
-        //                           <td id="md_ajax_unidades"></td>
-        //                       </tr>
-        //                       <tr>
-        //                           <th style="background: #f1f5f9; font-weight: bold;">Medio de Verificación Base:</th>
-        //                           <td id="md_ajax_verificacion" style="white-space: normal; text-align: justify;"></td>
-        //                       </tr>
-        //                       <tr>
-        //                           <th style="background: #f1f5f9; font-weight: bold;">Meta Anual Programada:</th>
-        //                           <td><span id="md_ajax_meta" style="font-weight: bold; color: #1e3a8a; font-size: 14px;"></span></td>
-        //                       </tr>
-        //                                   <!-- Resumen Dinámico traído por AJAX -->
-        //                       <tr style="background: #f8fafc;">
-        //                           <th colspan="2" style="background: #cbd5e1; font-weight: bold; text-align: center; padding: 6px;">
-        //                               <i class="fa fa-calendar"></i> Estado Actual de Seguimiento Mensual en Base de Datos
-        //                           </th>
-        //                       </tr>
-        //                       <tr>
-        //                           <td colspan="2" style="padding: 0;">
-        //                               <div id="md_ajax_resumen_meses" style="padding: 10px;">
-        //                                   <!-- Aquí se inyectará la subtabla generada por JS -->
-        //                               </div>
-        //                           </td>
-        //                       </tr>
-        //                   </tbody>
-        //               </table>';
+      $tabla = '
+        <script type="text/javascript">
+          jQuery(document).ready(function() {
+              // Escuchar el evento de escritura en el input del buscador
+              jQuery("#buscar_actividad_poa").on("keyup", function() {
+                  var valorBusqueda = jQuery(this).val().toLowerCase();
+
+                  // Filtrar cada fila que tenga la clase "fila-actividad"
+                  jQuery("#tabla_seguimiento_poa_principal .fila-actividad").each(function() {
+                      var textoFila = jQuery(this).text().toLowerCase();
+
+                      // Si el texto de la fila contiene lo buscado, la muestra; si no, la oculta
+                      if (textoFila.indexOf(valorBusqueda) > -1) {
+                          jQuery(this).show();
+                      } else {
+                          jQuery(this).hide();
+                      }
+                  });
+              });
+          });
+      </script>
+
+  <!-- 🌟 Añadida clase identificadora al título para rescatarlo en el CSS de impresión -->
+  <h2 class="titulo-reporte-print">'.$componente[0]['aper_programa'].' '.$componente[0]['aper_proyecto'].' '.$componente[0]['aper_actividad'].' - '.$componente[0]['tipo'].' '.$componente[0]['act_descripcion'].' - '.$componente[0]['abrev'].'  / <b>'.$componente[0]['serv_cod'].' </b>'.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</h2>
+
+  <div class="row noprint" style="margin-bottom: 15px;">
+    <div class="col-md-6 col-sm-8 col-xs-12">
+        <div class="input-group">
+            <span class="input-group-addon" style="background: #334155; color: #fff; border: 1px solid #334155;"><i class="fa fa-search"></i></span>
+            <input type="text" id="buscar_actividad_poa" class="form-control" placeholder="Buscar por código, actividad o unidad..." style="height: 34px; font-weight: bold;">
+        </div>
+    </div>
+    <div class="col-md-6 col-sm-4 col-xs-12 text-right">
+        <!-- 🖨️ Botón que dispara la ventana de impresión nativa -->
+        <a class="btn btn-primary" href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$componente[0]['com_id'].'\');" disabled="true" style="background: #0284c7; border: none; height: 34px; font-weight: bold; padding: 0 15px;"><i class="fa fa-print"></i> Imprimir Reporte</a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table id="tabla_seguimiento_poa_principal" class="table table-bordered table-condensed" style="width: 100%; margin-bottom: 0; font-family: sans-serif; table-layout: fixed;">
+      <thead>
+        <thead>
+        <tr style="font-size: 11px; background: #334155; color: #ffffff;">
+          <th style="width: 5%; text-align:center; vertical-align: middle;">COD.</th>
+          <th style="width: 15%; text-align:center; vertical-align: middle;">ACTIVIDAD</th>
+          <th style="width: 12%; text-align:center; vertical-align: middle;">UNIDAD RESPONSABLE</th>
+          <th style="width: 12%; text-align:center; vertical-align: middle;">MEDIO DE VERIFICACIÓN</th> 
+          <th style="width: 5%; text-align:center; vertical-align: middle;">META</th>
+          
+          <th style="width: 6%; text-align:center; vertical-align: middle;">ENE</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">FEB</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">MAR</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">ABR</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">MAY</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">JUN</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">JUL</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">AGO</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">SEP</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">OCT</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">NOV</th>
+          <th style="width: 6%; text-align:center; vertical-align: middle;">DIC</th>
+        </tr>
+      </thead>
+      <tbody>';
+      foreach($form4 as $rowp){
+        $tp_indi = ($rowp['indi_id'] == 2) ? '%' : '';
         
-        $respuesta = array(
-            'status'             => 'success',
-            'actividad'          => $tabla
-        );
+        $tabla.='
+        <tr class="fila-actividad">
+          <td style="white-space: normal; line-height: 1.4; text-align: center; font-weight: bold; color: #1e293b; vertical-align: middle; font-size:14px; background: #f8fafc;">
+            '.$rowp['og_codigo'].'.'.$rowp['prod_cod'].'
+          </td>
+          <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
+            '.strtoupper($rowp['prod_producto']).'
+          </td>
+          <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
+            '.strtoupper($rowp['prod_unidades']).'
+          </td>
+          <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
+            '.strtoupper($rowp['prod_fuente_verificacion']).'
+          </td>
+          <td style="white-space: normal; text-align: center; font-weight: bold; color: #1e3a8a; vertical-align: middle; font-size:13px; background: #f1f5f9;">
+            '.round($rowp['prod_meta'], 2).' '.$tp_indi.'
+          </td>';
+          
+          for ($i = 1; $i <= 12; $i++) {
+            $color = ($i >= $mes_inicio && $i <= $mes_fin) ? '#e0f2fe' : '#ffffff';
+            $tabla .= '
+            <td style="white-space: normal; padding: 4px; vertical-align: middle; background: '.$color.'; font-size: 11.5px;">
+              <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; margin-bottom: 2px;">
+                <span style="color:#64748b; font-weight:bold;">P:</span> 
+                <span style="font-weight:bold; float:right; color:#0284c7;">'.round($rowp['mes'.$i], 2).$tp_indi.'</span>
+                <div style="clear:both;"></div>
+              </div>
+              <div>
+                <span style="color:#64748b; font-weight:bold;">E:</span> 
+                <span style="font-weight:bold; float:right; color:#16a34a;">'.round($rowp['e_mes'.$i], 2).$tp_indi.'</span>
+                <div style="clear:both;"></div>
+              </div>
+            </td>';
+          }
+          
+        // 🌟 CORREGIDO: Cerramos la variable concatenada e inyectamos el tag tr de forma estricta
+        $tabla .= '</tr>';
+      }
+      $tabla .= '
+          </tbody>
+        </table>
+      </div>';
 
-        echo json_encode($respuesta);
-        return;
-    }
+      $respuesta = array(
+          'status'    => 'success',
+          'actividad' => $tabla
+      );
 
+      echo json_encode($respuesta);
+      return;
+  }
 
     /// Guardar Registro Mensual para Seguimiento o Evaluacion POA
     public function guardar_seguimiento() {
@@ -526,6 +649,7 @@ class Cevaluacion_form4 extends CI_Controller {
         return;
     }
 
+
     //// eliminar Registro
     public function eliminar_seguimiento() {
       // 1. Capturar de manera segura las variables enviadas por el método POST de jQuery
@@ -575,210 +699,91 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
 
+  public function obtener_graficos_cumplimiento() {
+    // 1. Capturar el identificador del componente de forma segura
+    $com_id = intval($this->input->post('com_id'));
 
-
-
-
-      /*-- FORMULARIOS POA ACTUALIZADOS FORM 4, FORM 5 --*/
-    public function formularios_poa($com_id){
-      $tabla='';
-      $meses = $this->model_configuracion->get_mes();
-
-      $tabla.='<div class="btn-group" >
-                  <a class="btn btn-default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMULARIOS POA GESTIÓN - '.$this->gestion.'&nbsp;&nbsp;&nbsp;&nbsp;</a>
-                  <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form4_uresponsable/'.$com_id.'\');" >FORMULARIO N°4 (ACTIVIDADES)</a>
-                    </li>
-                    <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/prog/reporte_form5_uresponsable/'.$com_id.'\');">FORMULARIO N°5 (REQUERIMIENTOS)</a>
-                    </li>
-                  </ul>
-                </div>';
-
-      return $tabla;
+    if ($com_id == 0) {
+        $respuesta = array(
+            'status'  => 'error',
+            'message' => 'Identificador de componente no válido.'
+        );
+        echo json_encode($respuesta);
+        return;
     }
 
-    /*-- LISTA DE FORMULARIOS REPORTE DE SEGUIMIENTO Y EVALUACION POA LLEVAR A LIBRERIA--*/
-    public function formularios_mensual($com_id){
-      $tabla='';
-      $meses = $this->model_configuracion->get_mes();
-
-      $tabla.='
-          <div class="btn-group">
-            <a class="btn btn-default"><img src="'.base_url().'assets/Iconos/application_cascade.png" WIDTH="19" HEIGHT="18"/>&nbsp; FORM. SEGUIMIENTO Y EVALUACIÓN POA </a>
-            <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
-            <ul class="dropdown-menu">';
-              foreach($meses as $rowm){
-              if($rowm['m_id']<=$this->mes_sistema){
-                $tabla.='
-                <li>
-                  <a href="'.site_url("").'/seguimiento_poa/reporte_seguimientopoa_mensual/'.$com_id.'/'.$rowm['m_id'].'" target="_blank">REPORTE SEGUIMIENTO POA - '.$rowm['m_descripcion'].'</a>
-                </li>';
-              }                     
-            }
-            $tabla.='
-            <hr>';
-              for ($i=1; $i <=$this->tmes; $i++) { 
-                $trimestre=$this->model_evaluacionpoa->get_trimestre($i); /// Datos del Trimestre
-                $tabla.='
-                <li>
-                  <a href="javascript:abreVentana(\''.site_url("").'/seg/ver_reporte_evaluacionpoa/'.$com_id.'/'.$i.'\');" >REP. EVAL. POA - '.$trimestre[0]['trm_descripcion'].'</a>
-                </li>';
-              }
-            
-            $tabla.='
-            </ul>
-          </div>';
-
-      return $tabla;
-    }
-
-    //// Verifica tipo de formulario Seguimiento o Evaluacion (a implementar) LLEVAR A LIBRERIA
-    function verif_btn_evaluacionpoa(){
-      $tabla='';
-
-      $dia_actual=ltrim(date("d"), "0");
-      $mes_actual=ltrim(date("m"), "0");
-
-      $fecha_actual = date('Y-m-d');
-
-      $get_fecha_evaluacion=$this->model_configuracion->get_datos_fecha_evaluacion($this->gestion);
-      if(count($get_fecha_evaluacion)!=0){
-          $configuracion=$this->model_configuracion->get_configuracion_session();
-          $date_actual = strtotime($fecha_actual); //// fecha Actual
-          $date_inicio = strtotime($configuracion[0]['eval_inicio']); /// Fecha Inicio
-          $date_final = strtotime($configuracion[0]['eval_fin']); /// Fecha Final
-          $date_trimestre = $configuracion[0]['conf_mes_otro']; /// Trimestre
-          $meses=$this->model_configuracion->list_mes_trimestre($date_trimestre);
-
-            if (($date_actual >= $date_inicio) && ($date_actual <= $date_final)|| $this->tp_adm==1){
-              if(count($this->model_configuracion->get_responsables_evaluacion($this->fun_id))!=0){
-
-              $tabla.='
-
-              <section class="col col-3">
-               <b style="color:blue;"> MESES A EVALUAR: </b>
-                <select class="form-control" id="mes_id" name="mes_id" title="SELECCIONE MES A EVALUAR">
-                  <option value="0" selected>Seleccione mes para Evaluacion POA ...</option>';
-                foreach($meses as $row){
-                  //if($this->verif_mes[1]<=$row['m_id']){
-                    if($row['m_id']==$this->verif_mes[1]){ 
-                      $tabla.='<option value="'.$row['m_id'].'" selected>'.$row['m_descripcion'].'</option>';
-                    }
-                    else{ 
-                      $tabla.='<option value="'.$row['m_id'].'" >'.$row['m_descripcion'].'</option>';
-                    } 
-                  //}                     
-                }
-               $tabla.='
-                </select>
-              </section>';
-            }
-          }
-      }
-
-      return $tabla;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /// Titulo LLEVAR A LIBRERIA
-    public function titulo($componente){
-        $trimestre=$this->model_evaluacionpoa->trimestre();
-        $tabla='';
-        $tabla.='<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-            <input type="hidden" name="base" value="'.base_url().'">
-      
-              <div class="well">
-                <h2>'.$componente[0]['aper_programa'].' '.$componente[0]['aper_proyecto'].' '.$componente[0]['aper_actividad'].' - '.$componente[0]['tipo'].' '.$componente[0]['act_descripcion'].' - '.$componente[0]['abrev'].'  / <b>'.$componente[0]['serv_cod'].' </b>'.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</h2>
-                <h1><small>TRIMESTRE VIGENTE : </small> '.$trimestre[0]['trm_descripcion'].'</h1>
-
-                '.$this->formularios_poa($componente[0]['com_id']).'
-                '.$this->formularios_mensual($componente[0]['com_id']).'
-
-                    <a href="#" data-toggle="modal" data-target="#modal_importar_f5" class="btn btn-default importar_f5" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-                      <img src="'.base_url().'assets/Iconos/arrow_up.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>IMPRIMIR SEGUIMIENTO/EVALUACION</b>
-                    </a>
-                    <a href="#" data-toggle="modal" data-target="#modal_ver_form5" class="btn btn-default ver_requerimientos" name="2" title="SUBIR ARCHIVO REQUERIMIENTO (GLOBAL)" >
-                      <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>GENERAR GRAFICOS</b>
-                    </a>
-
-              </div>
-            </article>';
+    // 2. Obtener la lista de productos asociados al componente anual para sumar su programación
+    // Usamos el mismo método optimizado anual que ya tienes en tu modelo
+    $productos = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_anual($com_id);
     
-        return $tabla;
+    $total_programado = 0;
+    $array_prod_ids = array();
+
+    // Sumamos aritméticamente las metas programadas de los 12 meses de todos los productos del componente
+    foreach ($productos as $rowp) {
+        $array_prod_ids[] = intval($rowp['prod_id']);
+        
+        for ($m = 1; $m <= 12; $m++) {
+            $total_programado += floatval($rowp['mes' . $m]);
+        }
     }
 
-    /// Estilo Formulario LLEVAR A LIBRERIA
-    public function estilo_tabla_form4(){
-      $tabla='';
-      $tabla.='
-      <style type="text/css">
-        aside{background: #05678B;}
-        #mdialTamanio{
-            width: 90% !important;
-        }
-        #mdialTamanio2{
-            width: 50% !important;
-        }
-        #mdialTamanio3{
-            width: 95% !important;
-        }
-        #dialog_subirr { width: 45%;}
-        table{font-size: 10px;
-              width: 100%;
-              max-width:1550px;;
-              overflow-x: scroll;
-              }
-        input[type="checkbox"] {
-          display:inline-block;
-          width:28px;
-          height:28px;
-          margin:-1px 4px 0 0;
-          vertical-align:middle;
-          cursor:pointer;
-        }
-        th {font-size: 10px; }
+ $total_ejecutado = 0;
 
-        input[type="checkbox"] {
-          display:inline-block;
-          width:25px;
-          height:25px;
-          margin:-1px 4px 0 0;
-          vertical-align:middle;
-          cursor:pointer;
-        }
-      </style>';
+    // 3. Si el componente tiene productos, consultamos las ejecuciones reales en la BD
+    if (!empty($array_prod_ids)) {
+        $prod_ids_string = implode(',', $array_prod_ids);
+        $g_id = intval($this->gestion);
 
-      return $tabla;
+        // Consultamos la sumatoria física real acumulada en la tabla de ejecutados
+        $sql_ejec = "SELECT SUM(pejec_fis) AS total_real 
+                     FROM prod_ejecutado_mensual 
+                     WHERE prod_id IN ($prod_ids_string) 
+                       AND g_id = $g_id";
+        
+        $query_ejec = $this->db->query($sql_ejec);
+        $res_ejec = $query_ejec->row_array();
+        
+        if (isset($res_ejec['total_real'])) {
+            $total_ejecutado = floatval($res_ejec['total_real']);
+        }
     }
+
+    // 4. Calcular el porcentaje de eficacia física global del componente
+    $porcentaje_eficacia = 0;
+    if ($total_programado > 0) {
+        // Regla de tres simple: (Ejecutado * 100) / Programado
+        $porcentaje_eficacia = ($total_ejecutado * 100) / $total_programado;
+    // Control de salvaguarda por si la ejecución supera el 100% de la meta por reajustes
+        if ($porcentaje_eficacia > 100) {
+            $porcentaje_eficacia = 100;
+        }
+    }
+
+    // 5. Estructurar el paquete de datos formateado para el frontend
+    $datos_consolidados = array(
+        'total_programado'    => number_format($total_programado, 2, '.', ''),
+        'total_ejecutado'     => number_format($total_ejecutado, 2, '.', ''),
+        'porcentaje_eficacia' => round($porcentaje_eficacia, 2)
+    );
+
+    $respuesta = array(
+        'status' => 'success',
+        'datos'  => $datos_consolidados
+    );
+
+    // 6. Retornar el JSON limpio sin código HTML huérfano
+    echo json_encode($respuesta);
+    return;
+}
+
+
+
+
+
+
+
+
     /*------ NOMBRE MES -------*/
     function mes_nombre(){
         $mes[1] = 'ENE.';
