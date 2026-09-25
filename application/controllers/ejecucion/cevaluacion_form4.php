@@ -291,8 +291,8 @@ class Cevaluacion_form4 extends CI_Controller {
     public function modal_seguimiento_x_form4() {
       $tabla='';
       $tabla.='
-      <div class="modal fade" id="modalDetalleActividadAjax" tabindex="-1" role="dialog" aria-hidden="true">
-          <div class="modal-dialog modal-lg">
+      <div class="modal fade" id="modalDetalleActividadAjax" tabindex="-1" role="dialog" aria-hidden="true" >
+          <div class="modal-dialog modal-lg" style="width:90%;">
               <div class="modal-content">
                   <div class="modal-header" style="background: #1e3a8a; color: #fff;">
                       <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
@@ -316,57 +316,127 @@ class Cevaluacion_form4 extends CI_Controller {
     //// Get Obtiene Seguimiento por Actividad
     public function obtener_detalle_actividad() {
         $prod_id    = intval($this->input->post('prod_id'));
-
-        // 1. Obtener los datos estáticos de la actividad (Reutiliza tu consulta a la vista o tabla_producto)
-        // Aquí asumo que tu vista se llama vista_formN4_para_evaluacionPoa_x_UniResponsable o similar
-        $sql_act = "SELECT prod_id, og_codigo, prod_cod, prod_producto, prod_unidades, prod_fuente_verificacion, prod_meta, indi_id 
-                    FROM vista_formN4_para_evaluacionPoa_x_UniResponsable 
-                    WHERE prod_id = ? LIMIT 1";
-        $q_act = $this->db->query($sql_act, array($prod_id));
-        
-        if ($q_act->num_rows() == 0) {
+        $get_form4=$this->model_evaluacionpoa->get_form4_seguimiento_poa($prod_id);
+        if(count($get_form4)==0){
             echo json_encode(array('status' => 'error', 'message' => 'Actividad no encontrada.'));
             return;
         }
-        $actividad = $q_act->row_array();
+        
+        $tp_indi='';
+        if($get_form4[0]['indi_id']==2){
+          $tp_indi='%';
+        }
         $tabla='
         <table class="table table-striped table-bordered" style="width: 100%; margin-bottom: 0;">
-                          <tbody>
-                              <tr>
-                                  <th style="width: 35%; background: #f1f5f9; font-weight: bold;">ID Sistema / Actividad:</th>
-                                  <td><span id="md_ajax_id" style="font-weight: bold;"></span> (<span id="md_ajax_og_codigo"></span> / <span id="md_ajax_prod_cod"></span>)</td>
-                              </tr>
-                              <tr>
-                                  <th style="background: #f1f5f9; font-weight: bold;">Descripción de la Actividad:</th>
-                                  <td id="md_ajax_producto" style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;"></td>
-                              </tr>
-                              <tr>
-                                  <th style="background: #f1f5f9; font-weight: bold;">Unidad Responsable:</th>
-                                  <td id="md_ajax_unidades"></td>
-                              </tr>
-                              <tr>
-                                  <th style="background: #f1f5f9; font-weight: bold;">Medio de Verificación Base:</th>
-                                  <td id="md_ajax_verificacion" style="white-space: normal; text-align: justify;"></td>
-                              </tr>
-                              <tr>
-                                  <th style="background: #f1f5f9; font-weight: bold;">Meta Anual Programada:</th>
-                                  <td><span id="md_ajax_meta" style="font-weight: bold; color: #1e3a8a; font-size: 14px;"></span></td>
-                              </tr>
-                                          <!-- Resumen Dinámico traído por AJAX -->
-                              <tr style="background: #f8fafc;">
-                                  <th colspan="2" style="background: #cbd5e1; font-weight: bold; text-align: center; padding: 6px;">
-                                      <i class="fa fa-calendar"></i> Estado Actual de Seguimiento Mensual en Base de Datos
-                                  </th>
-                              </tr>
-                              <tr>
-                                  <td colspan="2" style="padding: 0;">
-                                      <div id="md_ajax_resumen_meses" style="padding: 10px;">
-                                          <!-- Aquí se inyectará la subtabla generada por JS -->
-                                      </div>
-                                  </td>
-                              </tr>
-                          </tbody>
-                      </table>';
+          <thead>
+                <tr style="font-size: 10px;">
+                  <th style="width: 2%; background: #f1f5f9; font-weight: bold; text-align:center;">COD.</th>
+                  <th style="width: 7%; background: #f1f5f9; font-weight: bold; text-align:center;">ACTIVIDAD</th>
+                  <th style="width: 7%; background: #f1f5f9; font-weight: bold; text-align:center;">UNIDAD RESPONSABLE</th>
+                  <th style="width: 7%; background: #f1f5f9; font-weight: bold; text-align:center;">MEDIO DE VERIFICACIÓN</th>
+                  <th style="width: 3%; background: #f1f5f9; font-weight: bold; text-align:center;">META</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">ENE.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">FEB.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">MAR.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">ABR.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">MAY.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">JUN.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">JUL.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">AGO.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">SEPT.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">OCT.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">NOV.</th>
+                  <th style="width: 6%; background: #f1f5f9; font-weight: bold; text-align:center;">DIC.</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td style="white-space: normal; line-height: 1.5; text-align: center; font-weight: bold; color: #1e293b;">'.$get_form4[0]['og_codigo'].'.'.$get_form4[0]['prod_cod'].'</td>
+                <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">'.$get_form4[0]['prod_producto'].'</td>
+                <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">'.$get_form4[0]['prod_unidades'].'</td>
+                <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">'.$get_form4[0]['prod_fuente_verificacion'].'</td>
+                <td style="white-space: normal; line-height: 1.5; text-align: center; font-weight: bold; color: #1e293b;">'.round($get_form4[0]['prod_meta'],2).' '.$tp_indi.'</td>';
+                for ($i=1; $i <=12 ; $i++) {
+                  $tabla.='
+                  <td style="white-space: normal; line-height: 1.5; text-align: center; font-weight: bold; color: #1e293b;">
+                    <table>
+                      <tr>
+                        <td>P : </td>
+                        <td>'.round($get_form4[0]['mes'.$i],2).' '.$tp_indi.'</td>
+                      </tr>
+                      <tr>
+                        <td>E : </td>
+                        <td>'.round($get_form4[0]['e_mes'.$i],2).' '.$tp_indi.'</td>
+                      </tr>
+                    </table>
+                  </td>';
+                }
+              $tabla.='
+              </tr>
+              <tr>
+              <td colspan=5></td>';
+              for ($i=1; $i <=12 ; $i++) {
+                $ejec=$this->model_evaluacionpoa->get_seguimiento_poa_mes($prod_id,$i);
+                $info='';
+                if(count($ejec)!=0){
+                  $info='<div style="color:green;">*'.$ejec[0]['medio_verificacion'].'</div>';
+                }
+                else{
+                  $no_ejec=$this->model_evaluacionpoa->get_seguimiento_poa_mes_noejec($prod_id,$i);
+                  if(count($no_ejec)!=0){
+                    $info='<div style="color:red;">*'.$no_ejec[0]['medio_verificacion'].'<br>*'.$no_ejec[0]['observacion'].'<br>*'.$no_ejec[0]['acciones'].'</div>';
+                  }
+                }
+                  $tabla.='
+                  <td style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;">
+                    '.$info.'
+                  </td>';
+                }
+              $tabla.='
+              </tr>
+            </tbody>
+        </table>';
+
+
+
+        // $tabla='
+        // <table class="table table-striped table-bordered" style="width: 100%; margin-bottom: 0;">
+        //                   <tbody>
+        //                       <tr>
+        //                           <th style="width: 35%; background: #f1f5f9; font-weight: bold;">ID Sistema / Actividad:</th>
+        //                           <td><span id="md_ajax_id" style="font-weight: bold;"></span> (<span id="md_ajax_og_codigo"></span> / <span id="md_ajax_prod_cod"></span>)</td>
+        //                       </tr>
+        //                       <tr>
+        //                           <th style="background: #f1f5f9; font-weight: bold;">Descripción de la Actividad:</th>
+        //                           <td id="md_ajax_producto" style="white-space: normal; line-height: 1.5; text-align: justify; font-weight: bold; color: #1e293b;"></td>
+        //                       </tr>
+        //                       <tr>
+        //                           <th style="background: #f1f5f9; font-weight: bold;">Unidad Responsable:</th>
+        //                           <td id="md_ajax_unidades"></td>
+        //                       </tr>
+        //                       <tr>
+        //                           <th style="background: #f1f5f9; font-weight: bold;">Medio de Verificación Base:</th>
+        //                           <td id="md_ajax_verificacion" style="white-space: normal; text-align: justify;"></td>
+        //                       </tr>
+        //                       <tr>
+        //                           <th style="background: #f1f5f9; font-weight: bold;">Meta Anual Programada:</th>
+        //                           <td><span id="md_ajax_meta" style="font-weight: bold; color: #1e3a8a; font-size: 14px;"></span></td>
+        //                       </tr>
+        //                                   <!-- Resumen Dinámico traído por AJAX -->
+        //                       <tr style="background: #f8fafc;">
+        //                           <th colspan="2" style="background: #cbd5e1; font-weight: bold; text-align: center; padding: 6px;">
+        //                               <i class="fa fa-calendar"></i> Estado Actual de Seguimiento Mensual en Base de Datos
+        //                           </th>
+        //                       </tr>
+        //                       <tr>
+        //                           <td colspan="2" style="padding: 0;">
+        //                               <div id="md_ajax_resumen_meses" style="padding: 10px;">
+        //                                   <!-- Aquí se inyectará la subtabla generada por JS -->
+        //                               </div>
+        //                           </td>
+        //                       </tr>
+        //                   </tbody>
+        //               </table>';
         
         $respuesta = array(
             'status'             => 'success',
