@@ -289,7 +289,7 @@ class Cevaluacion_form4 extends CI_Controller {
         </table>';
 
         $tabla.=$this->lib_seguimientopoa->modal_seguimiento_x_form4();
-        $tabla.=$this->lib_seguimientopoa->modal_evaluacion_poa_x_UnidadResponsable();
+        $tabla.=$this->lib_seguimientopoa->modal_evaluacion_poa_x_UnidadResponsable(); /// Graficos
         return $tabla;
     }
 
@@ -698,10 +698,16 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
 
-
+  //// Obtener datos para los graficos
   public function obtener_graficos_cumplimiento() {
     // 1. Capturar el identificador del componente de forma segura
     $com_id = intval($this->input->post('com_id'));
+    
+    // 🔥 CORRECCIÓN: Agregado punto y coma al final
+    $componente_data = $this->model_componente->get_componente($com_id, $this->gestion);
+    
+    // Extraer el nombre de la columna correspondiente (Ajusta 'com_componente' por el nombre real de tu columna)
+    $UnidadResponsable = isset($componente_data['com_componente']) ? $componente_data['com_componente'] : 'UNIDAD NO ENCONTRADA';
 
     if ($com_id == 0) {
         $respuesta = array(
@@ -711,6 +717,7 @@ class Cevaluacion_form4 extends CI_Controller {
         echo json_encode($respuesta);
         return;
     }
+    
 
     // 2. Obtener la lista de productos asociados al componente anual para sumar su programación
     // Usamos el mismo método optimizado anual que ya tienes en tu modelo
@@ -767,8 +774,12 @@ class Cevaluacion_form4 extends CI_Controller {
         'porcentaje_eficacia' => round($porcentaje_eficacia, 2)
     );
 
+    $trimestre=$this->model_evaluacionpoa->get_trimestre($this->tmes);
+
     $respuesta = array(
         'status' => 'success',
+        'trimestre' => $trimestre[0]['trm_descripcion'].' / '.$this->gestion,
+        'UnidadResponsable' => $componente_data[0]['tipo'].' '.$componente_data[0]['proy_nombre'].' '.$componente_data[0]['abrev'].'/'.$componente_data[0]['tipo_subactividad'].' '.$componente_data[0]['com_componente'],
         'datos'  => $datos_consolidados
     );
 

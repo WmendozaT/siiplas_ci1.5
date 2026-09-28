@@ -464,11 +464,154 @@ function abreVentana(url) {
     }
 
 
+/// boton para exportar el grafico en PDF
+function exportarPDF() {
+    // 1. Obtener el área de gráficos original
+    var elementoOriginal = document.querySelector('.print-area-graficos');
+    
+    // 2. Crear un contenedor raíz completamente NUEVO exclusivo para el PDF
+    var contenedorPdf = document.createElement('div');
+    contenedorPdf.style.fontFamily = 'Arial, sans-serif';
+    contenedorPdf.style.padding = '10px';
+    contenedorPdf.style.color = '#334155';
+
+    // ==========================================
+    // 🏛️ PASO A: DISEÑO DE LA CABECERA / MEMBRETE
+    // ==========================================
+        var cabeceraHtml = 
+        '<table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; table-layout: fixed;">' +
+            '<tr>' +
+                // Logo Izquierdo
+                '<td style="width: 20%; vertical-align: middle; text-align: center;">' +
+                    '<img src="' + base + 'assets/ifinal/caja.png" style="height: 60px; width: auto; object-fit: contain;">' +
+                '</td>' +
+                // Títulos Centrales (Separación explícita de palabras)
+                '<td style="width: 60%; text-align: center; vertical-align: middle;">' +
+                    '<h2 style="font-size: 15px; margin: 0 0 6px 0; color: #1e3a8a; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; word-spacing: 2px;">CUADRO DE EVALUACIÓN POA</h2>' +
+                    '<h3 style="font-size: 9.5px; margin: 0 0 6px 0; color: #0284c7; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; word-spacing: 1px;">' + nombreUnidadGlobal + '</h3>' +
+                    '<p style="font-size: 7.5px; margin: 0 0 6px 0; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; word-spacing: 1px;">'+trimestre+'</p>' +
+                '</td>' +
+                // Metadatos Derecha
+                '<td style="width: 20%; text-align: right; vertical-align: left; margin: 0 0 6px 0;font-size: 5px; color: #64748b; line-height: 1.4;">' +
+                    '<span style="white-space: nowrap;"><strong>Fecha : </strong> ' + new Date().toLocaleDateString('es-ES') + '</span><br>' +
+                    '<span style="white-space: nowrap;"><strong>Hora : </strong> ' + new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) + '</span><br>' +
+                    '<span style="white-space: nowrap;"><strong>Estado : </strong> Finalizado</span>' +
+                '</td>' +
+            '</tr>' +
+        '</table>' +
+        '<div style="width: 100%; height: 2px; background: linear-gradient(to right, #1e3a8a, #0284c7); margin-bottom: 30px; border-radius: 2px;"></div>';
+    
+    contenedorPdf.innerHTML = cabeceraHtml;
+
+    // ==========================================
+    // 📊 PASO B: CLONACIÓN Y REDISEÑO DE GRÁFICOS
+    // ==========================================
+    var clonGraficos = elementoOriginal.cloneNode(true);
+
+    // Reemplazar canvas por imágenes base64
+    var canvasOriginales = elementoOriginal.querySelectorAll('canvas');
+    var imagenesClonadas = clonGraficos.querySelectorAll('canvas');
+
+    canvasOriginales.forEach(function(canvas, indice) {
+        if (canvas) {
+            var img = document.createElement('img');
+            img.src = canvas.toDataURL('image/png');
+            img.style.width = '100%';
+            img.style.height = 'auto';
+            img.style.maxHeight = '150px'; // Altura controlada para evitar estiramientos
+            img.style.objectFit = 'contain';
+
+            var canvasAEmplazar = imagenesClonadas[indice];
+            if (canvasAEmplazar && canvasAEmplazar.parentNode) {
+                canvasAEmplazar.parentNode.replaceChild(img, canvasAEmplazar);
+            }
+        }
+    });
+
+    // ==========================================
+    // 🛠️ PASO C: CORRECCIÓN DEL TEXTO ENCIMADO (Estructura de Tabla Fija)
+    // ==========================================
+    // Extraemos los bloques de los dos gráficos usando sus textos como referencia
+    var h5s = clonGraficos.querySelectorAll('h5');
+    var tituloPastel = h5s[0] ? h5s[0].innerHTML : 'Cumplimiento Físico Global';
+    var tituloBarras = h5s[1] ? h5s[1].innerHTML : 'Eficacia Mensual vs Programada';
+
+    var imgs = clonGraficos.querySelectorAll('img');
+    var imgPastelHtml = imgs[0] ? imgs[0].outerHTML : '';
+    var imgBarrasHtml = imgs[1] ? imgs[1].outerHTML : '';
+   // Creamos una estructura de tabla limpia de 2 columnas fijas para que NADA se encime ni colapse
+    var seccionGraficosEstructural = 
+        '<table style="width: 100%; table-layout: fixed; margin-bottom: 35px; border-collapse: collapse;">' +
+            '<tr>' +
+                // Gráfico Izquierdo (Pastel)
+                '<td style="width: 48%; vertical-align: top; text-align: center; padding-right: 12px;">' +
+                    '<h5 style="font-size: 9px; font-weight: bold; color: #334155; margin: 0 0 12px 0; line-height: 1.4; min-height: 20px;">' + tituloPastel + '</h5>' +
+                    '<div style="width: 100%; display: block; text-align: center;">' + imgPastelHtml + '</div>' +
+                '</td>' +
+                // Columna invisible de separación
+                '<td style="width: 4%;"></td>' +
+                // Gráfico Derecho (Barras)
+                '<td style="width: 48%; vertical-align: top; text-align: center; padding-left: 12px;">' +
+                    '<h5 style="font-size: 9px; font-weight: bold; color: #334155; margin: 0 0 12px 0; line-height: 1.4; min-height: 20px;">' + tituloBarras + '</h5>' +
+                    '<div style="width: 100%; display: block; text-align: center;">' + imgBarrasHtml + '</div>' +
+                '</td>' +
+            '</tr>' +
+        '</table>';
+
+    // Inyectar los gráficos ordenados al contenedor principal
+    contenedorPdf.innerHTML += seccionGraficosEstructural;
+
+    // ==========================================
+    // 📋 PASO D: AGREGAR LA TABLA DE DATOS AL FINAL
+    // ==========================================
+    var tablaOriginal = clonGraficos.querySelector('table');
+    if (tablaOriginal) {
+        // Estilizar los textos interiores de las celdas para corregir superposiciones de letras extrañas
+        var todasLasCeldas = tablaOriginal.querySelectorAll('th, td');
+        todasLasCeldas.forEach(function(celda) {
+            celda.style.padding = '8px 9px';
+            celda.style.fontSize = '9px';
+            celda.style.letterSpacing = '0.3px';
+            celda.style.lineHeight = '1.3';
+            celda.style.wordSpacing = 'normal';
+        });
+   // Aplicar estilos estructurales limpios a la tabla
+        tablaOriginal.style.width = '100%';
+        tablaOriginal.style.marginTop = '12px';
+        tablaOriginal.style.borderCollapse = 'collapse';
+        
+        // Adjuntar el código HTML limpio de la tabla al contenedor raíz del PDF
+        contenedorPdf.innerHTML += '<div style="width:100%;">' + tablaOriginal.outerHTML + '</div>';
+    }
+
+    // ==========================================
+    // ⚙️ PASO E: CONFIGURACIÓN GENERAL DE HTML2PDF
+    // ==========================================
+    var opciones = {
+        margin:       15, // 15mm de margen garantizan que nada se corte en los bordes de la hoja
+        filename:     'Reporte_POA_' + new Date().toISOString().slice(0,10) + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+            scale: 3,           // Subimos a escala 3 para máxima nitidez de letras y evitar bugs visuales
+            useCORS: true,      
+            logging: false 
+        },
+        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' } 
+    };
+
+    // 5. Compilar y procesar la descarga usando el contenedor limpio de impresión
+    html2pdf().set(opciones).from(contenedorPdf).save();
+}
+
+
+//////////////////////////////
 
 
 ///// Cuadros de Evaluacion POA
 var chartPastel = null;
 var chartBarras = null;
+var nombreUnidadGlobal = ""; // Variable global
+var trimestre = ""; // Evaluacion Trimestre
 
 function cargarCuadrosEvaluacion(elemento, comId) {
     // 1. ⏳ ACTIVAR LOADING CON PANTALLA COMPLETA OPACA
@@ -488,79 +631,88 @@ function cargarCuadrosEvaluacion(elemento, comId) {
         data: { com_id: comId },
         dataType: 'json',
         success: function(response) {
-    jQuery("#" + loadingId).remove();
+            jQuery("#" + loadingId).remove();
 
-    if (response.status === "success") {
-        // 1. Inyectar primero los datos de texto en la tabla
-        jQuery("#lbl_total_prog").text(response.datos.total_programado);
-        jQuery("#lbl_total_ejec").text(response.datos.total_ejecutado);
-        jQuery("#lbl_total_porcentaje").text(response.datos.porcentaje_eficacia + "%");
-        
-        if(response.datos.porcentaje_eficacia >= 75) {
-            jQuery("#lbl_total_porcentaje").css("color", "#16a34a");
-        } else if(response.datos.porcentaje_eficacia >= 50) {
-            jQuery("#lbl_total_porcentaje").css("color", "#ca8a04");
-        } else {
-            jQuery("#lbl_total_porcentaje").css("color", "#dc2626");
-        }
+            if (response.status === "success") {
+                // 🌟 CAPTURAR EL NOMBRE QUE VIENE DIRECTO DESDE EL CONTROLADOR PHP
+                nombreUnidadGlobal = response.UnidadResponsable || "UNIDAD RESPONSABLE";
+                trimestre = response.trimestre || "TRIMESTRE";
 
-        // 2. 🌟 PRIMERO MOSTRAR EL MODAL
-        jQuery("#modal_graficos").modal("show");
+                // Opcional: Actualizar el título del modal en pantalla para que coincida
+                jQuery("#modal_graficos .modal-title").html(
+                    '<i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA - <small style="color:#cbd5e1; font-weight:bold;">' + nombreUnidadGlobal + '</small>' +
+                    '<br><span style="font-size: 11px; font-weight: normal; color:#94a3b8; display:block; margin-top:2px;">Actividades de la Unidad Responsable</span>'
+                );
 
-        // 3. ⏳ ESPERAR A QUE EL MODAL TERMINE DE CARGAR EN PANTALLA
-        // Usamos el evento nativo de Bootstrap 'shown.bs.modal' para garantizar que los canvas existan en el DOM
-        jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
-            
-            // Destruir instancias previas si existen
-            if (chartPastel) chartPastel.destroy();
-            if (chartBarras) chartBarras.destroy();
-  // Ahora sí, capturar los contextos con la seguridad de que no serán null
-            var canvasPastel = document.getElementById("grafico_pastel_cumplimiento");
-            var canvasBarras = document.getElementById("grafico_barras_temporalidad");
 
-            if (canvasPastel && canvasBarras) {
-                var ctxPastel = canvasPastel.getContext("2d");
-                chartPastel = new Chart(ctxPastel, {
-                    type: "doughnut",
-                    data: {
-                        labels: ["Cumplido (%)", "Pendiente (%)"],
-                        datasets: [{
-                            data: [response.datos.porcentaje_eficacia, (100 - response.datos.porcentaje_eficacia)],
-                            backgroundColor: ["#22c55e", "#cbd5e1"],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
+                // 1. Inyectar primero los datos de texto en la tabla
+                jQuery("#lbl_total_prog").text(response.datos.total_programado);
+                jQuery("#lbl_total_ejec").text(response.datos.total_ejecutado);
+                jQuery("#lbl_total_porcentaje").text(response.datos.porcentaje_eficacia + "%");
+                
+                if(response.datos.porcentaje_eficacia >= 75) {
+                    jQuery("#lbl_total_porcentaje").css("color", "#16a34a");
+                } else if(response.datos.porcentaje_eficacia >= 50) {
+                    jQuery("#lbl_total_porcentaje").css("color", "#ca8a04");
+                } else {
+                    jQuery("#lbl_total_porcentaje").css("color", "#dc2626");
+                }
 
-                var ctxBarras = canvasBarras.getContext("2d");
-                chartBarras = new Chart(ctxBarras, {
-                    type: "bar",
-                    data: {
-                        labels: ["Prog. Total", "Ejec. Total"],
-                        datasets: [{
-                            label: "Unidades POA",
-                            data: [response.datos.total_programado, response.datos.total_ejecutado],
-                            backgroundColor: ["#0284c7", "#16a34a"]
-                        }]
-                    },
-           options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { yAxes: [{ ticks: { beginAtZero: true } }] }
+                // 2. 🌟 PRIMERO MOSTRAR EL MODAL
+                jQuery("#modal_graficos").modal("show");
+
+                // 3. ⏳ ESPERAR A QUE EL MODAL TERMINE DE CARGAR EN PANTALLA
+                // Usamos el evento nativo de Bootstrap 'shown.bs.modal' para garantizar que los canvas existan en el DOM
+                jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
+                    
+                    // Destruir instancias previas si existen
+                    if (chartPastel) chartPastel.destroy();
+                    if (chartBarras) chartBarras.destroy();
+                    // Ahora sí, capturar los contextos con la seguridad de que no serán null
+                    var canvasPastel = document.getElementById("grafico_pastel_cumplimiento");
+                    var canvasBarras = document.getElementById("grafico_barras_temporalidad");
+
+                    if (canvasPastel && canvasBarras) {
+                        var ctxPastel = canvasPastel.getContext("2d");
+                        chartPastel = new Chart(ctxPastel, {
+                            type: "doughnut",
+                            data: {
+                                labels: ["Cumplido (%)", "Pendiente (%)"],
+                                datasets: [{
+                                    data: [response.datos.porcentaje_eficacia, (100 - response.datos.porcentaje_eficacia)],
+                                    backgroundColor: ["#22c55e", "#cbd5e1"],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false }
+                        });
+
+                        var ctxBarras = canvasBarras.getContext("2d");
+                        chartBarras = new Chart(ctxBarras, {
+                            type: "bar",
+                            data: {
+                                labels: ["Prog. Total", "Ejec. Total"],
+                                datasets: [{
+                                    label: "Unidades POA",
+                                    data: [response.datos.total_programado, response.datos.total_ejecutado],
+                                    backgroundColor: ["#0284c7", "#16a34a"]
+                                }]
+                            },
+                   options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: { yAxes: [{ ticks: { beginAtZero: true } }] }
+                            }
+                        });
+                    } else {
+                        console.error("Error: No se encontraron los elementos canvas en el DOM del modal.");
                     }
                 });
+
             } else {
-                console.error("Error: No se encontraron los elementos canvas en el DOM del modal.");
+                alert("No se pudieron consolidar los cuadros: " + response.message);
             }
-        });
-
-    } else {
-        alert("No se pudieron consolidar los cuadros: " + response.message);
-    }
-},
-
-
+        },
 
         error: function() {
             jQuery('#' + loadingId).remove();
@@ -568,3 +720,5 @@ function cargarCuadrosEvaluacion(elemento, comId) {
         }
     });
 }
+
+//////////////////

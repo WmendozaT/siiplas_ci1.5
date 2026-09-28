@@ -102,5 +102,13 @@ class Model_evaluacionpoa extends CI_Model{
         return $query->result_array();
     }
 
+    // /*---- get trimestre ----*/
+    // public function trimestre_vigente(){
+    //     $sql = 'SELECT *
+    //             from trimestre_mes
+    //             where trm_id='.$this->tmes.' and estado!=\'0\'';
 
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 }

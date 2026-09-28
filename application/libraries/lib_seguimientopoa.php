@@ -133,68 +133,72 @@ class Lib_seguimientopoa {
     public function modal_evaluacion_poa_x_UnidadResponsable() {
       $tabla='';
       $tabla .= '
-<div class="modal fade" id="modal_graficos" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background: #1e3a8a; color: #fff;">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
-                <h4 class="modal-title" style="font-weight: bold;">
-                    <i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA
-                </h4>
-            </div>
-            
-            <div class="modal-body print-area-graficos" style="padding: 20px; max-height: 550px; overflow-y: auto;">
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 25px;">
-                        <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px;">
-                            <i class="fa fa-pie-chart"></i> Cumplimiento Físico Global de Actividades (%)
-                        </h5>
-                        <div style="position: relative; height:220px; width:100%;">
-                            <canvas id="grafico_pastel_cumplimiento"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 25px;">
-                        <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px;">
-                            <i class="fa fa-bar-chart"></i> Eficacia Mensual vs Programada (Unidades)
-                        </h5>
-                        <div style="position: relative; height:220px; width:100%;">
-                            <canvas id="grafico_barras_temporalidad"></canvas>
-                        </div>
-                    </div>
-                </div>
-                        <div class="row" style="margin-top: 15px;">
-                    <div class="col-md-12">
-                        <table class="table table-bordered table-striped" style="width: 100%; font-size: 12px;">
-                            <thead>
-                                <tr style="background: #475569; color: #fff;">
-                                    <th>Criterio de Evaluación</th>
-                                    <th style="text-align: center; width: 20%;">Total Programado</th>
-                                    <th style="text-align: center; width: 20%;">Total Ejecutado</th>
-                                    <th style="text-align: center; width: 20%;">% Eficacia</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Actividades POA de la Unidad Responsable</strong></td>
-                                    <td style="text-align: center; font-weight: bold; color: #0284c7;" id="lbl_total_prog">0.00</td>
-                                    <td style="text-align: center; font-weight: bold; color: #16a34a;" id="lbl_total_ejec">0.00</td>
-                                    <td style="text-align: center; font-weight: bold; font-size: 14px;" id="lbl_total_porcentaje">0%</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-          <div class="modal-footer" style="background: #f8fafc;">
-                    <button type="button" class="btn btn-primary" onclick="window.print();" style="background: #0284c7; border: none; font-weight: bold; color:#fff;">
-                        <i class="fa fa-print"></i> Imprimir Cuadros
-                    </button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold;">Cerrar Ventana</button>
-                </div>
-            </div>
-        </div>
-    </div>';
+        <div class="modal fade" id="modal_graficos" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+          <!-- 🔥 CAMBIO AQUÍ: Se subió el ancho a 85% y se quitó el height fijo para evitar desbordamientos visuales -->
+          <div class="modal-dialog modal-lg" style="width: 85%; max-width: 1200px;">
+              <div class="modal-content">
+                  <div class="modal-header" style="background: #1e3a8a; color: #fff;">
+                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
+                      <h4 class="modal-title" style="font-weight: bold;">
+                          <i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA
+                      </h4>
+                  </div>
+                  
+                  <!-- 🔥 CAMBIO AQUÍ: max-height aumentado a 600px para acomodar mejor tus canvas de 400px de alto -->
+                  <div class="modal-body print-area-graficos" style="padding: 20px; max-height: 600px; overflow-y: auto;">
+                      <div class="row">
+                          <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 15px;">
+                              <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px;">
+                                  <i class="fa fa-pie-chart"></i> Cumplimiento Físico Global de Actividades (%)
+                              </h5>
+                              <div style="position: relative; height:350px; width:100%;">
+                                  <canvas id="grafico_pastel_cumplimiento"></canvas>
+                              </div>
+                          </div>
+                          
+                          <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 15px;">
+                              <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px;">
+                                  <i class="fa fa-bar-chart"></i> Eficacia Mensual vs Programada (Unidades)
+                              </h5>
+                              <div style="position: relative; height:350px; width:100%;">
+                                  <canvas id="grafico_barras_temporalidad"></canvas>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <div class="row" style="margin-top: 25px;">
+                          <div class="col-md-12">
+                              <table class="table table-bordered table-striped" style="width: 100%; font-size: 11px;">
+                                  <thead>
+                                      <tr style="background: #475569; color: #fff;">
+                                          <th>Criterio de Evaluación</th>
+                                          <th style="text-align: center; width: 20%;">Total Programado</th>
+                                          <th style="text-align: center; width: 20%;">Total Ejecutado</th>
+                                          <th style="text-align: center; width: 20%;">% Eficacia</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      <tr>
+                                          <td><strong>Actividades POA de la Unidad Responsable</strong></td>
+                                          <td style="text-align: center; font-weight: bold; color: #0284c7;" id="lbl_total_prog">0.00</td>
+                                          <td style="text-align: center; font-weight: bold; color: #16a34a;" id="lbl_total_ejec">0.00</td>
+                                          <td style="text-align: center; font-weight: bold; font-size: 14px;" id="lbl_total_porcentaje">0%</td>
+                                      </tr>
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div class="modal-footer" style="background: #f8fafc;">
+                      <button type="button" class="btn btn-primary" onclick="exportarPDF();" style="background: #0284c7; border: none; font-weight: bold; color:#fff;">
+                          <i class="fa fa-file-pdf-o"></i> Exportar a PDF
+                      </button>
+                      <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold;">Cerrar Ventana</button>
+                  </div>
+              </div>
+          </div>
+      </div>';
 
       return $tabla;
     }
