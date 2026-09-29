@@ -102,13 +102,51 @@ class Model_evaluacionpoa extends CI_Model{
         return $query->result_array();
     }
 
-    // /*---- get trimestre ----*/
-    // public function trimestre_vigente(){
-    //     $sql = 'SELECT *
-    //             from trimestre_mes
-    //             where trm_id='.$this->tmes.' and estado!=\'0\'';
+  //// Para los Cuadros de Evaluacion POA
+    // 1. Obtener la sumatoria agrupada de metas PROGRAMADAS hasta el trimestre seleccionado
+    public function suma_programados_acumulados($com_id, $mes_final) {
+        $sql = "SELECT COUNT(DISTINCT prod.prod_id) AS total_operaciones, 
+                       SUM(pprog.pg_fis) AS suma_programado
+                FROM _productos AS prod
+                INNER JOIN prod_programado_mensual AS pprog ON pprog.prod_id = prod.prod_id
+                WHERE prod.com_id = ? 
+                  AND prod.estado != '3' 
+                  AND pprog.g_id = ? 
+                  AND pprog.m_id <= ? 
+                  AND pprog.pg_fis != '0'";
+                  
+        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_final));
+        return $query->row_array();
+    }
 
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+    // 2. Obtener la sumatoria agrupada de metas EJECUTADAS reales hasta el trimestre seleccionado
+    public function suma_ejecutados_acumulados($com_id, $mes_final) {
+        $sql = "SELECT SUM(pejec.pejec_fis) AS suma_evaluado
+                FROM _productos AS prod
+                INNER JOIN prod_ejecutado_mensual AS pejec ON pejec.prod_id = prod.prod_id
+                WHERE prod.com_id = ? 
+                  AND pejec.g_id = ? 
+                  AND pejec.m_id <= ? 
+                  AND pejec.pejec_fis != '0'";
+                  
+        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_final));
+        return $query->row_array();
+    }
+
+    // 3. ✨ NUEVA CONSULTA CRÍTICA: Trae los 3 estados del Pastel agrupados de una sola vez
+    public function obtener_estados_pastel_acumulado($com_id, $trimestre_max) {
+        $sql = "SELECT 
+                    SUM(CASE WHEN pt.tp_eval = 1 THEN 1 ELSE 0 END) AS cumplidos,
+                    SUM(CASE WHEN pt.tp_eval = 2 THEN 1 ELSE 0 END) AS en_proceso,
+                    SUM(CASE WHEN pt.tp_eval = 3 THEN 1 ELSE 0 END) AS no_cumplidos
+                FROM _productos AS p
+                INNER JOIN _productos_trimestral AS pt ON p.prod_id = pt.prod_id
+                WHERE p.com_id = ? 
+                  AND pt.testado != '3' 
+                  AND pt.trm_id <= ?"; // Trae la acumulación histórica de trimestres
+                  
+        $query = $this->db->query($sql, array($com_id, $trimestre_max));
+        return $query->row_array();
+    }
+
 }

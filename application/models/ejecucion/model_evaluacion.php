@@ -383,7 +383,7 @@ class Model_evaluacion extends CI_Model{
         return $query->result_array();
     }
 
-    /*--- LISTA OPERACIONES EVALUADAS (CUMPLIDAS-PROCESO-NO CUMPLIDAS)---*/
+    /*--- LISTA OPERACIONES EVALUADAS (CUMPLIDAS-PROCESO-NO CUMPLIDAS) (OK)---*/
     public function list_operaciones_evaluadas_servicio_trimestre_tipo($com_id,$trimestre,$tipo_eval){
         $sql = 'select pt.*
                 from _componentes c
@@ -395,7 +395,7 @@ class Model_evaluacion extends CI_Model{
         return $query->result_array();
     }
 
-    /*----- NUMERO DE OPERACIONES PROGRAMADAS POR TRIMESTRE ----------------------*/
+    /*----- NUMERO DE OPERACIONES PROGRAMADAS POR TRIMESTRE (OK) ----------------------*/
     public function nro_operaciones_programadas($com_id,$trimestre){
         if($trimestre==1){
             $vi=1;$vf=3;
@@ -425,7 +425,7 @@ class Model_evaluacion extends CI_Model{
         return $query->result_array();
     }
 
-    /*----- SUMA TEMPORALIDAD PROGRAMADAS POR TRIMESTRE ----------------------*/
+    /*----- SUMA TEMPORALIDAD PROGRAMADAS POR TRIMESTRE (OK) ----------------------*/
     public function suma_operaciones_programadas($com_id,$trimestre){
         if($trimestre==1){
             $vi=1;$vf=3;
@@ -455,7 +455,7 @@ class Model_evaluacion extends CI_Model{
         return $query->result_array();
     }
 
-    /*----- SUMA TEMPORALIDAD EJECUTADA POR TRIMESTRE ----------------------*/
+    /*----- SUMA TEMPORALIDAD EJECUTADA POR TRIMESTRE (OK) ----------------------*/
     public function suma_operaciones_ejecutadas($com_id,$trimestre){
         if($trimestre==1){
             $vi=1;$vf=3;

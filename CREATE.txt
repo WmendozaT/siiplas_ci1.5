@@ -1769,6 +1769,7 @@ SELECT
     p.com_id,
     p.or_id,
     og.og_codigo,
+    ore.or_codigo,
     p.prod_cod,
     p.prod_priori, 
     p.prod_producto,
@@ -1819,4 +1820,5 @@ CROSS JOIN LATERAL (
         -- Trimestre 4 acumulado (Meses 1 al 12)
         (COALESCE(temp.mes1, 0) + COALESCE(temp.mes2, 0) + COALESCE(temp.mes3, 0) + COALESCE(temp.mes4, 0) + COALESCE(temp.mes5, 0) + COALESCE(temp.mes6, 0) + COALESCE(temp.mes7, 0) + COALESCE(temp.mes8, 0) + COALESCE(temp.mes9, 0) + COALESCE(temp.mes10, 0) + COALESCE(temp.mes11, 0) + COALESCE(temp.mes12, 0)) AS prog_ac_t4,
         (COALESCE(ejec.e_mes1, 0) + COALESCE(ejec.e_mes2, 0) + COALESCE(ejec.e_mes3, 0) + COALESCE(ejec.e_mes4, 0) + COALESCE(ejec.e_mes5, 0) + COALESCE(ejec.e_mes6, 0) + COALESCE(ejec.e_mes7, 0) + COALESCE(ejec.e_mes8, 0) + COALESCE(ejec.e_mes9, 0) + COALESCE(ejec.e_mes10, 0) + COALESCE(ejec.e_mes11, 0) + COALESCE(ejec.e_mes12, 0)) AS ejec_ac_t4
-) calc;
+) calc
+where p.estado!=3;

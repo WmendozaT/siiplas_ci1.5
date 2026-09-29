@@ -135,7 +135,7 @@ class Lib_seguimientopoa {
       $tabla .= '
         <div class="modal fade" id="modal_graficos" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
           <!-- 🔥 CAMBIO AQUÍ: Se subió el ancho a 85% y se quitó el height fijo para evitar desbordamientos visuales -->
-          <div class="modal-dialog modal-lg" style="width: 85%; max-width: 1200px;">
+          <div class="modal-dialog modal-lg" style="width: 90%; max-width: 1200px;">
               <div class="modal-content">
                   <div class="modal-header" style="background: #1e3a8a; color: #fff;">
                       <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
@@ -173,8 +173,10 @@ class Lib_seguimientopoa {
                                       <tr style="background: #475569; color: #fff;">
                                           <th>Criterio de Evaluación</th>
                                           <th style="text-align: center; width: 20%;">Total Programado</th>
-                                          <th style="text-align: center; width: 20%;">Total Ejecutado</th>
-                                          <th style="text-align: center; width: 20%;">% Eficacia</th>
+                                          <th style="text-align: center; width: 20%;">Total Cumplidos</th>
+                                          <th style="text-align: center; width: 20%;">Total En Proceso</th>
+                                          <th style="text-align: center; width: 20%;">Total No Cumplidas</th>
+                                          <th style="text-align: center; width: 20%;">% Cumplimiento</th>
                                       </tr>
                                   </thead>
                                   <tbody>
@@ -182,7 +184,9 @@ class Lib_seguimientopoa {
                                           <td><strong>Actividades POA de la Unidad Responsable</strong></td>
                                           <td style="text-align: center; font-weight: bold; color: #0284c7;" id="lbl_total_prog">0.00</td>
                                           <td style="text-align: center; font-weight: bold; color: #16a34a;" id="lbl_total_ejec">0.00</td>
-                                          <td style="text-align: center; font-weight: bold; font-size: 14px;" id="lbl_total_porcentaje">0%</td>
+                                          <td style="text-align: center; font-weight: bold; color: #0284c7;" id="lbl_total_proceso">0.00</td>
+                                          <td style="text-align: center; font-weight: bold; color: #16a34a;" id="total_ncumplidas">0.00</td>
+                                          <td style="text-align: center; font-weight: bold; font-size: 14px;" id="porcentaje_cumplimiento">0%</td>
                                       </tr>
                                   </tbody>
                               </table>

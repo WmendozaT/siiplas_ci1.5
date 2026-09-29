@@ -76,13 +76,27 @@ class Cevaluacion_form4 extends CI_Controller {
     function formulario($componente){
     $form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_trimestre($componente[0]['com_id'],$this->tmes); //// listado de actividades por trimestre programados
     $tabla='';
-    $trimestre = $this->tmes; // Puedes parametrizarlo dinámicamente según tu vista ($this->input->post('trimestre'))
+    $trimestre = 1; // Puedes parametrizarlo dinámicamente según tu vista ($this->input->post('trimestre'))
     $mes_inicio = (($trimestre - 1) * 3) + 1;
     $mes_fin    = $trimestre * 3;
 
     // Arreglo de nombres de meses para las etiquetas superiores de la subtabla
     $nombres_meses = array(1=>'ENERO', 2=>'FEBRERO', 3=>'MARZO', 4=>'ABRIL', 5=>'MAYO', 6=>'JUNIO', 7=>'JULIO', 8=>'AGOSTO', 9=>'SEPTIEMBRE', 10=>'OCTUBRE', 11=>'NOVIEMBRE', 12=>'DICIEMBRE');
+    
+    $prog_data  = $this->model_evaluacionpoa->suma_programados_acumulados($componente[0]['com_id'], $mes_fin);
+    $ejec_data  = $this->model_evaluacionpoa->suma_ejecutados_acumulados($componente[0]['com_id'], $mes_fin);
+    $pastel_data = $this->model_evaluacionpoa->obtener_estados_pastel_acumulado($componente[0]['com_id'], $trimestre);
+
+    $nro_ope_eval     = isset($prog_data['total_operaciones']) ? intval($prog_data['total_operaciones']) : 0;
+    $total_programado = isset($prog_data['suma_programado']) ? floatval($prog_data['suma_programado']) : 0;
+    $total_ejecutado  = isset($ejec_data['suma_evaluado']) ? floatval($ejec_data['suma_evaluado']) : 0;
+
+
+
+
+
     $tabla.='
+    '.$nro_ope_eval.' '.$total_programado.' '.$total_ejecutado.'
     <input type="hidden" name="base" value="'.base_url().'">
     <table id="datatable_fixed_column" class="table table-bordered" style="width: 130%; table-layout: fixed;">
         <thead>
@@ -168,7 +182,7 @@ class Cevaluacion_form4 extends CI_Controller {
                   <i class="fa fa-search"></i> Detalle
               </button>
               </td>
-              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;" title="'.$prod_id.'"><b>'.round($rowp['og_codigo'],2).'</b></td>
+              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;" title="'.$prod_id.'"><b>'.round($rowp['or_codigo'],2).'</b></td>
               <td style="width: 5%; text-align: center; font-size:15px; vertical-align: middle;" bgcolor="#eceaea" ">
                   <b>'.round($rowp['prod_cod'],2).'</b><br>'.$priori.'
               </td>
@@ -348,7 +362,7 @@ class Cevaluacion_form4 extends CI_Controller {
               <!-- FILA 1: DATOS GENERALES Y METAS DE CADA MES -->
               <tr>
                 <td style="white-space: normal; line-height: 1.4; text-align: center; font-weight: bold; color: #1e293b; vertical-align: middle; font-size:11.5px; background: #f8fafc;">
-                  '.$get_form4[0]['og_codigo'].'.'.$get_form4[0]['prod_cod'].'
+                  '.$get_form4[0]['or_codigo'].'.'.$get_form4[0]['prod_cod'].'
                 </td>
                 <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
                   '.strtoupper($get_form4[0]['prod_producto']).'
@@ -522,7 +536,7 @@ class Cevaluacion_form4 extends CI_Controller {
         $tabla.='
         <tr class="fila-actividad">
           <td style="white-space: normal; line-height: 1.4; text-align: center; font-weight: bold; color: #1e293b; vertical-align: middle; font-size:14px; background: #f8fafc;">
-            '.$rowp['og_codigo'].'.'.$rowp['prod_cod'].'
+            '.$rowp['or_codigo'].'.'.$rowp['prod_cod'].'
           </td>
           <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
             '.strtoupper($rowp['prod_producto']).'
@@ -699,100 +713,155 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
   //// Obtener datos para los graficos
-  public function obtener_graficos_cumplimiento() {
+public function obtener_graficos_cumplimiento() {
     // 1. Capturar el identificador del componente de forma segura
     $com_id = intval($this->input->post('com_id'));
-    
-    // 🔥 CORRECCIÓN: Agregado punto y coma al final
     $componente_data = $this->model_componente->get_componente($com_id, $this->gestion);
     
-    // Extraer el nombre de la columna correspondiente (Ajusta 'com_componente' por el nombre real de tu columna)
-    $UnidadResponsable = isset($componente_data['com_componente']) ? $componente_data['com_componente'] : 'UNIDAD NO ENCONTRADA';
-
-    if ($com_id == 0) {
+    if ($com_id == 0 || empty($componente_data)) {
         $respuesta = array(
             'status'  => 'error',
-            'message' => 'Identificador de componente no válido.'
+            'message' => 'Identificador de componente no válido o no encontrado.'
         );
         echo json_encode($respuesta);
         return;
     }
-    
 
-    // 2. Obtener la lista de productos asociados al componente anual para sumar su programación
-    // Usamos el mismo método optimizado anual que ya tienes en tu modelo
-    $productos = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_anual($com_id);
-    
-    $total_programado = 0;
-    $array_prod_ids = array();
+    // 5. OBTENER EL TRIMESTRE ACTUAL CORRECTO
+    $trimestre_row = $this->model_evaluacionpoa->get_trimestre($this->tmes);
+    $trm_id = isset($trimestre_row[0]['trm_id']) ? intval($trimestre_row[0]['trm_id']) : 1;
 
-    // Sumamos aritméticamente las metas programadas de los 12 meses de todos los productos del componente
-    foreach ($productos as $rowp) {
-        $array_prod_ids[] = intval($rowp['prod_id']);
-        
-        for ($m = 1; $m <= 12; $m++) {
-            $total_programado += floatval($rowp['mes' . $m]);
-        }
-    }
+    // Procesar la matriz usando el id del trimestre limpio
+    $matriz_regresion = $this->tabla_regresion_lineal_servicio($com_id, $this->tmes);
 
- $total_ejecutado = 0;
-
-    // 3. Si el componente tiene productos, consultamos las ejecuciones reales en la BD
-    if (!empty($array_prod_ids)) {
-        $prod_ids_string = implode(',', $array_prod_ids);
-        $g_id = intval($this->gestion);
-
-        // Consultamos la sumatoria física real acumulada en la tabla de ejecutados
-        $sql_ejec = "SELECT SUM(pejec_fis) AS total_real 
-                     FROM prod_ejecutado_mensual 
-                     WHERE prod_id IN ($prod_ids_string) 
-                       AND g_id = $g_id";
-        
-        $query_ejec = $this->db->query($sql_ejec);
-        $res_ejec = $query_ejec->row_array();
-        
-        if (isset($res_ejec['total_real'])) {
-            $total_ejecutado = floatval($res_ejec['total_real']);
-        }
-    }
-
-    // 4. Calcular el porcentaje de eficacia física global del componente
-    $porcentaje_eficacia = 0;
-    if ($total_programado > 0) {
-        // Regla de tres simple: (Ejecutado * 100) / Programado
-        $porcentaje_eficacia = ($total_ejecutado * 100) / $total_programado;
-    // Control de salvaguarda por si la ejecución supera el 100% de la meta por reajustes
-        if ($porcentaje_eficacia > 100) {
-            $porcentaje_eficacia = 100;
-        }
-    }
-
-    // 5. Estructurar el paquete de datos formateado para el frontend
+    // 6. Estructurar el paquete de datos unificado (Pastel + Líneas + Totales del Trimestre Actual)
     $datos_consolidados = array(
-        'total_programado'    => number_format($total_programado, 2, '.', ''),
-        'total_ejecutado'     => number_format($total_ejecutado, 2, '.', ''),
-        'porcentaje_eficacia' => round($porcentaje_eficacia, 2)
+         // 🌟 CORRECCIÓN: Extraemos el valor del trimestre actual usando end() para los textos de la tabla
+         'total_programado'        => !empty($matriz_regresion['programadas']) ? end($matriz_regresion['programadas']) : 0,
+         'total_cumplidas'         => !empty($matriz_regresion['cumplidas']) ? end($matriz_regresion['cumplidas']) : 0,
+         'total_proceso'           => !empty($matriz_regresion['en_proceso']) ? end($matriz_regresion['en_proceso']) : 0,
+         'total_ncumplidas'        => !empty($matriz_regresion['no_cumplidas']) ? end($matriz_regresion['no_cumplidas']) : 0,
+         'porcentaje_cumplimiento' => !empty($matriz_regresion['eficacia_porcentaje']) ? end($matriz_regresion['eficacia_porcentaje']) : 0,
+        
+        // 🍩 DATOS PARA EL PASTEL DE 3 VALORES
+        'act_cumplidas'       => !empty($matriz_regresion['cumplidas']) ? end($matriz_regresion['cumplidas']) : 0,
+        'act_no_cumplidas'    => !empty($matriz_regresion['no_cumplidas']) ? end($matriz_regresion['no_cumplidas']) : 0,
+        'act_en_proceso'      => !empty($matriz_regresion['en_proceso']) ? end($matriz_regresion['en_proceso']) : 0,
+
+        // 📈 DATOS LISTOS PARA LAS LÍNEAS DE EVOLUCIÓN
+        'trimestres_labels'     => $matriz_regresion['labels'],
+        'trimestres_programado' => $matriz_regresion['programadas'],
+        'trimestres_cumplido'   => $matriz_regresion['cumplidas']
     );
 
-    $trimestre=$this->model_evaluacionpoa->get_trimestre($this->tmes);
+    $nombre_unidad = $componente_data[0]['tipo'].' '.$componente_data[0]['proy_nombre'].' '.$componente_data[0]['abrev'].' / '.$componente_data[0]['tipo_subactividad'].' '.$componente_data[0]['com_componente'];
 
     $respuesta = array(
-        'status' => 'success',
-        'trimestre' => $trimestre[0]['trm_descripcion'].' / '.$this->gestion,
-        'UnidadResponsable' => $componente_data[0]['tipo'].' '.$componente_data[0]['proy_nombre'].' '.$componente_data[0]['abrev'].'/'.$componente_data[0]['tipo_subactividad'].' '.$componente_data[0]['com_componente'],
-        'datos'  => $datos_consolidados
+        'status'            => 'success',
+        'trimestre'         => $trimestre_row[0]['trm_descripcion'].' / '.$this->gestion,
+        'UnidadResponsable' => $nombre_unidad,
+        'datos'             => $datos_consolidados
     );
 
-    // 6. Retornar el JSON limpio sin código HTML huérfano
     echo json_encode($respuesta);
     return;
 }
 
 
 
+    public function tabla_regresion_lineal_servicio($com_id, $trm_id) {
+        // 1. Diccionario de nombres de trimestres
+        $nombres_trimestres = array(
+            1 => 'I Trimestre',
+            2 => 'II Trimestre',
+            3 => 'III Trimestre',
+            4 => 'IV Trimestre'
+        );
 
+        // 2. Inicializar la estructura de la matriz final
+        $tr = array();
+        
+        // Inicializamos las listas para que JavaScript las reciba limpias (eje X e Y)
+        $tr['labels'] = array();
+        $tr['programadas'] = array();
+        $tr['cumplidas'] = array();
+        $tr['no_cumplidas'] = array();
+        $tr['en_proceso'] = array();
+        $tr['eficacia_porcentaje'] = array();
 
+        // 3. Procesar los datos trimestre por trimestre de forma limpia
+        for ($i = 1; $i <= $trm_id; $i++) {
+            // Llamamos a la función optimizada (solo hace 3 consultas internas rápidas por trimestre)
+            // Pasamos el tipo_evaluacion 1 por defecto, ya que internamente el modelo ahora extrae todo con CASE WHEN
+            $valor = $this->obtiene_datos_evaluacion($com_id, $i, 1);
 
+            $prog         = intval($valor[1]); // Nro operaciones programadas
+            $cumplidas    = intval($valor['cumplidos']);
+            $no_cumplidas = intval($valor['no_cumplidos']);
+            $en_proceso   = intval($valor['en_proceso']);
+
+            // Calcular porcentaje de eficacia
+            $eficacia = 0;
+            if ($prog > 0) {
+                $eficacia = round((($cumplidas / $prog) * 100), 2);
+            }
+
+            // 4. Llenar la matriz clásica (Mantenida por si tus tablas PHP dependen de los índices numéricos)
+            $tr[1][$i] = $nombres_trimestres[$i];
+            $tr[2][$i] = $prog;
+            $tr[3][$i] = $cumplidas;
+            $tr[4][$i] = $no_cumplidas;
+            $tr[5][$i] = $eficacia;
+            $tr[6][$i] = round(100 - $eficacia, 2);
+            $tr[7][$i] = $en_proceso;
+            $tr[8][$i] = $prog > 0 ? round(($en_proceso / $prog) * 100, 2) : 0;
+
+            // 🌟 5. NUEVA ESTRUCTURA DIRECTA PARA CHART.JS (Arreglos lineales nativos)
+            $tr['labels'][]      = $nombres_trimestres[$i];
+            $tr['programadas'][] = $prog;
+            $tr['cumplidas'][]   = $cumplidas;
+            $tr['no_cumplidas'][]= $no_cumplidas;
+            $tr['en_proceso'][]  = $en_proceso;
+            $tr['eficacia_porcentaje'][] = $eficacia;
+        }
+
+        return $tr;
+    }
+    
+
+    public function obtiene_datos_evaluacion($com_id, $trimestre, $tipo_evaluacion) {
+      // Definimos el tope del mes según el trimestre de manera matemática
+      // Trimestre 1 = Mes 3, Trimestre 2 = Mes 6, Trimestre 3 = Mes 9, Trimestre 4 = Mes 12
+      $mes_final = intval($trimestre) * 3;
+
+      // 1. Ejecutar las 3 consultas directas (Sin bucles)
+      $prog_data  = $this->model_evaluacionpoa->suma_programados_acumulados($com_id, $mes_final);
+      $ejec_data  = $this->model_evaluacionpoa->suma_ejecutados_acumulados($com_id, $mes_final);
+      $pastel_data = $this->model_evaluacionpoa->obtener_estados_pastel_acumulado($com_id, $trimestre);
+
+      // 2. Extraer y formatear datos de manera segura
+      $nro_ope_eval     = isset($prog_data['total_operaciones']) ? intval($prog_data['total_operaciones']) : 0;
+      $total_programado = isset($prog_data['suma_programado']) ? floatval($prog_data['suma_programado']) : 0;
+      $total_ejecutado  = isset($ejec_data['suma_evaluado']) ? floatval($ejec_data['suma_evaluado']) : 0;
+
+      // 3. Mapear los 3 estados para el gráfico de pastel
+      $cumplidas    = isset($pastel_data['cumplidos']) ? intval($pastel_data['cumplidos']) : 0;
+      $no_cumplidas = isset($pastel_data['no_cumplidos']) ? intval($pastel_data['no_cumplidos']) : 0;
+      $en_proceso   = isset($pastel_data['en_proceso']) ? intval($pastel_data['en_proceso']) : 0;
+
+      // 4. Retornar el vector estructurado con las nuevas posiciones limpias
+      $vtrimestre[1] = $nro_ope_eval;     // Nro de operaciones evaluadas
+      $vtrimestre[2] = $cumplidas;        // [Mantenido por compatibilidad heredada]
+      $vtrimestre[3] = $total_programado; // Suma física programada
+      $vtrimestre[4] = $total_ejecutado;  // Suma física ejecutada
+      
+      // 🌟 Nuevos índices específicos para el gráfico de pastel de 3 valores
+      $vtrimestre['cumplidos']    = $cumplidas;
+      $vtrimestre['no_cumplidos'] = $no_cumplidas;
+      $vtrimestre['en_proceso']   = $en_proceso;
+
+      return $vtrimestre;
+    }
 
 
     /*------ NOMBRE MES -------*/
