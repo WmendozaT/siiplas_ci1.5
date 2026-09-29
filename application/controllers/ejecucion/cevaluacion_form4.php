@@ -83,6 +83,8 @@ class Cevaluacion_form4 extends CI_Controller {
     // Arreglo de nombres de meses para las etiquetas superiores de la subtabla
     $nombres_meses = array(1=>'ENERO', 2=>'FEBRERO', 3=>'MARZO', 4=>'ABRIL', 5=>'MAYO', 6=>'JUNIO', 7=>'JULIO', 8=>'AGOSTO', 9=>'SEPTIEMBRE', 10=>'OCTUBRE', 11=>'NOVIEMBRE', 12=>'DICIEMBRE');
     
+
+    
     $prog_data  = $this->model_evaluacionpoa->suma_programados_acumulados($componente[0]['com_id'], $mes_fin);
     $ejec_data  = $this->model_evaluacionpoa->suma_ejecutados_acumulados($componente[0]['com_id'], $mes_fin);
     $pastel_data = $this->model_evaluacionpoa->obtener_estados_pastel_acumulado($componente[0]['com_id'], $trimestre);
