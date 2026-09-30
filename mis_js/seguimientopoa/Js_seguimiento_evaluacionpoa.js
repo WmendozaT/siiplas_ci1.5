@@ -614,6 +614,7 @@ var nombreUnidadGlobal = "";
 var trimestre = ""; 
 
 function cargarCuadrosEvaluacion(elemento, comId) {
+    // 1. ⏳ Activar pantalla de carga opaca
     var loadingId = 'loading_screen_overlay_graficos';
     var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
         '<div style="background: #ffffff; padding: 25px 45px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
@@ -623,6 +624,7 @@ function cargarCuadrosEvaluacion(elemento, comId) {
     '</div>';
     jQuery('body').append(loadingHtml);
 
+    // 2. Ejecutar petición AJAX al servidor
     jQuery.ajax({
         type: "POST",
         url: base + "index.php/ejecucion/cevaluacion_form4/obtener_graficos_cumplimiento", 
@@ -632,24 +634,28 @@ function cargarCuadrosEvaluacion(elemento, comId) {
             jQuery("#" + loadingId).remove();
 
             if (response.status === "success") {
+                // Captura de metadatos globales
                 nombreUnidadGlobal = response.UnidadResponsable || "UNIDAD RESPONSABLE";
                 trimestre = response.trimestre || "TRIMESTRE";
 
+                // Actualizar dinámicamente el título del modal
                 jQuery("#modal_graficos .modal-title").html(
                     '<i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA - <small style="color:#cbd5e1; font-weight:bold;">' + nombreUnidadGlobal + '</small>' +
                     '<br><span style="font-size: 11px; font-weight: normal; color:#94a3b8; display:block; margin-top:2px;">Periodo: ' + trimestre + '</span>'
                 );
+               
 
-                // Inyectar los datos globales consolidados en la tabla inferior
-                jQuery("#lbl_total_prog").text(response.datos.total_programado);
-                jQuery("#lbl_total_ejec").text(response.datos.total_cumplidas);
-                jQuery("#lbl_total_proceso").text(response.datos.total_proceso);
-                jQuery("#total_ncumplidas").text(response.datos.total_ncumplidas);
+                // Inyectar datos numéricos consolidados en las celdas de la tabla inferior
+                // jQuery("#lbl_total_prog").text(response.datos.total_programado);
+                // jQuery("#lbl_total_ejec").text(response.datos.total_cumplidas);
+                // jQuery("#lbl_total_proceso").text(response.datos.total_proceso);
+                // jQuery("#total_ncumplidas").text(response.datos.total_ncumplidas);
+                // jQuery("#porcentaje_cumplimiento").text(response.datos.porcentaje_cumplimiento + "%");
+
+          
                 
-                // 🔥 CORRECCIÓN: Se actualizó al ID correspondiente de tu porcentaje
-                jQuery("#porcentaje_cumplimiento").text(response.datos.porcentaje_cumplimiento + "%");
-                
-                // 🔥 CORRECCIÓN: Cambiado a porcentaje_cumplimiento para que aplique bien los colores dinámicos
+
+                // Aplicar semáforo de colores al porcentaje de cumplimiento global
                 if(response.datos.porcentaje_cumplimiento >= 75) {
                     jQuery("#porcentaje_cumplimiento").css("color", "#16a34a");
                 } else if(response.datos.porcentaje_cumplimiento >= 50) {
@@ -658,10 +664,16 @@ function cargarCuadrosEvaluacion(elemento, comId) {
                     jQuery("#porcentaje_cumplimiento").css("color", "#dc2626");
                 }
 
+                // Desplegar el modal estático
                 jQuery("#modal_graficos").modal("show");
 
+                // 3. ⏳ Dibujar los gráficos en el Canvas una vez que el modal termine de abrirse
                 jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
-                    
+                //    alert(response.datos.tabla_detalle)
+                    jQuery("#detalles").html(response.datos.tabla_detalle);
+
+                
+
                     if (chartPastel) chartPastel.destroy();
                     if (chartBarras) chartBarras.destroy();
 
@@ -669,63 +681,91 @@ function cargarCuadrosEvaluacion(elemento, comId) {
                     var canvasBarras = document.getElementById("grafico_barras_temporalidad");
 
                     if (canvasPastel && canvasBarras) {
-                        
-                        // ==========================================
-                        // 🍩 1. GRÁFICO PASTEL/DONA CON DATALABELS (%)
-                        // ==========================================
+                        // =========================================================
+                        // 🍩 1. GRÁFICO PASTEL/DONA: ESTILO MODERNO NATIVO (SIN PLUGINS EXTRA)
+                        // =========================================================
                         var ctxPastel = canvasPastel.getContext("2d");
                         chartPastel = new Chart(ctxPastel, {
-                        type: "doughnut",
-                        data: {
-                            labels: ["CUMPLIDO", "NO CUMPLIDO", "EN PROCESO"],
-                            datasets: [{
-                                data: [response.datos.act_cumplidas, response.datos.act_no_cumplidas, response.datos.act_en_proceso],
-                                backgroundColor: ["#00b4d8", "#ef4444", "#f59e0b"], 
-                                borderWidth: 2
-                            }]
-                        },
-                        options: { 
-                            responsive: true, 
-                            maintainAspectRatio: false,
-                            cutout: '65%',
-                            plugins: {
-                                title: { display: false },
-                                legend: { 
-                                    position: 'right', 
-                                    labels: {
-                                        boxWidth: 12,
-                                        font: { size: 10, weight: 'bold' },
-                                        padding: 10,
-                                        // 🔥 TRUCO NATIVO: Modifica los textos de la leyenda para anexar el % automáticamente
-                                        generateLabels: function(chart) {
-                                            var data = chart.data;
-                                            if (data.labels.length && data.datasets.length) {
-                                                var dataset = data.datasets[0];
-                                                var total = dataset.data.reduce((a, b) => a + b, 0);
+                            type: "doughnut",
+                            data: {
+                                labels: ["CUMPLIDO", "NO CUMPLIDO", "EN PROCESO"],
+                                datasets: [{
+                                    data: [
+                                        response.datos.act_cumplidas, 
+                                        response.datos.act_no_cumplidas, 
+                                        response.datos.act_en_proceso
+                                    ],
+                                    // Paleta de colores moderna con alto contraste
+                                    backgroundColor: ["#10b981", "#ef4444", "#f59e0b"], // Verde esmeralda, Rojo y Ámbar
+                                    hoverBackgroundColor: ["#059669", "#dc2626", "#d97706"],
+                                    borderWidth: 3,            // Separación elegante entre bloques
+                                    borderColor: "#ffffff",    // Línea divisoria blanca y limpia
+                                    borderRadius: 6            // 🔥 Esquinas redondeadas estilo Dashboard moderno
+                                }]
+                            },
+                            // ❌ ELIMINADO EL ARREGLO DE PLUGINS EXTERNOS PARA EVITAR EL ERROR DE REFERENCIA
+                            options: { 
+                                responsive: true, 
+                                maintainAspectRatio: false,
+                                cutout: '70%', // Anillo más fino y estilizado
+                                plugins: {
+                                    title: { display: false },
+                                    // 📋 CONFIGURACIÓN DE LEYENDA DERECHA INTELIGENTE NATIVA
+                                    legend: { 
+                                        position: 'right', 
+                                        labels: {
+                                            boxWidth: 10,
+                                            boxHeight: 10,
+                                            usePointStyle: true, // Viñetas circulares en lugar de cuadrados toscos
+                                            pointStyle: 'circle',
+                                            font: { size: 10, weight: '600', family: 'sans-serif' },
+                                            padding: 12,
+                                            // 🔥 TRUCO NATIVO AUTOMÁTICO: Calcula e inyecta el % y las act. en el menú derecho
+                                            generateLabels: function(chart) {
+                                                var data = chart.data;
+                                                if (data.labels.length && data.datasets.length) {
+                                                    var dataset = data.datasets[0];
+                                                    // Sumar el volumen total físico de las actividades actuales
+                                                    var total = dataset.data.reduce(function(a, b) { return a + b; }, 0);
 
-                                                return data.labels.map(function(label, i) {
-                                                    var valor = dataset.data[i];
-                                                    var porcentaje = total > 0 ? ((valor * 100) / total).toFixed(1) : 0;
-                                                    return {
-                                                        text: label + " (" + porcentaje + "%)",
-                                                        fillStyle: dataset.backgroundColor[i],
-                                                        strokeStyle: dataset.borderColor,
-                                                        lineWidth: dataset.borderWidth,
-                                                        hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
-                                                        index: i
-                                                    };
-                                                });
+                                                    return data.labels.map(function(label, i) {
+                                                        var valor = dataset.data[i];
+                                                        // Regla de tres simple para el porcentaje individual
+                                                        var porcentaje = total > 0 ? ((valor * 100) / total).toFixed(1) : "0.0";
+                                                        
+                                                        // Retorna la cadena armada limpia: CUMPLIDO (75.5% - 12 act.)
+                                                        return {
+                                                            text: label + " (" + porcentaje + "% - " + valor + " act.)",
+                                                            fillStyle: dataset.backgroundColor[i],
+                                                            strokeStyle: dataset.borderColor,
+                                                            lineWidth: dataset.borderWidth,
+                                                            hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+                                                            index: i
+                                                        };
+                                                    });
+                                                }
+                                                return [];
                                             }
-                                            return [];
+                                        }
+                                    },
+                                    // 🔥 CONFIGURACIÓN DE LOS TOOLTIPS (Al pasar el cursor)
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                var valor = context.raw;
+                                                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                                var porcentaje = total > 0 ? ((valor * 100) / total).toFixed(1) : 0;
+                                                return " " + context.label + ": " + porcentaje + "% (" + valor + " act.)";
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+
 
                         // ==========================================
-                        // 📈 2. GRÁFICO DE LÍNEAS: REGRESIÓN TRIMESTRAL
+                        // 📈 2. GRÁFICO DE LÍNEAS (EVOLUCIÓN TRIMESTRAL)
                         // ==========================================
                         var ctxBarras = canvasBarras.getContext("2d");
                         chartBarras = new Chart(ctxBarras, {
@@ -736,33 +776,80 @@ function cargarCuadrosEvaluacion(elemento, comId) {
                                     {
                                         label: "PROG. ACUMULADO",
                                         data: response.datos.trimestres_programado,
-                                        borderColor: "#0284c7",
-                                        backgroundColor: "#0284c7",
-                                        borderWidth: 2.5,
+                                        borderColor: "rgba(2, 132, 199, 0.6)", // Azul con transparencia
+                                        backgroundColor: "transparent",       // Fondo transparente
+                                        borderWidth: 2,                        // Línea más delgada de fondo
+                                        borderDash: new Array(6, 4),                   // 🔥 CORRECCIÓN: Línea segmentada de 5px de trazo y 5px de espacio
                                         tension: 0.1,
-                                        pointRadius: 4
+                                        pointRadius: 5,                        
+                                        pointBackgroundColor: "transparent",   // Puntos transparentes por dentro
+                                        pointBorderColor: "rgba(2, 132, 199, 0.8)",
+                                        pointBorderWidth: 2,
+                                        // 🔥 CONFIGURACIÓN INDIVIDUAL PARA LOS DATALABELS DE ESTA LÍNEA
+                                        datalabels: {
+                                            align: 'top',       // Fuerza a ir arriba del punto
+                                            anchor: 'end',
+                                            color: '#0284c7',   
+                                            offset: 6,          // Espaciado sutil para evitar colisiones
+                                            font: { size: 10, weight: 'bold', family: 'sans-serif' },
+                                            // 🔥 FUNCIÓN DE FORMATEO PARA AGREGAR EL TEXTO "act."
+                                            formatter: function(value, ctx) {
+                                                return value + " act.";
+                                            }
+                                        }
                                     },
                                     {
                                         label: "CUMPLIDO ACUMULADO",
                                         data: response.datos.trimestres_cumplido,
-                                        borderColor: "#22c55e",
-                                        backgroundColor: "#22c55e",
-                                        borderWidth: 2.5,
+                                        borderColor: "#22c55e",                // Verde sólido brillante
+                                        backgroundColor: "transparent",       // Fondo transparente
+                                        borderWidth: 3.5,                      // Línea más gruesa principal
                                         tension: 0.1,
-                                        pointRadius: 4
+                                        pointRadius: 6,                        
+                                        pointBackgroundColor: "#22c55e",       // Puntos rellenos
+                                        pointBorderColor: "#ffffff",           // Borde blanco de separación
+                                        pointBorderWidth: 2,
+                                        // 🔥 CONFIGURACIÓN INDIVIDUAL PARA LOS DATALABELS DE ESTA LÍNEA
+                                        datalabels: {
+                                            align: 'bottom',    // Fuerza a ir abajo del punto para que no choque con el azul
+                                            anchor: 'start',
+                                            color: '#15803d',   
+                                            offset: 8,          
+                                            font: { size: 10, weight: 'bold', family: 'sans-serif' },
+                                            // 🔥 FUNCIÓN DE FORMATEO PARA AGREGAR EL TEXTO "act."
+                                            formatter: function(value, ctx) {
+                                                // En tu imagen el punto de inicio es 0, si quieres ocultar el texto en el cero descomenta esto:
+                                                // if(value === 0) return value; 
+                                                return value + " act.";
+                                            }
+                                        }
                                     }
                                 ]
                             },
-                            options: {
+                             options: {
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 scales: { 
-                                    y: { beginAtZero: true, grid: { color: "#f1f5f9" } },
-                                    x: { grid: { display: false } }
+                                    y: { 
+                                        beginAtZero: true, 
+                                        grid: { color: "#f1f5f9" },
+                                        // Añadir un margen superior interno en el eje Y para que los números del último punto no se corten arriba
+                                        grace: '12%' 
+                                    },
+                                    x: { 
+                                        grid: { display: false } 
+                                    }
                                 },
                                 plugins: {
                                     title: { display: false },
-                                    legend: { position: 'top', labels: { boxWidth: 10, font: { size: 9 } } }
+                                    legend: { 
+                                        position: 'top', 
+                                        labels: { boxWidth: 25, font: { size: 9 } } 
+                                    },
+                                    // Desactivar el datalabel global predeterminado para configurarlo de forma única por dataset arriba
+                                    datalabels: {
+                                        display: true
+                                    }
                                 }
                             }
                         });
@@ -781,6 +868,181 @@ function cargarCuadrosEvaluacion(elemento, comId) {
         }
     });
 }
+
+
+// var chartPastel = null;
+// var chartBarras = null;
+// var nombreUnidadGlobal = ""; 
+// var trimestre = ""; 
+
+// function cargarCuadrosEvaluacion(elemento, comId) {
+//     var loadingId = 'loading_screen_overlay_graficos';
+//     var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
+//         '<div style="background: #ffffff; padding: 25px 45px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+//             '<i class="fa fa-refresh fa-spin" style="font-size: 34px; color: #1e3a8a; margin-bottom: 12px; display: block;"></i>' +
+//             '<span style="font-size: 14px; font-weight: bold; color: #334155;">Procesando consolidados y generando gráficos...</span>' +
+//         '</div>' +
+//     '</div>';
+//     jQuery('body').append(loadingHtml);
+
+//     jQuery.ajax({
+//         type: "POST",
+//         url: base + "index.php/ejecucion/cevaluacion_form4/obtener_graficos_cumplimiento", 
+//         data: { com_id: comId },
+//         dataType: 'json',
+//         success: function(response) {
+//             jQuery("#" + loadingId).remove();
+
+//             if (response.status === "success") {
+//                 nombreUnidadGlobal = response.UnidadResponsable || "UNIDAD RESPONSABLE";
+//                 trimestre = response.trimestre || "TRIMESTRE";
+
+//                 jQuery("#modal_graficos .modal-title").html(
+//                     '<i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA - <small style="color:#cbd5e1; font-weight:bold;">' + nombreUnidadGlobal + '</small>' +
+//                     '<br><span style="font-size: 11px; font-weight: normal; color:#94a3b8; display:block; margin-top:2px;">Periodo: ' + trimestre + '</span>'
+//                 );
+
+//                 // Inyectar los datos globales consolidados en la tabla inferior
+//                 jQuery("#lbl_total_prog").text(response.datos.total_programado);
+//                 jQuery("#lbl_total_ejec").text(response.datos.total_cumplidas);
+//                 jQuery("#lbl_total_proceso").text(response.datos.total_proceso);
+//                 jQuery("#total_ncumplidas").text(response.datos.total_ncumplidas);
+                
+//                 // 🔥 CORRECCIÓN: Se actualizó al ID correspondiente de tu porcentaje
+//                 jQuery("#porcentaje_cumplimiento").text(response.datos.porcentaje_cumplimiento + "%");
+                
+//                 // 🔥 CORRECCIÓN: Cambiado a porcentaje_cumplimiento para que aplique bien los colores dinámicos
+//                 if(response.datos.porcentaje_cumplimiento >= 75) {
+//                     jQuery("#porcentaje_cumplimiento").css("color", "#16a34a");
+//                 } else if(response.datos.porcentaje_cumplimiento >= 50) {
+//                     jQuery("#porcentaje_cumplimiento").css("color", "#ca8a04");
+//                 } else {
+//                     jQuery("#porcentaje_cumplimiento").css("color", "#dc2626");
+//                 }
+
+//                 jQuery("#modal_graficos").modal("show");
+
+//                 jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
+                    
+//                     if (chartPastel) chartPastel.destroy();
+//                     if (chartBarras) chartBarras.destroy();
+
+//                     var canvasPastel = document.getElementById("grafico_pastel_cumplimiento");
+//                     var canvasBarras = document.getElementById("grafico_barras_temporalidad");
+
+//                     if (canvasPastel && canvasBarras) {
+                        
+//                         // ==========================================
+//                         // 🍩 1. GRÁFICO PASTEL/DONA CON DATALABELS (%)
+//                         // ==========================================
+//                         var ctxPastel = canvasPastel.getContext("2d");
+//                         chartPastel = new Chart(ctxPastel, {
+//                         type: "doughnut",
+//                         data: {
+//                             labels: ["CUMPLIDO", "NO CUMPLIDO", "EN PROCESO"],
+//                             datasets: [{
+//                                 data: [response.datos.act_cumplidas, response.datos.act_no_cumplidas, response.datos.act_en_proceso],
+//                                 backgroundColor: ["#00b4d8", "#ef4444", "#f59e0b"], 
+//                                 borderWidth: 2
+//                             }]
+//                         },
+//                         options: { 
+//                             responsive: true, 
+//                             maintainAspectRatio: false,
+//                             cutout: '65%',
+//                             plugins: {
+//                                 title: { display: false },
+//                                 legend: { 
+//                                     position: 'right', 
+//                                     labels: {
+//                                         boxWidth: 12,
+//                                         font: { size: 10, weight: 'bold' },
+//                                         padding: 10,
+//                                         // 🔥 TRUCO NATIVO: Modifica los textos de la leyenda para anexar el % automáticamente
+//                                         generateLabels: function(chart) {
+//                                             var data = chart.data;
+//                                             if (data.labels.length && data.datasets.length) {
+//                                                 var dataset = data.datasets[0];
+//                                                 var total = dataset.data.reduce((a, b) => a + b, 0);
+
+//                                                 return data.labels.map(function(label, i) {
+//                                                     var valor = dataset.data[i];
+//                                                     var porcentaje = total > 0 ? ((valor * 100) / total).toFixed(1) : 0;
+//                                                     return {
+//                                                         text: label + " (" + porcentaje + "%)",
+//                                                         fillStyle: dataset.backgroundColor[i],
+//                                                         strokeStyle: dataset.borderColor,
+//                                                         lineWidth: dataset.borderWidth,
+//                                                         hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+//                                                         index: i
+//                                                     };
+//                                                 });
+//                                             }
+//                                             return [];
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                     });
+
+//                         // ==========================================
+//                         // 📈 2. GRÁFICO DE LÍNEAS: REGRESIÓN TRIMESTRAL
+//                         // ==========================================
+//                         var ctxBarras = canvasBarras.getContext("2d");
+//                         chartBarras = new Chart(ctxBarras, {
+//                             type: "line", 
+//                             data: {
+//                                 labels: response.datos.trimestres_labels, 
+//                                 datasets: [
+//                                     {
+//                                         label: "PROG. ACUMULADO",
+//                                         data: response.datos.trimestres_programado,
+//                                         borderColor: "#0284c7",
+//                                         backgroundColor: "#0284c7",
+//                                         borderWidth: 2.5,
+//                                         tension: 0.1,
+//                                         pointRadius: 4
+//                                     },
+//                                     {
+//                                         label: "CUMPLIDO ACUMULADO",
+//                                         data: response.datos.trimestres_cumplido,
+//                                         borderColor: "#22c55e",
+//                                         backgroundColor: "#22c55e",
+//                                         borderWidth: 2.5,
+//                                         tension: 0.1,
+//                                         pointRadius: 4
+//                                     }
+//                                 ]
+//                             },
+//                             options: {
+//                                 responsive: true,
+//                                 maintainAspectRatio: false,
+//                                 scales: { 
+//                                     y: { beginAtZero: true, grid: { color: "#f1f5f9" } },
+//                                     x: { grid: { display: false } }
+//                                 },
+//                                 plugins: {
+//                                     title: { display: false },
+//                                     legend: { position: 'top', labels: { boxWidth: 10, font: { size: 9 } } }
+//                                 }
+//                             }
+//                         });
+//                     } else {
+//                         console.error("Error: No se encontraron los elementos canvas en el DOM.");
+//                     }
+//                 });
+
+//             } else {
+//                 alert("No se pudieron consolidar los cuadros: " + response.message);
+//             }
+//         },
+//         error: function() {
+//             jQuery('#' + loadingId).remove();
+//             alert('Error de comunicación asíncrona con el servidor.');
+//         }
+//     });
+// }
 
 
 

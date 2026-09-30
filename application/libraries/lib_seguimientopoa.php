@@ -165,9 +165,14 @@ class Lib_seguimientopoa {
                               </div>
                           </div>
                       </div>
-                      
+                      <div class="row" style="margin-top: 15px;">
+    <div class="col-md-12" id="detalles">
+        <!-- 🌟 AQUÍ JQUERY INYECTARÁ LA TABLA DINÁMICA DE FORMA AUTOMÁTICA -->
+    </div>
+</div>
                       <div class="row" style="margin-top: 25px;">
                           <div class="col-md-12">
+
                               <table class="table table-bordered table-striped" style="width: 100%; font-size: 11px;">
                                   <thead>
                                       <tr style="background: #475569; color: #fff;">

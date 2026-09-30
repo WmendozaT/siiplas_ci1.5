@@ -104,7 +104,7 @@ class Model_evaluacionpoa extends CI_Model{
 
   //// Para los Cuadros de Evaluacion POA
     // 1. Obtener la sumatoria agrupada de metas PROGRAMADAS hasta el trimestre seleccionado
-    public function suma_programados_acumulados($com_id, $mes_final) {
+    public function suma_programados_acumulados($com_id, $mes_inicio, $mes_final) {
         $sql = "SELECT COUNT(DISTINCT prod.prod_id) AS total_operaciones, 
                        SUM(pprog.pg_fis) AS suma_programado
                 FROM _productos AS prod
@@ -112,24 +112,26 @@ class Model_evaluacionpoa extends CI_Model{
                 WHERE prod.com_id = ? 
                   AND prod.estado != '3' 
                   AND pprog.g_id = ? 
+                  AND pprog.m_id >= ?
                   AND pprog.m_id <= ? 
                   AND pprog.pg_fis != '0'";
                   
-        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_final));
+        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_inicio, $mes_final));
         return $query->row_array();
     }
 
     // 2. Obtener la sumatoria agrupada de metas EJECUTADAS reales hasta el trimestre seleccionado
-    public function suma_ejecutados_acumulados($com_id, $mes_final) {
+    public function suma_ejecutados_acumulados($com_id, $mes_inicio, $mes_final) {
         $sql = "SELECT SUM(pejec.pejec_fis) AS suma_evaluado
                 FROM _productos AS prod
                 INNER JOIN prod_ejecutado_mensual AS pejec ON pejec.prod_id = prod.prod_id
                 WHERE prod.com_id = ? 
                   AND pejec.g_id = ? 
+                  AND pejec.m_id >= ?
                   AND pejec.m_id <= ? 
                   AND pejec.pejec_fis != '0'";
                   
-        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_final));
+        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_inicio, $mes_final));
         return $query->row_array();
     }
 
