@@ -1321,7 +1321,7 @@ class Certificacionpoa extends CI_Controller{
   public function datos_unidad_certpoa($certpoa){
     $uni_resp='';
     if($certpoa[0]['por_id']==1){
-      $uni_resp=' / '.$certpoa[0]['tp_subactividad'].' '.$certpoa[0]['unidad_responsable'];
+      $uni_resp=' <div style="color:blue;">/ <b>'.$certpoa[0]['tp_subactividad'].' '.$certpoa[0]['unidad_responsable'].'</b></div>';
     }
     $tabla='';
     $tabla.='

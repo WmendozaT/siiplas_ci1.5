@@ -82,9 +82,6 @@ class Cevaluacion_form4 extends CI_Controller {
 
     // Arreglo de nombres de meses para las etiquetas superiores de la subtabla
     $nombres_meses = array(1=>'ENERO', 2=>'FEBRERO', 3=>'MARZO', 4=>'ABRIL', 5=>'MAYO', 6=>'JUNIO', 7=>'JULIO', 8=>'AGOSTO', 9=>'SEPTIEMBRE', 10=>'OCTUBRE', 11=>'NOVIEMBRE', 12=>'DICIEMBRE');
-    
-
-
   //  $matriz=$this->tabla_regresion_lineal_servicio2($componente[0]['com_id'], 4);
 
     $tabla.='
@@ -527,7 +524,7 @@ class Cevaluacion_form4 extends CI_Controller {
         
         $tabla.='
         <tr class="fila-actividad">
-          <td style="white-space: normal; line-height: 1.4; text-align: center; font-weight: bold; color: #1e293b; vertical-align: middle; font-size:14px; background: #f8fafc;">
+          <td style="white-space: normal; line-height: 1.4; text-align: center; font-weight: bold; color: #1e293b; vertical-align: middle; font-size:14px; background: #f8fafc;" title="'.$rowp['prod_id'].'">
             '.$rowp['or_codigo'].'.'.$rowp['prod_cod'].'
           </td>
           <td style="white-space: normal; line-height: 1.4; text-align: justify; font-size: 11px; color: #334155; vertical-align: middle;">
@@ -705,10 +702,10 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
   //// Obtener datos para los graficospublic function obtener_graficos_cumplimiento() {
-     public function obtener_graficos_cumplimiento() {
+    public function obtener_graficos_cumplimiento() {
      // 1. Capturar el identificador del componente de forma segura
      $com_id = intval($this->input->post('com_id'));
-    $componente_data = $this->model_componente->get_componente($com_id, $this->gestion);
+     $componente_data = $this->model_componente->get_componente($com_id, $this->gestion);
     
     if ($com_id == 0 || empty($componente_data)) {
         $respuesta = array(
@@ -722,81 +719,78 @@ class Cevaluacion_form4 extends CI_Controller {
     // 5. OBTENER EL TRIMESTRE ACTUAL CORRECTO (Va de 1 a 4)
     $trimestre_row = $this->model_evaluacionpoa->get_trimestre($this->tmes);
     $trm_id = isset($trimestre_row[0]['trm_id']) ? intval($trimestre_row[0]['trm_id']) : 1;
-
-    // 🔥 CORRECCIÓN 1: Pasar $trm_id (1 al 4) en lugar de $this->tmes (1 al 12).
-    // Esto hace que el gráfico lineal de regresión se limite SOLO hasta el trimestre actual.
-    $matriz_regresion = $this->tabla_regresion_lineal_servicio($com_id, $trm_id);
+    $matriz_regresion = $this->lib_seguimientopoa->tabla_regresion_lineal_servicio($com_id, $trm_id);
 
     // 🔥 CORRECCIÓN 2: Obtener datos puros y aislados del trimestre actual para la torta.
     // Evitamos usar end() de la matriz de regresión porque esa viene con sumatorias acumuladas.
-    $datos_trimestre_actual = $this->obtiene_datos_evaluacion($com_id, $trm_id, 1);
+    $datos_trimestre_actual = $this->lib_seguimientopoa->obtiene_datos_evaluacion($com_id, $trm_id, 1);
 
     $act_cumplidas    = isset($datos_trimestre_actual['cumplidos']) ? intval($datos_trimestre_actual['cumplidos']) : 0;
     $act_no_cumplidas = isset($datos_trimestre_actual['no_cumplidos']) ? intval($datos_trimestre_actual['no_cumplidos']) : 0;
     $act_en_proceso   = isset($datos_trimestre_actual['en_proceso']) ? intval($datos_trimestre_actual['en_proceso']) : 0;
 
-        $cantidad_columnas = count($matriz_regresion['labels']);
+    $cantidad_columnas = count($matriz_regresion['labels']);
 
     $tabla = '';
-    $tabla .= '<table class="table table-bordered table-striped" style="width: 100%; font-size: 11px; margin-top: 15px;">
-                <thead>
-                    <tr style="background: #475569; color: #fff;">
-                        <th style="vertical-align: middle;">Detalle de Evaluación</th>';
-                        // Generar encabezados de las columnas (Trimestres evaluados)
-                        for ($i = 1; $i < $cantidad_columnas; $i++) { 
-                            $tabla .= '<th style="text-align: center; vertical-align: middle;">' . $matriz_regresion['labels'][$i] . '</th>';
-                        }
-                    $tabla .= '
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Total Programado</strong></td>';
-                        for ($i = 1; $i < $cantidad_columnas; $i++) { 
-                            $tabla .= '<td style="text-align: center; color: #0284c7; font-weight: bold;">' . $matriz_regresion['programadas'][$i] . '</td>';
-                        }
-                    $tabla .= '</tr>
-                    <tr>
-                        <td><strong>Actividades Cumplidas</strong></td>';
-                        for ($i = 1; $i < $cantidad_columnas; $i++) { 
-                            $tabla .= '<td style="text-align: center; color: #16a34a; font-weight: bold;">' . $matriz_regresion['cumplidas'][$i] . '</td>';
-                        }
-                    $tabla .= '</tr>
-                    <tr>
-                        <td><strong>Actividades En Proceso</strong></td>';
-                        for ($i = 1; $i < $cantidad_columnas; $i++) { 
-                            $tabla .= '<td style="text-align: center; color: #f59e0b; font-weight: bold;">' . $matriz_regresion['en_proceso'][$i] . '</td>';
-                        }
-                    $tabla .= '</tr>
-                    <tr>
-                        <td><strong>Actividades No Cumplidas</strong></td>';
-                        for ($i = 1; $i < $cantidad_columnas; $i++) { 
-                            $tabla .= '<td style="text-align: center; color: #ef4444; font-weight: bold;">' . $matriz_regresion['no_cumplidas'][$i] . '</td>';
-                        }
-                    $tabla .= '</tr>
-                    <tr style="background: #f8fafc;">
-                        <td><strong>% Eficacia Trimestral</strong></td>';
-                        for ($i = 1; $i < $cantidad_columnas; $i++) { 
-                            $tabla .= '<td style="text-align: center; font-weight: bold; font-size: 12px; color: #1e3a8a;">' . $matriz_regresion['eficacia_porcentaje'][$i] . '%</td>';
-                        }
-                    $tabla .= '</tr>
-                </tbody>
-              </table>';
+    // 1. Definimos una estructura de datos para mapear las filas de forma dinámica
+      $filas_matriz = array(
+          array('titulo' => 'Total Programado',          'clave' => 'programadas',        'color_txt' => '#0284c7'),
+          array('titulo' => 'Actividades Cumplidas',      'clave' => 'cumplidas',          'color_txt' => '#16a34a'),
+          array('titulo' => 'Actividades En Proceso',     'clave' => 'en_proceso',         'color_txt' => '#f59e0b'),
+          array('titulo' => 'Actividades No Cumplidas',   'clave' => 'no_cumplidas',       'color_txt' => '#ef4444'),
+          array('titulo' => '(%) Cumplimiento Trimestral', 'clave' => 'eficacia_porcentaje', 'color_txt' => '#1e3a8a', 'es_porcentaje' => true)
+      );
+
+      $tabla .= '
+      <div class="table-responsive">
+          <table class="table table-bordered table-striped" style="width: 100%; font-size: 11.5px; margin-top: 15px; font-family: sans-serif;">
+              <thead>
+                  <tr style="background: #475569; color: #ffffff; height: 32px;">
+                      <th style="vertical-align: middle; padding-left: 10px; width: 25%;">Detalle de Evaluación</th>';
+                      // Encabezados de las columnas (Trimestres evaluados)
+                      for ($i = 1; $i < $cantidad_columnas; $i++) { 
+                          $tabla .= '<th style="text-align: center; vertical-align: middle;">' . $matriz_regresion['labels'][$i] . '</th>';
+                      }
+                  $tabla .= '
+                  </tr>
+              </thead>
+              <tbody>';
+
+              // 🌟 2. UN SOLO BUCLE PARA GENERAR TODAS LAS FILAS DE LA MATRIZ
+              foreach ($filas_matriz as $fila) {
+                  // Estilo gris de fondo condicional para la fila de porcentajes
+                  $bg_fila = isset($fila['es_porcentaje']) ? 'background: #f8fafc;' : '';
+                  $peso_txt = isset($fila['es_porcentaje']) ? 'font-size: 12px;' : '';
+
+                  $tabla .= '<tr style="'.$bg_fila.'">
+                      <td style="vertical-align: middle; padding-left: 10px;"><strong>' . $fila['titulo'] . '</strong></td>';
+                      
+                      for ($i = 1; $i < $cantidad_columnas; $i++) {
+                          // Evaluación optimizada del color de la columna activa
+                          $bg_celda = ($i == $this->tmes) ? 'background-color: #d3f5f4 !important;' : '';
+                          
+                          // Extraer valor y añadir sufijo '%' si corresponde
+                          $valor = $matriz_regresion[$fila['clave']][$i];
+                          if (isset($fila['es_porcentaje'])) {
+                              $valor .= '%';
+                          }
+
+                          $tabla .= '<td style="text-align: center; vertical-align: middle; font-weight: bold; color: ' . $fila['color_txt'] . '; ' . $bg_celda . $peso_txt . '">' . $valor . '</td>';
+                      }
+                  $tabla .= '</tr>';
+              }
+
+      $tabla .= '
+              </tbody>
+          </table>
+      </div>';
+
 
 
     // 6. Estructurar el paquete de datos unificado
     $datos_consolidados = array(
          // Totales históricos acumulados para la tabla inferior
-         
         'tabla_detalle'        => $tabla,
-
-
-         'total_programado'        => !empty($matriz_regresion['programadas']) ? end($matriz_regresion['programadas']) : 0,
-         'total_cumplidas'         => !empty($matriz_regresion['cumplidas']) ? end($matriz_regresion['cumplidas']) : 0,
-         'total_proceso'           => !empty($matriz_regresion['en_proceso']) ? end($matriz_regresion['en_proceso']) : 0,
-         'total_ncumplidas'        => !empty($matriz_regresion['no_cumplidas']) ? end($matriz_regresion['no_cumplidas']) : 0,
-         'porcentaje_cumplimiento' => !empty($matriz_regresion['eficacia_porcentaje']) ? end($matriz_regresion['eficacia_porcentaje']) : 0,
-        
         // 🍩 DATOS PARA EL PASTEL DE 3 VALORES (Solo el trimestre actual aislado)
         'act_cumplidas'       => $act_cumplidas,
         'act_no_cumplidas'    => $act_no_cumplidas,
@@ -826,194 +820,260 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
 
-public function tabla_regresion_lineal_servicio2($com_id, $trm_id) {
-    // 1. Diccionario de nombres de trimestres
-    $nombres_trimestres = array(
-        1 => 'I Trimestre',
-        2 => 'II Trimestre',
-        3 => 'III Trimestre',
-        4 => 'IV Trimestre'
-    );
+// public function tabla_regresion_lineal_servicio2($com_id, $trm_id) {
+//     // 1. Diccionario de nombres de trimestres
+//     $nombres_trimestres = array(
+//         1 => 'I Trimestre',
+//         2 => 'II Trimestre',
+//         3 => 'III Trimestre',
+//         4 => 'IV Trimestre'
+//     );
 
-    // 2. Inicializar la estructura de la matriz final
-    $tr = array();
-    $tr['labels'] = array();
-    $tr['programadas'] = array();
-    $tr['cumplidas'] = array();
-    $tr['no_cumplidas'] = array();
-    $tr['en_proceso'] = array();
-    $tr['eficacia_porcentaje'] = array();
+//     // 2. Inicializar la estructura de la matriz final
+//     $tr = array();
+//     $tr['labels'] = array();
+//     $tr['programadas'] = array();
+//     $tr['cumplidas'] = array();
+//     $tr['no_cumplidas'] = array();
+//     $tr['en_proceso'] = array();
+//     $tr['eficacia_porcentaje'] = array();
 
-    // Variable para acumular la programación de forma lineal/secuencial
-    $sum_total_prog = 0;
+//     // Variable para acumular la programación de forma lineal/secuencial
+//     $sum_total_prog = 0;
 
-    // 🔥 CORRECCIÓN: El bucle inicia en 1 para evitar consultas con Trimestre 0
-    for ($i = 1; $i <= $trm_id; $i++) {
+//     // 🔥 CORRECCIÓN: El bucle inicia en 1 para evitar consultas con Trimestre 0
+//     for ($i = 1; $i <= $trm_id; $i++) {
         
-        $valor = $this->obtiene_datos_evaluacion($com_id, $i, 1);
+//         $valor = $this->obtiene_datos_evaluacion($com_id, $i, 1);
 
-        // Acumulación aritmética progresiva
-        $sum_total_prog = $sum_total_prog + intval($valor[1]); 
+//         // Acumulación aritmética progresiva
+//         $sum_total_prog = $sum_total_prog + intval($valor[1]); 
         
-        $prog         = $sum_total_prog; 
-        $cumplidas    = intval($valor['cumplidos']);
-        $no_cumplidas = intval($valor['no_cumplidos']);
-        $en_proceso   = intval($valor['en_proceso']);
+//         $prog         = $sum_total_prog; 
+//         $cumplidas    = intval($valor['cumplidos']);
+//         $no_cumplidas = intval($valor['no_cumplidos']);
+//         $en_proceso   = intval($valor['en_proceso']);
 
-        // Calcular porcentaje de eficacia
-        $eficacia = 0;
-        if ($prog > 0) {
-            $eficacia = round((($cumplidas / $prog) * 100), 2);
-        }
+//         // Calcular porcentaje de eficacia
+//         $eficacia = 0;
+//         if ($prog > 0) {
+//             $eficacia = round((($cumplidas / $prog) * 100), 2);
+//         }
 
-        // 4. Llenar la matriz clásica
-        $tr[1][$i] = $nombres_trimestres[$i];
-        $tr[2][$i] = $prog;
-        $tr[3][$i] = $cumplidas;
-        $tr[4][$i] = $no_cumplidas;
-        $tr[5][$i] = $eficacia;
-        $tr[6][$i] = round(100 - $eficacia, 2);
-        $tr[7][$i] = $en_proceso;
-        $tr[8][$i] = $prog > 0 ? round(($en_proceso / $prog) * 100, 2) : 0;
+//         // 4. Llenar la matriz clásica
+//         $tr[1][$i] = $nombres_trimestres[$i];
+//         $tr[2][$i] = $prog;
+//         $tr[3][$i] = $cumplidas;
+//         $tr[4][$i] = $no_cumplidas;
+//         $tr[5][$i] = $eficacia;
+//         $tr[6][$i] = round(100 - $eficacia, 2);
+//         $tr[7][$i] = $en_proceso;
+//         $tr[8][$i] = $prog > 0 ? round(($en_proceso / $prog) * 100, 2) : 0;
 
-        // 🌟 5. Estructura directa para Chart.js
-        $tr['labels'][]      = $nombres_trimestres[$i];
-        $tr['programadas'][] = $prog;
-        $tr['cumplidas'][]   = $cumplidas;
-        $tr['no_cumplidas'][]= $no_cumplidas;
-        $tr['en_proceso'][]  = $en_proceso;
-        $tr['eficacia_porcentaje'][] = $eficacia;
-    }
+//         // 🌟 5. Estructura directa para Chart.js
+//         $tr['labels'][]      = $nombres_trimestres[$i];
+//         $tr['programadas'][] = $prog;
+//         $tr['cumplidas'][]   = $cumplidas;
+//         $tr['no_cumplidas'][]= $no_cumplidas;
+//         $tr['en_proceso'][]  = $en_proceso;
+//         $tr['eficacia_porcentaje'][] = $eficacia;
+//     }
 
-    // ====================================================================
-    // 🖥️ BLOQUE DE INSPECCIÓN DE MATRIZ (ECHO DEPURADOR)
-    // ====================================================================
-    echo "<div style='background:#0f172a; color:#38bdf8; padding:20px; font-family:monospace; border-radius:8px; margin:20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index:9999999; position:relative;'>";
-    echo "<h2 style='color:#f43f5e; border-bottom:2px solid #334155; padding-bottom:8px; margin-top:0;'>🔍 DEPURACIÓN: MATRIZ DE REGRESIÓN TRIMESTRAL</h2>";
+//     // ====================================================================
+//     // 🖥️ BLOQUE DE INSPECCIÓN DE MATRIZ (ECHO DEPURADOR)
+//     // ====================================================================
+//     echo "<div style='background:#0f172a; color:#38bdf8; padding:20px; font-family:monospace; border-radius:8px; margin:20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index:9999999; position:relative;'>";
+//     echo "<h2 style='color:#f43f5e; border-bottom:2px solid #334155; padding-bottom:8px; margin-top:0;'>🔍 DEPURACIÓN: MATRIZ DE REGRESIÓN TRIMESTRAL</h2>";
     
-    echo "<h3 style='color:#e2e8f0; margin-bottom:5px;'>1. Estructura Tradicional por Índices Numéricos:</h3>";
-    echo "<pre style='background:#1e293b; color:#34d399; padding:15px; border-radius:5px; overflow-x:auto;'>";
-    for($f = 1; $f <= 8; $f++) {
-        echo "Fila [$f] -> ";
-        print_r($tr[$f]);
-    }
-    echo "</pre>";
+//     echo "<h3 style='color:#e2e8f0; margin-bottom:5px;'>1. Estructura Tradicional por Índices Numéricos:</h3>";
+//     echo "<pre style='background:#1e293b; color:#34d399; padding:15px; border-radius:5px; overflow-x:auto;'>";
+//     for($f = 1; $f <= 8; $f++) {
+//         echo "Fila [$f] -> ";
+//         print_r($tr[$f]);
+//     }
+//     echo "</pre>";
 
-    echo "<h3 style='color:#e2e8f0; margin-top:20px; margin-bottom:5px;'>2. Estructura de Arreglos Lineales para Chart.js:</h3>";
-    echo "<pre style='background:#1e293b; color:#fbbf24; padding:15px; border-radius:5px; overflow-x:auto;'>";
-    echo "Labels:      " . json_encode($tr['labels']) . "\n";
-    echo "Programadas: " . json_encode($tr['programadas']) . "\n";
-    echo "Cumplidas:   " . json_encode($tr['cumplidas']) . "\n";
-    echo "No Cumplidas:" . json_encode($tr['no_cumplidas']) . "\n";
-    echo "En Proceso:  " . json_encode($tr['en_proceso']) . "\n";
-    echo "Eficacia %:  " . json_encode($tr['eficacia_porcentaje']) . "\n";
-    echo "</pre>";
-    echo "</div>";
-    // Si quieres detener la ejecución aquí para que el AJAX no intente parsear el JSON erróneamente:
-    // exit(); 
-    // ====================================================================
+//     echo "<h3 style='color:#e2e8f0; margin-top:20px; margin-bottom:5px;'>2. Estructura de Arreglos Lineales para Chart.js:</h3>";
+//     echo "<pre style='background:#1e293b; color:#fbbf24; padding:15px; border-radius:5px; overflow-x:auto;'>";
+//     echo "Labels:      " . json_encode($tr['labels']) . "\n";
+//     echo "Programadas: " . json_encode($tr['programadas']) . "\n";
+//     echo "Cumplidas:   " . json_encode($tr['cumplidas']) . "\n";
+//     echo "No Cumplidas:" . json_encode($tr['no_cumplidas']) . "\n";
+//     echo "En Proceso:  " . json_encode($tr['en_proceso']) . "\n";
+//     echo "Eficacia %:  " . json_encode($tr['eficacia_porcentaje']) . "\n";
+//     echo "</pre>";
+//     echo "</div>";
+//     // Si quieres detener la ejecución aquí para que el AJAX no intente parsear el JSON erróneamente:
+//     // exit(); 
+//     // ====================================================================
 
-    return $tr;
-}
+//     return $tr;
+// }
 
 
-    public function tabla_regresion_lineal_servicio($com_id, $trm_id) {
-           $nombres_trimestres = array(
-                0 => '',
-                1 => 'I Trimestre',
-                2 => 'II Trimestre',
-                3 => 'III Trimestre',
-                4 => 'IV Trimestre'
-            );
-
-            // 2. Inicializar la estructura de la matriz final
-            $tr = array();
-            $tr['labels'] = array();
-            $tr['programadas'] = array();
-            $tr['cumplidas'] = array();
-            $tr['no_cumplidas'] = array();
-            $tr['en_proceso'] = array();
-            $tr['eficacia_porcentaje'] = array();
-
-            // Variable para acumular la programación de forma lineal/secuencial
-            $sum_total_prog = 0;
-
-            // 🔥 CORRECCIÓN: El bucle inicia en 1 para evitar consultas con Trimestre 0
-            for ($i = 0; $i <= $trm_id; $i++) {
-                
-                $valor = $this->obtiene_datos_evaluacion($com_id, $i, 1);
-
-                // Acumulación aritmética progresiva
-                $sum_total_prog = $sum_total_prog + intval($valor[1]); 
-                
-                $prog         = $sum_total_prog; 
-                $cumplidas    = intval($valor['cumplidos']);
-                $no_cumplidas = intval($valor['no_cumplidos']);
-                $en_proceso   = intval($valor['en_proceso']);
-
-                // Calcular porcentaje de eficacia
-                $eficacia = 0;
-                if ($prog > 0) {
-                    $eficacia = round((($cumplidas / $prog) * 100), 2);
-                }
-
-                // 4. Llenar la matriz clásica
-                $tr[1][$i] = $nombres_trimestres[$i];
-                $tr[2][$i] = $prog;
-                $tr[3][$i] = $cumplidas;
-                $tr[4][$i] = $no_cumplidas;
-                $tr[5][$i] = $eficacia;
-                $tr[6][$i] = round(100 - $eficacia, 2);
-                $tr[7][$i] = $en_proceso;
-                $tr[8][$i] = $prog > 0 ? round(($en_proceso / $prog) * 100, 2) : 0;
-
-                // 🌟 5. Estructura directa para Chart.js
-                $tr['labels'][]      = $nombres_trimestres[$i];
-                $tr['programadas'][] = $prog;
-                $tr['cumplidas'][]   = $cumplidas;
-                $tr['no_cumplidas'][]= $no_cumplidas;
-                $tr['en_proceso'][]  = $en_proceso;
-                $tr['eficacia_porcentaje'][] = $eficacia;
-        }
-
-        return $tr;
-    }
     
 
-    public function obtiene_datos_evaluacion($com_id, $trimestre, $tipo_evaluacion) {
-      // Definimos el tope del mes según el trimestre de manera matemática
-      // Trimestre 1 = Mes 3, Trimestre 2 = Mes 6, Trimestre 3 = Mes 9, Trimestre 4 = Mes 12
-      $mes_inicio = (($trimestre - 1) * 3) + 1;
-      $mes_final = intval($trimestre) * 3;
 
-      // 1. Ejecutar las 3 consultas directas (Sin bucles)
-      $prog_data  = $this->model_evaluacionpoa->suma_programados_acumulados($com_id, $mes_inicio, $mes_final);
-      $ejec_data  = $this->model_evaluacionpoa->suma_ejecutados_acumulados($com_id, $mes_inicio, $mes_final);
-      $pastel_data = $this->model_evaluacionpoa->obtener_estados_pastel_acumulado($com_id, $trimestre);
 
-      // 2. Extraer y formatear datos de manera segura
-      $nro_ope_eval     = isset($prog_data['total_operaciones']) ? intval($prog_data['total_operaciones']) : 0;
-      $total_programado = isset($prog_data['suma_programado']) ? floatval($prog_data['suma_programado']) : 0;
-      $total_ejecutado  = isset($ejec_data['suma_evaluado']) ? floatval($ejec_data['suma_evaluado']) : 0;
+    //// FUNCION PARA EL ACTUALIZADO DE CUMPLIMIENTO 2027
+      /*---- FUNCION PARA ACTUALIZAR EVALUACION POA POR UNIDAD RESPONSABLE ----*/
+    // public function update_evaluacion_operaciones($com_id){
+    //   $operaciones=$this->model_producto->lista_productos($com_id); /// lISTA DE OPERACIONES
 
-      // 3. Mapear los 3 estados para el gráfico de pastel
-      $cumplidas    = isset($pastel_data['cumplidos']) ? intval($pastel_data['cumplidos']) : 0;
-      $no_cumplidas = isset($pastel_data['no_cumplidos']) ? intval($pastel_data['no_cumplidos']) : 0;
-      $en_proceso   = isset($pastel_data['en_proceso']) ? intval($pastel_data['en_proceso']) : 0;
+    //   foreach($operaciones as $row){
+    //     ///------- Eliminamos el registro anterior
+    //     $this->eliminando_registro_evaluacion($row['prod_id'],$this->tmes);
+    //     /// ----------
+    //     $temporalidad=$this->obtiene_suma_temporalidad_prog_ejec($row['prod_id']);
+    //    // echo $row['indi_id'].'---'.$row['mt_id'].'<br>';
+    //     if($row['indi_id']==2 && ($row['mt_id']==1 || $row['mt_id']==5)){ /// ==== RELATIVO RECURRENTE
+          
+    //       if($temporalidad[1]==$temporalidad[2]){ /// Cumplido
+    //         $this->insertando_datos($row['prod_id'],$this->tmes,1,1,'Trimestre Cumplido');
+    //       }
+    //       elseif(($temporalidad[2]!=0) && ($temporalidad[1]>$temporalidad[2])){ /// En proceso
+    //         $this->insertando_datos($row['prod_id'],$this->tmes,2,0,'');
+    //       }
 
-      // 4. Retornar el vector estructurado con las nuevas posiciones limpias
-      $vtrimestre[1] = $nro_ope_eval;     // Nro de operaciones evaluadas
-      $vtrimestre[2] = $cumplidas;        // [Mantenido por compatibilidad heredada]
-      $vtrimestre[3] = $total_programado; // Suma física programada
-      $vtrimestre[4] = $total_ejecutado;  // Suma física ejecutada
-      
-      // 🌟 Nuevos índices específicos para el gráfico de pastel de 3 valores
-      $vtrimestre['cumplidos']    = $cumplidas;
-      $vtrimestre['no_cumplidos'] = $no_cumplidas;
-      $vtrimestre['en_proceso']   = $en_proceso;
+    //     }
+    //     else{ /// ==== ABSOLUTO
 
-      return $vtrimestre;
-    }
+    //     //$temporalidad[1]=$acu_prog_actual; /// Suma Programado acumulado al trimestre Actual 
+    //     //$temporalidad[2]=$acu_ejec_actual; /// Suma Ejecutado acumuladdo al trimestre Actual
+    //     //$temporalidad[3]=$acu_prog_anterior; /// Suma Programado al trimestre Anterior
+    //     //$temporalidad[4]=$acu_ejec_anterior; /// Suma Ejecutado al trimestre Anterior
+    //     //$temporalidad[5]=$prog_actual; /// Suma Programado al trimestre actual
+    //     //$temporalidad[6]=$ejec_actual; /// Suma Ejecutado al trimestre actual
+
+    //         /*----- Temporalidad Programado / Ejecutado -----*/
+    //         if($temporalidad[1]!=0 & $temporalidad[4]<$row['prod_meta'] & $temporalidad[2]>0 & ($temporalidad[2]<=$temporalidad[1]) & (/*$temporalidad[1]!=$temporalidad[3] & */$temporalidad[2]!=$temporalidad[4])) {
+    //             if(($temporalidad[3]==$temporalidad[4]) || ($temporalidad[5]==$temporalidad[6])){
+    //               $tp=2;
+    //               $activo=0;
+    //               $obs='';
+    //               if(($temporalidad[1]==$temporalidad[2]) || ($temporalidad[5]==$temporalidad[6])){
+    //                 $tp=1;
+    //                 $activo=1;
+    //                 $obs='Trimestre Cumplido';
+    //               }
+    //              // echo "prod id : ".$row['prod_id']." --> ".$row['prod_producto']." ----Solo un registro<br><br>";
+    //               $this->insertando_datos($row['prod_id'],$this->tmes,$tp,$activo,$obs);
+    //             }
+    //             elseif($temporalidad[1]==$temporalidad[2]){
+    //               for ($i=1; $i <=$this->tmes; $i++) { 
+    //                 //$verif_prog=$this->model_seguimientopoa->programado_trimestral_productos($i,$row['prod_id']);
+    //                 if(count($this->model_evaluacion->programado_trimestral_productos($i,$row['prod_id']))!=0){
+                      
+    //                   ///------- Eliminamos el registro anterior
+    //                   $this->eliminando_registro_evaluacion($row['prod_id'],$i);
+    //                   /// ----------
+
+    //                   //// recorrer trimestres anteriores
+    //                   if($i==$this->tmes){
+    //                     $this->insertando_datos($row['prod_id'],$i,1,1,'Trimestre Cumplido');
+    //                   }
+    //                   else{
+    //                     $this->insertando_datos($row['prod_id'],$i,1,0,'Actualizado Trimestre Cumplido '.$i);  
+    //                   }
+                      
+    //                 }
+    //               }
+
+    //             }
+    //             else{
+    //               $this->insertando_datos($row['prod_id'],$this->tmes,2,0,'');
+    //             }
+              
+    //         }  
+    //     }  
+    //   }
+    
+    // }
+
+
+
+    // /*--- Obtiene Sumatoria de temporalidad Programado/ejecutado ---*/
+    // function obtiene_suma_temporalidad_prog_ejec($prod_id){
+    //     /*----- Temporalidad Programado / Ejecutado -----*/
+    //     $prog_actual=$this->model_seguimientopoa->rango_programado_trimestral_productos($prod_id,$this->tmes); /// Suma rango trimestre - Programado Actual
+    //     $eval_actual=$this->model_seguimientopoa->rango_ejecutado_trimestral_productos($prod_id,$this->tmes); /// Suma rango trimestre - Ejecutado Actual
+
+    //     $acu_prog_actual=0;
+    //     $acu_ejec_actual=0;
+    //     if(count($prog_actual)!=0){
+    //       $acu_prog_actual=$prog_actual[0]['trimestre'];
+    //     }
+    //     if(count($eval_actual)!=0){
+    //       $acu_ejec_actual=$eval_actual[0]['trimestre'];
+    //     }
+
+    //     /*----- Temporalidad Programado / Ejecutado (Trimestre anterior)-----*/
+    //     $prog_anterior=$this->model_seguimientopoa->rango_programado_trimestral_productos($prod_id,($this->tmes-1)); /// Suma rango trimestre - Programado trimestre anterior
+    //     $eval_anterior=$this->model_seguimientopoa->rango_ejecutado_trimestral_productos($prod_id,($this->tmes-1)); /// Suma rango trimestre - Ejecutado trimestre anterior
+
+    //     $acu_prog_anterior=0;
+    //     $acu_ejec_anterior=0;
+    //     if(count($prog_anterior)!=0){
+    //       $acu_prog_anterior=$prog_anterior[0]['trimestre'];
+    //     }
+    //     if(count($eval_anterior)!=0){
+    //       $acu_ejec_anterior=$eval_anterior[0]['trimestre'];
+    //     }
+
+
+    //     /*----- Temporalidad Programado / Ejecutado (Trimestre actual)-----*/
+    //     $prog_actual=$this->model_seguimientopoa->rango_programado_trimestre_actual($prod_id,($this->tmes)); /// Suma rango trimestre - Programado trimestre actual
+    //     $eval_actual=$this->model_seguimientopoa->rango_ejecutado_trimestre_actual($prod_id,($this->tmes)); /// Suma rango trimestre - Ejecutado trimestre actual
+
+    //     $prog_actuall=0;
+    //     $ejec_actuall=0;
+    //     if(count($prog_actual)!=0){
+    //       $prog_actuall=$prog_actual[0]['trimestre'];
+    //     }
+    //     if(count($eval_actual)!=0){
+    //       $ejec_actuall=$eval_actual[0]['trimestre'];
+    //     }
+
+
+    //     $vector[1]=$acu_prog_actual; /// Suma Programado al trimestre Actual 
+    //     $vector[2]=$acu_ejec_actual; /// Suma Ejecutado al trimestre Actual
+    //     $vector[3]=$acu_prog_anterior; /// Suma Programado al trimestre Anterior
+    //     $vector[4]=$acu_ejec_anterior; /// Suma Ejecutado al trimestre Anterior
+    //     $vector[5]=$prog_actuall; /// Suma Programado al trimestre Actual
+    //     $vector[6]=$ejec_actuall; /// Suma Ejecutado al trimestre Actual
+
+    //   return $vector;
+    // }
+
+
+
+    // /*--- eliminando Registro de Evaluacion ---*/
+    // function eliminando_registro_evaluacion($prod_id,$trimestre){
+    //   $this->db->where('prod_id', $prod_id);
+    //   $this->db->where('trm_id',$trimestre );
+    //   $this->db->delete('_productos_trimestral');
+    // }
+
+
+    // /*--- Insertando datos de Evaluacion ---*/
+    // function insertando_datos($prod_id,$trimestre,$tp,$activo,$observacion){
+    //   $data = array(
+    //     'prod_id' => $prod_id,
+    //     'trm_id' => $trimestre,
+    //     'tp_eval' => $tp,
+    //     'g_id' => $this->gestion,
+    //     'fun_id' => $this->fun_id,
+    //     'testado' => 2,
+    //     'activo' => $activo,
+    //     'eval_observacion' => $observacion,
+    //   );
+    //   $this->db->insert('_productos_trimestral',$data);
+    //   $tprod_id=$this->db->insert_id();
+
+    //   return $tprod_id;
+    // }
+
+
 
 
     /*------ NOMBRE MES -------*/

@@ -533,8 +533,8 @@ function exportarPDF() {
     // ==========================================
     // Extraemos los bloques de los dos gráficos usando sus textos como referencia
     var h5s = clonGraficos.querySelectorAll('h5');
-    var tituloPastel = h5s[0] ? h5s[0].innerHTML : 'Cumplimiento Físico Global';
-    var tituloBarras = h5s[1] ? h5s[1].innerHTML : 'Eficacia Mensual vs Programada';
+    var tituloPastel = h5s[0] ? h5s[0].innerHTML : 'Cumplimiento_POA';
+    var tituloBarras = h5s[1] ? h5s[1].innerHTML : 'Cumplimiento_Trimestral';
 
     var imgs = clonGraficos.querySelectorAll('img');
     var imgPastelHtml = imgs[0] ? imgs[0].outerHTML : '';
@@ -545,14 +545,14 @@ function exportarPDF() {
             '<tr>' +
                 // Gráfico Izquierdo (Pastel)
                 '<td style="width: 48%; vertical-align: top; text-align: center; padding-right: 12px;">' +
-                    '<h5 style="font-size: 9px; font-weight: bold; color: #334155; margin: 0 0 12px 0; line-height: 1.4; min-height: 20px;">' + tituloPastel + '</h5>' +
+                    '<div style="vertical-align: middle;font-size: 9px; font-weight: bold; color: #334155; margin: 0 0 8px 0; line-height: 1.2; min-height: 10px;"><b>' + tituloPastel + '</b></div>' +
                     '<div style="width: 100%; display: block; text-align: center;">' + imgPastelHtml + '</div>' +
                 '</td>' +
                 // Columna invisible de separación
                 '<td style="width: 4%;"></td>' +
                 // Gráfico Derecho (Barras)
                 '<td style="width: 48%; vertical-align: top; text-align: center; padding-left: 12px;">' +
-                    '<h5 style="font-size: 9px; font-weight: bold; color: #334155; margin: 0 0 12px 0; line-height: 1.4; min-height: 20px;">' + tituloBarras + '</h5>' +
+                    '<div style="vertical-align: middle;font-size: 9px; font-weight: bold; color: #334155; margin: 0 0 8px 0; line-height: 1.2; min-height: 10px;"><b>' + tituloBarras + '</b></div>' +
                     '<div style="width: 100%; display: block; text-align: center;">' + imgBarrasHtml + '</div>' +
                 '</td>' +
             '</tr>' +
@@ -643,17 +643,6 @@ function cargarCuadrosEvaluacion(elemento, comId) {
                     '<i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA - <small style="color:#cbd5e1; font-weight:bold;">' + nombreUnidadGlobal + '</small>' +
                     '<br><span style="font-size: 11px; font-weight: normal; color:#94a3b8; display:block; margin-top:2px;">Periodo: ' + trimestre + '</span>'
                 );
-               
-
-                // Inyectar datos numéricos consolidados en las celdas de la tabla inferior
-                // jQuery("#lbl_total_prog").text(response.datos.total_programado);
-                // jQuery("#lbl_total_ejec").text(response.datos.total_cumplidas);
-                // jQuery("#lbl_total_proceso").text(response.datos.total_proceso);
-                // jQuery("#total_ncumplidas").text(response.datos.total_ncumplidas);
-                // jQuery("#porcentaje_cumplimiento").text(response.datos.porcentaje_cumplimiento + "%");
-
-          
-                
 
                 // Aplicar semáforo de colores al porcentaje de cumplimiento global
                 if(response.datos.porcentaje_cumplimiento >= 75) {
@@ -670,7 +659,7 @@ function cargarCuadrosEvaluacion(elemento, comId) {
                 // 3. ⏳ Dibujar los gráficos en el Canvas una vez que el modal termine de abrirse
                 jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
                 //    alert(response.datos.tabla_detalle)
-                    jQuery("#detalles").html(response.datos.tabla_detalle);
+                jQuery("#detalles").html(response.datos.tabla_detalle);
 
                 
 
