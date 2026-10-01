@@ -13,14 +13,14 @@ class Model_evaluacionpoa extends CI_Model{
     }
     
 
-    /*------- Lista formN4 para Evaluacion POA --------*/
+    /*------- Lista formN4 para Evaluacion POA Trimestral--------*/
     public function list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id, $trimestre) {
         // 1. Validar el trimestre (si no es 1, 2 o 3, por defecto es 4)
         $t = in_array($trimestre, array(1, 2, 3, 4)) ? intval($trimestre) : 4;
 
         // 2. Construir dinámicamente los nombres de las columnas
-        $prog_trimestre  = 'prog_trimestre' . $t;
-        $saldo_trimestre = 'saldo_acumulado_trimestre' . $t;
+        $prog_trimestre  = 'prog_trm' . $t;
+        $saldo_trimestre = 'saldo_acumulado_trm' . $t;
 
         // 3. Crear el molde SQL usando el signo de interrogación '?' para bindings
         $sql = "SELECT *
@@ -35,6 +35,58 @@ class Model_evaluacionpoa extends CI_Model{
         
         return $query->result_array();
     }
+
+
+    //// Consolidado trimestral de las Actividades programados en el trimestre (nro consolidado de arriba)2027
+    public function consolidado_list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id, $trimestre) {
+        // 1. Validar el trimestre (si no es 1, 2 o 3, por defecto es 4)
+        $t = in_array($trimestre, array(1, 2, 3, 4)) ? intval($trimestre) : 4;
+
+        // 2. Construir dinámicamente los nombres de las columnas
+        $prog_trimestre  = 'prog_trm' . $t;
+        $saldo_trimestre = 'saldo_acumulado_trm' . $t;
+        $cumplimiento = 'cumplimiento_trm' . $t;
+
+        // 3. Crear el molde SQL usando el signo de interrogación '?' para bindings
+        $sql = "SELECT 
+                    com_id,
+                    -- 1. Total de actividades evaluadas en el trimestre seleccionado
+                    COUNT(*) AS poa_prog,
+
+                    -- 2. Conteo dinámico utilizando las columnas nativas de tu vista
+                    COUNT(CASE WHEN ".$cumplimiento." = 'CUMPLIDO' THEN 1 END) AS poa_cumplidos,
+                    COUNT(CASE WHEN ".$cumplimiento." = 'EN PROCESO' THEN 1 END) AS poa_proceso,
+                    COUNT(CASE WHEN ".$cumplimiento." = 'NO CUMPLIDO' THEN 1 END) AS poa_no_cumplidos,
+                    COUNT(CASE WHEN ".$cumplimiento." = 'PENDIENTE' THEN 1 END) AS poa_pendiente,
+                    COUNT(CASE WHEN ".$cumplimiento." = 'NINGUNO' THEN 1 END) AS poa_ninguno
+                FROM public.vista_formN4_para_evaluacionPoa_x_UniResponsable
+                WHERE com_id = ? 
+                  AND (" . $prog_trimestre . " != 0 OR " . $saldo_trimestre . " != 0)
+                  AND estado != 3
+                GROUP BY com_id";
+
+
+        // 4. En CI 1.5 pasas los parámetros del WHERE como un arreglo en el segundo argumento
+        $query = $this->db->query($sql, array(intval($com_id)));
+        
+        // Si no encuentra registros, devolvemos una fila inicializada en cero para evitar errores en el controlador
+        if ($query->num_rows() == 0) {
+            return array(
+                'com_id'           => $com_id,
+                'poa_prog'         => 0,
+                'poa_cumplidos'    => 0,
+                'poa_proceso'      => 0,
+                'poa_no_cumplidos' => 0,
+                'poa_pendiente'    => 0,
+                'poa_ninguno'      => 0
+            );
+        }
+        
+        // 🌟 OPTIMIZACIÓN: Devolvemos una sola fila (arreglo unidimensional) ideal para procesar e insertar
+        return $query->row_array(); 
+    }
+
+
 
     /*----------- GET FORM 4 + PROG + EJEC ------*/
     public function list_formN4_para_evaluacion_UnidadResponsable_anual($com_id){
@@ -102,7 +154,18 @@ class Model_evaluacionpoa extends CI_Model{
         return $query->result_array();
     }
 
-  //// Para los Cuadros de Evaluacion POA
+
+
+
+
+
+
+
+
+
+
+
+  //// Para los Cuadros de Evaluacion POA (a borrar)
     // 1. Obtener la sumatoria agrupada de metas PROGRAMADAS hasta el trimestre seleccionado
     public function suma_programados_acumulados($com_id, $mes_inicio, $mes_final) {
         $sql = "SELECT COUNT(DISTINCT prod.prod_id) AS total_operaciones, 

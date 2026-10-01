@@ -379,8 +379,8 @@ $route['seg/notificacion_poa_componente_mensual/(:any)'] = 'ejecucion/cseguimien
 $route['seg/reporte_consolidado_seguimientopoa_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_consolidadopoa_operaciones_mensual/$1/$2'; ///// Reporte formulario Seguimiento POA Mensual
 
 //// formulario de Seguimiento y Evaluacion POA 2027
-$route['formulario_seguimiento_poa/(:any)'] = 'ejecucion/cevaluacion_form4/formulario_seguimiento_poa/$1'; ///// formulario de seguimiento POa 2027
-
+$route['formulario_seguimiento_poa/(:any)'] = 'ejecucion/cevaluacion_form4/formulario_seguimiento_poa/$1'; ///// Formulario de seguimiento POa 2027
+$route['eval/reporte_seg_eval_poa/(:any)'] = 'ejecucion/cevaluacion_form4/reporte_formulario_evaluacion_poa/$1/$2';  /// Reporte seguimiento/Evaluacion POA 2027
 
 
 
@@ -400,7 +400,7 @@ $route['rep/get_reporte_seguimientopoa/(:any)'] = 'reporte_seguimiento_poa/crep_
 $route['seguimiento_establecimientos'] = 'ejecucion/cseguimiento_establecimiento/formulario_establecimiento';  /// MENU SEGUIMIENTO POA 2021
 $route['seg/ver_reporte_evaluacionpoa_es/(:any)'] = 'ejecucion/cseguimiento_establecimiento/ver_reporte_seguimientopoa_esalud/$1'; ///// Ver Reporte Evaluacion POA Mensual
 
-//====== SEGUIMIENTO POA A SUBACTIVIDADES DE LAS AREAS ADMINISTRATIVAS 2021 (MODULO PARA CADA SUB UNIDAD)
+//====== SEGUIMIENTO POA A SUBACTIVIDADES DE LAS AREAS ADMINISTRATIVAS 2021 (MODULO PARA CADA SUB UNIDAD) a optimizar
 $route['dashboar_seguimiento_poa'] = 'user/dashboard_seguimientopoa';  /// DASHBOAR SEGUIMIENTO POA
 $route['seguimiento_poa'] = 'ejecucion/cseguimiento/formulario_subactividad';  /// FORMULARIO SEGUIMIENTO POA - SUBACTIVIDAD
 $route['seguimiento_poa/reporte_seguimientopoa_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_formulario_subactividad_mes/$1/$2';  /// REPORTE FORMULARIO SEGUIMIENTO POA - SUBACTIVIDAD

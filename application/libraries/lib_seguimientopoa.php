@@ -79,7 +79,7 @@ class Lib_seguimientopoa {
                   if($rowm['m_id']<=$this->mes_sistema){
                     $tabla.='
                     <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/seguimiento_poa/reporte_seguimientopoa_mensual/'.$com_id.'/'.$rowm['m_id'].'\');">REPORTE SEGUIMIENTO POA - '.$rowm['m_descripcion'].'</a>
+                      <a href="javascript:abreVentana(\''.site_url("").'/eval/reporte_seg_eval_poa/'.$com_id.'/'.$rowm['m_id'].'\');">REPORTE SEGUIMIENTO POA - '.$rowm['m_descripcion'].'</a>
                     </li>';
                   }                     
                 }
@@ -188,7 +188,44 @@ class Lib_seguimientopoa {
     }
 
 
-      //// Genera Matriz de cumplimiento 
+    //// funcion para actualizar las evaluaciones poa trimestral
+    public function update_evaluacion($componente, $trimestre) {
+      $form4 = $this->model_evaluacionpoa->consolidado_list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id,$this->tmes); //// listado de actividades por trimestre programados
+
+      
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      //// Genera Matriz de cumplimiento (a borrar)
       public function tabla_regresion_lineal_servicio($com_id, $trm_id) {
            $nombres_trimestres = array(
                 0 => '',
@@ -251,6 +288,7 @@ class Lib_seguimientopoa {
     }
     
 
+    //// a borrar
     public function obtiene_datos_evaluacion($com_id, $trimestre, $tipo_evaluacion) {
       // Definimos el tope del mes según el trimestre de manera matemática
       // Trimestre 1 = Mes 3, Trimestre 2 = Mes 6, Trimestre 3 = Mes 9, Trimestre 4 = Mes 12
