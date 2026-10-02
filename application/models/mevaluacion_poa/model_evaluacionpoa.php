@@ -155,63 +155,75 @@ class Model_evaluacionpoa extends CI_Model{
     }
 
 
+    //// cuadro consolidado de Evaluacion por unidad Responsable 2027
+    public function lista_consolidado_evaluacion_trimestral($com_id){
+        $sql = "SELECT *,
+                CASE 
+                    WHEN trm_id=1 THEN 'PRIMER TRIMESTRE'::text
+                    WHEN trm_id=2 THEN 'SEGUNDO TRIMESTRE'::text
+                    WHEN trm_id=3 THEN 'TERCER TRIMESTRE'::text
+                    WHEN trm_id=4 THEN 'CUARTO TRIMESTRE'::text
+                    ELSE 'SIN RANGO'::text
+                END AS trimestre,
+                CASE 
+                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'REGULAR (75% - 90%)'::text
+                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
+                    WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'OPTIMO (100%)'::text
+                    ELSE 'SIN RANGO'::text
+                END AS parametro,
 
+                CASE 
+                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
+                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'warning'::text
+                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'info'::text
+                    WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'success'::text
+                    ELSE 'danger'::text
+                END AS color_semaforo
+                    
+                from detalle_evaluacion_poa_trimestral
+                where com_id=".$com_id."
+                order by trm_id";
 
-
-
-
-
-
-
-
-
-  //// Para los Cuadros de Evaluacion POA (a borrar)
-    // 1. Obtener la sumatoria agrupada de metas PROGRAMADAS hasta el trimestre seleccionado
-    public function suma_programados_acumulados($com_id, $mes_inicio, $mes_final) {
-        $sql = "SELECT COUNT(DISTINCT prod.prod_id) AS total_operaciones, 
-                       SUM(pprog.pg_fis) AS suma_programado
-                FROM _productos AS prod
-                INNER JOIN prod_programado_mensual AS pprog ON pprog.prod_id = prod.prod_id
-                WHERE prod.com_id = ? 
-                  AND prod.estado != '3' 
-                  AND pprog.g_id = ? 
-                  AND pprog.m_id >= ?
-                  AND pprog.m_id <= ? 
-                  AND pprog.pg_fis != '0'";
-                  
-        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_inicio, $mes_final));
-        return $query->row_array();
+        $query = $this->db->query($sql);
+        return $query->result_array();
     }
 
-    // 2. Obtener la sumatoria agrupada de metas EJECUTADAS reales hasta el trimestre seleccionado
-    public function suma_ejecutados_acumulados($com_id, $mes_inicio, $mes_final) {
-        $sql = "SELECT SUM(pejec.pejec_fis) AS suma_evaluado
-                FROM _productos AS prod
-                INNER JOIN prod_ejecutado_mensual AS pejec ON pejec.prod_id = prod.prod_id
-                WHERE prod.com_id = ? 
-                  AND pejec.g_id = ? 
-                  AND pejec.m_id >= ?
-                  AND pejec.m_id <= ? 
-                  AND pejec.pejec_fis != '0'";
-                  
-        $query = $this->db->query($sql, array($com_id, $this->gestion, $mes_inicio, $mes_final));
-        return $query->row_array();
+    //// cuadro consolidado de Evaluacion por unidad Responsable 2027
+    public function get_lista_consolidado_evaluacion_trimestral($com_id,$trimestre){
+        $sql = "SELECT *,
+                CASE 
+                    WHEN trm_id=1 THEN 'PRIMER TRIMESTRE'::text
+                    WHEN trm_id=2 THEN 'SEGUNDO TRIMESTRE'::text
+                    WHEN trm_id=3 THEN 'TERCER TRIMESTRE'::text
+                    WHEN trm_id=4 THEN 'CUARTO TRIMESTRE'::text
+                    ELSE 'SIN RANGO'::text
+                END AS trimestre,
+                CASE 
+                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'REGULAR (75% - 90%)'::text
+                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
+                    WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'OPTIMO (100%)'::text
+                    ELSE 'SIN RANGO'::text
+                END AS parametro,
+
+                CASE 
+                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
+                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'warning'::text
+                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'info'::text
+                    WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'success'::text
+                    ELSE 'danger'::text
+                END AS color_semaforo
+                from detalle_evaluacion_poa_trimestral
+                where com_id=".$com_id." and trm_id=".$trimestre."
+                order by trm_id";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
     }
 
-    // 3. ✨ NUEVA CONSULTA CRÍTICA: Trae los 3 estados del Pastel agrupados de una sola vez
-    public function obtener_estados_pastel_acumulado($com_id, $trimestre_max) {
-        $sql = "SELECT 
-                    SUM(CASE WHEN pt.tp_eval = 1 THEN 1 ELSE 0 END) AS cumplidos,
-                    SUM(CASE WHEN pt.tp_eval = 2 THEN 1 ELSE 0 END) AS en_proceso,
-                    SUM(CASE WHEN pt.tp_eval = 3 THEN 1 ELSE 0 END) AS no_cumplidos
-                FROM _productos AS p
-                INNER JOIN _productos_trimestral AS pt ON p.prod_id = pt.prod_id
-                WHERE p.com_id = ? 
-                  AND pt.testado != '3' 
-                  AND pt.trm_id <= ?"; // Trae la acumulación histórica de trimestres
-                  
-        $query = $this->db->query($sql, array($com_id, $trimestre_max));
-        return $query->row_array();
-    }
+
+
+
 
 }

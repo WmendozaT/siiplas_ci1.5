@@ -468,7 +468,14 @@ function abreVentana(url) {
 function exportarPDF() {
     // 1. Obtener el área de gráficos original
     var elementoOriginal = document.querySelector('.print-area-graficos');
+    var semaforoOriginal = document.getElementById('calificacion');
     
+    var semaforoHtmlInyectar = '';
+    if (semaforoOriginal && semaforoOriginal.innerHTML.trim() !== '') {
+        // Envolvemos el semáforo en un contenedor plano ideal para PDF (sin sombras pesadas ni paddings web)
+        semaforoHtmlInyectar = '<div style="margin-bottom: 25px; width: 100%;">' + semaforoOriginal.innerHTML + '</div>';
+    }
+
     // 2. Crear un contenedor raíz completamente NUEVO exclusivo para el PDF
     var contenedorPdf = document.createElement('div');
     contenedorPdf.style.fontFamily = 'Arial, sans-serif';
@@ -478,28 +485,30 @@ function exportarPDF() {
     // ==========================================
     // 🏛️ PASO A: DISEÑO DE LA CABECERA / MEMBRETE
     // ==========================================
-        var cabeceraHtml = 
-        '<table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; table-layout: fixed;">' +
-            '<tr>' +
-                // Logo Izquierdo
-                '<td style="width: 20%; vertical-align: middle; text-align: center;">' +
-                    '<img src="' + base + 'assets/ifinal/caja.png" style="height: 60px; width: auto; object-fit: contain;">' +
-                '</td>' +
-                // Títulos Centrales (Separación explícita de palabras)
-                '<td style="width: 60%; text-align: center; vertical-align: middle;">' +
-                    '<h2 style="font-size: 15px; margin: 0 0 6px 0; color: #1e3a8a; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; word-spacing: 2px;">CUADRO DE EVALUACIÓN POA</h2>' +
-                    '<h3 style="font-size: 9.5px; margin: 0 0 6px 0; color: #0284c7; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; word-spacing: 1px;">' + nombreUnidadGlobal + '</h3>' +
-                    '<p style="font-size: 7.5px; margin: 0 0 6px 0; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; word-spacing: 1px;">'+trimestre+'</p>' +
-                '</td>' +
-                // Metadatos Derecha
-                '<td style="width: 20%; text-align: right; vertical-align: left; margin: 0 0 6px 0;font-size: 5px; color: #64748b; line-height: 1.4;">' +
-                    '<span style="white-space: nowrap;"><strong>Fecha : </strong> ' + new Date().toLocaleDateString('es-ES') + '</span><br>' +
-                    '<span style="white-space: nowrap;"><strong>Hora : </strong> ' + new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) + '</span><br>' +
-                    '<span style="white-space: nowrap;"><strong>Estado : </strong> Finalizado</span>' +
-                '</td>' +
-            '</tr>' +
-        '</table>' +
-        '<div style="width: 100%; height: 2px; background: linear-gradient(to right, #1e3a8a, #0284c7); margin-bottom: 30px; border-radius: 2px;"></div>';
+    var cabeceraHtml = 
+    '<table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; table-layout: fixed;">' +
+        '<tr>' +
+            // Logo Izquierdo
+            '<td style="width: 20%; vertical-align: middle; text-align: center;">' +
+                '<img src="' + base + 'assets/ifinal/caja.png" style="height: 60px; width: auto; object-fit: contain;">' +
+            '</td>' +
+            // Títulos Centrales
+            '<td style="width: 60%; text-align: center; vertical-align: middle;">' +
+                '<h2 style="font-size: 15px; margin: 0 0 6px 0; color: #1e3a8a; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; word-spacing: 2px;">CUADRO DE EVALUACIÓN POA</h2>' +
+                '<h3 style="font-size: 9.5px; margin: 0 0 6px 0; color: #0284c7; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; word-spacing: 1px;">' + nombreUnidadGlobal + '</h3>' +
+                '<p style="font-size: 8.5px; margin: 0 0 6px 0; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; word-spacing: 1px;">' + trimestre + '</p>' +
+            '</td>' +
+            // Metadatos Derecha
+            '<td style="width: 20%; text-align: right; vertical-align: middle; font-size: 8px; color: #64748b; line-height: 1.4;">' +
+                '<span style="white-space: nowrap;"><strong>Fecha : </strong> ' + new Date().toLocaleDateString('es-ES') + '</span><br>' +
+                '<span style="white-space: nowrap;"><strong>Hora : </strong> ' + new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) + '</span><br>' +
+                '<span style="white-space: nowrap;"><strong>Estado : </strong> Finalizado</span>' +
+            '</td>' +
+        '</tr>' +
+    '</table>' +
+    '<div style="width: 100%; height: 2px; background: linear-gradient(to right, #1e3a8a, #0284c7); margin-bottom: 20px; border-radius: 2px;"></div>' +
+    // 🌟 INYECCIÓN ASÍNCRONA DEL SEMÁFORO DE CALIFICACIÓN AQUÍ
+    semaforoHtmlInyectar; 
     
     contenedorPdf.innerHTML = cabeceraHtml;
 
@@ -533,8 +542,8 @@ function exportarPDF() {
     // ==========================================
     // Extraemos los bloques de los dos gráficos usando sus textos como referencia
     var h5s = clonGraficos.querySelectorAll('h5');
-    var tituloPastel = h5s[0] ? h5s[0].innerHTML : 'Cumplimiento_POA';
-    var tituloBarras = h5s[1] ? h5s[1].innerHTML : 'Cumplimiento_Trimestral';
+    var tituloPastel = h5s[0] ? h5s[0].innerHTML : '(%)_Cumplimiento_POA';
+    var tituloBarras = h5s[1] ? h5s[1].innerHTML : 'Acumulado_Trimestral_(Tendencia)';
 
     var imgs = clonGraficos.querySelectorAll('img');
     var imgPastelHtml = imgs[0] ? imgs[0].outerHTML : '';
@@ -611,7 +620,8 @@ function exportarPDF() {
 var chartPastel = null;
 var chartBarras = null;
 var nombreUnidadGlobal = ""; 
-var trimestre = ""; 
+var trimestre = "";
+var calificacion = ""; 
 
 function cargarCuadrosEvaluacion(elemento, comId) {
     // 1. ⏳ Activar pantalla de carga opaca
@@ -635,13 +645,13 @@ function cargarCuadrosEvaluacion(elemento, comId) {
 
             if (response.status === "success") {
                 // Captura de metadatos globales
-                nombreUnidadGlobal = response.UnidadResponsable || "UNIDAD RESPONSABLE";
-                trimestre = response.trimestre || "TRIMESTRE";
+                nombreUnidadGlobal = response.datos.UnidadResponsable || "UNIDAD RESPONSABLE";
+                trimestre = response.datos.trimestre || "TRIMESTRE";
 
                 // Actualizar dinámicamente el título del modal
                 jQuery("#modal_graficos .modal-title").html(
-                    '<i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA - <small style="color:#cbd5e1; font-weight:bold;">' + nombreUnidadGlobal + '</small>' +
-                    '<br><span style="font-size: 11px; font-weight: normal; color:#94a3b8; display:block; margin-top:2px;">Periodo: ' + trimestre + '</span>'
+                    '<i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA - <small style="color:#cbd5e1; font-weight:bold;">' + response.datos.UnidadResponsable + '</small>' +
+                    '<br><span style="font-size: 11px; font-weight: normal; color:#94a3b8; display:block; margin-top:2px;">Periodo: ' + response.datos.trimestre + '</span>'
                 );
 
                 // Aplicar semáforo de colores al porcentaje de cumplimiento global
@@ -659,6 +669,8 @@ function cargarCuadrosEvaluacion(elemento, comId) {
                 // 3. ⏳ Dibujar los gráficos en el Canvas una vez que el modal termine de abrirse
                 jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
                 //    alert(response.datos.tabla_detalle)
+                jQuery("#calificacion").html(response.datos.calificacion);
+                jQuery("#btn_reporte").html(response.datos.reporte);
                 jQuery("#detalles").html(response.datos.tabla_detalle);
 
                 
@@ -760,58 +772,34 @@ function cargarCuadrosEvaluacion(elemento, comId) {
                         chartBarras = new Chart(ctxBarras, {
                             type: "line", 
                             data: {
-                                labels: response.datos.trimestres_labels, 
+                                labels: response.datos.regresion_labels, 
                                 datasets: [
                                     {
-                                        label: "PROG. ACUMULADO",
-                                        data: response.datos.trimestres_programado,
-                                        borderColor: "rgba(2, 132, 199, 0.6)", // Azul con transparencia
-                                        backgroundColor: "transparent",       // Fondo transparente
-                                        borderWidth: 2,                        // Línea más delgada de fondo
-                                        borderDash: new Array(6, 4),                   // 🔥 CORRECCIÓN: Línea segmentada de 5px de trazo y 5px de espacio
-                                        tension: 0.1,
-                                        pointRadius: 5,                        
-                                        pointBackgroundColor: "transparent",   // Puntos transparentes por dentro
-                                        pointBorderColor: "rgba(2, 132, 199, 0.8)",
-                                        pointBorderWidth: 2,
-                                        // 🔥 CONFIGURACIÓN INDIVIDUAL PARA LOS DATALABELS DE ESTA LÍNEA
-                                        datalabels: {
-                                            align: 'top',       // Fuerza a ir arriba del punto
-                                            anchor: 'end',
-                                            color: '#0284c7',   
-                                            offset: 6,          // Espaciado sutil para evitar colisiones
-                                            font: { size: 10, weight: 'bold', family: 'sans-serif' },
-                                            // 🔥 FUNCIÓN DE FORMATEO PARA AGREGAR EL TEXTO "act."
-                                            formatter: function(value, ctx) {
-                                                return value + " act.";
-                                            }
-                                        }
+                                        label: 'PROG. ACUMULADO',
+                                        data: response.datos.regresion_prog, 
+                                        borderColor: '#0284c7', // Azul institucional
+                                        backgroundColor: 'transparent',
+
+                                        borderWidth: 2.5, // 🌟 HACE LA LÍNEA PUNTEADA/SEGMENTADA DE TU IMAGEN
+                                        pointBackgroundColor: '#ffffff',
+                                        pointBorderColor: '#0284c7',
+                                        pointRadius: 5,
+                                        pointHoverRadius: 7,
+                                        fill: false,
+                                        lineTension: 0 // 🌟 Fuerza líneas totalmente rectas (Sin curvas suavizadas)
                                     },
                                     {
-                                        label: "CUMPLIDO ACUMULADO",
-                                        data: response.datos.trimestres_cumplido,
-                                        borderColor: "#22c55e",                // Verde sólido brillante
-                                        backgroundColor: "transparent",       // Fondo transparente
-                                        borderWidth: 3.5,                      // Línea más gruesa principal
-                                        tension: 0.1,
-                                        pointRadius: 6,                        
-                                        pointBackgroundColor: "#22c55e",       // Puntos rellenos
-                                        pointBorderColor: "#ffffff",           // Borde blanco de separación
-                                        pointBorderWidth: 2,
-                                        // 🔥 CONFIGURACIÓN INDIVIDUAL PARA LOS DATALABELS DE ESTA LÍNEA
-                                        datalabels: {
-                                            align: 'bottom',    // Fuerza a ir abajo del punto para que no choque con el azul
-                                            anchor: 'start',
-                                            color: '#15803d',   
-                                            offset: 8,          
-                                            font: { size: 10, weight: 'bold', family: 'sans-serif' },
-                                            // 🔥 FUNCIÓN DE FORMATEO PARA AGREGAR EL TEXTO "act."
-                                            formatter: function(value, ctx) {
-                                                // En tu imagen el punto de inicio es 0, si quieres ocultar el texto en el cero descomenta esto:
-                                                // if(value === 0) return value; 
-                                                return value + " act.";
-                                            }
-                                        }
+                                        label: 'CUMPLIDO ACUMULADO',
+                                        data: response.datos.regresion_ejec, 
+                                        borderColor: '#10b981', // Verde esmeralda continuo
+                                        backgroundColor: 'transparent',
+                                        borderWidth: 3, 
+                                        pointBackgroundColor: '#10b981',
+                                        pointBorderColor: '#10b981',
+                                        pointRadius: 5,
+                                        pointHoverRadius: 7,
+                                        fill: false,
+                                        lineTension: 0
                                     }
                                 ]
                             },
