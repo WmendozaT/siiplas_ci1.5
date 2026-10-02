@@ -56,7 +56,7 @@ class Crep_evalunidad extends CI_Controller {
 
     // Modulo Evaluacion POA - Gasto Corriente
     public function evaluacion_unidad_gcorriente($proy_id){
-      $data['proyecto'] = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+      $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
       if(count($data['proyecto'])!=0){
         $data['menu']=$this->menu(4); //// genera menu  
         $data['tmes']=$this->model_evaluacion->trimestre(); /// Datos del Trimestre
@@ -710,7 +710,7 @@ class Crep_evalunidad extends CI_Controller {
       $nombre_proyecto=$proyecto[0]['aper_programa'].' '.$proyecto[0]['proy_sisin'].' 000 - '.$proyecto[0]['proy_nombre'];
       
       if($proyecto[0]['tp_id']==4){
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         $nombre_proyecto=$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'];
       }
 
@@ -854,10 +854,10 @@ class Crep_evalunidad extends CI_Controller {
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
         $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id);
+        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id);
         $trimestre=$this->model_evaluacion->trimestre(); /// Datos del Trimestre
         
-        $componentes=$this->model_componente->lista_subactividad($proy_id);
+        $componentes=$this->model_componente->lista_UnidadesResponsables($proy_id);
         foreach($componentes as $rowc){
           $this->seguimientopoa->update_evaluacion_operaciones($rowc['com_id']);
         }
@@ -1063,8 +1063,8 @@ class Crep_evalunidad extends CI_Controller {
 
     /*--------- Mis Servicios -------------*/
     public function mis_servicios($tp_rep,$proy_id){
-      $proyecto = $this->model_proyecto->get_datos_proyecto_unidad($proy_id); 
-      $componentes=$this->model_componente->lista_subactividad($proy_id);
+      $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); 
+      $componentes=$this->model_componente->lista_UnidadesResponsables($proy_id);
       $tabla='';
       // 1 : normal, 2 : Impresion
       if($tp_rep==1){ /// Normal

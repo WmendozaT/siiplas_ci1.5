@@ -219,31 +219,6 @@
         </div>
     </div>
 
-    <!-- MODAL UPDATE EVALUACION POA   -->
-<!--     <div class="modal fade" id="modal_update_eval_unidad" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog" id="mdialTamanio">
-            <div class="modal-content">
-                <form id="form_update" novalidate="novalidate" method="post">
-                    <input type="hidden" name="proy_id" id="proy_id">
-                    <div id="content_valida">
-                        <center>
-                            <div class="loading" align="center"><h2>Actualizando Evaluaci&oacute;n  POA <br>
-                                <div id="tit"></div><br>
-                                <img src="<?php echo base_url() ?>/assets/img_v1.1/preloader.gif" alt="loading" /></div>
-                        </center>
-                    </div>
-                   
-                        <p>
-                            <div id="butt" align="right" style="display:none;">
-                                <button type="button" name="but_update" id="but_update" class="btn btn-success">GENERAR CUADRO DETALLE</button>&nbsp;&nbsp;&nbsp;&nbsp;
-                            </div>
-                        </p>
-                </form>
-            </div>
-        </div>
-    </div> -->
-     <!--  =============== -->
-
 
     <!-- MODAL REPORTE - DISTRIBUCION MENSUAL Y EJECUCION DE CERTIFICACION POA -->
     <div class="modal fade" id="modal_distribucion_mensual" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -305,9 +280,6 @@
             }
         </script>
         <!-- IMPORTANT: APP CONFIG -->
-        <script src="<?php echo base_url(); ?>assets/highcharts/js/highcharts.js"></script>
-        <script src="<?php echo base_url(); ?>assets/highcharts/js/highcharts-3d.js"></script>
-        <script src="<?php echo base_url(); ?>assets/js/session_time/jquery-idletimer.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/app.config.js"></script>
         <!-- JS TOUCH : include this plugin for mobile drag / drop touch events-->
         <script src="<?php echo base_url(); ?>assets/js/plugin/jquery-touch/jquery.ui.touch-punch.min.js"></script> 

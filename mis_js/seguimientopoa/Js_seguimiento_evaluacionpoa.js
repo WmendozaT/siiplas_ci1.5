@@ -847,180 +847,47 @@ function cargarCuadrosEvaluacion(elemento, comId) {
 }
 
 
-// var chartPastel = null;
-// var chartBarras = null;
-// var nombreUnidadGlobal = ""; 
-// var trimestre = ""; 
-
-// function cargarCuadrosEvaluacion(elemento, comId) {
-//     var loadingId = 'loading_screen_overlay_graficos';
-//     var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
-//         '<div style="background: #ffffff; padding: 25px 45px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
-//             '<i class="fa fa-refresh fa-spin" style="font-size: 34px; color: #1e3a8a; margin-bottom: 12px; display: block;"></i>' +
-//             '<span style="font-size: 14px; font-weight: bold; color: #334155;">Procesando consolidados y generando gráficos...</span>' +
-//         '</div>' +
-//     '</div>';
-//     jQuery('body').append(loadingHtml);
-
-//     jQuery.ajax({
-//         type: "POST",
-//         url: base + "index.php/ejecucion/cevaluacion_form4/obtener_graficos_cumplimiento", 
-//         data: { com_id: comId },
-//         dataType: 'json',
-//         success: function(response) {
-//             jQuery("#" + loadingId).remove();
-
-//             if (response.status === "success") {
-//                 nombreUnidadGlobal = response.UnidadResponsable || "UNIDAD RESPONSABLE";
-//                 trimestre = response.trimestre || "TRIMESTRE";
-
-//                 jQuery("#modal_graficos .modal-title").html(
-//                     '<i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA - <small style="color:#cbd5e1; font-weight:bold;">' + nombreUnidadGlobal + '</small>' +
-//                     '<br><span style="font-size: 11px; font-weight: normal; color:#94a3b8; display:block; margin-top:2px;">Periodo: ' + trimestre + '</span>'
-//                 );
-
-//                 // Inyectar los datos globales consolidados en la tabla inferior
-//                 jQuery("#lbl_total_prog").text(response.datos.total_programado);
-//                 jQuery("#lbl_total_ejec").text(response.datos.total_cumplidas);
-//                 jQuery("#lbl_total_proceso").text(response.datos.total_proceso);
-//                 jQuery("#total_ncumplidas").text(response.datos.total_ncumplidas);
-                
-//                 // 🔥 CORRECCIÓN: Se actualizó al ID correspondiente de tu porcentaje
-//                 jQuery("#porcentaje_cumplimiento").text(response.datos.porcentaje_cumplimiento + "%");
-                
-//                 // 🔥 CORRECCIÓN: Cambiado a porcentaje_cumplimiento para que aplique bien los colores dinámicos
-//                 if(response.datos.porcentaje_cumplimiento >= 75) {
-//                     jQuery("#porcentaje_cumplimiento").css("color", "#16a34a");
-//                 } else if(response.datos.porcentaje_cumplimiento >= 50) {
-//                     jQuery("#porcentaje_cumplimiento").css("color", "#ca8a04");
-//                 } else {
-//                     jQuery("#porcentaje_cumplimiento").css("color", "#dc2626");
-//                 }
-
-//                 jQuery("#modal_graficos").modal("show");
-
-//                 jQuery('#modal_graficos').off('shown.bs.modal').on('shown.bs.modal', function () {
-                    
-//                     if (chartPastel) chartPastel.destroy();
-//                     if (chartBarras) chartBarras.destroy();
-
-//                     var canvasPastel = document.getElementById("grafico_pastel_cumplimiento");
-//                     var canvasBarras = document.getElementById("grafico_barras_temporalidad");
-
-//                     if (canvasPastel && canvasBarras) {
-                        
-//                         // ==========================================
-//                         // 🍩 1. GRÁFICO PASTEL/DONA CON DATALABELS (%)
-//                         // ==========================================
-//                         var ctxPastel = canvasPastel.getContext("2d");
-//                         chartPastel = new Chart(ctxPastel, {
-//                         type: "doughnut",
-//                         data: {
-//                             labels: ["CUMPLIDO", "NO CUMPLIDO", "EN PROCESO"],
-//                             datasets: [{
-//                                 data: [response.datos.act_cumplidas, response.datos.act_no_cumplidas, response.datos.act_en_proceso],
-//                                 backgroundColor: ["#00b4d8", "#ef4444", "#f59e0b"], 
-//                                 borderWidth: 2
-//                             }]
-//                         },
-//                         options: { 
-//                             responsive: true, 
-//                             maintainAspectRatio: false,
-//                             cutout: '65%',
-//                             plugins: {
-//                                 title: { display: false },
-//                                 legend: { 
-//                                     position: 'right', 
-//                                     labels: {
-//                                         boxWidth: 12,
-//                                         font: { size: 10, weight: 'bold' },
-//                                         padding: 10,
-//                                         // 🔥 TRUCO NATIVO: Modifica los textos de la leyenda para anexar el % automáticamente
-//                                         generateLabels: function(chart) {
-//                                             var data = chart.data;
-//                                             if (data.labels.length && data.datasets.length) {
-//                                                 var dataset = data.datasets[0];
-//                                                 var total = dataset.data.reduce((a, b) => a + b, 0);
-
-//                                                 return data.labels.map(function(label, i) {
-//                                                     var valor = dataset.data[i];
-//                                                     var porcentaje = total > 0 ? ((valor * 100) / total).toFixed(1) : 0;
-//                                                     return {
-//                                                         text: label + " (" + porcentaje + "%)",
-//                                                         fillStyle: dataset.backgroundColor[i],
-//                                                         strokeStyle: dataset.borderColor,
-//                                                         lineWidth: dataset.borderWidth,
-//                                                         hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
-//                                                         index: i
-//                                                     };
-//                                                 });
-//                                             }
-//                                             return [];
-//                                         }
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                     });
-
-//                         // ==========================================
-//                         // 📈 2. GRÁFICO DE LÍNEAS: REGRESIÓN TRIMESTRAL
-//                         // ==========================================
-//                         var ctxBarras = canvasBarras.getContext("2d");
-//                         chartBarras = new Chart(ctxBarras, {
-//                             type: "line", 
-//                             data: {
-//                                 labels: response.datos.trimestres_labels, 
-//                                 datasets: [
-//                                     {
-//                                         label: "PROG. ACUMULADO",
-//                                         data: response.datos.trimestres_programado,
-//                                         borderColor: "#0284c7",
-//                                         backgroundColor: "#0284c7",
-//                                         borderWidth: 2.5,
-//                                         tension: 0.1,
-//                                         pointRadius: 4
-//                                     },
-//                                     {
-//                                         label: "CUMPLIDO ACUMULADO",
-//                                         data: response.datos.trimestres_cumplido,
-//                                         borderColor: "#22c55e",
-//                                         backgroundColor: "#22c55e",
-//                                         borderWidth: 2.5,
-//                                         tension: 0.1,
-//                                         pointRadius: 4
-//                                     }
-//                                 ]
-//                             },
-//                             options: {
-//                                 responsive: true,
-//                                 maintainAspectRatio: false,
-//                                 scales: { 
-//                                     y: { beginAtZero: true, grid: { color: "#f1f5f9" } },
-//                                     x: { grid: { display: false } }
-//                                 },
-//                                 plugins: {
-//                                     title: { display: false },
-//                                     legend: { position: 'top', labels: { boxWidth: 10, font: { size: 9 } } }
-//                                 }
-//                             }
-//                         });
-//                     } else {
-//                         console.error("Error: No se encontraron los elementos canvas en el DOM.");
-//                     }
-//                 });
-
-//             } else {
-//                 alert("No se pudieron consolidar los cuadros: " + response.message);
-//             }
-//         },
-//         error: function() {
-//             jQuery('#' + loadingId).remove();
-//             alert('Error de comunicación asíncrona con el servidor.');
-//         }
-//     });
-// }
 
 
+    ////// para listar las unidades responsable para evaluar
+  $(function () {
+    $(".enlace").on("click", function (e) {
+      proy_id = $(this).attr('name');
+      establecimiento = $(this).attr('id');
+      
+      $('#titulo').html('<font size=3><b>'+establecimiento+'</b></font>');
+      $('#content1').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Ediciones - <br>'+establecimiento+'</div>');
+      
+      var url = base+"index.php/ejecucion/cseguimiento/get_subactividades";
+      var request;
+      if (request) {
+          request.abort();
+      }
+      request = $.ajax({
+          url: url,
+          type: "POST",
+          dataType: 'json',
+          data: "proy_id="+proy_id
+      });
 
-//////////////////
+      request.done(function (response, textStatus, jqXHR) {
+
+      if (response.respuesta == 'correcto') {
+          $('#content1').fadeIn(1000).html(response.tabla);
+          $('#evaluacion').fadeIn(1000).html(response.evaluacion);
+      }
+      else{
+          alertify.error("ERROR AL RECUPERAR INFORMACION");
+      }
+
+      });
+      request.fail(function (jqXHR, textStatus, thrown) {
+          console.log("ERROR: " + textStatus);
+      });
+      request.always(function () {
+          //console.log("termino la ejecuicion de ajax");
+      });
+      e.preventDefault();
+      
+    });
+  });

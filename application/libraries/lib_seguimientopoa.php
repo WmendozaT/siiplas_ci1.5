@@ -34,7 +34,272 @@ class Lib_seguimientopoa {
     }
 
 
-    /// Modal Para ver la ejecucion de la Actividad llevar a Libreria
+    /// Actualizando Unidad Responsable
+    public function update_uresponsable($form4) {
+      foreach($form4 as $rowp) {
+        $info='';
+        if($rowp['uni_resp']!=0){
+          $info=$rowp['unidad_asignado_bolsa'];
+        }
+        $update_data = array(
+          'prod_unidades' => $info
+        );
+        
+        $this->db->where('prod_id', $rowp['prod_id']);
+        $this->db->update('_productos', $update_data);
+      }
+        
+      $this->db->trans_complete();
+    }
+
+
+    /// formulario de SEguimiento / Evaluacion x Unidad Responsable
+    function formulario_evaluacion_UnidadResponsable($componente){
+    $form4 = $this->CI->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_trimestre($componente[0]['com_id'],$this->tmes); //// listado de actividades por trimestre programados
+    $tabla='';
+    $trimestre = $this->tmes; // Puedes parametrizarlo dinámicamente según tu vista ($this->input->post('trimestre'))
+    $mes_inicio = (($trimestre - 1) * 3) + 1;
+    $mes_fin    = $trimestre * 3;
+
+    $nombres_meses = array(1=>'ENERO', 2=>'FEBRERO', 3=>'MARZO', 4=>'ABRIL', 5=>'MAYO', 6=>'JUNIO', 7=>'JULIO', 8=>'AGOSTO', 9=>'SEPTIEMBRE', 10=>'OCTUBRE', 11=>'NOVIEMBRE', 12=>'DICIEMBRE');
+
+    $tabla.='
+    <input type="hidden" name="base" value="'.base_url().'">
+    <table id="datatable_fixed_column" class="table table-bordered" style="width: 130%; table-layout: fixed;">
+        <thead>
+            <tr style="vertical-align: middle;">
+                <th class="hasinput" style="width:1.5%; text-align: center;"></th>
+                <th style="width:4%; text-align: center;"></th>
+                <th class="hasinput" style="width:1.5%; text-align: center;"></th>
+                <th class="hasinput" style="width:1.5%; text-align: center;">
+                    <input type="text" class="form-control" placeholder="COD. ACT."/>
+                </th>
+                <th class="hasinput" style="width:7%; text-align: center;">
+                    <input type="text" class="form-control" placeholder="ACTIVIDAD"/>
+                </th>
+                <th class="hasinput" style="width:4%; text-align: center;">
+                    <input type="text" class="form-control" placeholder="UNIDAD RESPONSABLE"/>
+                </th>
+                <th class="hasinput" style="width:4%; text-align: center;">
+                    <input type="text" class="form-control" placeholder="MEDIO DE VERIFICACION"/>
+                </th>
+                <th class="hasinput" style="width:3%; text-align: center;">
+                    <input type="text" class="form-control" placeholder="META"/>
+                </th>
+                <!-- 🌟 BOTONES DINÁMICOS DE OCULTAR/MOSTRAR EN LA FILA DE FILTROS -->';
+                for ($m = $mes_inicio; $m <= $mes_fin; $m++) {
+                  $tabla.='
+                  <th class="hasinput col-mes-'.$m.'" style="width:33%; text-align: center; padding: 4px; overflow: hidden; white-space: nowrap;">
+                      <button type="button" class="btn btn-xs btn-default btn-block" id="btn_toggle_'.$m.'" onclick="toggleColumnaMes('.$m.')" style="background: #475569; color: #ffffff; border: none; font-weight: bold; padding: 4px; font-size: 11px;">
+                          <i class="fa fa-eye-slash"></i> Ocultar
+                      </button>
+                  </th>';
+                }
+                $tabla.='
+            </tr>                          
+            <tr>
+                <th style="width:1.5%; text-align: center;"></th>
+                <th style="width:4%; text-align: center;">
+                  <button type="button" 
+                      class="btn btn-default btn-xs" 
+                      title="Ver detalle seguimiento por Unidad Operativa" 
+                      onclick="abrirModalDetalle_UresponsableConAjax('.$componente[0]['com_id'].')" 
+                      style="padding: 6px 9px;vertical-align: middle;">
+                      <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="20" HEIGHT="20"/>&nbsp;&nbsp;<b>VER</b>
+                  </button>
+                </th>
+                <th style="width:1.5%; text-align: center;" title="CÓDIGO OPERACIÓN">COD.<br>OPE.</th>
+                <th style="width:1.5%; text-align: center;" title="CÓDIGO ACTIVIDAD">COD.<br> ACT.</th>
+                <th style="width:7%; text-align: center;" title="DETALLE ACTIVIDAD">ACTIVIDAD</th>
+                <th style="width:4%; text-align: center;" title="UNIDAD RESPONSABLE">UNIDAD RESPONSABLE</th>
+                <th style="width:4%; text-align: center;" title="FUENTE VERIFICACION">MEDIO DE VERIFICACIÓN</th>
+                <th style="width:3%; text-align: center;">META</th>';
+                for ($m = $mes_inicio; $m <= $mes_fin; $m++) {
+                  // 🌟 SEGUNDA FILA DE CABECERA (Nombres de los meses)
+                  $tabla.='
+                  <th class="col-mes-'.$m.'" style="width:33%; text-align: center; vertical-align: middle; background: #334155; color: #ffffff; overflow: hidden; white-space: nowrap;">
+                      <span class="txt-nombre-mes-'.$m.'">'.$nombres_meses[$m].'</span>
+                  </th>';
+                }
+                $tabla.='
+            </tr>
+        </thead>
+        <tbody>';
+
+        foreach($form4 as $rowp){
+          $priori='';
+          if($rowp['prod_priori']==1){
+            $priori='<img src="'.base_url().'assets/ifinal/ok.png" WIDTH="20" HEIGHT="25"/ title="ACTIVIDAD PRIORIZADA AL CUMPLIMIENTO DEL POA">';
+          }
+          $tp_indi='';
+          if($rowp['indi_id']==2){
+            $tp_indi='%';
+          }
+          $prod_id = intval($rowp['prod_id']);
+          
+          $tabla .= '
+          <tr id="fila_prod_'.$prod_id.'" style="vertical-align: middle;">
+              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;" title="'.$prod_id.'"></td>
+              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;">
+               <button type="button" 
+                      class="btn btn-info btn-xs" 
+                      title="Ver detalle completo de la Actividad" 
+                      onclick="abrirModalDetalleConAjax('.$prod_id.')" 
+                      style="padding: 3px 6px;">
+                  <i class="fa fa-search"></i> Detalle
+              </button>
+              <br><br>
+              <div style="font-size:10px;" id="cump'.$prod_id.'"><b>'.$rowp['cumplimiento_trm'.$this->tmes].'</b></div>
+              </td>
+              <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size:15px;" title="'.$prod_id.'"><b>'.round($rowp['or_codigo'],2).'</b></td>
+              <td style="width: 5%; text-align: center; font-size:15px; vertical-align: middle;" bgcolor="#eceaea" ">
+                  <b>'.round($rowp['prod_cod'],2).'</b><br>'.$priori.'
+              </td>
+              <td style="width: 15%; text-align: left; font-size:9.5px;vertical-align: middle;">'.strtoupper($rowp['prod_producto']).'</td>
+              <td style="width: 10%; text-align: left; font-size:9.5px;vertical-align: middle;">'.strtoupper($rowp['prod_unidades']).'</td>
+              <td style="width: 10%; text-align: left; font-size:9.5px;vertical-align: middle;">'.strtoupper($rowp['prod_fuente_verificacion']).'</td>
+              <td style="width: 5%; text-align: right; font-weight: bold; color: #1e3a8a; padding-right:8px;vertical-align: middle; font-size:15px;">'.round($rowp['prod_meta'], 2).' '.$tp_indi.'</td>';
+              
+              for ($m = $mes_inicio; $m <= $mes_fin; $m++) {
+                  $v_prog   = floatval($rowp['mes'.$m]);
+                  $mes_ejec=0;$mverificacion='';$prob_presentados='';$acciones=''; 
+                  
+                  // Determinar si hay ID de seguimiento existente para pasar al botón eliminar
+                  $id_seguimiento = 0; 
+                  
+                  $ejec=$this->CI->model_evaluacionpoa->get_seguimiento_poa_mes($prod_id,$m); 
+                  if(count($ejec)!=0){ 
+                    $id_seguimiento = isset($ejec[0]['peg_id']) ? intval($ejec[0]['peg_id']) : 0;
+                    $mes_ejec=round($ejec[0]['pejec_fis'],2);
+                    $mverificacion=$ejec[0]['medio_verificacion'];
+                    $prob_presentados=$ejec[0]['observacion'];
+                    $acciones=$ejec[0]['acciones'];
+                  } 
+                  else{
+                    $no_ejec=$this->CI->model_evaluacionpoa->get_seguimiento_poa_mes_noejec($prod_id,$m);
+                    if(count($no_ejec)!=0){
+                      $id_seguimiento = isset($no_ejec[0]['ne_id']) ? intval($no_ejec[0]['ne_id']) : 0;
+                      $mes_ejec=0;
+                      $mverificacion=$no_ejec[0]['medio_verificacion'];
+                      $prob_presentados=$no_ejec[0]['observacion'];
+                      $acciones=$no_ejec[0]['acciones'];
+                    }
+                  }
+                  
+                  // 🌟 NUEVA LÓGICA DE CONTROL VISUAL CON ALERTAS DE COLOR SEMAFÓRICAS
+                  $es_deshabilitado = ($v_prog == 0) ? 'disabled' : '';
+                  
+                  if ($v_prog == 0) {
+                      $color_fondo_celda = '#f8fafc'; // Gris sutil para meses sin programar
+                  } else {
+                      if ($mes_ejec == 0) {
+                          $color_fondo_celda = '#fef08a'; // Amarillo suave (Pendiente de registrar)
+                      } else {
+                          $color_fondo_celda = '#bbf7d0'; // Verde suave (Ya cuenta con ejecución)
+                      }
+                  }
+                  
+                  $tabla .= '
+                  <td class="col-mes-'.$m.'" style="width: 10%; background: '.$color_fondo_celda.'; padding: 4px; border: 1px solid #cbd5e1;" id="reg'.$m.'" name="prod'.$prod_id.'">
+                    <div class="wrapper-mes-'.$m.'">
+                      <div class="smart-form">
+                       <table class="table table-bordered" style="width:100%; margin-bottom:0;">
+                              <thead>
+                                <tr style="background: #64748b; color: #ffffff; height:22px; font-size: 10px;">
+                                  <th style="width:5%; text-align: center; padding:2px;">PROG.</th>
+                                  <th style="width:1%; text-align: center; padding:2px;">EJEC.</th>
+                                  <th style="width:32%; text-align: center; padding:2px;">MEDIO VERIF.</th>
+                                  <th style="width:32%; text-align: center; padding:2px;">PROBLEMAS</th>
+                                  <th style="width:32%; text-align: center; padding:2px;">ACCIONES</th>
+                                  <th style="width:5%; text-align: center; padding:2px;">OPCIONES</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr style="background: #ffffff; height:100px;">
+                                  <td style="width:5%; text-align: center; font-weight: bold; color: #16a34a; vertical-align: middle; padding: 2px; font-size:15px;">'.round($v_prog, 2).' '.$tp_indi.'</td>
+                                  
+                                  <td style="padding: 2px; width:1%; vertical-align: middle;">
+                                      <input type="number" step="0.1" class="form-control" style="text-align: right; padding: 2px; height: 30px; font-size: 13.5px; font-weight: bold;" id="ejec_'.$prod_id.'_'.$m.'" value="'.$mes_ejec.'" '.$es_deshabilitado.'>
+                                  </td>
+                                  <td style="padding: 2px; width:32%; vertical-align: middle;">
+                                    <label class="textarea">
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="mverif_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$mverificacion.'</textarea>
+                                    </label>
+                                  </td>
+                                  <td style="padding: 2px; width:32%; vertical-align: middle;">
+                                    <label class="textarea">
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="prob_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$prob_presentados.'</textarea>
+                                    </label>
+                                  </td>
+                                  <td style="padding: 2px; width:32%; vertical-align: middle;">
+                                    <label class="textarea">
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="acc_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$acciones.'</textarea>
+                                    </label>
+                                  </td>
+                                  <td style="text-align: center; vertical-align: middle; padding: 4px; width: 5%;">
+                                      <!-- 💾 Botón Guardar (Solo Icono para optimizar el 5% de ancho) -->
+                                      <button type="button" 
+                                              class="btn btn-success btn-xs" 
+                                              title="Guardar Registro - Mes '.$m.'" 
+                                              onclick="guardarSeguimiento('.$prod_id.', '.$m.')" 
+                                              style="margin-bottom: 5px; width: 100%; padding: 4px 2px;" 
+                                              '.$es_deshabilitado.'>
+                                          <i class="fa fa-save"></i>
+                                      </button>
+                                      
+                                      <!-- 🗑️ Botón Eliminar (Se oculta por completo si id es 0 O si la celda está deshabilitada) -->
+                                      <button type="button" 
+                                              class="btn btn-danger btn-xs" 
+                                              title="Eliminar Registro - Mes '.$m.'" 
+                                              onclick="eliminarSeguimiento('.$prod_id.', '.$m.', '.$id_seguimiento.')" 
+                                              style="width: 100%; padding: 4px 2px; '.($id_seguimiento == 0 || $v_prog == 0 ? 'display:none;' : '').'" 
+                                              id="btn_del_'.$prod_id.'_'.$m.'">
+                                          <i class="fa fa-trash-o"></i>
+                                      </button>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                      </div>
+                  </td>';
+              }
+          $tabla .= '</tr>';
+        }
+
+        $tabla.='
+        </tbody>
+        </table>';
+
+        $tabla.=$this->modal_seguimiento_x_form4(); /// MD1
+        $tabla.=$this->modal_evaluacion_poa_x_UnidadResponsable(); /// Graficos MD2
+        return $tabla;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /// Modal Para ver la ejecucion de la Actividad llevar a Libreria MD1
     public function modal_seguimiento_x_form4() {
       $tabla='';
       $tabla.='
@@ -129,110 +394,176 @@ class Lib_seguimientopoa {
     }
 
 
-    /// Modal Para ver los graficos de Cumplimiento Al POa
+    /// Modal Para ver los graficos de Cumplimiento Al POa MD2
     public function modal_evaluacion_poa_x_UnidadResponsable() {
       $tabla='';
       $tabla .= '
-<div class="modal fade" id="modal_graficos" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-  <!-- 🌟 CORREGIDO: Altura elástica (height: auto) y eliminación de los topes exagerados de 2000px -->
-  <div class="modal-dialog" style="width: 95%; max-width: 1500px; margin: 20px auto; height: auto;">
-      <div class="modal-content" style="border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); height: auto;">
-          <div class="modal-header" style="background: #1e3a8a; color: #fff; padding: 15px 20px;">
-              <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
-              <h4 class="modal-title" style="font-weight: bold;">
-                  <i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA
-              </h4>
-          </div>
-          
-          <!-- 🌟 OPTIMIZACIÓN DE VISUALIZACIÓN: max-height ampliado a 75vh (adaptable a laptops y monitores) con scroll interno -->
-          <div class="modal-body print-area-graficos" style="padding: 25px; max-height: 75vh; min-height: 400px; overflow-y: auto; clear: both;">
+      <div class="modal fade" id="modal_graficos" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <!-- 🌟 CORREGIDO: Altura elástica (height: auto) y eliminación de los topes exagerados de 2000px -->
+        <div class="modal-dialog" style="width: 95%; max-width: 1500px; margin: 20px auto; height: auto;">
+            <div class="modal-content" style="border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); height: auto;">
+                <div class="modal-header" style="background: #1e3a8a; color: #fff; padding: 15px 20px;">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color:#fff; opacity:1;">&times;</button>
+                    <h4 class="modal-title" style="font-weight: bold;">
+                        <i class="fa fa-bar-chart-o"></i> Cuadros y Gráficos de Evaluación POA
+                    </h4>
+                </div>
+                
+                <!-- 🌟 OPTIMIZACIÓN DE VISUALIZACIÓN: max-height ampliado a 75vh (adaptable a laptops y monitores) con scroll interno -->
+                <div class="modal-body print-area-graficos" style="padding: 25px; max-height: 75vh; min-height: 400px; overflow-y: auto; clear: both;">
 
-              <!-- Contenedor del semáforo de calificación ocupando todo el ancho superior -->
-              <div class="row" style="margin-bottom: 20px; padding: 0 10px;">
-                  <div id="calificacion" style="width: 100%;"></div>
-              </div>
+                    <!-- Contenedor del semáforo de calificación ocupando todo el ancho superior -->
+                    <div class="row" style="margin-bottom: 20px; padding: 0 10px;">
+                        <div id="calificacion" style="width: 100%;"></div>
+                    </div>
 
-              <div class="row" style="display: flex; flex-wrap: wrap; align-items: center;">
-                  <!-- Gráfico de Torta -->
-                  <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 25px;">
-                      <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px; font-size: 14px;">
-                           <b>(%)_CUMPLIMIENTO_POA</b>
-                      </h5>
-                      <div style="position: relative; height:350px; width:100%; padding: 0 10px;">
-                          <canvas id="grafico_pastel_cumplimiento"></canvas>
-                      </div>
-                  </div>
-                  
-                  <!-- Gráfico de Línea de Regresión -->
-                  <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 25px;">
-                      <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px; font-size: 14px;">
-                          <b>CUMPLIMIENTO_TRIMESTRAL_(TENDENCIA)</b>
-                      </h5>
-                      <div style="position: relative; height:350px; width:100%; padding: 0 10px;">
-                          <canvas id="grafico_barras_temporalidad"></canvas>
-                      </div>
-                  </div>
-              </div>
-              
-              <!-- Matriz Consolidada Inferior -->
-              <div class="row" style="margin-top: 25px;">
-                  <div class="col-md-12" id="detalles" style="padding: 0 10px; margin-bottom: 10px;">
-                      <!-- 🌟 AQUÍ JQUERY INYECTARÁ LA TABLA DINÁMICA DE FORMA AUTOMÁTICA -->
-                  </div>
-              </div>
-          </div>
-
-
-          <div class="modal-footer" style="background: #f8fafc; padding: 15px 20px;">
-              
-              <button type="button"><div id="btn_reporte"></div></button>
-              <button type="button" class="btn btn-primary" onclick="exportarPDF();" style="background: #0284c7; border: none; font-weight: bold; color:#fff; padding: 6px 16px;">
-                  <i class="fa fa-file-pdf-o"></i> Exportar a Cuadros a PDF
-              </button>
-              <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold; padding: 6px 16px;">Cerrar Ventana</button>
-          </div>
-      </div>
-  </div>
-</div>';
-
-
+                    <div class="row" style="display: flex; flex-wrap: wrap; align-items: center;">
+                        <!-- Gráfico de Torta -->
+                        <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 25px;">
+                            <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px; font-size: 14px;">
+                                 <b>(%)_CUMPLIMIENTO_POA</b>
+                            </h5>
+                            <div style="position: relative; height:350px; width:100%; padding: 0 10px;">
+                                <canvas id="grafico_pastel_cumplimiento"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráfico de Línea de Regresión -->
+                        <div class="col-md-6 col-sm-12 text-center" style="margin-bottom: 25px;">
+                            <h5 style="font-weight: bold; color: #334155; margin-bottom: 15px; font-size: 14px;">
+                                <b>CUMPLIMIENTO_TRIMESTRAL_(TENDENCIA)</b>
+                            </h5>
+                            <div style="position: relative; height:350px; width:100%; padding: 0 10px;">
+                                <canvas id="grafico_barras_temporalidad"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Matriz Consolidada Inferior -->
+                    <div class="row" style="margin-top: 25px;">
+                        <div class="col-md-12" id="detalles" style="padding: 0 10px; margin-bottom: 10px;">
+                            <!-- 🌟 AQUÍ JQUERY INYECTARÁ LA TABLA DINÁMICA DE FORMA AUTOMÁTICA -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #f8fafc; padding: 15px 20px;">
+                    
+                    <button type="button"><div id="btn_reporte"></div></button>
+                    <button type="button" class="btn btn-primary" onclick="exportarPDF();" style="background: #0284c7; border: none; font-weight: bold; color:#fff; padding: 6px 16px;">
+                        <i class="fa fa-file-pdf-o"></i> Exportar a Cuadros a PDF
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: bold; padding: 6px 16px;">Cerrar Ventana</button>
+                </div>
+            </div>
+        </div>
+      </div>';
 
       return $tabla;
     }
 
 
-    //// funcion para actualizar las evaluaciones poa trimestral
-    public function update_evaluacion($componente, $trimestre) {
-      $form4 = $this->model_evaluacionpoa->consolidado_list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id,$this->tmes); //// listado de actividades por trimestre programados
-
-      
-
-    }
 
 
 
 
+/*    public function aviso_seguimiento_evaluacion_poa(){
+      $tabla='';
+      $dia_actual=ltrim(date("d"), "0");
+      $mes_actual=ltrim(date("m"), "0");
+      $trimestre=$this->model_evaluacion->get_trimestre($this->tmes);
+      $fecha_actual = date('Y-m-d');
+
+      $get_fecha_evaluacion=$this->model_configuracion->get_datos_fecha_evaluacion($this->gestion);
+      if(count($get_fecha_evaluacion)!=0){
+          $configuracion=$this->model_configuracion->get_configuracion_session();
+          $date_actual = strtotime($fecha_actual); //// fecha Actual
+          $date_inicio = strtotime($configuracion[0]['eval_inicio']); /// Fecha Inicio
+          $date_final = strtotime($configuracion[0]['eval_fin']); /// Fecha Final
+
+          if (($date_actual >= $date_inicio) && ($date_actual <= $date_final) || $this->tp_adm==1){
+            $tabla.='<h2 class="alert alert-info"><center>PROCESO DE EVALUACIÓN POA - '.$trimestre[0]['trm_descripcion'].' / '.$this->gestion.'</center></h2>';
+          }
+          else{
+            $tabla.='<h2 class="alert alert-info"><center>SEGUIMIENTO POA - MES '.$this->verif_mes[2].' / '.$this->gestion.'</center></h2>';
+          }
+      }
+      else{
+        $tabla.='<h2 class="alert alert-info"><center>SEGUIMIENTO POA - MES '.$this->verif_mes[2].' / '.$this->gestion.'</center></h2>';
+      }
+
+
+      return $tabla;
+    }*/
 
 
 
+    // function button_update_($com_id){
+    //   $componente = $this->model_componente->get_componente($com_id,$this->gestion); ///// DATOS DEL COMPONENTE
+    //   $tabla='';
+
+    //   $dia_actual=ltrim(date("d"), "0");
+    //   $mes_actual=ltrim(date("m"), "0");
+
+    //   $fecha_actual = date('Y-m-d');
+
+    //   $get_fecha_evaluacion=$this->model_configuracion->get_datos_fecha_evaluacion($this->gestion);
+    //   if(count($get_fecha_evaluacion)!=0){
+    //       $configuracion=$this->model_configuracion->get_configuracion_session();
+    //       $date_actual = strtotime($fecha_actual); //// fecha Actual
+    //       $date_inicio = strtotime($configuracion[0]['eval_inicio']); /// Fecha Inicio
+    //       $date_final = strtotime($configuracion[0]['eval_fin']); /// Fecha Final
+
+    //       if (($date_actual >= $date_inicio) && ($date_actual <= $date_final) || $this->tp_adm==1){
+    //         if(count($this->model_configuracion->get_responsables_evaluacion($this->fun_id))!=0 || $this->tp_adm==1){
+
+    //           $tabla.='   
+    //             <div id="row">
+    //               <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    //                 <div class="alert alert-info" role="alert">
+    //                   <a href="#" data-toggle="modal" data-target="#modal_update_eval" class="btn btn-primary update_eval" style="width:20%;" name="'.$com_id.'" id="'.strtoupper($componente[0]['tipo_subactividad']).' '.strtoupper($componente[0]['serv_cod']).' - '.strtoupper($componente[0]['serv_descripcion']).'" title="ACTUALIZAR EVALUACION POA" ><img src="'.base_url().'assets/Iconos/arrow_refresh.png" WIDTH="25" HEIGHT="30"/>&nbsp;ACTUALIZAR DATOS PARA EVALUACI&Oacute;N POA</a>    
+    //                 </div>
+    //               </article>
+    //             </div>';
+    //         }
+    //       }
+    //   }
+
+    //   return $tabla;
+    // }
 
 
+ /*--- ESTILO ---*/
+    // public function estilo_tabla(){
+    //   $tabla='';
+    //   $tabla.='
+    //     <style>
+    //       .table1{
+    //             display: inline-block;
+    //             width:100%;
+    //             max-width:1550px;
+    //             overflow-x: scroll;
+    //             }
+    //       table{font-size: 10px;
+    //             width: 100%;
+    //             max-width:1550px;;
+    //       overflow-x: scroll;
+    //             }
+    //             th{
+    //               padding: 1.4px;
+    //               text-align: center;
+    //               font-size: 10px;
+    //             }
+    //             #mdialTamanio{
+    //               width: 45% !important;
+    //             }
+    //             #mdialTamanio2{
+    //               width: 35% !important;
+    //             }
+    //       </style>';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    //   return $tabla;
+    // }
+    
     /// Estilo Formulario LLEVAR A LIBRERIA
     public function estilo_tabla_form4(){
       $tabla='';
