@@ -247,6 +247,11 @@ function abreVentana(url) {
                 wrapper.css('opacity', '1');
 
                 if (response.status === 'success') {
+                    //alert(response.v_pendiente_act+'--'+response.tp_calificacion_act+'---'+response.calificacion_act)
+                    $('#valor_pendiente'+prodId).hide().html(response.v_pendiente_act).fadeIn(400);
+                    $('#valor_cumplimiento'+prodId).hide().html(response.calificacion_act).fadeIn(400);
+
+
                     // 🎨 CAMBIO DE COLOR EN CALIENTE:
                     if (parseFloat(ejecVal) !== 0) {
                         celdaTd.css('background-color', '#bbf7d0'); // Verde suave (Con ejecución)
@@ -272,8 +277,27 @@ function abreVentana(url) {
                     setTimeout(function(){
                         jQuery('#' + toastId).fadeOut(400, function(){ jQuery(this).remove(); });
                     }, 2000);
-                } else {
-                    alert('No se pudo guardar: ' + response.message);
+                } 
+                else {
+                    // 🌟 REEMPLAZO DEL ALERT POR UN MENSAJE DE ERROR FORMAL INSTITUCIONAL (CSS Puro)
+                    var errorModalId = 'custom_error_modal_' + prodId + '_' + mes;
+                    
+                    // Evitamos duplicar la alerta si ya está renderizada en pantalla
+                    if (!document.getElementById(errorModalId)) {
+                        var errorHtml = 
+                        '<div id="' + errorModalId + '" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">' +
+                            '<div style="background: #ffffff; padding: 25px 30px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); text-align: center; max-width: 420px; width: 90%; border-top: 4px solid #dc2626;">' +
+                                '<i class="fa fa-times-circle" style="font-size: 42px; color: #dc2626; margin-bottom: 12px; display: block;"></i>' +
+                                '<h4 style="margin: 0 0 10px 0; font-size: 16px; color: #1e293b; font-weight: bold; text-transform: uppercase;">Restricción de Validación</h4>' +
+                                '<p style="margin: 0 0 20px 0; font-size: 13px; color: #475569; line-height: 1.5; text-align: justify;">' + response.message + '</p>' +
+                                '<button type="button" onclick="jQuery(\'#' + errorModalId + '\').remove();" style="background-color: #475569; color: #ffffff; border: none; padding: 7px 20px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; transition: background 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; text-transform: uppercase; letter-spacing: 0.5px;">' +
+                                    'Aceptar y Corregir' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>';
+                        
+                        jQuery('body').append(errorHtml);
+                    }
                 }
             },
             error: function(xhr, status, error) {
@@ -290,7 +314,7 @@ function abreVentana(url) {
 
 
     ///// Eliminar Registro de Seguimiento
-    function eliminarSeguimiento(prodId, mes, idSeguimiento) {
+function eliminarSeguimiento(prodId, mes, idSeguimiento) {
     // 1. Validar que exista un ID de seguimiento válido para borrar
     if (!idSeguimiento || idSeguimiento === 0) {
         alert('No se puede eliminar un registro que no ha sido guardado previamente.');
@@ -305,7 +329,7 @@ function abreVentana(url) {
                 '<i class="fa fa-trash-o" style="font-size: 36px; color: #dc3545; margin-bottom: 12px; display: block;"></i>' +
                 '<h4 style="margin: 0 0 10px 0; font-size: 16px; color: #1e293b; font-weight: bold;">¿Eliminar Seguimiento?</h4>' +
                 '<p style="margin: 0 0 20px 0; font-size: 13px; color: #64748b; line-height: 1.5;">Esta acción borrará la ejecución, los medios de verificación, problemas y acciones de este mes por completo.</p>' +
-                '<button type="button" id="btn_conf_si_' + prodId + '" style="background-color: #dc3545; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 10px;">Sí, eliminar</button>' +
+                '<button type="button" id="btn_conf_si_' + prodId + '_' + mes + '" style="background-color: #dc3545; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 10px;">Sí, eliminar</button>' +
                 '<button type="button" onclick="jQuery(\'#' + confirmId + '\').remove();" style="background-color: #64748b; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Cancelar</button>' +
             '</div>' +
         '</div>';
@@ -313,13 +337,14 @@ function abreVentana(url) {
     }
 
     // 3. Asignar el evento del botón "Sí, eliminar" para arrancar el AJAX
-    jQuery('#btn_conf_si_' + prodId).on('click', function() {
+    // 🌟 Corregido el selector ID para que sea único incluyendo el mes
+    jQuery('#btn_conf_si_' + prodId + '_' + mes).off('click').on('click', function() {
         // Removemos la ventana de confirmación
         jQuery('#' + confirmId).remove();
 
         // 4. ⏳ ACTIVAR LOADING CON FONDO OPACO TOTAL (PANTALLA COMPLETA)
         var loadingId = 'loading_screen_overlay_delete';
-        var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
+        var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
             '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
                 '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #dc3545; margin-bottom: 10px; display: block;"></i>' +
                 '<span style="font-size: 14px; font-weight: bold; color: #334155;">Eliminando registro de seguimiento...</span>' +
@@ -332,7 +357,7 @@ function abreVentana(url) {
         // 5. Envío AJAX al Servidor
         jQuery.ajax({
             type: "POST",
-            url: base + "index.php/ejecucion/cevaluacion_form4/eliminar_seguimiento", // Ruta esperada en tu controlador
+            url: base + "index.php/ejecucion/cevaluacion_form4/eliminar_seguimiento",
             data: {
                 id_seguimiento: idSeguimiento,
                 prod_id: prodId,
@@ -347,19 +372,22 @@ function abreVentana(url) {
                     // 🌟 LIMPIEZA DE CAMPOS EN CALIENTE
                     jQuery('#ejec_' + prodId + '_' + mes).val(0);
                     jQuery('#mverif_' + prodId + '_' + mes).val('');
-                     jQuery('#prob_' + prodId + '_' + mes).val('');
+                    jQuery('#prob_' + prodId + '_' + mes).val('');
                     jQuery('#acc_' + prodId + '_' + mes).val('');
+
+                    jQuery('#valor_pendiente' + prodId).hide().html(response.v_pendiente_act).fadeIn(400);
+                    jQuery('#valor_cumplimiento' + prodId).hide().html(response.calificacion_act).fadeIn(400);
 
                     // 🎨 RESTABLECER COLOR A AMARILLO (Vuelve a estar pendiente de registro)
                     celdaTd.css('background-color', '#fef08a');
 
-                    // Ocultar el botón de eliminar por completo
+                    // Ocultar el botón de eliminar por completo de forma limpia
                     var btnEliminar = jQuery('#btn_del_' + prodId + '_' + mes);
                     btnEliminar.fadeOut().attr('onclick', '');
 
-                    // 🔔 TOAST FLOTANTE DE NOTIFICACIÓN DE ELIMINACIÓN (Rojo Suave)
+                    // 🔔 TOAST FLOTANTE DE NOTIFICACIÓN DE ELIMINACIÓN COMPLETADO
                     var toastId = 'toast_delete_' + prodId + '_' + mes;
-                    var toastHtml = '<div id="' + toastId + '" style="position: fixed; top: 20px; right: 20px; z-index: 999999; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 14px; font-weight: bold;">' +
+                    var toastHtml = '<div id="' + toastId + '" style="position: fixed; top: 20px; right: 20px; z-index: 9999999; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; font-size: 14px; font-weight: bold;">' +
                         '<i class="fa fa-trash" style="margin-right: 8px; color: #dc3545;"></i> Registro eliminado correctamente.' +
                     '</div>';
                     jQuery('body').append(toastHtml);
@@ -374,12 +402,13 @@ function abreVentana(url) {
             },
             error: function(xhr, status, error) {
                 jQuery('#' + loadingId).remove();
-                alert('Ocurrió un error al intentar comunicarse con el servidor.');
+                alert('Ocurrió un error crítico al intentar comunicarse con el servidor.');
                 console.error(error);
             }
         });
     });
 }
+
 
     //// get seguimiento x actividad en modal
     function abrirModalDetalleConAjax(prodId) {

@@ -315,7 +315,7 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
         <tr style="background: #334155; color: #ffffff; height: 32px;">
           <th style="width:8%; text-align: center; vertical-align: middle;">COD.</th>
           <th style="width:72%; vertical-align: middle; padding-left: 10px;">UNIDAD RESPONSABLE A EVALUAR</th>
-          <th style="width:20%; text-align: center; vertical-align: middle;">ACCIONES</th>
+          <th style="width:30%; text-align: center; vertical-align: middle;">ACCIONES</th>
         </tr>
       </thead>
       <tbody>';
@@ -335,7 +335,7 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
               <td style="text-align: center; vertical-align: middle; padding: 4px;">
                 <!-- 🌟 AJUSTE AQUÍ: href cambiado por # y evento onclick para activar el Loading de pantalla completa -->
                 <a href="#" onclick="cargarFormularioEvaluacion(event, \''.$url_destino.'\', \''.addslashes($rowc['com_componente']).'\')" class="btn btn-xs btn-success btn-block" style="background: #16a34a; border: none; font-weight: bold; padding: 5px 0;" title="Ingresar a evaluar actividades">
-                    <i class="fa fa-pencil-square-o"></i> REALIZAR SEGUIMIENTO POA
+                    <i class="fa fa-pencil-square-o"></i> FORMULARIO POA
                 </a>
               </td>
             </tr>';
@@ -345,81 +345,6 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
     $tabla .= '</tbody></table>';
     return $tabla;
 }
-
-
-
-
-    // public function get_evaluar_unidadresponsable(){
-    //   if($this->input->is_ajax_request() && $this->input->post()){
-    //     $post = $this->input->post();
-    //     $proy_id = $this->security->xss_clean($post['proy_id']);
-
-
-    //     $tabla=$this->lista_UnidadesResponsables_para_evaluar($proy_id); /// lista unidades responsables para evaluacion poa
-    //     $result = array(
-    //       'respuesta' => 'correcto',
-    //       'tabla'=>$tabla,
-    //       'evaluacion'=>$evaluacion,
-    //     );
-          
-    //     echo json_encode($result);
-    //   }else{
-    //       show_404();
-    //   }
-    // }
-
-
-
-
-    // /*------ GET UNIDADES REPONSABLES (llevar a libreria)-----*/
-    // public function lista_UnidadesResponsables_para_evaluar($proy_id){
-    //   $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); ////// DATOS DEL PROYECTO
-    //   $titulo='UNIDAD RESPONSABLE';
-    //   //$titulo_boton='';
-    //   $tabla='';
-
-
-    //   $tabla.=' 
-    //     <table class="table table-bordered">
-    //       <thead>
-    //       <tr>
-    //         <th style="width:3%;" bgcolor="#474544"> COD.</th>
-    //         <th style="width:50%;" bgcolor="#474544">UNIDAD RESPONSABLE A EVALUAR</th>
-    //         <th style="width:10%;" bgcolor="#474544"></th>
-    //       </tr>
-    //       </thead>
-    //       <tbody>';
-    //       $nro=0;
-    //         $componentes=$this->model_componente->lista_UnidadesResponsables_con_actividad($proy_id);
-    //         foreach($componentes as $rowc){
-    //           if(count($this->model_producto->lista_productos($rowc['com_id']))!=0){
-    //             $nro++;
-    //             $tabla.='
-    //             <tr>
-    //               <td><b>'.$rowc['serv_cod'].'</b></td>
-    //               <td><b>'.$rowc['tipo_subactividad'].' '.$rowc['com_componente'].'</b></td>
-    //               <td>
-    //                 <a href="'.site_url("").'/formulario_seguimiento_poa/'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">REALIZAR SEGUIMIENTO POA</a>
-    //               </td>
-    //             </tr>';
-    //           }
-    //         }
-    //       $tabla.='
-    //       </tbody>
-    //     </table>';
-
-    //   return $tabla;
-    // }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -441,21 +366,21 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
     /*----- Vista de Seguimiento y Evaluacion 2027 ------*/
     public function formulario_seguimiento_poa($com_id){
         $componente = $this->model_componente->get_componente($com_id,$this->gestion);
-        // 3. Ahora el objeto $this->programacionpoa existirá correctamente y sin conflictos
         $data['stylo'] = $this->lib_seguimientopoa->estilo_tabla_form4(); 
         $data['titulo']=$this->lib_seguimientopoa->titulo($componente);
-
         $form4_crudo=$this->model_producto->lista_productos($com_id);
-        //$form4 = $this->model_producto->lista_form4_x_unidadresponsable($com_id);
-          if($componente[0]['por_id']==1){
-            $this->lib_seguimientopoa->update_uresponsable($form4_crudo);
-          }
 
-          if($componente[0]['tp_id']==1){
+
+          if($componente[0]['tp_id']==1){ //// Inversion
             redirect('form_ejec_pinversion/'.$com_id);
           }
-          else{
-            $data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente);
+          else{ ////// Gasto Corriente
+            if($this->lib_seguimientopoa->verif_eval()){
+              $data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente); /// formulario de Evaluacion poa
+            }
+            else{
+              $data['tabla'] = 'Formulario de Seguimiento'; //// Formulario de seguimiento Mensual
+            }
             $this->load->view('admin/evaluacion/evaluacion_form4/form_evaluacion_form4', $data);
           }
         
@@ -754,7 +679,10 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
     $problemas    = trim($this->input->post('problemas'));
     $acciones     = trim($this->input->post('acciones'));
 
-    // 2. Validación de seguridad del lado del Servidor (Duplica la seguridad del JS)
+    $trimestre_row = $this->model_evaluacionpoa->get_trimestre($this->tmes);
+    $trm_activo = isset($trimestre_row[0]['trm_id']) ? intval($trimestre_row[0]['trm_id']) : 1;
+
+    // 2. Validación de seguridad básica: Evitar ceros sin justificación
     if ($ejecutado == 0 && (empty($problemas) || empty($acciones))) {
         $respuesta = array(
             'status'  => 'error',
@@ -764,7 +692,52 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
         return;
     }
 
-    // 3. Limpiar registros previos en ambas tablas para evitar duplicidad de estados
+    // 🚀 3. VALIDACIÓN MATEMÁTICA CALIBRADA (Control de Sobreejecución Trimestral)
+    // Recuperamos los datos del producto vigentes en la vista
+    $eval = $this->model_evaluacionpoa->get_form4_seguimiento_poa($prod_id);
+    
+    if (!empty($eval)) {
+        // Determinamos los límites del trimestre en evaluación
+        $mes_inicio = (($trm_activo - 1) * 3) + 1;
+        $mes_fin    = $trm_activo * 3;
+        
+        // Sumamos lo programado en el trimestre actual + el saldo arrastrado de trimestres anteriores
+        $programado_trimestre = floatval($eval[0]['prog_trm' . $trm_activo]);
+        $saldo_arrastre_previo = 0.00;
+        
+        // El arrastre acumulado real proviene estrictamente del saldo del trimestre anterior inmediato (si no es el T1)
+        if ($trm_activo > 1) {
+            $saldo_arrastre_previo = floatval($eval[0]['saldo_acumulado_trm' . ($trm_activo - 1)]);
+        }
+        
+        // Meta total disponible para gastar en este periodo de 3 meses
+        $meta_total_disponible = $programado_trimestre + $saldo_arrastre_previo;
+
+        // Consultamos la base de datos para ver cuánto se ha gastado en los OTROS meses del mismo trimestre
+        $sql_otros_meses = "SELECT SUM(pejec_fis) AS total_otros 
+                            FROM prod_ejecutado_mensual 
+                            WHERE prod_id = ? 
+                              AND m_id BETWEEN ? AND ? 
+                              AND m_id != ? 
+                              AND g_id = ?";
+        $query_otros = $this->db->query($sql_otros_meses, array($prod_id, $mes_inicio, $mes_fin, $mes, $this->gestion));
+        $res_otros = $query_otros->row_array();
+        $ejecutado_otros_meses = isset($res_otros['total_otros']) ? floatval($res_otros['total_otros']) : 0.00;
+
+        // El tope físico permitido para este mes específico es la meta total menos lo que ya consumieron los otros meses
+        $limite_maximo_mes = $meta_total_disponible - $ejecutado_otros_meses;
+
+        if ($ejecutado > $limite_maximo_mes) {
+            $respuesta = array(
+                'status'  => 'error',
+                'message' => 'El valor registrado (' . $ejecutado . ') supera el límite disponible para este mes (' . number_format($limite_maximo_mes, 2) . ') en el ' . $trimestre_row[0]['trm_descripcion'] . '. Revise la distribución de la ejecución mensual.'
+            );
+            echo json_encode($respuesta);
+            return;
+        }
+    }
+
+    // 4. Limpiar registros previos en ambas tablas para evitar duplicidad de estados
     $this->db->where('prod_id', $prod_id);
     $this->db->where('m_id', $mes);
     $this->db->where('g_id', $this->gestion);
@@ -775,11 +748,9 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
     $this->db->where('g_id', $this->gestion);
     $this->db->delete('prod_no_ejecutado_mensual');
 
-    // Inicializamos la variable para capturar el ID de inserción
     $id_seguimiento = 0;
-    $producto = $this->model_producto->get_producto_id($prod_id);
 
-    // 4. Inserción según el valor de ejecución
+    // 5. Inserción según el valor físico de ejecución
     if ($ejecutado > 0) {
         $data = array(
             'prod_id'            => $prod_id,
@@ -792,79 +763,112 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
             'acciones'           => strtoupper($acciones),
         );
         $this->db->insert('prod_ejecutado_mensual', $data);
-        // 🌟 CAPTURA DEL ID AUTOINCREMENTAL DE LA TABLA EJECUTADO
         $id_seguimiento = intval($this->db->insert_id());
     } 
-     else {
-            $data = array(
-                'prod_id'            => $prod_id,
-                'm_id'               => $mes,
-                'g_id'               => $this->gestion,
-                'medio_verificacion' => strtoupper($verificacion),
-                'observacion'        => strtoupper($problemas),
-                'acciones'           => strtoupper($acciones),
-            );
-            $this->db->insert('prod_no_ejecutado_mensual', $data);
-            // 🌟 CAPTURA DEL ID AUTOINCREMENTAL DE LA TABLA NO EJECUTADO
-            $id_seguimiento = intval($this->db->insert_id());
-        }
-
-        // 5. Retornar la respuesta JSON correcta esperada por el AJAX
-        $respuesta = array(
-            'status'         => 'success',
-            'id_seguimiento' => $id_seguimiento
+    else {
+        $data = array(
+            'prod_id'            => $prod_id,
+            'm_id'               => $mes,
+            'g_id'               => $this->gestion,
+            'medio_verificacion' => strtoupper($verificacion),
+            'observacion'        => strtoupper($problemas),
+            'acciones'           => strtoupper($acciones),
         );
+        $this->db->insert('prod_no_ejecutado_mensual', $data);
+        $id_seguimiento = intval($this->db->insert_id());
+    }
 
+    // 🚀 6. RE-EVALUACIÓN EN CALIENTE: Recuperamos los nuevos saldos actualizados desde la vista PostgreSQL
+    $eval_actualizado = $this->model_evaluacionpoa->get_form4_seguimiento_poa($prod_id);
+    
+    $saldo_actual = isset($eval_actualizado[0]['saldo_acumulado_trm' . $this->tmes]) ? floatval($eval_actualizado[0]['saldo_acumulado_trm' . $this->tmes]) : 0.00;
+    $cumplimiento_txt = isset($eval_actualizado[0]['cumplimiento_trm' . $this->tmes]) ? $eval_actualizado[0]['cumplimiento_trm' . $this->tmes] : 'PENDIENTE';
+
+    // Semáforo dinámico para el letrero de pendiente que retorna al HTML
+    $color_pendiente = ($saldo_actual > 0) ? '#dc2626' : '#16a34a'; // Rojo si debe saldo, Verde si está en 0 o sobrepasado
+
+    $valor_pendiente = '<div style="font-size:10px; color:' . $color_pendiente . '; font-weight:bold;">' .
+                            'Pendiente: ' . round($saldo_actual, 2) . 
+                       '</div>';
+
+    // 7. Retornar el paquete JSON asíncrono limpio hacia el JavaScript
+    $respuesta = array(
+        'status'           => 'success',
+        'v_pendiente_act'  => $valor_pendiente,
+        'calificacion_act' => $cumplimiento_txt,
+        'id_seguimiento'   => $id_seguimiento
+    );
+
+    echo json_encode($respuesta);
+    return;
+}
+
+
+
+    //// eliminar Registro x Actividad
+public function eliminar_seguimiento() {
+    // 1. Capturar de manera segura las variables enviadas por el método POST de jQuery
+    $id_seguimiento = intval($this->input->post('id_seguimiento'));
+    $prod_id        = intval($this->input->post('prod_id'));
+    $mes            = intval($this->input->post('mes'));
+
+    // 2. Validación de seguridad básica
+    if ($prod_id == 0 || $mes == 0) {
+        $respuesta = array(
+            'status'  => 'error',
+            'message' => 'Parámetros insuficientes para procesar la eliminación.'
+        );
         echo json_encode($respuesta);
         return;
     }
 
+    // 3. Ejecutar el borrado físico en la tabla de ejecutados
+    if ($id_seguimiento > 0) {
+        $this->db->where('peg_id', $id_seguimiento);
+    }
+    $this->db->where('prod_id', $prod_id);
+    $this->db->where('m_id', $mes);
+    $this->db->where('g_id', $this->gestion);
+    $this->db->delete('prod_ejecutado_mensual');
 
-    //// eliminar Registro x Actividad
-    public function eliminar_seguimiento() {
-      // 1. Capturar de manera segura las variables enviadas por el método POST de jQuery
-      $id_seguimiento = intval($this->input->post('id_seguimiento'));
-      $prod_id        = intval($this->input->post('prod_id'));
-      $mes            = intval($this->input->post('mes'));
+    // 4. Ejecutar el borrado físico en la tabla de no ejecutados (justificaciones)
+    if ($id_seguimiento > 0) {
+        $this->db->where('ne_id', $id_seguimiento);
+    }
+    $this->db->where('prod_id', $prod_id);
+    $this->db->where('m_id', $mes);
+    $this->db->where('g_id', $this->gestion);
+    $this->db->delete('prod_no_ejecutado_mensual');
 
-      // 2. Validación de seguridad básica
-      if ($prod_id == 0 || $mes == 0) {
-          $respuesta = array(
-              'status'  => 'error',
-              'message' => 'Parámetros insuficientes para procesar la eliminación.'
-          );
-          echo json_encode($respuesta);
-          return;
-      }
+    // 🌟 5. RE-EVALUACIÓN EN CALIENTE: Definir el trimestre activo para el recálculo cronológico
+    $trimestre_row = $this->model_evaluacionpoa->get_trimestre($this->tmes);
+    //$trm_activo = isset($trimestre_row['trm_id']) ? intval($trimestre_row['trm_id']) : 1;
 
-      // 3. Ejecutar el borrado físico en la tabla de ejecutados
-      // Buscamos por la llave primaria si vino en el request, u ocupamos el par prod_id/m_id
-      if ($id_seguimiento > 0) {
-          $this->db->where('peg_id', $id_seguimiento);
-      }
-      $this->db->where('prod_id', $prod_id);
-      $this->db->where('m_id', $mes);
-      $this->db->where('g_id', $this->gestion);
-      $this->db->delete('prod_ejecutado_mensual');
+    // Recuperamos los nuevos saldos actualizados desde la vista PostgreSQL
+    // Removidos los índices [0] debido al uso nativo de row_array() en el modelo
+    $eval_actualizado = $this->model_evaluacionpoa->get_form4_seguimiento_poa($prod_id);
+    
+    $saldo_actual = isset($eval_actualizado[0]['saldo_acumulado_trm' . $this->tmes]) ? floatval($eval_actualizado[0]['saldo_acumulado_trm' . $this->tmes]) : 0.00;
+    $cumplimiento_txt = isset($eval_actualizado[0]['cumplimiento_trm' . $this->tmes]) ? $eval_actualizado[0]['cumplimiento_trm' . $this->tmes] : 'PENDIENTE';
 
-      // 4. Ejecutar el borrado físico en la tabla de no ejecutados (justificaciones)
-      if ($id_seguimiento > 0) {
-          $this->db->where('ne_id', $id_seguimiento);
-      }
-      $this->db->where('prod_id', $prod_id);
-      $this->db->where('m_id', $mes);
-       $this->db->where('g_id', $this->gestion);
-      $this->db->delete('prod_no_ejecutado_mensual');
+    // Semáforo dinámico para el letrero de pendiente que retorna al HTML
+    $color_pendiente = ($saldo_actual > 0) ? '#dc2626' : '#16a34a'; // Rojo si debe saldo, Verde si está en 0 o sobrepasado
 
-      // 5. Retornar respuesta de éxito en formato JSON para el frontend
-      $respuesta = array(
-          'status'  => 'success',
-          'message' => 'El registro fue eliminado correctamente de la base de datos.'
-      );
+    $valor_pendiente = '<div style="font-size:10px; color:' . $color_pendiente . '; font-weight:bold;">' .
+                            'Pendiente: ' . round($saldo_actual, 2) . 
+                       '</div>';
 
-      echo json_encode($respuesta);
-      return;
-  }
+    $respuesta = array(
+        'status'           => 'success',
+        'v_pendiente_act'  => $valor_pendiente,
+        'calificacion_act' => $cumplimiento_txt,
+        'message'          => 'El registro fue eliminado correctamente de la base de datos.'
+    );
+
+    echo json_encode($respuesta);
+    return;
+}
+
 
 
 

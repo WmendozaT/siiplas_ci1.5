@@ -1864,21 +1864,21 @@ SELECT
     (calc.prog_ac_trm1 - calc.ejec_ac_trm1) AS saldo_acumulado_trm1,
 
     CASE 
-    WHEN calc.prog_trm1 = 0 AND calc.ejec_ac_trm1 = 0 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1)> 0 THEN 4::numeric
-        WHEN calc.prog_trm1 = 0 AND calc.ejec_ac_trm1 = 0 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1)= 0 THEN 0::numeric
-        WHEN calc.prog_trm1 > 0 AND calc.saldo_trm1 = 0 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1) = 0 THEN 1::numeric 
-        WHEN calc.ejec_trm1 > 0 AND calc.saldo_trm1 > 0 THEN 2::numeric
-        WHEN calc.ejec_trm1 = 0 THEN 3::numeric
-        ELSE 4::numeric
+        WHEN calc.prog_trm1 = 0.00 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1) = 0.00 THEN 0::numeric
+        WHEN calc.saldo_trm1 <= 0.00 AND (calc.prog_trm1 > 0.00 OR calc.ejec_trm1 > 0.00) THEN 4::numeric
+        WHEN calc.prog_trm1 = 0.00 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1) > 0.00 THEN 1::numeric
+        WHEN calc.ejec_trm1 > 0.00 AND calc.saldo_trm1 > 0.00 THEN 2::numeric
+        WHEN calc.ejec_trm1 = 0.00 AND calc.prog_trm1 > 0.00 THEN 3::numeric
+        ELSE 3::numeric
     END AS tp_cumplimiento_trm1,
 
-  CASE 
-    WHEN calc.prog_trm1 = 0 AND calc.ejec_ac_trm1 = 0 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1)> 0 THEN 'PENDIENTE'::text
-        WHEN calc.prog_trm1 = 0 AND calc.ejec_ac_trm1 = 0 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1)= 0 THEN 'NINGUNO'::text 
-        WHEN calc.prog_trm1 > 0 AND calc.saldo_trm1 = 0 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1) = 0 THEN 'CUMPLIDO'::text 
-        WHEN calc.ejec_trm1 > 0 AND calc.saldo_trm1 > 0 THEN 'EN PROCESO'::text
-        WHEN calc.ejec_trm1 = 0 THEN 'NO CUMPLIDO'::text 
-        ELSE 'PENDIENTE'::text
+    CASE 
+        WHEN calc.prog_trm1 = 0.00 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1) = 0.00 THEN 'NINGUNO'::text 
+        WHEN calc.saldo_trm1 <= 0.00 AND (calc.prog_trm1 > 0.00 OR calc.ejec_trm1 > 0.00) THEN 'CUMPLIDO'::text 
+        WHEN calc.prog_trm1 = 0.00 AND (calc.prog_ac_trm1 - calc.ejec_ac_trm1) > 0.00 THEN 'PENDIENTE'::text
+        WHEN calc.ejec_trm1 > 0.00 AND calc.saldo_trm1 > 0.00 THEN 'EN PROCESO'::text 
+        WHEN calc.ejec_trm1 = 0.00 AND calc.prog_trm1 > 0.00 THEN 'NO CUMPLIDO'::text 
+        ELSE 'NO CUMPLIDO'::text
     END AS cumplimiento_trm1,
         
     -- Trimestre 2
@@ -1887,22 +1887,22 @@ SELECT
     calc.saldo_trm2,
     (calc.prog_ac_trm2 - calc.ejec_ac_trm2) AS saldo_acumulado_trm2,
 
-  CASE 
-    WHEN calc.prog_trm2 = 0 AND calc.ejec_ac_trm2 = 0 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2)> 0 THEN 4::numeric
-        WHEN calc.prog_trm2 = 0 AND calc.ejec_ac_trm2 = 0 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2)= 0 THEN 0::numeric
-        WHEN calc.prog_trm1 > 0 AND calc.prog_trm2 > 0 AND calc.saldo_trm2 = 0 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2) = 0 THEN 1::numeric 
-        WHEN calc.ejec_trm2 > 0 AND calc.saldo_trm2 > 0 THEN 2::numeric
-        WHEN calc.ejec_trm2 = 0 THEN 3::numeric
-        ELSE 4::numeric
+    CASE 
+        WHEN calc.prog_trm2 = 0.00 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2) = 0.00 THEN 0::numeric
+        WHEN calc.saldo_trm2 <= 0.00 AND (calc.prog_trm2 > 0.00 OR calc.ejec_trm2 > 0.00) THEN 4::numeric
+        WHEN calc.prog_trm2 = 0.00 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2) > 0.00 THEN 1::numeric
+        WHEN calc.ejec_trm2 > 0.00 AND calc.saldo_trm2 > 0.00 THEN 2::numeric
+        WHEN calc.ejec_trm2 = 0.00 AND calc.prog_trm2 > 0.00 THEN 3::numeric
+        ELSE 3::numeric
     END AS tp_cumplimiento_trm2,
     
   CASE 
-    WHEN calc.prog_trm2 = 0 AND calc.ejec_ac_trm2 = 0 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2)> 0 THEN 'PENDIENTE'::text
-    WHEN calc.prog_trm2 = 0 AND calc.ejec_ac_trm2 = 0 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2)= 0 THEN 'NINGUNO'::text 
-        WHEN calc.prog_trm2 > 0 AND calc.saldo_trm2 = 0 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2) = 0 THEN 'CUMPLIDO'::text 
-        WHEN calc.ejec_trm2 > 0 AND calc.saldo_trm2 > 0 THEN 'EN PROCESO'::text 
-        WHEN calc.ejec_trm2 = 0 THEN 'NO CUMPLIDO'::text 
-        ELSE 'PENDIENTE'::text
+        WHEN calc.prog_trm2 = 0.00 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2) = 0.00 THEN 'NINGUNO'::text 
+        WHEN calc.saldo_trm2 <= 0.00 AND (calc.prog_trm2 > 0.00 OR calc.ejec_trm2 > 0.00) THEN 'CUMPLIDO'::text 
+        WHEN calc.prog_trm2 = 0.00 AND (calc.prog_ac_trm2 - calc.ejec_ac_trm2) > 0.00 THEN 'PENDIENTE'::text
+        WHEN calc.ejec_trm2 > 0.00 AND calc.saldo_trm2 > 0.00 THEN 'EN PROCESO'::text 
+        WHEN calc.ejec_trm2 = 0.00 AND calc.prog_trm2 > 0.00 THEN 'NO CUMPLIDO'::text 
+        ELSE 'NO CUMPLIDO'::text
     END AS cumplimiento_trm2,
     
     -- Trimestre 3
@@ -1912,21 +1912,21 @@ SELECT
     (calc.prog_ac_trm3 - calc.ejec_ac_trm3) AS saldo_acumulado_trm3,
 
   CASE 
-    WHEN calc.prog_trm3 = 0 AND calc.ejec_ac_trm3 = 0 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3)> 0 THEN 4::numeric
-        WHEN calc.prog_trm3 = 0 AND calc.ejec_ac_trm3 = 0 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3)= 0 THEN 0::numeric
-        WHEN calc.prog_trm1 > 0 AND calc.saldo_trm3 = 0 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3) = 0 THEN 1::numeric 
-        WHEN calc.ejec_trm3 > 0 AND calc.saldo_trm3 > 0 THEN 2::numeric
-        WHEN calc.ejec_trm3 = 0 THEN 3::numeric
-        ELSE 4::numeric
+        WHEN calc.prog_trm3 = 0.00 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3) = 0.00 THEN 0::numeric
+        WHEN calc.saldo_trm3 <= 0.00 AND (calc.prog_trm3 > 0.00 OR calc.ejec_trm3 > 0.00) THEN 4::numeric
+        WHEN calc.prog_trm3 = 0.00 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3) > 0.00 THEN 1::numeric
+        WHEN calc.ejec_trm3 > 0.00 AND calc.saldo_trm3 > 0.00 THEN 2::numeric
+        WHEN calc.ejec_trm3 = 0.00 AND calc.prog_trm3 > 0.00 THEN 3::numeric
+        ELSE 3::numeric
     END AS tp_cumplimiento_trm3,
     
   CASE 
-    WHEN calc.prog_trm3 = 0 AND calc.ejec_ac_trm3 = 0 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3)> 0 THEN 'PENDIENTE'::text 
-        WHEN calc.prog_trm3 = 0 AND calc.ejec_ac_trm3 = 0 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3)= 0 THEN 'NINGUNO'::text 
-        WHEN calc.prog_trm2 > 0 AND calc.saldo_trm3 = 0 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3) = 0 THEN 'CUMPLIDO'::text 
-        WHEN calc.ejec_trm3 > 0 AND calc.saldo_trm3 > 0 THEN 'EN PROCESO'::text 
-        WHEN calc.ejec_trm3 = 0 THEN 'NO CUMPLIDO'::text 
-        ELSE 'PENDIENTE'::text
+        WHEN calc.prog_trm3 = 0.00 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3) = 0.00 THEN 'NINGUNO'::text 
+        WHEN calc.saldo_trm3 <= 0.00 AND (calc.prog_trm3 > 0.00 OR calc.ejec_trm3 > 0.00) THEN 'CUMPLIDO'::text 
+        WHEN calc.prog_trm3 = 0.00 AND (calc.prog_ac_trm3 - calc.ejec_ac_trm3) > 0.00 THEN 'PENDIENTE'::text
+        WHEN calc.ejec_trm3 > 0.00 AND calc.saldo_trm3 > 0.00 THEN 'EN PROCESO'::text 
+        WHEN calc.ejec_trm3 = 0.00 AND calc.prog_trm3 > 0.00 THEN 'NO CUMPLIDO'::text 
+        ELSE 'NO CUMPLIDO'::text
     END AS cumplimiento_trm3,
     
     -- Trimestre 4
@@ -1936,20 +1936,20 @@ SELECT
     (calc.prog_ac_trm4 - calc.ejec_ac_trm4) AS saldo_acumulado_trm4,
 
     CASE 
-    WHEN calc.prog_trm4 = 0 AND calc.ejec_ac_trm4 = 0 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4)> 0 THEN 4::numeric
-        WHEN calc.prog_trm4 = 0 AND calc.ejec_ac_trm4 = 0 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4)= 0 THEN 0::numeric
-        WHEN calc.prog_trm1 > 0 AND calc.saldo_trm4 = 0 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4) = 0 THEN 1::numeric 
-        WHEN calc.ejec_trm4 > 0 AND calc.saldo_trm4 > 0 THEN 2::numeric
-        WHEN calc.ejec_trm4 = 0 THEN 3::numeric
-        ELSE 4::numeric
+        WHEN calc.prog_trm4 = 0.00 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4) = 0.00 THEN 0::numeric
+        WHEN calc.saldo_trm4 <= 0.00 AND (calc.prog_trm4 > 0.00 OR calc.ejec_trm4 > 0.00) THEN 4::numeric
+        WHEN calc.prog_trm4 = 0.00 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4) > 0.00 THEN 1::numeric
+        WHEN calc.ejec_trm4 > 0.00 AND calc.saldo_trm4 > 0.00 THEN 2::numeric
+        WHEN calc.ejec_trm4 = 0.00 AND calc.prog_trm4 > 0.00 THEN 3::numeric
+        ELSE 3::numeric
     END AS tp_cumplimiento_trm4,
     CASE 
-        WHEN calc.prog_trm4 = 0 AND calc.ejec_ac_trm4 = 0 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4)> 0 THEN 'PENDIENTE'::text
-        WHEN calc.prog_trm4 = 0 AND calc.ejec_ac_trm4 = 0 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4)= 0 THEN 'NINGUNO'::text 
-        WHEN calc.prog_trm2 > 0 AND calc.saldo_trm4 = 0 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4) = 0 THEN 'CUMPLIDO'::text 
-        WHEN calc.ejec_trm4 > 0 AND calc.saldo_trm4 > 0 THEN 'EN PROCESO'::text 
-        WHEN calc.ejec_trm4 = 0 THEN 'NO CUMPLIDO'::text 
-        ELSE 'PENDIENTE'::text
+        WHEN calc.prog_trm4 = 0.00 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4) = 0.00 THEN 'NINGUNO'::text 
+        WHEN calc.saldo_trm4 <= 0.00 AND (calc.prog_trm4 > 0.00 OR calc.ejec_trm4 > 0.00) THEN 'CUMPLIDO'::text 
+        WHEN calc.prog_trm4 = 0.00 AND (calc.prog_ac_trm4 - calc.ejec_ac_trm4) > 0.00 THEN 'PENDIENTE'::text
+        WHEN calc.ejec_trm4 > 0.00 AND calc.saldo_trm4 > 0.00 THEN 'EN PROCESO'::text 
+        WHEN calc.ejec_trm4 = 0.00 AND calc.prog_trm4 > 0.00 THEN 'NO CUMPLIDO'::text 
+        ELSE 'NO CUMPLIDO'::text
     END AS cumplimiento_trm4
 
     
