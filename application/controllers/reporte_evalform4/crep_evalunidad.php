@@ -36,7 +36,7 @@ class Crep_evalunidad extends CI_Controller {
     }
 
 
-    // Modulo Evaluacion POA
+    // Modulo Evaluacion POA (a eliminar para e 2027)
     public function evaluacion_poa_unidad($proy_id){
       $proyecto = $this->model_proyecto->get_id_proyecto($proy_id);
       if(count($proyecto)!=0){

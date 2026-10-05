@@ -111,8 +111,8 @@ class Cevaluacion_form4 extends CI_Controller {
                             <thead>
                               <tr style="height: 42px; background: #475569; color: #ffffff; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px;">
                                 <th style="width:1%;"></th>
-                                <th style="width:5%;"title="REPORTE POA">REPORTE POA</th>
-                                <th style="width:5%;" title="REPORTE POA APROBADO">REP. POA '.$this->gestion.'</th>
+                                <th style="width:10%;"title="REPORTE POA">REPORTE POA</th>
+                                <th style="width:10%;" title="REPORTE POA APROBADO">EJECUCION POA '.$this->gestion.'</th>
                                 <th style="width:5%;" title="ERROR EN EL POA"></th>
                                 <th style="width:10%;" title="APERTURA PROGRAM&Aacute;TICA">CATEGORIA PROGRAM&Aacute;TICA</th>
                                 <th style="width:25%;" title="NOMBRE DEL PROYECTO DE INVERSI&Oacute;N">PROYECTO DE INVERSIÓN</th>
@@ -132,14 +132,68 @@ class Cevaluacion_form4 extends CI_Controller {
               </article>
             </div>
         </div>
-    </div>';
+    </div>
+
+
+    <div class="modal fade" id="modal_nuevo_ff" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" data-backdrop="static">
+          <!-- Ancho controlado y centrado estético -->
+          <div class="modal-dialog" id="mdialTamanio" style="width: 50% !important; max-width: 900px; margin: 30px auto;">
+              <div class="modal-content" style="border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); border: none; overflow: hidden;">
+                  
+                  <!-- 🏛️ Cabecera Superior Estilizada -->
+                  <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 15px 20px; border-bottom: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+                      <h4 class="modal-title" style="font-weight: bold; margin: 0; font-size: 16px; font-family: sans-serif;">
+                          <i class="fa fa-folder-open"></i> EVALUACIÓN OPERATIVA TRIMESTRAL
+                      </h4>
+                      <!-- Botón de Salir Moderno -->
+                      <button type="button" class="close" data-dismiss="modal" id="amcl" title="SALIR" style="color: #ffffff; opacity: 0.8; font-size: 14px; font-weight: bold; background: rgba(255,255,255,0.15); border: none; padding: 5px 12px; border-radius: 4px; transition: all 0.2s;">
+                          <span aria-hidden="true">&times; Cerrar</span>
+                      </button>
+                  </div>
+                  
+                  <!-- 📝 Cuerpo del Modal -->
+                  <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                      
+                      <!-- Alerta de Gestión Estilo Banner Plano Corporativo -->
+                      <div class="alert alert-info" style="background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1; border-radius: 6px; padding: 12px; margin-bottom: 20px; font-weight: bold; font-size: 15px; text-align: center; letter-spacing: 0.5px; font-family: sans-serif;">
+                          <i class="fa fa-calendar"></i> MI POA — GESTIÓN '.$this->gestion.'
+                      </div>
+                  
+                      <!-- Bloque Estructural del Establecimiento / Proyecto Seleccionado -->
+                      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 20px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
+                          <table style="width:100%; border-collapse: collapse;">
+                              <tr>
+                                  <!-- Título o Datos del Establecimiento -->
+                                  <td style="width: 85%; vertical-align: middle; padding-right: 15px;">
+                                      <div id="titulo" style="font-size: 13px; color: #334155; line-height: 1.4;"></div> 
+                                  </td>
+                                  <!-- Carátula o Icono del Establecimiento -->
+                                  <td style="width: 15%; text-align: center; vertical-align: middle; border-left: 1px dashed #cbd5e1; padding-left: 10px;">
+                                      <div id="caratula"></div> 
+                                  </td>
+                              </tr>
+                          </table>
+                      </div>
+
+                      <!-- 🌟 CONTENEDOR DINÁMICO DONDE JQUERY INYECTA LAS UNIDADES RESPONSABLES -->
+                      <div class="row" style="margin: 0;">
+                          <div id="content1" style="width: 100%; min-height: 100px;">
+                              <!-- El preloader o la tabla asíncrona se renderizarán limpiamente aquí -->
+                          </div>
+                      </div>
+                      
+                  </div>
+              </div>
+          </div>
+      </div>
+    ';
 
         $data['listado']=$tabla;
         $this->load->view('admin/evaluacion/evaluacion_form4/list_poa_evaluacion', $data);
     }
 
 
-    /*---- Lista de Unidades / Establecimientos de Salud (2027) -----*/
+    /*---- Lista de Unidades / Establecimientos de Salud (llevar a libreria) -----*/
     public function list_unidades_es($proy_estado){
       $unidades=$this->model_proyecto->list_unidades(4,$proy_estado);
       $tabla='';
@@ -148,11 +202,24 @@ class Cevaluacion_form4 extends CI_Controller {
         $nro++;
         $tabla.='
           <tr style="height:35px;">
-            <td><center>'.$nro.'</center></td>
+            <td title="'.$row['proy_id'].'"><center>'.$nro.'</center></td>
             <td></td>
-            <td><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-primary enlace" name="'.$row['proy_id'].'" id=" '.$row['tipo'].' '.strtoupper($row['proy_nombre']).' - '.$row['abrev'].'" style="font-size:10px;">
-                    <i class="glyphicon glyphicon-list"></i> <b>UNIDADES RESPONSABLES</b>
-                  </a>
+            <td>';
+            if($row['ta_id']==2){
+              $componente=$this->model_componente->proyecto_componente($row['proy_id']);
+              $url_destino = site_url("formulario_seguimiento_poa/".$componente[0]['com_id']);
+                    $tabla .= '
+                    <a href="#" onclick="cargarFormularioEvaluacion(event, \''.$url_destino.'\', \''.addslashes($row['tipo'].' '.$row['proy_nombre'].' '.$row['abrev']).'\')" class="btn btn-primary btn-block" style="font-size:10px;background: #16a34a; border: none; font-weight: bold; padding: 5px 0;" title="Ingresar a evaluar actividades">
+                      <i class="fa fa-pencil-square-o"></i> EVALUAR POA '.$this->verif_mes[2].' / '.$this->gestion.'
+                    </a>';
+            }
+            else{
+              $tabla.='
+              <a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-primary enlace" name="'.$row['proy_id'].'" id=" '.$row['tipo'].' '.strtoupper($row['proy_nombre']).' - '.$row['abrev'].'" style="font-size:10px;">
+                <i class="glyphicon glyphicon-list"></i> <b>EVALUAR POA</b>
+              </a>';
+            }
+            $tabla.='
             </td>
             <td></td>
             <td></td>
@@ -170,27 +237,26 @@ class Cevaluacion_form4 extends CI_Controller {
     }
 
 
- /*---- Lista de Proyectos de Inversion (2020) -----*/
+ /*---- Lista de Proyectos de Inversion (llevar a libreria) -----*/
     public function list_pinversion($proy_estado){
       $tabla='';
       $proyectos=$this->model_proyecto->list_unidades(1,$proy_estado);
       $nro=0;
         foreach($proyectos as $row){
-          $componentes=$this->model_componente->lista_UnidadesResponsables($row['proy_id']);
+          $componentes = $this->model_componente->lista_UnidadesResponsables_con_actividades($row['proy_id']);
           $nro++;
           $tabla.='
           <tr style="height:35px;">
             <td title='.$row['proy_id'].'><center>'.$nro.'</center></td>
             <td>';
-                  foreach($componentes as $rowc){
-                  if(count($this->model_producto->lista_productos($rowc['com_id']))!=0){
-                    $tabla.='
-                      <a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">
-                        REGISTRAR EJECUCIÓN '.$this->verif_mes[2].' / '.$this->gestion.'
-                      </a>';
-                    }
-                  }
-                  $tabla.='
+                foreach($componentes as $rowc){
+                    $url_destino = site_url("formulario_seguimiento_poa/".$rowc['com_id']);
+                    $tabla .= '
+                    <a href="#" onclick="cargarFormularioEvaluacion(event, \''.$url_destino.'\', \''.addslashes($proyectos[0]['proy_nombre']).'\')" class="btn btn-xs btn-success btn-block" style="background: #16a34a; border: none; font-weight: bold; padding: 5px 0;" title="Ingresar a evaluar actividades">
+                      <i class="fa fa-pencil-square-o"></i> FORMULARIO POA '.$this->verif_mes[2].' / '.$this->gestion.'
+                    </a>';
+                }
+                $tabla.='
             </td>
             <td></td>
             <td></td>
@@ -211,96 +277,139 @@ class Cevaluacion_form4 extends CI_Controller {
 
 
 
-/*----- GET LISTA DE SUBACTIVIDADES -----*/
-    public function get_subactividades(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
 
-        $evaluacion='
-          <a href="'.site_url("").'/eval/eval_unidad/'.$proy_id.'" title="REPORTE DE EVALUACION POA" target="_blank" class="btn btn-default"><img src="'.base_url().'assets/img/impresora.png" WIDTH="50" HEIGHT="50"/><br>VER EVALUACIÓN</a>';
 
-        $tabla=$this->mis_unidadesresponsables($proy_id); /// lista unidades responsables para evaluacion poa
+
+
+
+
+
+
+    /*----- GET Evaluar Unidad Responsable -----*/
+    public function get_evaluar_unidadresponsable(){
+    // Verificación nativa de peticiones asíncronas
+    if($this->input->is_ajax_request() && $this->input->post()){
+        $proy_id = intval($this->input->post('proy_id'));
+
+        // Obtener el HTML optimizado
+        $tabla = $this->lista_UnidadesResponsables_para_evaluacion($proy_id);
+        
         $result = array(
-          'respuesta' => 'correcto',
-          'tabla'=>$tabla,
-          'evaluacion'=>$evaluacion,
+            'respuesta'  => 'correcto',
+            'tabla'      => $tabla,
+            'evaluacion' => '' // Se inicializa vacía para evitar el error de "Undefined variable"
         );
-          
+        
         echo json_encode($result);
-      }else{
-          show_404();
-      }
+        return;
+    } else {
+        show_404();
     }
+}
 
+/*------ GET UNIDADES RESPONSABLES (OPTIMIZADO SIN CONSULTAS EN BUCLE) -----*/
+public function lista_UnidadesResponsables_para_evaluacion($proy_id){
+    $tabla = ' 
+    <table class="table table-bordered table-striped" style="width:100%; font-family:sans-serif; font-size:12px;">
+      <thead>
+        <tr style="background: #334155; color: #ffffff; height: 32px;">
+          <th style="width:8%; text-align: center; vertical-align: middle;">COD.</th>
+          <th style="width:72%; vertical-align: middle; padding-left: 10px;">UNIDAD RESPONSABLE A EVALUAR</th>
+          <th style="width:20%; text-align: center; vertical-align: middle;">ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody>';
 
-
-
-    /*------ GET UNIDADES REPONSABLES -----*/
-    public function mis_unidadesresponsables($proy_id){
-      $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); ////// DATOS DEL PROYECTO
-      $titulo='UNIDAD RESPONSABLE';
-      //$titulo_boton='';
-      $tabla='';
-
-      $tabla.=' 
-        <table class="table table-bordered">
-          <thead>
-          <tr>
-            <th style="width:3%;" bgcolor="#474544"> COD.</th>
-            <th style="width:50%;" bgcolor="#474544">UNIDAD RESPONSABLE</th>
-            <th style="width:10%;" bgcolor="#474544">PONDERACI&Oacute;N</th>
-            <th style="width:10%;" bgcolor="#474544"></th>
-            <th style="width:1%;" bgcolor="#474544"></th>
-          </tr>
-          </thead>
-          <tbody>';
-          $nro_c=0;
-            $componentes=$this->model_componente->lista_UnidadesResponsables($proy_id);
-            foreach($componentes as $rowc){
-              if(count($this->model_producto->lista_productos($rowc['com_id']))!=0){
-                $verif=$this->model_seguimientopoa->get_seguimiento_poa_mes_subactividad($rowc['com_id'],$this->verif_mes[1]);
-                $nro_c++;
-                $tabla.='
-                <tr>
-                  <td><b>'.$rowc['serv_cod'].'</b></td>
-                  <td><b>'.$rowc['tipo_subactividad'].' '.$rowc['serv_descripcion'].'</b></td>
-                  <td>'.$rowc['com_ponderacion'].'%</td>
-                  <td>';
-                    if($proyecto[0]['tp_id']==1){
-                      $tabla.='
-                      <a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">
-                       EJECUCION POA '.$this->verif_mes[2].' / '.$this->gestion.'
-                      </a>';
-
-                    }
-                    else{
-                      $tabla.='<center>'.$this->btn_seguimiento_evaluacion_poa($rowc['com_id']).'</center>';
-                      //$tabla.='<a href="'.site_url("").'/seg/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">REALIZAR SEGUIMIENTO POA v2</a>';
-                      //// Wilmer
-                      if($this->fun_id==399){
-                        $tabla.='<br><a href="'.site_url("").'/formulario_seguimiento_poa/'.$rowc['com_id'].'" id="myBtn'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">REALIZAR SEGUIMIENTO POA v2</a>';
-                      }
-                    }
-                    
-                  $tabla.='
-                  </td>
-                  <td align=center><img id="load'.$rowc['com_id'].'" style="display: none" src="'.base_url().'/assets/img/loading.gif" width="25" height="25" title="ESPERE UN MOMENTO, LA PAGINA SE ESTA CARGANDO.."></td>
-                </tr>';
-                $tabla.=' <script>
-                            document.getElementById("myBtn'.$rowc['com_id'].'").addEventListener("click", function(){
-                            this.disabled = true;
-                            document.getElementById("load'.$rowc['com_id'].'").style.display = "block";
-                            });
-                          </script>';
-              }
-            }
-          $tabla.='
-          </tbody>
-        </table>';
-
-      return $tabla;
+    $componentes = $this->model_componente->lista_UnidadesResponsables_con_actividades($proy_id);
+    
+    if (empty($componentes)) {
+        $tabla .= '<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding: 15px;">La unidad organizacional seleccionada no registra actividades POA vigentes para evaluación.</td></tr>';
+    } else {
+        foreach($componentes as $rowc){
+            $url_destino = site_url("formulario_seguimiento_poa/".$rowc['com_id']);
+            
+            $tabla .= '
+            <tr style="height: 35px; vertical-align: middle;">
+              <td style="text-align: center; font-weight: bold; color: #1e293b; vertical-align: middle;">'.$rowc['serv_cod'].'</td>
+              <td style="vertical-align: middle; padding-left: 10px; color: #334155;"><b>'.$rowc['tipo_subactividad'].' '.$rowc['com_componente'].'</b></td>
+              <td style="text-align: center; vertical-align: middle; padding: 4px;">
+                <!-- 🌟 AJUSTE AQUÍ: href cambiado por # y evento onclick para activar el Loading de pantalla completa -->
+                <a href="#" onclick="cargarFormularioEvaluacion(event, \''.$url_destino.'\', \''.addslashes($rowc['com_componente']).'\')" class="btn btn-xs btn-success btn-block" style="background: #16a34a; border: none; font-weight: bold; padding: 5px 0;" title="Ingresar a evaluar actividades">
+                    <i class="fa fa-pencil-square-o"></i> REALIZAR SEGUIMIENTO POA
+                </a>
+              </td>
+            </tr>';
+        }
     }
+    
+    $tabla .= '</tbody></table>';
+    return $tabla;
+}
+
+
+
+
+    // public function get_evaluar_unidadresponsable(){
+    //   if($this->input->is_ajax_request() && $this->input->post()){
+    //     $post = $this->input->post();
+    //     $proy_id = $this->security->xss_clean($post['proy_id']);
+
+
+    //     $tabla=$this->lista_UnidadesResponsables_para_evaluar($proy_id); /// lista unidades responsables para evaluacion poa
+    //     $result = array(
+    //       'respuesta' => 'correcto',
+    //       'tabla'=>$tabla,
+    //       'evaluacion'=>$evaluacion,
+    //     );
+          
+    //     echo json_encode($result);
+    //   }else{
+    //       show_404();
+    //   }
+    // }
+
+
+
+
+    // /*------ GET UNIDADES REPONSABLES (llevar a libreria)-----*/
+    // public function lista_UnidadesResponsables_para_evaluar($proy_id){
+    //   $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); ////// DATOS DEL PROYECTO
+    //   $titulo='UNIDAD RESPONSABLE';
+    //   //$titulo_boton='';
+    //   $tabla='';
+
+
+    //   $tabla.=' 
+    //     <table class="table table-bordered">
+    //       <thead>
+    //       <tr>
+    //         <th style="width:3%;" bgcolor="#474544"> COD.</th>
+    //         <th style="width:50%;" bgcolor="#474544">UNIDAD RESPONSABLE A EVALUAR</th>
+    //         <th style="width:10%;" bgcolor="#474544"></th>
+    //       </tr>
+    //       </thead>
+    //       <tbody>';
+    //       $nro=0;
+    //         $componentes=$this->model_componente->lista_UnidadesResponsables_con_actividad($proy_id);
+    //         foreach($componentes as $rowc){
+    //           if(count($this->model_producto->lista_productos($rowc['com_id']))!=0){
+    //             $nro++;
+    //             $tabla.='
+    //             <tr>
+    //               <td><b>'.$rowc['serv_cod'].'</b></td>
+    //               <td><b>'.$rowc['tipo_subactividad'].' '.$rowc['com_componente'].'</b></td>
+    //               <td>
+    //                 <a href="'.site_url("").'/formulario_seguimiento_poa/'.$rowc['com_id'].'" class="btn btn-primary" title="REALIZAR SEGUIMIENTO">REALIZAR SEGUIMIENTO POA</a>
+    //               </td>
+    //             </tr>';
+    //           }
+    //         }
+    //       $tabla.='
+    //       </tbody>
+    //     </table>';
+
+    //   return $tabla;
+    // }
 
 
 
@@ -342,9 +451,14 @@ class Cevaluacion_form4 extends CI_Controller {
             $this->lib_seguimientopoa->update_uresponsable($form4_crudo);
           }
 
+          if($componente[0]['tp_id']==1){
+            redirect('form_ejec_pinversion/'.$com_id);
+          }
+          else{
+            $data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente);
+            $this->load->view('admin/evaluacion/evaluacion_form4/form_evaluacion_form4', $data);
+          }
         
-        $data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente);
-        $this->load->view('admin/evaluacion/evaluacion_form4/form_evaluacion_form4', $data);
     }
 
 

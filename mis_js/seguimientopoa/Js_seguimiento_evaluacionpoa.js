@@ -850,44 +850,128 @@ function cargarCuadrosEvaluacion(elemento, comId) {
 
 
     ////// para listar las unidades responsable para evaluar
-  $(function () {
-    $(".enlace").on("click", function (e) {
-      proy_id = $(this).attr('name');
-      establecimiento = $(this).attr('id');
-      
-      $('#titulo').html('<font size=3><b>'+establecimiento+'</b></font>');
-      $('#content1').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Ediciones - <br>'+establecimiento+'</div>');
-      
-      var url = base+"index.php/ejecucion/cseguimiento/get_subactividades";
-      var request;
-      if (request) {
-          request.abort();
-      }
-      request = $.ajax({
-          url: url,
-          type: "POST",
-          dataType: 'json',
-          data: "proy_id="+proy_id
-      });
+    // 🌟 CORRECCIÓN CRÍTICA: La variable de control debe nacer afuera del bloque on("click")
+    var xhrRequest = null;
 
-      request.done(function (response, textStatus, jqXHR) {
+    $(function () {
+        $(".enlace").on("click", function (e) {
+            e.preventDefault(); // Frenar comportamiento nativo de inmediato
 
-      if (response.respuesta == 'correcto') {
-          $('#content1').fadeIn(1000).html(response.tabla);
-          $('#evaluacion').fadeIn(1000).html(response.evaluacion);
-      }
-      else{
-          alertify.error("ERROR AL RECUPERAR INFORMACION");
-      }
+            var proy_id = $(this).attr('name');
+            var establecimiento = $(this).attr('id');
+            
+            // Reemplazar <font> antiguo por CSS en línea estable
+            $('#titulo').html('<span style="font-size: 15px; font-weight: bold; color: #1e3a8a;">' + establecimiento + '</span>');
+            
+            // Loader visual estilizado
+            $('#content1').html(
+                '<div class="loading" align="center" style="padding: 20px;">' +
+                    '<img src="' + base + '/assets/img_v1.1/preloader.gif" alt="loading" style="margin-bottom: 10px;" /><br/>' +
+                    '<span style="font-weight: bold; color: #475569; font-size: 13px;">Un momento por favor, Cargando Unidades Responsables...</span>' +
+                '</div>'
+            );
+            
+            var url = base + "index.php/ejecucion/cevaluacion_form4/get_evaluar_unidadresponsable";
 
-      });
-      request.fail(function (jqXHR, textStatus, thrown) {
-          console.log("ERROR: " + textStatus);
-      });
-      request.always(function () {
-          //console.log("termino la ejecuicion de ajax");
-      });
-      e.preventDefault();
-      
+            // 🌟 ABORTAR CONTROLADO: Si el usuario cliquea otra fila rápido, cancelamos la anterior
+            if (xhrRequest && xhrRequest.readyState !== 4) {
+                xhrRequest.abort();
+            }
+
+            // Petición AJAX pasando el parámetro de forma segura como Objeto JSON
+            xhrRequest = $.ajax({
+                url: url,
+                type: "POST",
+                dataType: 'json',
+                data: { proy_id: proy_id }
+            });
+
+            xhrRequest.done(function (response) {
+                if (response.respuesta === 'correcto') {
+                    // Inyectamos y ejecutamos un fadeIn fluido
+                    $('#content1').hide().html(response.tabla).fadeIn(400);
+                    $('#evaluacion').hide().html(response.evaluacion).fadeIn(400);
+                } else {
+                    alertify.error("ERROR AL RECUPERAR INFORMACIÓN");
+                }
+            });
+
+            xhrRequest.fail(function (jqXHR, textStatus, thrown) {
+                // Si el fallo fue gatillado por el abort de control interno, ignoramos la alerta de error
+                if (textStatus === 'abort') { return; }
+                alertify.error("Error de red: No se pudo conectar con el servidor.");
+                console.error("AJAX Error: " + textStatus);
+            });
+        });
     });
-  });
+
+    function cargarFormularioEvaluacion(event, urlDestino, nombreUnidad) {
+        // 1. Prevenir la acción predeterminada del click
+        if (event) {
+            event.preventDefault();
+        }
+
+        // 2. ⏳ ACTIVAR LOADING CON FONDO OPACO TOTAL (Mismo diseño de tus opciones anteriores)
+        var loadingId = 'loading_screen_overlay_formulario';
+        
+        // Si por algún motivo ya existe un loading abierto, no duplicarlo
+        if (!document.getElementById(loadingId)) {
+            var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 99999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
+                '<div style="background: #ffffff; padding: 25px 45px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+                    '<i class="fa fa-refresh fa-spin" style="font-size: 34px; color: #16a34a; margin-bottom: 12px; display: block;"></i>' +
+                    '<span style="font-size: 14px; font-weight: bold; color: #334155;">Abriendo matriz de seguimiento...</span><br>' +
+                    '<small style="color: #64748b; font-size: 11px; display: block; margin-top: 5px;">Unidad: ' + nombreUnidad.toUpperCase() + '</small>' +
+                '</div>' +
+            '</div>';
+            
+            jQuery('body').append(loadingHtml);
+        }
+
+        // 3. 🚀 REDIRECCIÓN CONTROLADA: Enviamos al usuario a la nueva página pasados 100ms
+        // Esto da tiempo suficiente a que el navegador renderice el preloader en la pantalla actual
+        setTimeout(function() {
+            window.location.href = urlDestino;
+        }, 100);
+    }
+
+  // $(function () {
+  //   $(".enlace").on("click", function (e) {
+  //     proy_id = $(this).attr('name');
+  //     establecimiento = $(this).attr('id');
+      
+  //     $('#titulo').html('<font size=3><b>'+establecimiento+'</b></font>');
+  //     $('#content1').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Ediciones - <br>'+establecimiento+'</div>');
+      
+  //     var url = base+"index.php/ejecucion/cevaluacion_form4/get_evaluar_unidadresponsable";
+  //     var request;
+  //     if (request) {
+  //         request.abort();
+  //     }
+  //     request = $.ajax({
+  //         url: url,
+  //         type: "POST",
+  //         dataType: 'json',
+  //         data: "proy_id="+proy_id
+  //     });
+
+  //     request.done(function (response, textStatus, jqXHR) {
+
+  //     if (response.respuesta == 'correcto') {
+  //         $('#content1').fadeIn(1000).html(response.tabla);
+  //         $('#evaluacion').fadeIn(1000).html(response.evaluacion);
+  //     }
+  //     else{
+  //         alertify.error("ERROR AL RECUPERAR INFORMACION");
+  //     }
+
+  //     });
+  //     request.fail(function (jqXHR, textStatus, thrown) {
+  //         console.log("ERROR: " + textStatus);
+  //     });
+  //     request.always(function () {
+  //         //console.log("termino la ejecuicion de ajax");
+  //     });
+  //     e.preventDefault();
+      
+  //   });
+  // });

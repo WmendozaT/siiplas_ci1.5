@@ -17,7 +17,7 @@ class Model_componente extends CI_Model{
         return $query->result_array();
     }
 
-    /*------------ Relacion Proyecto Componente -------*/
+    /*------------ Relacion Proyecto Componente vigente 2027 -------*/
     function proyecto_componente($proy_id){
         $sql = 'select *
                 from vista_componentes_dictamen
@@ -111,6 +111,23 @@ class Model_componente extends CI_Model{
                 from vista_lista_UnidadesResponsables
                 where proy_id='.$proy_id.' and aper_gestion='.$this->gestion.'
                 order by com_id asc'; 
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    /*====== LISTA UNIDADES RESPONSABLES 2026 con actividad para evaluar 2027======*/
+    public function lista_UnidadesResponsables_con_actividades($proy_id){
+        $sql = ' SELECT *
+                from vista_lista_UnidadesResponsables poa
+                where poa.proy_id='.$proy_id.' and poa.aper_gestion='.$this->gestion.'
+                AND EXISTS (
+              SELECT 1 
+              FROM _productos p 
+              WHERE p.com_id = poa.com_id 
+            AND p.estado != 3
+          )
+            order by poa.com_id asc'; 
         $query = $this->db->query($sql);
         return $query->result_array();
     }

@@ -451,7 +451,7 @@ class Model_proyecto extends CI_Model{
 
 
 
-    /*====== DATOS DEL PROYECTO X INVERSION =======*/
+    /*====== DATOS DEL PROYECTO X INVERSION (a eliminar)=======*/
     function get_id_proyecto($id_p){
         $query=$this->db->query('select p."proy_id", 
                                         p."proy_nombre",

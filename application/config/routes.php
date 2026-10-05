@@ -436,7 +436,7 @@ $route['rep_eval_poa/iframe_rep_evaluacionpoa/(:any)'] = 'reporte_evalform4/crep
 //$route['rep_eval_poa/rep_eficacia/(:any)'] = 'reporte_evaluacion/crep_evalinstitucional/reporte_parametros/$1/$2';  /// REPORTE EVALUACION GASTO CORRIENTE
 
 /*---------- EVALUACION DE LA OPERACION - UNIDAD, PROYECTO ----------*/
-$route['eval/eval_unidad/(:any)'] = 'reporte_evalform4/crep_evalunidad/evaluacion_poa_unidad/$1';  /// REDIRECCION EVALUACION POA - UNIDAD, PROY INV.
+//$route['eval/eval_unidad/(:any)'] = 'reporte_evalform4/crep_evalunidad/evaluacion_poa_unidad/$1';  /// REDIRECCION EVALUACION POA - UNIDAD, PROY INV.
 $route['eval/eval_unidad_gcorriente/(:any)'] = 'reporte_evalform4/crep_evalunidad/evaluacion_unidad_gcorriente/$1';  /// REPORTES GRAFICOS DE EVALUACION GASTO CORRIENTE
 $route['rep_eficacia_unidad/(:any)'] = 'reporte_evalform4/crep_evalunidad/reporte_indicadores_unidad/$1';  /// REPORTE POR EFICIENCIA Y EFICACIA POR CADA UNIDAD O PROYECTO DE UNIDAD
 
