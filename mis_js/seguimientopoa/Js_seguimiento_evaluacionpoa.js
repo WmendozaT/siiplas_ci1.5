@@ -651,8 +651,9 @@ var chartBarras = null;
 var nombreUnidadGlobal = ""; 
 var trimestre = "";
 var calificacion = ""; 
+/// tp_nivel 0 (componente), 1 (Uni Organizacional)
 
-function cargarCuadrosEvaluacion(elemento, comId) {
+function cargarCuadrosEvaluacion(elemento, Id,tp_nivel) {
     // 1. ⏳ Activar pantalla de carga opaca
     var loadingId = 'loading_screen_overlay_graficos';
     var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +
@@ -666,8 +667,8 @@ function cargarCuadrosEvaluacion(elemento, comId) {
     // 2. Ejecutar petición AJAX al servidor
     jQuery.ajax({
         type: "POST",
-        url: base + "index.php/ejecucion/cevaluacion_form4/obtener_graficos_cumplimiento", 
-        data: { com_id: comId },
+        url: base + "index.php/ejecucion/cevaluacion_form4/obtener_graficos_cumplimiento", //// obtener cuadro de (0)Componente/(1)unidadOrganizacional
+        data: { id: Id,tp_nivel: tp_nivel },
         dataType: 'json',
         success: function(response) {
             jQuery("#" + loadingId).remove();

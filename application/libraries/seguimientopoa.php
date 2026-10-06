@@ -1729,8 +1729,8 @@ class Seguimientopoa extends CI_Controller{
           $date_inicio = strtotime($configuracion[0]['eval_inicio']); /// Fecha Inicio
           $date_final = strtotime($configuracion[0]['eval_fin']); /// Fecha Final
 
-          if (($date_actual >= $date_inicio) && ($date_actual <= $date_final) || $this->tp_adm==1){
-            if(count($this->model_configuracion->get_responsables_evaluacion($this->fun_id))!=0 || $this->tp_adm==1){
+          if (($date_actual >= $date_inicio) && ($date_actual <= $date_final)){
+           
 
               $tabla.='   
                 <div id="row">
@@ -1740,7 +1740,7 @@ class Seguimientopoa extends CI_Controller{
                     </div>
                   </article>
                 </div>';
-            }
+           
           }
       }
 

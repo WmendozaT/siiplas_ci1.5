@@ -515,6 +515,63 @@ class Lib_seguimientopoa {
     }
 
 
+    /// actualizando evaluacion poa
+    public function migracion_evaluacion_poa_UnidadResponsable($com_id) {
+      $poa_prog          = 0;
+      $poa_cumplidos     = 0;
+      $poa_proceso       = 0;
+      $poa_no_cumplidos  = 0;
+      // Bucle para consolidar el histórico acumulado hasta el trimestre seleccionado
+      for ($i = 1; $i <= $this->tmes; $i++) { 
+          $form4 = $this->CI->model_evaluacionpoa->consolidado_list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id, $i); 
+
+          // Suma acumulativa incremental por trimestre
+          $poa_prog          += intval($form4['poa_prog']);
+          $poa_cumplidos     += intval($form4['poa_cumplidos']);
+          $poa_proceso       += intval($form4['poa_proceso']);
+          $poa_no_cumplidos  += intval($form4['poa_no_cumplidos']);
+
+          // Calcular porcentajes con precisión decimal para este corte trimestral
+          $pct_cumplimiento        = 0.00;
+          $pct_proceso            = 0.00;
+          $pct_no_cumplimiento    = 0.00;
+          $pct_no_cumplimiento_tot = 0.00;
+
+          if ($poa_prog > 0) {
+              $pct_cumplimiento     = round(($poa_cumplidos * 100) / $poa_prog, 2);
+              $pct_proceso         = round(($poa_proceso * 100) / $poa_prog, 2);
+              $pct_no_cumplimiento = round(($poa_no_cumplidos * 100) / $poa_prog, 2);
+              $pct_no_cumplimiento_tot = round((($poa_proceso + $poa_no_cumplidos) * 100) / $poa_prog, 2);
+          }
+
+          // 🌟 Limpiar registros previos consolidados en este corte para evitar duplicaciones
+          $this->db->where('com_id', $com_id);
+          $this->db->where('trm_id', $i);
+          $this->db->where('g_id', $this->gestion);
+          $this->db->delete('detalle_evaluacion_poa_trimestral');
+
+          // Insertar registro consolidado limpio
+          $data_insert = array(
+              'dep_id'                           => intval($componente_data[0]['dep_id']),
+              'dist_id'                          => intval($componente_data[0]['dist_id']),
+              'proy_id'                          => floatval($componente_data[0]['proy_id']),
+              'com_id'                           => $com_id,
+              'g_id'                             => intval($this->gestion),
+              'trm_id'                           => intval($i),
+              'poa_prog'                         => $poa_prog,
+              'poa_cumplidos'                    => $poa_cumplidos,
+              'poa_proceso'                      => $poa_proceso,
+              'poa_no_cumplidos'                 => $poa_no_cumplidos,
+              'porcentaje_cumplimiento'          => $pct_cumplimiento,
+              'porcentaje_proceso'               => $pct_proceso,
+              'porcentaje_no_cumplimiento'       => $pct_no_cumplimiento,
+              'porcentaje_no_cumplimiento_total' => $pct_no_cumplimiento_tot
+          );
+
+          $this->db->insert('detalle_evaluacion_poa_trimestral', $data_insert);
+      }
+
+    }
 
 
 
@@ -599,10 +656,7 @@ class Lib_seguimientopoa {
       return $tabla;
     }
 
-    ///// Get Listado de Actividades para impresion
-    public function list_form4_seguimiento_x_unidadResp($com_id){
 
-    }
 
     /// TITULO VISTA
     public function titulo($componente){
@@ -618,7 +672,7 @@ class Lib_seguimientopoa {
 
                 '.$this->formularios_poa($componente[0]['com_id']).'
 
-                    <a href="#" class="btn btn-success" onclick="cargarCuadrosEvaluacion(this, '.$componente[0]['com_id'].')" title="GENERAR CUADROS DE EVALUACION POA">
+                    <a href="#" class="btn btn-success" onclick="cargarCuadrosEvaluacion(this, '.$componente[0]['com_id'].',0)" title="GENERAR CUADROS DE EVALUACION POA">
                       <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>GENERAR CUADROS DE EVALUACIÓN POA</b>
                     </a>
                     <a href="' . site_url("seg/seguimiento_poa") . '" 
