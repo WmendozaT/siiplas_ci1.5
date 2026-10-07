@@ -276,12 +276,7 @@ class Model_evaluacionpoa extends CI_Model{
 
 
 
-
-
-
-
-
-    //// cuadro consolidado de Evaluacion por unidad Responsable 2027
+    //// cuadro consolidado de Evaluacion por unidad Responsable 2027 Id=0
     public function get_lista_consolidado_evaluacion_trimestral($com_id,$trimestre){
         $sql = "SELECT *,
                 CASE 
@@ -315,7 +310,86 @@ class Model_evaluacionpoa extends CI_Model{
     }
 
 
+    //// cuadro consolidado de Evaluacion por unidad Organizacional 2027 ID=1
+    public function get_lista_consolidado_evaluacion_trimestral_UnidadOrganizacional($proy_id,$trimestre){
+        $sql = "
+        SELECT 
+            c.proy_id,
+            c.trm_id,
+            c.poa_prog,
+            c.poa_cumplidos,
+            c.poa_proceso,
+            c.poa_no_cumplidos,
+            
+            -- Exponer el porcentaje calculado con control de división por cero
+            CASE 
+                WHEN c.poa_prog = 0 THEN 0.00
+                ELSE ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2)
+            END AS porcentaje_cumplimiento,
 
+            CASE 
+                WHEN c.poa_prog = 0 THEN 0.00
+                ELSE ROUND((c.poa_proceso * 100.0) / c.poa_prog, 2)
+            END AS porcentaje_proceso,
+
+            CASE 
+                WHEN c.poa_prog = 0 THEN 0.00
+                ELSE ROUND((c.poa_no_cumplidos * 100.0) / c.poa_prog, 2)
+            END AS porcentaje_no_cumplimiento,
+
+            CASE 
+                WHEN c.poa_prog = 0 THEN 0.00
+                ELSE ROUND(((c.poa_proceso + c.poa_no_cumplidos) * 100.0) / c.poa_prog, 2)
+            END AS porcentaje_no_cumplimiento_total,
+
+            -- Nombre del Trimestre
+            CASE 
+                WHEN c.trm_id = 1 THEN 'PRIMER TRIMESTRE'::text
+                WHEN c.trm_id = 2 THEN 'SEGUNDO TRIMESTRE'::text
+                WHEN c.trm_id = 3 THEN 'TERCER TRIMESTRE'::text
+                WHEN c.trm_id = 4 THEN 'CUARTO TRIMESTRE'::text
+                ELSE 'SIN RANGO'::text
+            END AS trimestre,
+
+            -- Matriz de Parámetros Calibrada (Evita errores de división por cero)
+            CASE 
+                WHEN c.poa_prog = 0 THEN 'SIN PROGRAMACIÓN (0%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) = 0.00 THEN 'PENDIENTE (0%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 0.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 75.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 90.00 THEN 'REGULAR (75% - 90%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 90.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'BUENO (90% - 99%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 99.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 100.00 THEN 'OPTIMO (100%)'::text
+                ELSE 'SIN RANGO'::text
+            END AS parametro,
+
+            -- Colores del Semáforo Nativos
+            CASE 
+                WHEN c.poa_prog = 0 THEN 'danger'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'danger'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 75.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 90.00 THEN 'warning'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 90.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'info'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 99.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 100.00 THEN 'success'::text
+                ELSE 'danger'::text
+            END AS color_semaforo
+
+        FROM (
+            -- 🚀 PASO 1: Agrupamos y consolidamos las sumatorias físicas primero
+            SELECT 
+                proy_id,
+                trm_id,
+                COALESCE(SUM(poa_prog), 0) AS poa_prog,
+                COALESCE(SUM(poa_cumplidos), 0) AS poa_cumplidos,
+                COALESCE(SUM(poa_proceso), 0) AS poa_proceso,
+                COALESCE(SUM(poa_no_cumplidos), 0) AS poa_no_cumplidos
+            FROM detalle_evaluacion_poa_trimestral
+            WHERE proy_id = ".$proy_id." and trm_id=".$trimestre."
+            GROUP BY proy_id, trm_id
+        ) c
+        ORDER BY c.trm_id ASC;";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
 }

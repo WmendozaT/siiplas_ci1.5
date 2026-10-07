@@ -654,6 +654,7 @@ var calificacion = "";
 /// tp_nivel 0 (componente), 1 (Uni Organizacional)
 
 function cargarCuadrosEvaluacion(elemento, Id,tp_nivel) {
+    //alert(Id+'--'+tp_nivel)
     // 1. ⏳ Activar pantalla de carga opaca
     var loadingId = 'loading_screen_overlay_graficos';
     var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif;">' +

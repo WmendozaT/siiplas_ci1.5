@@ -186,7 +186,7 @@ class Cevaluacion_form4 extends CI_Controller {
               </div>
           </div>
       </div>';
-
+      $tabla.=$this->lib_seguimientopoa->modal_evaluacion_poa_x_UnidadResponsable(); /// Graficos MD2
       $data['listado']=$tabla;
       $this->load->view('admin/evaluacion/evaluacion_form4/list_poa_evaluacion', $data);
     }
@@ -881,11 +881,11 @@ public function eliminar_seguimiento() {
       $tp_nivel = intval($this->input->post('tp_nivel'));
       if($tp_nivel==0){ /// Unidad Reponsable (Componente)
         $id = intval($this->input->post('id'));
-        $Unidad_data = $this->model_componente->get_componente($com_id, $this->gestion); /// UnidadReponsable
+        $Unidad_data = $this->model_componente->get_componente($id, $this->gestion); /// UnidadReponsable
       }
       else{ /// Unidad Organizacional (Proyecto)
         $id = intval($this->input->post('id'));
-        $Unidad_data = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// UnidadOrganizacional
+        $Unidad_data = $this->model_proyecto->get_UnidadOrganizacional($id); /// UnidadOrganizacional
       }
       
       if ($id == 0 || empty($Unidad_data)) {
@@ -898,85 +898,28 @@ public function eliminar_seguimiento() {
       }
 
       // Inicializamos variables acumuladoras fuera del bucle (para actualizar informacion de la evaluacion)
-      
-
       if($tp_nivel==0){
-        $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($id);
+        $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($id,$Unidad_data);
          // Obtener listado consolidado para la subtabla e inyección del gráfico de regresión
-        $lista_evaluacion_uresponsable = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($com_id); 
+        $lista_evaluacion_uresponsable = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($id); 
         $nombre_unidad = $Unidad_data[0]['tipo'].' '.$Unidad_data[0]['proy_nombre'].' '.$Unidad_data[0]['abrev'].' / '.$Unidad_data[0]['tipo_subactividad'].' '.$Unidad_data[0]['com_componente'];
-      
+        $btn_reporte = '
+        <a href="javascript:abreVentana(\''.site_url('seg/ver_reporte_evaluacionpoa/'.$id.'/'.$this->tmes).'\' );" class="btn btn-success" style="background: #16a34a; border: none; font-weight: bold; color:#fff; padding: 6px 16px; margin-right: 5px;">
+          <i class="fa fa-file-pdf-o"></i> Generar Formulario de Evaluación POA PDF
+        </a>';
       }
       else{
         $unidades_responsables=$this->model_componente->lista_UnidadesResponsables($id);
         foreach ($unidades_responsables as $row) {
-          $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($row['com_id']);
+          $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($row['com_id'],$Unidad_data);
         }
 
          // Obtener listado consolidado para la subtabla e inyección del gráfico de regresión
-        $lista_evaluacion_uresponsable = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_UnidadOrganizacional($proy_id); 
+        $lista_evaluacion_uresponsable = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_UnidadOrganizacional($id); 
         $nombre_unidad = $Unidad_data[0]['tipo'].' '.$Unidad_data[0]['proy_nombre'].' '.$Unidad_data[0]['abrev'];
+        $btn_reporte = '';
       }
 
-
-
-
-
-      // $poa_prog          = 0;
-      // $poa_cumplidos     = 0;
-      // $poa_proceso       = 0;
-      // $poa_no_cumplidos  = 0;
-      // // Bucle para consolidar el histórico acumulado hasta el trimestre seleccionado
-      // for ($i = 1; $i <= $this->tmes; $i++) { 
-      //     $form4 = $this->model_evaluacionpoa->consolidado_list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id, $i); 
-
-      //     // Suma acumulativa incremental por trimestre
-      //     $poa_prog          += intval($form4['poa_prog']);
-      //     $poa_cumplidos     += intval($form4['poa_cumplidos']);
-      //     $poa_proceso       += intval($form4['poa_proceso']);
-      //     $poa_no_cumplidos  += intval($form4['poa_no_cumplidos']);
-
-      //     // Calcular porcentajes con precisión decimal para este corte trimestral
-      //     $pct_cumplimiento        = 0.00;
-      //     $pct_proceso            = 0.00;
-      //     $pct_no_cumplimiento    = 0.00;
-      //     $pct_no_cumplimiento_tot = 0.00;
-
-      //     if ($poa_prog > 0) {
-      //         $pct_cumplimiento     = round(($poa_cumplidos * 100) / $poa_prog, 2);
-      //         $pct_proceso         = round(($poa_proceso * 100) / $poa_prog, 2);
-      //         $pct_no_cumplimiento = round(($poa_no_cumplidos * 100) / $poa_prog, 2);
-      //         $pct_no_cumplimiento_tot = round((($poa_proceso + $poa_no_cumplidos) * 100) / $poa_prog, 2);
-      //     }
-
-      //     // 🌟 Limpiar registros previos consolidados en este corte para evitar duplicaciones
-      //     $this->db->where('com_id', $com_id);
-      //     $this->db->where('trm_id', $i);
-      //     $this->db->where('g_id', $this->gestion);
-      //     $this->db->delete('detalle_evaluacion_poa_trimestral');
-
-      //     // Insertar registro consolidado limpio
-      //     $data_insert = array(
-      //         'dep_id'                           => intval($componente_data[0]['dep_id']),
-      //         'dist_id'                          => intval($componente_data[0]['dist_id']),
-      //         'proy_id'                          => floatval($componente_data[0]['proy_id']),
-      //         'com_id'                           => $com_id,
-      //         'g_id'                             => intval($this->gestion),
-      //         'trm_id'                           => intval($i),
-      //         'poa_prog'                         => $poa_prog,
-      //         'poa_cumplidos'                    => $poa_cumplidos,
-      //         'poa_proceso'                      => $poa_proceso,
-      //         'poa_no_cumplidos'                 => $poa_no_cumplidos,
-      //         'porcentaje_cumplimiento'          => $pct_cumplimiento,
-      //         'porcentaje_proceso'               => $pct_proceso,
-      //         'porcentaje_no_cumplimiento'       => $pct_no_cumplimiento,
-      //         'porcentaje_no_cumplimiento_total' => $pct_no_cumplimiento_tot
-      //     );
-
-      //     $this->db->insert('detalle_evaluacion_poa_trimestral', $data_insert);
-      // }
-
-     
       $trimestre_row=$this->model_evaluacionpoa->get_trimestre($this->tmes);
       $tabla = '
         <div class="table-responsive">
@@ -1085,7 +1028,15 @@ public function eliminar_seguimiento() {
 
 
       // Obtener los datos consolidados específicos del trimestre actual seleccionado para el pastel
-      //$datos_trimestre_actual = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($com_id, $this->tmes); 
+      if($tp_nivel==0){
+        $datos_trimestre_actual = $this->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral($id, $this->tmes); 
+       // $datos_trimestre_actual = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($id, $this->tmes); 
+      }
+      else{
+        $datos_trimestre_actual = $this->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral_UnidadOrganizacional($id, $this->tmes); 
+        //$datos_trimestre_actual = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($com_id, $this->tmes); 
+      }
+      
 
       $color_real = '#64748b'; // Gris por defecto
       if (!empty($datos_trimestre_actual)) {
@@ -1105,13 +1056,6 @@ public function eliminar_seguimiento() {
           <div style="background-color: ' . $color_real . '; color: #ffffff; font-weight: bold; font-size: 13px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 10px 15px; margin-bottom: 20px; text-align: center; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px;">
               <i class="fa fa-flag"></i> CUMPLIMIENTO POA ' . $trimestre_row[0]['trm_descripcion'] . ' / ' . $this->gestion . ' &nbsp;&rarr;&nbsp; ' . number_format($datos_trimestre_actual[0]['porcentaje_cumplimiento'], 2) . '% (' . $datos_trimestre_actual[0]['parametro'] . ')
           </div>';
-
-      
-      $btn_reporte = '
-      <a href="javascript:abreVentana(\''.site_url('seg/ver_reporte_evaluacionpoa/'.$com_id.'/'.$this->tmes).'\' );" class="btn btn-success" style="background: #16a34a; border: none; font-weight: bold; color:#fff; padding: 6px 16px; margin-right: 5px;">
-        <i class="fa fa-file-pdf-o"></i> Generar Formulario de Evaluación POA PDF
-      </a>';
-
 
       $act_cumplidas    = isset($datos_trimestre_actual[0]['porcentaje_cumplimiento']) ? floatval($datos_trimestre_actual[0]['porcentaje_cumplimiento']) : 0;
       $act_no_cumplidas = isset($datos_trimestre_actual[0]['porcentaje_no_cumplimiento']) ? floatval($datos_trimestre_actual[0]['porcentaje_no_cumplimiento']) : 0;

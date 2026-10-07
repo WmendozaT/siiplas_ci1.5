@@ -516,7 +516,7 @@ class Lib_seguimientopoa {
 
 
     /// actualizando evaluacion poa
-    public function migracion_evaluacion_poa_UnidadResponsable($com_id) {
+    public function migracion_evaluacion_poa_UnidadResponsable($com_id,$Unidad_data) {
       $poa_prog          = 0;
       $poa_cumplidos     = 0;
       $poa_proceso       = 0;
@@ -545,16 +545,16 @@ class Lib_seguimientopoa {
           }
 
           // 🌟 Limpiar registros previos consolidados en este corte para evitar duplicaciones
-          $this->db->where('com_id', $com_id);
-          $this->db->where('trm_id', $i);
-          $this->db->where('g_id', $this->gestion);
-          $this->db->delete('detalle_evaluacion_poa_trimestral');
+          $this->CI->db->where('com_id', $com_id);
+          $this->CI->db->where('trm_id', $i);
+          $this->CI->db->where('g_id', $this->gestion); // $this->gestion funciona perfecto porque ya está mapeada en tu constructor
+          $this->CI->db->delete('detalle_evaluacion_poa_trimestral');
 
           // Insertar registro consolidado limpio
           $data_insert = array(
-              'dep_id'                           => intval($componente_data[0]['dep_id']),
-              'dist_id'                          => intval($componente_data[0]['dist_id']),
-              'proy_id'                          => floatval($componente_data[0]['proy_id']),
+              'dep_id'                           => intval($Unidad_data[0]['dep_id']),
+              'dist_id'                          => intval($Unidad_data[0]['dist_id']),
+              'proy_id'                          => floatval($Unidad_data[0]['proy_id']),
               'com_id'                           => $com_id,
               'g_id'                             => intval($this->gestion),
               'trm_id'                           => intval($i),
@@ -568,7 +568,7 @@ class Lib_seguimientopoa {
               'porcentaje_no_cumplimiento_total' => $pct_no_cumplimiento_tot
           );
 
-          $this->db->insert('detalle_evaluacion_poa_trimestral', $data_insert);
+          $this->CI->db->insert('detalle_evaluacion_poa_trimestral', $data_insert);
       }
 
     }
