@@ -2027,8 +2027,8 @@ CREATE TABLE public.detalle_evaluacion_poa_trimestral (
 
 
 
-  select proy_id,com_id,trm_id,SUM(poa_prog) poa_prog, SUM(poa_cumplidos) poa_cumplidos, SUM(poa_proceso) poa_proceso, SUM(poa_no_cumplidos) poa_no_cumplido
-        from detalle_evaluacion_poa_trimestral
-        where proy_id=3922 and trm_id=3
-        group by proy_id,com_id,trm_id
-        order by com_id, trm_id asc
+select uResp.proy_id,uResp.com_id,uResp.tipo_subactividad,uResp.com_componente,eval.trm_id,eval.poa_prog,eval.poa_cumplidos,eval.poa_proceso,eval.poa_no_cumplidos,eval.porcentaje_cumplimiento,eval.porcentaje_no_cumplimiento_total
+        from vista_lista_UnidadesResponsables uResp
+        INNER JOIN detalle_evaluacion_poa_trimestral eval ON eval.com_id = uResp.com_id
+        where uResp.proy_id=3922 and eval.trm_id=3
+        order by uResp.com_id, eval.trm_id asc
