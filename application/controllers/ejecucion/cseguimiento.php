@@ -2192,38 +2192,38 @@ class Cseguimiento extends CI_Controller {
 
 
     /*----- REPORTE SEGUIMIENTO POA PDF 2025 MENSUAL POR SUBACTIVIDAD POR MES-------*/
-    public function reporte_formulario_subactividad_mes($com_id,$mes_id){
+    public function reporte_formulario_subactividad_mes2($com_id,$mes_id){
       $data['componente'] = $this->model_componente->get_componente($com_id,$this->gestion); ///// DATOS DEL COMPONENTE
       if(count($data['componente'])!=0){
 
         ///----------------
-        $registro=$this->model_seguimientopoa->verif_llenado_impresion_seguimientpoa($com_id,$mes_id);
-        if(count($registro)!=0){
-          $update_seg= array(
-          'impresion_form' => ($registro[0]['impresion_form']+1),
-          'impresion_fecha' => date("d/m/Y H:i:s")
-          );
-          $this->db->where('reg_id', $registro[0]['reg_id']);
-          $this->db->update('registro_seguimientopoa', $this->security->xss_clean($update_seg));
-        }
-        else{
-          $data_to_store3 = array(
-            'fun_id' => $this->fun_id,
-            'proy_id' => $data['componente'][0]['proy_id'],
-            'com_id' => $data['componente'][0]['com_id'],
-            'ingreso_form' => 1,
-            'ingreso_fecha' => date('d/m/Y h:i:s'),
-            'impresion_form' => 0,
-            'impresion_fecha' => date('d/m/Y h:i:s'),
-            'mes' => $mes_id,
-            'gestion' => $this->gestion,
-            'num_ip' => $this->input->ip_address(), 
-            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-            );
-            $this->db->insert('registro_seguimientopoa', $data_to_store3);
-            $reg_id=$this->db->insert_id();
-        }
-        /// ---------------
+        // $registro=$this->model_seguimientopoa->verif_llenado_impresion_seguimientpoa($com_id,$mes_id);
+        // if(count($registro)!=0){
+        //   $update_seg= array(
+        //   'impresion_form' => ($registro[0]['impresion_form']+1),
+        //   'impresion_fecha' => date("d/m/Y H:i:s")
+        //   );
+        //   $this->db->where('reg_id', $registro[0]['reg_id']);
+        //   $this->db->update('registro_seguimientopoa', $this->security->xss_clean($update_seg));
+        // }
+        // else{
+        //   $data_to_store3 = array(
+        //     'fun_id' => $this->fun_id,
+        //     'proy_id' => $data['componente'][0]['proy_id'],
+        //     'com_id' => $data['componente'][0]['com_id'],
+        //     'ingreso_form' => 1,
+        //     'ingreso_fecha' => date('d/m/Y h:i:s'),
+        //     'impresion_form' => 0,
+        //     'impresion_fecha' => date('d/m/Y h:i:s'),
+        //     'mes' => $mes_id,
+        //     'gestion' => $this->gestion,
+        //     'num_ip' => $this->input->ip_address(), 
+        //     'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
+        //     );
+        //     $this->db->insert('registro_seguimientopoa', $data_to_store3);
+        //     $reg_id=$this->db->insert_id();
+        // }
+        // /// ---------------
 
         $data['verif_mes']=$this->seguimientopoa->update_mes_gestion($mes_id);
         $data['mes'] = $this->seguimientopoa->mes_nombre();
@@ -2243,6 +2243,121 @@ class Cseguimiento extends CI_Controller {
         echo "Error !!!";
       }
     }
+
+
+
+
+    public function reporte_formulario_subactividad_mes($com_id,$mes_id){
+        // 1. Ampliación y control de recursos de hardware en el servidor
+        ini_set('memory_limit', '2048M'); 
+        set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        
+        // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+        if (ob_get_length()) ob_clean();
+        $componente=$this->model_componente->get_componente($com_id,$this->gestion); /// GET COMP -> PROY -> APER
+        if(count($componente)!=0){
+            if($componente[0]['tp_id']==1){
+                $pie_report='EVAL_FORM_SPO_N4_'.$componente[0]['proy_nombre'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+            }
+            else{
+                $pie_report='EVAL_FORM_SPO_N4_'.$componente[0]['tipo'].' '.$componente[0]['proy_nombre'].' '.$componente[0]['abrev'].'-'.$componente[0]['serv_descripcion'].' '.$this->gestion;
+            }
+            
+            $listado=$this->seguimientopoa->tabla_form_seguimientopoa_subactividad($com_id,$mes_id); /// 2026
+            $cabecera=$this->seguimientopoa->cabecera($componente,$componente);
+            //$pie=$this->programacionpoa->pie_form($componente);
+            
+            $data['lista'] = '
+              <page orientation="landscape" backtop="30mm" backbottom="35mm" backleft="4mm" backright="4mm" pagegroup="new">
+                <!-- Cabecera Institucional Inalterada -->
+                <page_header>
+                    <br><div class="verde"></div>
+                    <table style="width:100%;">
+                      <tr>
+                        <td style="width:20%;"></td>
+                        <td style="width:80%;">'.$cabecera.'</td>
+                        <td style="width:20%;"></td>
+                      </tr>
+                    </table>
+                </page_header>
+                
+                <!-- Pie de Página Fijo en la Base de la Hoja -->
+                <page_footer>
+                    <div style="width: 100%; display: block;">
+                     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:99%;" align="center">
+                      <tr>
+                          <td style="width: 33%;">
+                              <table border="1" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+                                  <tr>
+                                      <td style="width:100%;height:12px;"><b>JEFATURA DE UNIDAD O AREA / REP. DE AREA REGIONALES</b></td>
+                                  </tr>
+                                  <tr>
+                                      <td align=center><br><br><br><br><br><b>FIRMA</b></td>
+                                  </tr>
+                              </table>
+                          </td>
+                          <td style="width: 33%;">
+                              <table border="1" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+                                  <tr>
+                                    <td style="width:100%;height:12px;"><b>JEFATURA DE DEPARTAMENTOS / SERV. GENERALES REGIONAL / JEFATURA MEDICA </b></td>
+                                  </tr>
+                                  <tr>
+                                    <td align=center><br><br><br><br><br><b>FIRMA</b></td>
+                                  </tr>
+                              </table>
+                          </td>
+                          <td style="width: 33%;">
+                              <table border="1" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+                                  <tr>
+                                    <td style="width:100%;height:12px;"><b>GERENCIA GENERAL / GERENCIAS DE AREA / ADMINISTRADOR REGIONAL </b></td>
+                                  </tr>
+                                  <tr>
+                                    <td align=center><br><br><br><br><br><b>FIRMA</b></td>
+                                  </tr>
+                              </table>
+                          </td>
+                      </tr>
+                      <tr>
+                          <td colspan="3"><br></td>
+                      </tr>
+                      <tr>
+                          <td colspan="3"><br></td>
+                      </tr>
+                  </table>
+                    </div>
+                </page_footer>
+                  <hr>
+                  <div style="text-align:center;"><b>FORMULARIO SEGUIMIENTO POA '.$this->seguimientopoa->update_mes_gestion($mes_id)[2].' / '.$this->gestion.'</b></div><br>
+                    '.$listado.'
+              </page>';
+
+          // 1. Capturamos el HTML estructurado de la vista en una variable
+          $html_reporte = $this->load->view('admin/evaluacion/seguimiento_poa/reporte_seguimiento_poa', $data, true); 
+          // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+          if (ob_get_length()) ob_clean();
+          // 3. Importación segura del motor conversor usando la ruta física del servidor
+          require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+          try {
+              // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+              $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+              $html2pdf->pdf->SetDisplayMode('fullpage');
+              $html2pdf->writeHTML($html_reporte);
+              
+              // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+              $html2pdf->Output($pie_report. '.pdf', 'I');
+          }
+          catch(HTML2PDF_exception $e) {
+              echo "Error al compilar el reporte: " . $e;
+          }
+          exit;
+        }
+        else{
+            echo "Error !!!";
+        }
+    }
+
+
+
 
 
 

@@ -27,8 +27,6 @@ class Cevaluacion_form4 extends CI_Controller {
             $this->com_id=$this->session->userdata('com_id');
             $this->mes_sistema=$this->session->userData('mes'); /// mes sistema
             $this->verif_mes=$this->session->userdata('mes_actual');
-            
-            //$this->load->library('seguimientopoa');
             $this->load->library('lib_seguimientopoa');
             
         } else {
@@ -44,8 +42,10 @@ class Cevaluacion_form4 extends CI_Controller {
       $tabla='';
     
       //$tabla .= $this->programacionpoa->tp_resp();
-      $tabla .= '<input name="base" type="hidden" value="'.base_url().'">
-    <div id="tabs" style="border: none; background: transparent;">
+      $tabla .= '
+      <input name="base" type="hidden" value="'.base_url().'">
+      
+      <div id="tabs" style="border: none; background: transparent;">
         <!-- 📌 MENÚ DE PESTAÑAS PRINCIPALES (TABS) -->
         <ul style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; padding: 0; border-radius: 4px 4px 0 0;">
             <li style="margin-bottom: -2px;">
@@ -187,6 +187,13 @@ class Cevaluacion_form4 extends CI_Controller {
           </div>
       </div>';
       $tabla.=$this->lib_seguimientopoa->modal_evaluacion_poa_x_UnidadResponsable(); /// Graficos MD2
+      $data['inf_eval']='';
+      if($this->lib_seguimientopoa->verif_eval()==true){
+        $data['inf_eval']='
+        <div class="well" style="background:#D8FAD2;text-align:center;">
+          <h2>PROCESO DE EVALUACION POA - <b>'.$this->model_evaluacionpoa->trimestre()[0]['trm_descripcion'].'</b></h2>
+        </div>';
+      }
       $data['listado']=$tabla;
       $this->load->view('admin/evaluacion/evaluacion_form4/list_poa_evaluacion', $data);
     }
@@ -899,22 +906,26 @@ public function eliminar_seguimiento() {
 
       // Inicializamos variables acumuladoras fuera del bucle (para actualizar informacion de la evaluacion)
       if($tp_nivel==0){
-        $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($id,$Unidad_data);
+        if($this->lib_seguimientopoa->verif_eval()==true || $tp_adm==1){ /// se actualiza mientras este vigente el plazo
+          $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($id,$Unidad_data);
+        }
+        
          // Obtener listado consolidado para la subtabla e inyección del gráfico de regresión
         $lista_evaluacion_uresponsable = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($id); 
         $nombre_unidad = $Unidad_data[0]['tipo'].' '.$Unidad_data[0]['proy_nombre'].' '.$Unidad_data[0]['abrev'].' / '.$Unidad_data[0]['tipo_subactividad'].' '.$Unidad_data[0]['com_componente'];
         $btn_reporte = '
-        <a href="javascript:abreVentana(\''.site_url('seg/ver_reporte_evaluacionpoa/'.$id.'/'.$this->tmes).'\' );" class="btn btn-success" style="background: #16a34a; border: none; font-weight: bold; color:#fff; padding: 6px 16px; margin-right: 5px;">
+        <a href="javascript:abreVentana(\''.site_url('eval/reporte_eval_poa/'.$id.'/'.$this->tmes).'\' );" class="btn btn-success" style="background: #16a34a; border: none; font-weight: bold; color:#fff; padding: 6px 16px; margin-right: 5px;">
           <i class="fa fa-file-pdf-o"></i> Generar Formulario de Evaluación POA PDF
         </a>';
       }
       else{
-        $unidades_responsables=$this->model_componente->lista_UnidadesResponsables($id);
-        foreach ($unidades_responsables as $row) {
-          $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($row['com_id'],$Unidad_data);
+        if($this->lib_seguimientopoa->verif_eval()==true || $tp_adm==1){ /// se actualiza mientras este vigente el plazo
+          $unidades_responsables=$this->model_componente->lista_UnidadesResponsables($id);
+          foreach ($unidades_responsables as $row) {
+            $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($row['com_id'],$Unidad_data);
+          }
         }
-
-         // Obtener listado consolidado para la subtabla e inyección del gráfico de regresión
+        // Obtener listado consolidado para la subtabla e inyección del gráfico de regresión
         $lista_evaluacion_uresponsable = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_UnidadOrganizacional($id); 
         $nombre_unidad = $Unidad_data[0]['tipo'].' '.$Unidad_data[0]['proy_nombre'].' '.$Unidad_data[0]['abrev'];
         $btn_reporte = '';
@@ -1094,14 +1105,15 @@ public function eliminar_seguimiento() {
           )
       );
 
-
       echo json_encode($respuesta);
       return;
   }
 
 
-    ///// Reporte para seguimiento y evaluacion poa borrador
-    public function reporte_formulario_evaluacion_poa($com_id,$mes_id){
+
+
+    ///// Reporte Evaluacion POA 2027
+    public function reporte_formulario_evaluacion_poa($com_id,$mes_trm){
         // 1. Ampliación y control de recursos de hardware en el servidor
         ini_set('memory_limit', '2048M'); 
         set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
@@ -1110,91 +1122,80 @@ public function eliminar_seguimiento() {
         if (ob_get_length()) ob_clean();
         $componente=$this->model_componente->get_componente($com_id,$this->gestion); /// GET COMP -> PROY -> APER
         if(count($componente)!=0){
-           $trimestre  = $this->tmes; // Puedes cambiarlo por: intval($this->input->post('trimestre')) si viaja por POST
-          $mes_inicio = (($trimestre - 1) * 3) + 1;
-          $mes_fin    = $trimestre * 3;
-            $pie_report='eval';
-            $form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_trimestre($com_id,$this->tmes); //// listado de actividades por trimestre programados
-            //$form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_anual($com_id);
+            $pie_report=$mes_trm.'_Evaluacion_'.$componente[0]['tipo_subactividad'].' '.$componente[0]['com_componente'];
+            $form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_trimestre($componente[0]['com_id'],$mes_trm); //// listado de actividades por trimestre programados
             $tabla = '';
-
             $tabla.='
             <table cellpadding="0" cellspacing="0" class="tabla" border=0.05 style="width:100%;">
                   <thead>
-                      <tr style="font-size: 9px; background: #334155; color: #ffffff;">
-                        <th style="width: 3%; text-align:center; vertical-align: middle;">COD.</th>
-                        <th style="width: 20%; text-align:center; vertical-align: middle;">ACTIVIDAD</th>
-                        <th style="width: 5%; text-align:center; vertical-align: middle;">META</th>
-                        
-                        <th style="width: 2.2%; text-align:center; vertical-align: middle;">PROG</th>
-                        <th style="width: 2.2%; text-align:center; vertical-align: middle;">EJEC</th>
-                        <th style="width: 2.2%; text-align:center; vertical-align: middle;">SALDO</th>
-                        <th style="width: 2.2%; text-align:center; vertical-align: middle;">CUMPLIMIENTO</th>
+                      <tr style="font-size: 7px; background: #4F4D4D; color: #ffffff; height:50px;">
+                        <th style="width: 1%; height:18px; text-align:center; vertical-align: middle;">#</th>
+                        <th style="width: 3.5%; text-align:center; vertical-align: middle;">CODIGO</th>
+                        <th style="width: 12%; text-align:center; vertical-align: middle;">ACTIVIDAD</th>
+                        <th style="width: 11%; text-align:center; vertical-align: middle;">RESPONSABLE</th>
+                        <th style="width: 11%; text-align:center; vertical-align: middle;">MEDIO DE VERIFICACIÓN</th>
+                        <th style="width: 5%; text-align:center; vertical-align: middle;">META '.$this->gestion.'</th>
+                        <th style="width: 5%; text-align:center; vertical-align: middle;">META PROG.</th>
+                        <th style="width: 5%; text-align:center; vertical-align: middle;">META EJEC.</th>
+
+                        <th style="width: 15.5%; text-align:center; vertical-align: middle;">MEDIO DE VERIFICACIÓN (presentado en evaluación)</th>
+                        <th style="width: 11.5%; text-align:center; vertical-align: middle;">PROBLEMAS PRESENTADOS</th>
+                        <th style="width: 11%; text-align:center; vertical-align: middle;">ACCIONES REALIZADAS</th>
+                        <th style="width: 7%; text-align:center; vertical-align: middle;">ESTADO</th>
                       </tr>
                   </thead>
                   <tbody>';
+                  $nro=0;
                   foreach($form4 as $rowp){
                     $tp_indi = ($rowp['indi_id'] == 2) ? '%' : '';
-                    
+                    $nro++;
                     $tabla.='
-                    <tr style="font-size: 9px;">
-                      <td style="width: 3%;">
-                        '.$rowp['or_codigo'].'.'.$rowp['prod_cod'].'
+                    <tr style="font-size: 7px;">
+                      <td style="width: 1%; text-align:center;">'.$nro.'</td>
+                      <td style="width: 3.5%; text-align:center; font-size:11px;">
+                        <b>'.$rowp['or_codigo'].'.'.$rowp['prod_cod'].'</b>
                       </td>
-                      <td style="width: 20%;">
+                      <td style="width: 12%;">
                         '.strtoupper($rowp['prod_producto']).'
                       </td>
-                      <td style="width: 5%;">
+                      <td style="width: 11%;">
+                        '.strtoupper($rowp['prod_unidades']).'
+                      </td>
+                      <td style="width: 12%;">
+                        '.strtoupper($rowp['prod_fuente_verificacion']).'
+                      </td>
+                      <td style="width: 5%; text-align:center; font-size:11px;">
                         '.round($rowp['prod_meta'], 2).' '.$tp_indi.'
                       </td>
-                      <td style="width: 5%;">
-                        '.round($rowp['prog_trm'.$this->tmes], 2).'
+                      <td style="width: 5%; text-align:center; font-size:11px;">
+                        <b>'.round($rowp['prog_trm'.$mes_trm], 2).' '.$tp_indi.'</b>
                       </td>
-                      <td style="width: 5%;">
-                        '.round($rowp['ejec_trm'.$this->tmes], 2).'
+                      <td style="width: 5%; text-align:center; font-size:11px;">
+                        <b>'.round($rowp['ejec_trm'.$mes_trm], 2).' '.$tp_indi.'</b>
                       </td>
-                      <td style="width: 5%;">
-                        '.round($rowp['saldo_acumulado_trm'.$this->tmes], 2).'
-                      </td>
-                      <td style="width: 5%;">
-                        '.$rowp['cumplimiento_trm'.$this->tmes].'
-                      </td>';
-                      
-                      // for ($i = 1; $i <= 12; $i++) {
-                      //   $color = ($i >= $mes_inicio && $i <= $mes_fin) ? '#e0f2fe' : '#ffffff';
-                      //   $tabla .= '
-                      //   <td style="width: 2.2%;">
-                      //     <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; margin-bottom: 2px;">
-                      //       <span style="color:#64748b; font-weight:bold;">P:</span> 
-                      //       <span style="font-weight:bold; float:right; color:#0284c7;">'.round($rowp['mes'.$i], 2).$tp_indi.'</span>
-                      //       <div style="clear:both;"></div>
-                      //     </div>
-                      //     <div>
-                      //       <span style="color:#64748b; font-weight:bold;">E:</span> 
-                      //       <span style="font-weight:bold; float:right; color:#16a34a;">'.round($rowp['e_mes'.$i], 2).$tp_indi.'</span>
-                      //       <div style="clear:both;"></div>
-                      //     </div>
-                      //   </td>';
-                      // }
-                      
-                    // 🌟 CORREGIDO: Cerramos la variable concatenada e inyectamos el tag tr de forma estricta
+                      <td style="width: 15.5%; font-size:6.5px;">'.$this->lib_seguimientopoa->report_verif_medios_verificacion($rowp['prod_id'],1,$mes_trm).'</td>
+                      <td style="width: 11.5%; font-size:6.5px;">'.$this->lib_seguimientopoa->report_verif_medios_verificacion($rowp['prod_id'],2,$mes_trm).'</td>
+                      <td style="width: 11%; font-size:6.5px;">'.$this->lib_seguimientopoa->report_verif_medios_verificacion($rowp['prod_id'],3,$mes_trm).'</td>
+                      <td style="width: 7%; text-align:center;"><b>'.$rowp['cumplimiento_trm'.$mes_trm].'</b></td>';
                     $tabla .= '</tr>';
                   }
                   $tabla.='
                   </tbody>
             </table>';
     
-           
-            
             $data['lista'] = '
-              <page orientation="landscape" backtop="10mm" backbottom="5mm" backleft="4mm" backright="4mm" pagegroup="new">
+              <page orientation="landscape" backtop="60mm" backbottom="25mm" backleft="4mm" backright="4mm" pagegroup="new">
                 <!-- Cabecera Institucional Inalterada -->
                 <page_header>
                     <br><div class="verde"></div>
-                    Cabecera
+                    '.$this->lib_seguimientopoa->cabecera_reporte($componente,$mes_trm).'
                 </page_header>
-                
-                
+                <page_footer>
+                    <div style="width: 100%; display: block;">
+                    '.$this->lib_seguimientopoa->pie_evaluacionpoa().'
+                    </div>
+                </page_footer>
+                  <span style="font-size: 7px; font-weight: bold; color: #0f172a; display: block; text-transform: uppercase; letter-spacing: 0.3px;"><b>Detalle de Actividades Evaluadas : </b></span>
                     '.$tabla.'
               </page>';
 
@@ -1224,11 +1225,118 @@ public function eliminar_seguimiento() {
     }
 
 
+    ///// Reporte Seguimiento Mensual POA
+    // public function reporte_formulario_seguimiento_poa($com_id,$mes){
+    //     // 1. Ampliación y control de recursos de hardware en el servidor
+    //     ini_set('memory_limit', '2048M'); 
+    //     set_time_limit(1800); // 30 minutos de procesamiento máximo institucional
+        
+    //     // Limpieza preliminar del búfer de salida para proteger el binario del PDF
+    //     if (ob_get_length()) ob_clean();
+    //     $componente=$this->model_componente->get_componente($com_id,$this->gestion); /// GET COMP -> PROY -> APER
+    //     if(count($componente)!=0){
+    //         $pie_report=$mes_trm.'_Evaluacion_'.$componente[0]['tipo_subactividad'].' '.$componente[0]['com_componente'];
+    //         $form4 = $this->model_evaluacionpoa->list_formN4_para_evaluacion_UnidadResponsable_trimestre($componente[0]['com_id'],$mes_trm); //// listado de actividades por trimestre programados
+    //         $tabla = '';
+    //         $tabla.='
+    //         <table cellpadding="0" cellspacing="0" class="tabla" border=0.05 style="width:100%;">
+    //               <thead>
+    //                   <tr style="font-size: 7px; background: #4F4D4D; color: #ffffff; height:50px;">
+    //                     <th style="width: 1%; height:18px; text-align:center; vertical-align: middle;">#</th>
+    //                     <th style="width: 3.5%; text-align:center; vertical-align: middle;">CODIGO</th>
+    //                     <th style="width: 12%; text-align:center; vertical-align: middle;">ACTIVIDAD</th>
+    //                     <th style="width: 11%; text-align:center; vertical-align: middle;">RESPONSABLE</th>
+    //                     <th style="width: 11%; text-align:center; vertical-align: middle;">MEDIO DE VERIFICACIÓN</th>
+    //                     <th style="width: 5%; text-align:center; vertical-align: middle;">META '.$this->gestion.'</th>
+    //                     <th style="width: 5%; text-align:center; vertical-align: middle;">META PROG.</th>
+    //                     <th style="width: 5%; text-align:center; vertical-align: middle;">META EJEC.</th>
 
+    //                     <th style="width: 15.5%; text-align:center; vertical-align: middle;">MEDIO DE VERIFICACIÓN (presentado en evaluación)</th>
+    //                     <th style="width: 11.5%; text-align:center; vertical-align: middle;">PROBLEMAS PRESENTADOS</th>
+    //                     <th style="width: 11%; text-align:center; vertical-align: middle;">ACCIONES REALIZADAS</th>
+    //                     <th style="width: 7%; text-align:center; vertical-align: middle;">ESTADO</th>
+    //                   </tr>
+    //               </thead>
+    //               <tbody>';
+    //               $nro=0;
+    //               foreach($form4 as $rowp){
+    //                 $tp_indi = ($rowp['indi_id'] == 2) ? '%' : '';
+    //                 $nro++;
+    //                 $tabla.='
+    //                 <tr style="font-size: 7px;">
+    //                   <td style="width: 1%; text-align:center;">'.$nro.'</td>
+    //                   <td style="width: 3.5%; text-align:center; font-size:11px;">
+    //                     <b>'.$rowp['or_codigo'].'.'.$rowp['prod_cod'].'</b>
+    //                   </td>
+    //                   <td style="width: 12%;">
+    //                     '.strtoupper($rowp['prod_producto']).'
+    //                   </td>
+    //                   <td style="width: 11%;">
+    //                     '.strtoupper($rowp['prod_unidades']).'
+    //                   </td>
+    //                   <td style="width: 12%;">
+    //                     '.strtoupper($rowp['prod_fuente_verificacion']).'
+    //                   </td>
+    //                   <td style="width: 5%; text-align:center; font-size:11px;">
+    //                     '.round($rowp['prod_meta'], 2).' '.$tp_indi.'
+    //                   </td>
+    //                   <td style="width: 5%; text-align:center; font-size:11px;">
+    //                     <b>'.round($rowp['prog_trm'.$mes_trm], 2).' '.$tp_indi.'</b>
+    //                   </td>
+    //                   <td style="width: 5%; text-align:center; font-size:11px;">
+    //                     <b>'.round($rowp['ejec_trm'.$mes_trm], 2).' '.$tp_indi.'</b>
+    //                   </td>
+    //                   <td style="width: 15.5%; font-size:6.5px;">'.$this->lib_seguimientopoa->report_verif_medios_verificacion($rowp['prod_id'],1,$mes_trm).'</td>
+    //                   <td style="width: 11.5%; font-size:6.5px;">'.$this->lib_seguimientopoa->report_verif_medios_verificacion($rowp['prod_id'],2,$mes_trm).'</td>
+    //                   <td style="width: 11%; font-size:6.5px;">'.$this->lib_seguimientopoa->report_verif_medios_verificacion($rowp['prod_id'],3,$mes_trm).'</td>
+    //                   <td style="width: 7%; text-align:center;"><b>'.$rowp['cumplimiento_trm'.$mes_trm].'</b></td>';
+    //                 $tabla .= '</tr>';
+    //               }
+    //               $tabla.='
+    //               </tbody>
+    //         </table>';
+    
+    //         $data['lista'] = '
+    //           <page orientation="landscape" backtop="60mm" backbottom="5mm" backleft="4mm" backright="4mm" pagegroup="new">
+    //             <!-- Cabecera Institucional Inalterada -->
+    //             <page_header>
+    //                 <br><div class="verde"></div>
+    //                 '.$this->lib_seguimientopoa->cabecera_reporte($componente,$mes_trm).'
+    //             </page_header>
+    //             <page_footer>
+    //                 <div style="width: 100%; display: block;">
+    //                 '.$this->lib_seguimientopoa->pie_evaluacionpoa().'
+    //                 </div>
+    //             </page_footer>
+    //               <span style="font-size: 7px; font-weight: bold; color: #0f172a; display: block; text-transform: uppercase; letter-spacing: 0.3px;"><b>Detalle de Actividades Evaluadas : </b></span>
+    //                 '.$tabla.'
+    //           </page>';
 
-
-
-
+    //       // 1. Capturamos el HTML estructurado de la vista en una variable
+    //       $html_reporte = $this->load->view('admin/evaluacion/evaluacion_form4/reporte_eval_poa', $data, true); 
+    //       // 2. Limpieza radical del búfer de CodeIgniter para que Chrome no rechace el PDF
+    //       if (ob_get_length()) ob_clean();
+    //       // 3. Importación segura del motor conversor usando la ruta física del servidor
+    //       require_once(FCPATH . 'assets/html2pdf-4.4.0/html2pdf.class.php');
+    //       try {
+    //           // Inicializamos en orientación horizontal ('L' de Landscape / Paysage) para que coincida con tu diseño
+    //           $html2pdf = new HTML2PDF('L', 'Letter', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+    //           $html2pdf->pdf->SetDisplayMode('fullpage');
+    //           $html2pdf->writeHTML($html_reporte);
+              
+    //           // 4. Enviamos el flujo binario limpio directo al visor de Chrome
+    //           $html2pdf->Output($pie_report. '.pdf', 'I');
+    //       }
+    //       catch(HTML2PDF_exception $e) {
+    //           echo "Error al compilar el reporte: " . $e;
+    //       }
+    //       exit;
+    //     }
+    //     else{
+    //         echo "Error !!!";
+    //     }
+    // }
+  
 
     function menu($mod){
         $enlaces=$this->menu_modelo->get_Modulos($mod);

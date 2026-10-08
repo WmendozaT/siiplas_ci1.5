@@ -378,10 +378,11 @@ $route['seg/notificacion_operaciones_mensual/(:any)'] = 'ejecucion/cseguimiento/
 $route['seg/notificacion_poa_componente_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_notificacion_poa_mensual_componente/$1'; ///// Reporte Notificacion Seguimiento POA Mensual COMPONENTE
 $route['seg/reporte_consolidado_seguimientopoa_mensual/(:any)'] = 'ejecucion/cseguimiento/reporte_consolidadopoa_operaciones_mensual/$1/$2'; ///// Reporte formulario Seguimiento POA Mensual
 
-//// formulario de Seguimiento y Evaluacion POA 2027
+//// Formulario de Seguimiento y Evaluacion POA 2027
 $route['seg/seguimiento_poa'] = 'ejecucion/cevaluacion_form4/lista_poa_seguimientoPoa'; ///// lista poa 2027
 $route['formulario_seguimiento_poa/(:any)'] = 'ejecucion/cevaluacion_form4/formulario_seguimiento_poa/$1'; ///// Formulario de seguimiento POa 2027
-$route['eval/reporte_seg_eval_poa/(:any)'] = 'ejecucion/cevaluacion_form4/reporte_formulario_evaluacion_poa/$1/$2';  /// Reporte seguimiento/Evaluacion POA 2027
+$route['eval/reporte_eval_poa/(:any)'] = 'ejecucion/cevaluacion_form4/reporte_formulario_evaluacion_poa/$1/$2';  /// Reporte Evaluacion POA 2027
+$route['eval/reporte_seg_poa/(:any)'] = 'ejecucion/cevaluacion_form4/reporte_formulario_seguimiento_poa/$1/$2';  /// Reporte Seguimiento POA 2027
 
 
 

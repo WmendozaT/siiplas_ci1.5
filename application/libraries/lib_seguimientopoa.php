@@ -30,6 +30,7 @@ class Lib_seguimientopoa {
         $this->sistema   = $this->CI->session->userdata("sistema");
         $this->sistema_pie   = $this->CI->session->userdata("sistema_pie");
         $this->usuario   = $this->CI->session->userdata("usuario");
+        $this->mes = $this->mes_nombre();
         $this->mes_sistema   = $this->CI->session->userdata("mes");
     }
 
@@ -89,7 +90,7 @@ class Lib_seguimientopoa {
                 <!-- 🌟 BOTONES DINÁMICOS DE OCULTAR/MOSTRAR EN LA FILA DE FILTROS -->';
                 for ($m = $mes_inicio; $m <= $mes_fin; $m++) {
                   $tabla.='
-                  <th class="hasinput col-mes-'.$m.'" style="width:33%; text-align: center; padding: 4px; overflow: hidden; white-space: nowrap;">
+                  <th class="hasinput col-mes-'.$m.'" style="width:35%; text-align: center; padding: 4px; overflow: hidden; white-space: nowrap;">
                       <button type="button" class="btn btn-xs btn-default btn-block" id="btn_toggle_'.$m.'" onclick="toggleColumnaMes('.$m.')" style="background: #475569; color: #ffffff; border: none; font-weight: bold; padding: 4px; font-size: 11px;">
                           <i class="fa fa-eye-slash"></i> Ocultar
                       </button>
@@ -195,8 +196,10 @@ class Lib_seguimientopoa {
                   $es_deshabilitado = ($v_prog == 0) ? 'disabled' : '';
                   
                   if ($v_prog == 0) {
+                      $valor_prog='red';
                       $color_fondo_celda = '#f8fafc'; // Gris sutil para meses sin programar
                   } else {
+                      $valor_prog='green';
                       if ($mes_ejec == 0) {
                           $color_fondo_celda = '#fef08a'; // Amarillo suave (Pendiente de registrar)
                       } else {
@@ -205,14 +208,14 @@ class Lib_seguimientopoa {
                   }
                   
                   $tabla .= '
-                  <td class="col-mes-'.$m.'" style="width: 10%; background: '.$color_fondo_celda.'; padding: 4px; border: 1px solid #cbd5e1;" id="reg'.$m.'" name="prod'.$prod_id.'">
+                  <td class="col-mes-'.$m.'" style="width: 15%; background: '.$color_fondo_celda.'; padding: 4px; border: 1px solid #cbd5e1;" id="reg'.$m.'" name="prod'.$prod_id.'">
                     <div class="wrapper-mes-'.$m.'">
                       <div class="smart-form">
                        <table class="table table-bordered" style="width:100%; margin-bottom:0;">
                               <thead>
                                 <tr style="background: #64748b; color: #ffffff; height:22px; font-size: 10px;">
                                   <th style="width:5%; text-align: center; padding:2px;">PROG.</th>
-                                  <th style="width:1%; text-align: center; padding:2px;">EJEC.</th>
+                                  <th style="width:13%; text-align: center; padding:2px;">EJEC.</th>
                                   <th style="width:32%; text-align: center; padding:2px;">MEDIO VERIF.</th>
                                   <th style="width:32%; text-align: center; padding:2px;">PROBLEMAS</th>
                                   <th style="width:32%; text-align: center; padding:2px;">ACCIONES</th>
@@ -221,10 +224,10 @@ class Lib_seguimientopoa {
                               </thead>
                               <tbody>
                                 <tr style="background: #ffffff; height:100px;">
-                                  <td style="width:5%; text-align: center; font-weight: bold; color: #16a34a; vertical-align: middle; padding: 2px; font-size:15px;">'.round($v_prog, 2).' '.$tp_indi.'</td>
+                                  <td style="width:5%; text-align: center; font-weight: bold; color: '.$valor_prog.'; vertical-align: middle; padding: 2px; font-size:15px;">'.round($v_prog, 2).' '.$tp_indi.'</td>
                                   
-                                  <td style="padding: 2px; width:1%; vertical-align: middle;">
-                                      <input type="number" step="0.1" class="form-control" style="text-align: right; padding: 2px; height: 30px; font-size: 13.5px; font-weight: bold;" id="ejec_'.$prod_id.'_'.$m.'" value="'.$mes_ejec.'" '.$es_deshabilitado.'>
+                                  <td style="padding: 2px; width:13%; vertical-align: middle;">
+                                      <input type="number" step="0.1" class="form-control" style="width:80%;text-align: right; padding: 2px; height: 30px; font-size: 13.5px; font-weight: bold;" id="ejec_'.$prod_id.'_'.$m.'" value="'.$mes_ejec.'" '.$es_deshabilitado.'>
                                   </td>
                                   <td style="padding: 2px; width:32%; vertical-align: middle;">
                                     <label class="textarea">
@@ -257,7 +260,7 @@ class Lib_seguimientopoa {
                                               class="btn btn-danger btn-xs" 
                                               title="Eliminar Registro - Mes '.$m.'" 
                                               onclick="eliminarSeguimiento('.$prod_id.', '.$m.', '.$id_seguimiento.')" 
-                                              style="width: 100%; padding: 4px 2px; '.($id_seguimiento == 0 || $v_prog == 0 ? 'display:none;' : '').'" 
+                                              style="width: 100%; padding: 4px 2px; " 
                                               id="btn_del_'.$prod_id.'_'.$m.'">
                                           <i class="fa fa-trash-o"></i>
                                       </button>
@@ -515,7 +518,7 @@ class Lib_seguimientopoa {
     }
 
 
-    /// actualizando evaluacion poa
+    /// Actualizando evaluacion poa de todos los trimestre
     public function migracion_evaluacion_poa_UnidadResponsable($com_id,$Unidad_data) {
       $poa_prog          = 0;
       $poa_cumplidos     = 0;
@@ -576,20 +579,6 @@ class Lib_seguimientopoa {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /// Modal Para ver la ejecucion de la Actividad llevar a Libreria MD1
     public function modal_seguimiento_x_form4() {
       $tabla='';
@@ -635,7 +624,7 @@ class Lib_seguimientopoa {
                   if($rowm['m_id']<=$this->mes_sistema){
                     $tabla.='
                     <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/eval/reporte_seg_eval_poa/'.$com_id.'/'.$rowm['m_id'].'\');">REPORTE SEGUIMIENTO POA - '.$rowm['m_descripcion'].'</a>
+                      <a href="javascript:abreVentana(\''.site_url("").'/eval/reporte_seg_poa/'.$com_id.'/'.$rowm['m_id'].'\');">REPORTE SEGUIMIENTO POA - '.$rowm['m_descripcion'].'</a>
                     </li>';
                   }                     
                 }
@@ -645,7 +634,7 @@ class Lib_seguimientopoa {
                     $trimestre=$this->CI->model_evaluacionpoa->get_trimestre($i); /// Datos del Trimestre
                     $tabla.='
                     <li>
-                      <a href="javascript:abreVentana(\''.site_url("").'/seg/ver_reporte_evaluacionpoa/'.$com_id.'/'.$i.'\');" >REP. EVAL. POA - '.$trimestre[0]['trm_descripcion'].'</a>
+                      <a href="javascript:abreVentana(\''.site_url("").'/eval/reporte_eval_poa/'.$com_id.'/'.$i.'\');" >REP. EVAL. POA - '.$trimestre[0]['trm_descripcion'].'</a>
                     </li>';
                   }
                 
@@ -662,27 +651,33 @@ class Lib_seguimientopoa {
     public function titulo($componente){
         $trimestre=$this->CI->model_evaluacionpoa->trimestre();
         $tabla='';
+        $titulo_boton='VER CUADROS DE EVALUACIÓN POA (Cerrado)';
+        $color_boton='danger';
+        $color_well='';
+        if($this->verif_eval()==true){
+          $titulo_boton='ACTUALIZAR CUADROS DE EVALUACIÓN POA';
+          $color_boton='success';
+          $color_well='#D8FAD2';
+        }
         $tabla.='
-            <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-            <input type="hidden" name="base" value="'.base_url().'">
-      
-              <div class="well">
-                <h2>'.$componente[0]['aper_programa'].' '.$componente[0]['aper_proyecto'].' '.$componente[0]['aper_actividad'].' - '.$componente[0]['tipo'].' '.$componente[0]['act_descripcion'].' - '.$componente[0]['abrev'].'  / <b>'.$componente[0]['serv_cod'].' </b>'.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</h2>
-                <h1><small>TRIMESTRE VIGENTE : </small> '.$trimestre[0]['trm_descripcion'].'</h1>
+          <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+          <input type="hidden" name="base" value="'.base_url().'">
+            <div class="well" style="background:'.$color_well.';">
+              <h2>'.$componente[0]['aper_programa'].' '.$componente[0]['aper_proyecto'].' '.$componente[0]['aper_actividad'].' - '.$componente[0]['tipo'].' '.$componente[0]['act_descripcion'].' - '.$componente[0]['abrev'].'  / <b>'.$componente[0]['serv_cod'].' </b>'.$componente[0]['tipo_subactividad'].' '.$componente[0]['serv_descripcion'].'</h2>
+              <h1><small>PERIODO TRIMESTRE : </small> '.$trimestre[0]['trm_descripcion'].'</h1>
+              '.$this->formularios_poa($componente[0]['com_id']).'
 
-                '.$this->formularios_poa($componente[0]['com_id']).'
-
-                    <a href="#" class="btn btn-success" onclick="cargarCuadrosEvaluacion(this, '.$componente[0]['com_id'].',0)" title="GENERAR CUADROS DE EVALUACION POA">
-                      <img src="'.base_url().'assets/Iconos/text_list_bullets.png" WIDTH="30" HEIGHT="20"/>&nbsp;<b>GENERAR CUADROS DE EVALUACIÓN POA</b>
-                    </a>
-                    <a href="' . site_url("seg/seguimiento_poa") . '" 
-                       title="VOLVER AL MENÚ ANTERIOR" 
-                       class="btn btn-default" 
-                       style="font-weight: bold; color: #475569; border-color: #cbd5e1; background: #ffffff; padding: 6px 12px; display: inline-block;">
-                        <i class="fa fa-arrow-left"></i> VOLVER
-                    </a>
-              </div>
-            </article>';
+                <a href="#" class="btn btn-'.$color_boton.'" onclick="cargarCuadrosEvaluacion(this, '.$componente[0]['com_id'].',0)" title="ACTUALIZAR CUADROS DE EVALUACION POA">
+                  <img src="'.base_url().'assets/Iconos/chart_line.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>'.$titulo_boton.'</b>
+                </a>
+                <a href="' . site_url("seg/seguimiento_poa") . '" 
+                   title="VOLVER AL MENÚ ANTERIOR" 
+                   class="btn btn-default" 
+                   style="font-weight: bold; color: #475569; border-color: #cbd5e1; background: #ffffff; padding: 6px 12px; display: inline-block;">
+                    <i class="fa fa-arrow-left"></i> VOLVER
+                </a>
+            </div>
+          </article>';
     
         return $tabla;
     }
@@ -756,6 +751,265 @@ class Lib_seguimientopoa {
     }
 
 
+////// REPORTE TRIMESTRAL
+
+  /// Cabecera Reporte
+  public function cabecera_reporte($datos_poa,$trimestre) {
+    $datos_trimestre_actual = $this->CI->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral($datos_poa[0]['com_id'], $trimestre); 
+    $trimestre_row=$this->CI->model_evaluacionpoa->get_trimestre($trimestre);
+    $tabla = '';
+    $tabla .= ''.$this->stylo_cabecera().'
+    <div class="cns-contenedor-ajuste-pagina">
+        <table class="cns-cabecera-master">
+            <tr>
+                <td style="width: 65%; text-align: left; vertical-align: bottom; padding-bottom: 2px; font-size:8px;">
+                    <span class="cns-txt-title">&nbsp;&nbsp;' . strtoupper($this->CI->session->userdata('entidad')) . '</span><br>
+                    <span class="cns-txt-sub">DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</span>
+                </td>
+                <td style="width: 35%; text-align: right; vertical-align: bottom; font-size: 8px; color: #475569; font-family: courier; font-weight: bold; padding-bottom: 2px;">
+                    ' . date("d") . ' de ' . $this->mes[ltrim(date("m"), "0")] . ' de ' . date("Y") . '
+                </td>
+            </tr>
+        </table>
+
+        <!-- 🌟 REPARADO: La línea verde ahora se confina de forma exacta a los 3mm laterales -->
+        <div class="cns-linea-verde"></div>
+
+        <!-- 2. NÚCLEO DE TÍTULOS Y CÓDIGO QR -->
+        <table class="cns-cabecera-master" style="margin-top: 5px;">
+            <tr>
+                <td style="width: 15%; text-align: center; vertical-align: middle;">
+                </td>
+                <td style="width: 70%; text-align: center; vertical-align: middle; padding: 0 5px;">
+                    <span style="font-size: 17px; font-weight: bold; color: #0f172a; display: block; text-transform: uppercase; letter-spacing: 0.3px;">FORMULARIO DE EVALUACIÓN POA GESTIÓN - ' . $this->gestion . '</span><br>
+                    <span style="font-size: 13px; font-weight: 500; color: #475569; display: block; margin-top: 3px; letter-spacing: 0.2px;">'.$trimestre_row[0]['trm_descripcion'].' : <b>'.$datos_trimestre_actual[0]['porcentaje_cumplimiento'].' % -> '.$datos_trimestre_actual[0]['parametro'].'</b></span>
+                </td>
+               
+            </tr>
+        </table>
+
+        <!-- 3. CUADRO FORMAL DE IDENTIFICACIÓN RELACIONAL POA -->
+        <table class="cns-tbl-ident">
+            <tr>
+                <td class="cns-lbl">REGIONAL / DEPARTAMENTO</td>
+                <td class="cns-val">' . $datos_poa[0]['dep_cod'] . ' ' . strtoupper($datos_poa[0]['dep_departamento']) . '</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">UNIDAD EJECUTORA</td>
+                <td class="cns-val">' . $datos_poa[0]['dist_cod'] . ' ' . strtoupper($datos_poa[0]['dist_distrital']) . '</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">CAT. PROGRAMÁTICA ' . $this->gestion . '</td>
+                <td class="cns-val">' . $datos_poa[0]['aper_programa'] . ' ' . $datos_poa[0]['aper_proyecto'] . ' ' . $datos_poa[0]['aper_actividad'] . ' - ' . $datos_poa[0]['tipo'] . ' ' . strtoupper($datos_poa[0]['proy_nombre']) . ' [' . strtoupper($datos_poa[0]['abrev']) . ']</td>
+            </tr>
+            <tr>
+                <td class="cns-lbl">UNIDAD RESPONSABLE</td>
+                <td class="cns-val">'.$datos_poa[0]['tipo_subactividad'] . ' ' . $datos_poa[0]['com_componente'].'</td>
+            </tr>  
+        </table>
+
+    </div>';
+    
+    return $tabla;
+  }
+
+  
+
+  public function stylo_cabecera() {
+    $tabla='
+    <style>
+        .cns-contenedor-ajuste-pagina {
+            padding-left: 3mm;
+            padding-right: 3mm;
+            width: 97.5%;
+        }
+        
+        .cns-cabecera-master { 
+            font-family: helvetica, arial, sans-serif; 
+            color: #1e293b; 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: fixed; /* Forzado geométrico de celdas */
+        }
+        
+        .cns-txt-title { font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase; }
+        .cns-txt-sub { font-size: 7.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.2px; }
+        
+        /* Línea Verde Institucional Sincronizada */
+        .cns-linea-verde { 
+            height: 2px; 
+            background: #000000; 
+            width: 100%; 
+            margin-top: 3px;
+            margin-bottom: 5px; 
+        }
+        
+        /* Bloque Maestro de Datos POA */
+        .cns-tbl-ident { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 10px 0 5px 0; 
+            table-layout: fixed; 
+        }
+        .cns-tbl-ident td { padding: 4px 6px; font-size: 7.5px; border: 0.9px solid #C2C2C2; vertical-align: middle; color: #000000; }
+        .cns-tbl-ident td.cns-lbl { background: #EBEBEB; font-weight: bold; color: #000000; width: 22%; height:0.5%; text-transform: uppercase; }
+        .cns-tbl-ident td.cns-val { background: #ffffff; font-weight: 600; color: #000000; width: 78%; }
+    </style>';
+
+    return $tabla;
+    }
+
+/*---- VERIFICA LOS MEDIOS DE VERIFICACION REGISTRADOS PARA EL REPORTE TRIMESTRAL -----*/
+  public function report_verif_medios_verificacion($prod_id,$tipo_medio,$trimestre){
+      $tabla='';
+      // Puedes cambiarlo por: intval($this->input->post('trimestre')) si viaja por POST
+      $mes_inicio = (($trimestre - 1) * 3) + 1;
+      $mes_fin    = $trimestre * 3;
+      $tabla.='<ul>';
+      for ($i=$mes_inicio; $i <=$mes_fin ; $i++) { 
+        $medio=$this->CI->model_evaluacionpoa->get_seguimiento_poa_mes($prod_id,$i);
+        if(count($medio)!=0){
+            if($tipo_medio==1){
+              if($medio[0]['medio_verificacion']!=''){
+                if(strlen($medio[0]['medio_verificacion'])>400){
+                  $tabla.='<li>'.substr($medio[0]['medio_verificacion'], 0, 400).'</li>';
+                }
+                else{
+                  $tabla.='<li>'.$medio[0]['medio_verificacion'].'</li>';
+                }
+                
+              }
+            }
+            elseif($tipo_medio==2){
+              if($medio[0]['observacion']!=''){
+                $tabla.='<li>'.$medio[0]['observacion'].'</li>';
+              }
+            }
+            else{
+              if($medio[0]['acciones']!=''){
+                $tabla.='<li>'.$medio[0]['acciones'].'</li>';
+              }
+            }
+        }
+        else{
+          $nmedio=$this->CI->model_evaluacionpoa->get_seguimiento_poa_mes_noejec($prod_id,$i);
+          if(count($nmedio)!=0){
+            if($tipo_medio==1){
+              if($nmedio[0]['medio_verificacion']!=''){
+                $tabla.='<li>'.$nmedio[0]['medio_verificacion'].'</li>';
+              }
+            }
+            elseif($tipo_medio==2){
+              if($nmedio[0]['observacion']!=''){
+                $tabla.='<li>'.$nmedio[0]['observacion'].'</li>';
+              }
+            }
+            else{
+              if($nmedio[0]['acciones']!=''){
+                $tabla.='<li>'.$nmedio[0]['acciones'].'</li>';
+              }
+            }
+          }
+        }
+        
+      }
+      $tabla.='</ul>';
+
+      return $tabla;
+    }
+
+
+  //// Pie de Evaluacion POA Trimestral
+  public function pie_evaluacionpoa(){
+    $tabla='';
+    $tabla.='
+
+      <table border=0 style="width:100%;">
+        <tr>
+          <td style="width:1%;"></td>
+          <td style="width:98%;">
+       
+              <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+                <tr>
+                  <td style="width:33.3%;">
+                    <table border="0.5" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+                        <tr>
+                            <td style="font-size: 7.5px;width:100%;height:10px;font-family: Arial;"><b>JEFATURA DE UNIDAD O AREA / RESP. DE AREA REGIONAL<br></b></td>
+                        </tr>
+                       
+                        <tr style="font-size: 8.5px;font-family: Arial; height:65px;" align="center">
+                            <td><b><br><br><br><br><br>FIRMA</b></td>
+                        </tr>
+                    </table>
+                  </td>
+                  <td style="width:33.3%;">
+                    <table border="0.5" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+                        <tr>
+                            <td style="font-size: 7.5px;width:100%;height:10px;font-family: Arial;"><b>JEFATURA DE DEPARTAMENTOS / SERV. GENERALES REGIONAL / JEFATURA MEDICA<br></b></td>
+                        </tr>
+                       
+                        <tr style="font-size: 8.5px;font-family: Arial; height:65px;" align="center">
+                            <td><b><br><br><br><br><br>FIRMA</b></td>
+                        </tr>
+                    </table>
+                  </td>
+                  <td style="width:33.3%;">
+                    <table border="0.5" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;" align="center">
+                        <tr>
+                            <td style="font-size: 7.5px;width:100%;height:10px;font-family: Arial;"><b>GERENCIA GENERAL / GERENCIAS DE AREA / ADMINISTRADOR REGIONAL<br></b></td>
+                        </tr>
+                       
+                        <tr style="font-size: 8.5px;font-family: Arial; height:65px;" align="center">
+                            <td><b><br><br><br><br><br>FIRMA</b></td>
+                        </tr>
+                    </table>  
+                  </td>
+
+                </tr>
+                <tr>
+                  <td style="height:18px;">'.$this->CI->session->userdata('rd_poa').'</td>
+                  <td style="height:18px;">'.$this->CI->session->userdata('sistema').'</td>
+                  <td align=right>'.$this->CI->session->userdata('funcionario').' - pag. [[page_cu]]/[[page_nb]]</td>
+                </tr>
+              </table>
+          </td>
+          <td style="width:1%;"></td>
+        </tr>
+      </table>';
+
+    return $tabla;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /// Estilo Formulario LLEVAR A LIBRERIA
     public function estilo_tabla_form4(){
@@ -802,5 +1056,20 @@ class Lib_seguimientopoa {
     }
 
 
-
+    /*------ NOMBRE MES -------*/
+    function mes_nombre(){
+        $mes[1] = 'ENE.';
+        $mes[2] = 'FEB.';
+        $mes[3] = 'MAR.';
+        $mes[4] = 'ABR.';
+        $mes[5] = 'MAY.';
+        $mes[6] = 'JUN.';
+        $mes[7] = 'JUL.';
+        $mes[8] = 'AGOS.';
+        $mes[9] = 'SEPT.';
+        $mes[10] = 'OCT.';
+        $mes[11] = 'NOV.';
+        $mes[12] = 'DIC.';
+        return $mes;
+    }
 }

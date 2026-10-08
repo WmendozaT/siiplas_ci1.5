@@ -287,7 +287,7 @@ class Model_evaluacionpoa extends CI_Model{
                     ELSE 'SIN RANGO'::text
                 END AS trimestre,
                 CASE 
-                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                    WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
                     WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'REGULAR (75% - 90%)'::text
                     WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
                     WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'OPTIMO (100%)'::text
@@ -295,7 +295,7 @@ class Model_evaluacionpoa extends CI_Model{
                 END AS parametro,
 
                 CASE 
-                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
+                    WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
                     WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'warning'::text
                     WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'info'::text
                     WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'success'::text
