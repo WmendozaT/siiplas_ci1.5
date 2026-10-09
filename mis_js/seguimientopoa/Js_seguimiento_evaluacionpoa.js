@@ -410,7 +410,7 @@ function eliminarSeguimiento(prodId, mes, idSeguimiento) {
 }
 
 
-    //// get seguimiento x actividad en modal
+    //// Get Seguimiento x Actividad en Modal
     function abrirModalDetalleConAjax(prodId) {
         // A. Mostrar pantalla opaca completa de Loading
         var loadingId = 'loading_modal_ajax';
@@ -450,6 +450,101 @@ function eliminarSeguimiento(prodId, mes, idSeguimiento) {
             }
         });
     }
+
+
+    //// Get ver Seguimiento trimestral para ajustar si corresponde
+    function abrirModalparaAjustar_evaluacion_ConAjax(comId) {
+       
+        // A. Mostrar pantalla opaca completa de Loading
+        var loadingId = 'loading_modal_ajax';
+        var loadingHtml = '<div id="' + loadingId + '" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 0, 0, 0.4); z-index: 9999999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">' +
+            '<div style="background: #ffffff; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">' +
+                '<i class="fa fa-refresh fa-spin" style="font-size: 32px; color: #0284c7; margin-bottom: 10px; display: block;"></i>' +
+                '<span style="font-size: 13px; font-weight: bold; color: #334155;">Consultando base de datos...</span>' +
+            '</div>' +
+        '</div>';
+        jQuery('body').append(loadingHtml);
+
+        // B. Petición asíncrona al Servidor
+        jQuery.ajax({
+            type: "POST",
+            url: base + "index.php/ejecucion/cevaluacion_form4/obtener_detalle_seguimiento_x_unidadResponsable_para_ajustar", 
+            data: {
+                com_id: comId
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Quitar pantalla de carga
+                jQuery('#' + loadingId).remove();
+
+                if (response.status === 'success') {
+                    var act = response.actividad;
+                
+                    jQuery('#detalle').html(act);
+                    jQuery('#modalDetalleActividadAjax').modal('show');
+
+                } else {
+                    alert('Error al consultar los detalles: ' + response.message);
+                }
+            },
+            error: function() {
+                jQuery('#' + loadingId).remove();
+                alert('Error crítico de red: No se pudo conectar con el servidor.');
+            }
+        });
+    }
+
+    //// Guardar dato ajustado 
+    function guardarAjusteAutomatico(evalId, campoModificado, nuevoValor) {
+    // 1. Control de seguridad básica local
+    if (nuevoValor.trim() === '' || isNaN(nuevoValor) || parseInt(nuevoValor) < 0) {
+        nuevoValor = 0;
+    }
+
+    // 2. Opacar temporalmente los porcentajes locales para indicar que se está recalculando
+    jQuery('#pct_cump_' + evalId + ', #pct_proc_' + evalId + ', #pct_ncump_' + evalId).css('opacity', '0.4');
+
+    var url = base + "index.php/ejecucion/cevaluacion_form4/guardar_ajuste_campo_consolidado";
+
+    // 3. Envío AJAX en segundo plano
+    jQuery.ajax({
+        type: "POST",
+        url: url,
+        data: {
+            eval_id: evalId,
+            campo: campoModificado,
+            valor: nuevoValor
+        },
+        dataType: 'json',
+        success: function(response) {
+            // Restaurar opacidades
+            jQuery('#pct_cump_' + evalId + ', #pct_proc_' + evalId + ', #pct_ncump_' + evalId).css('opacity', '1');
+
+            if (response.status === 'success') {
+                // 🌟 ACTUALIZACIÓN EN CALIENTE: Inyectamos los nuevos porcentajes calculados por el Servidor
+                jQuery('#pct_cump_' + evalId).html(response.nuevo_pct_cumplimiento + '%');
+                jQuery('#pct_proc_' + evalId).html(response.nuevo_pct_proceso + '%');
+                jQuery('#pct_ncump_' + evalId).html(response.nuevo_pct_no_cumplimiento + '%');
+                
+                console.log('Campo ' + campoModificado + ' actualizado de forma automática.');
+            } else {
+                alert('No se pudo guardar el ajuste: ' + response.message);
+            }
+        },
+        error: function() {
+            jQuery('#pct_cump_' + evalId + ', #pct_proc_' + evalId + ', #pct_ncump_' + evalId).css('opacity', '1');
+            console.error('Error crítico de comunicación con el servidor al ajustar.');
+        }
+    });
+}
+
+
+
+
+
+
+
+
 
     //// get seguimiento de Actividades x Unidad Responsable en modal
     function abrirModalDetalle_UresponsableConAjax(comId) {

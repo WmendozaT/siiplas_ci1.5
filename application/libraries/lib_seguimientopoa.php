@@ -227,21 +227,21 @@ class Lib_seguimientopoa {
                                   <td style="width:5%; text-align: center; font-weight: bold; color: '.$valor_prog.'; vertical-align: middle; padding: 2px; font-size:15px;">'.round($v_prog, 2).' '.$tp_indi.'</td>
                                   
                                   <td style="padding: 2px; width:13%; vertical-align: middle;">
-                                      <input type="number" step="0.1" class="form-control" style="width:80%;text-align: right; padding: 2px; height: 30px; font-size: 13.5px; font-weight: bold;" id="ejec_'.$prod_id.'_'.$m.'" value="'.$mes_ejec.'" '.$es_deshabilitado.'>
+                                      <input type="number" step="0.1" class="form-control" style="width:80%;text-align: right; padding: 2px; height: 30px; font-size: 13.5px; font-weight: bold;" id="ejec_'.$prod_id.'_'.$m.'" value="'.$mes_ejec.'" >
                                   </td>
                                   <td style="padding: 2px; width:32%; vertical-align: middle;">
                                     <label class="textarea">
-                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="mverif_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$mverificacion.'</textarea>
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="mverif_'.$prod_id.'_'.$m.'" >'.$mverificacion.'</textarea>
                                     </label>
                                   </td>
                                   <td style="padding: 2px; width:32%; vertical-align: middle;">
                                     <label class="textarea">
-                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="prob_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$prob_presentados.'</textarea>
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="prob_'.$prod_id.'_'.$m.'" >'.$prob_presentados.'</textarea>
                                     </label>
                                   </td>
                                   <td style="padding: 2px; width:32%; vertical-align: middle;">
                                     <label class="textarea">
-                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="acc_'.$prod_id.'_'.$m.'" '.$es_deshabilitado.'>'.$acciones.'</textarea>
+                                      <textarea style="font-size: 11px; height: 100px; padding: 2px; resize: vertical;" id="acc_'.$prod_id.'_'.$m.'" >'.$acciones.'</textarea>
                                     </label>
                                   </td>
                                   <td style="text-align: center; vertical-align: middle; padding: 4px; width: 5%;">
@@ -251,7 +251,7 @@ class Lib_seguimientopoa {
                                               title="Guardar Registro - Mes '.$m.'" 
                                               onclick="guardarSeguimiento('.$prod_id.', '.$m.')" 
                                               style="margin-bottom: 5px; width: 100%; padding: 4px 2px;" 
-                                              '.$es_deshabilitado.'>
+                                              >
                                           <i class="fa fa-save"></i>
                                       </button>
                                       
@@ -669,7 +669,18 @@ class Lib_seguimientopoa {
 
                 <a href="#" class="btn btn-'.$color_boton.'" onclick="cargarCuadrosEvaluacion(this, '.$componente[0]['com_id'].',0)" title="ACTUALIZAR CUADROS DE EVALUACION POA">
                   <img src="'.base_url().'assets/Iconos/chart_line.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>'.$titulo_boton.'</b>
-                </a>
+                </a>';
+              if($tp_adm==1){
+                $tabla.='
+                <button type="button" 
+                      class="btn btn-info" 
+                      title="Ver detalle completo de la Actividad" 
+                      onclick="abrirModalparaAjustar_evaluacion_ConAjax('.$componente[0]['com_id'].')" 
+                      style="padding: 6px 9px;">
+                  <i class="fa fa-search"></i> Ajustar Detalle Evaluación
+                </button>';
+              }
+              $tabla.='
                 <a href="' . site_url("seg/seguimiento_poa") . '" 
                    title="VOLVER AL MENÚ ANTERIOR" 
                    class="btn btn-default" 

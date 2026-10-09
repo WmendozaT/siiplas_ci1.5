@@ -543,6 +543,152 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
   }
 
 
+    //// Get Obtiene Listado de trimestres por UnidadResponsable para su ajuste
+public function obtener_detalle_seguimiento_x_unidadResponsable_para_ajustar() {
+    $com_id = intval($this->input->post('com_id'));
+    $componente = $this->model_componente->get_componente($com_id, $this->gestion);
+    
+    if (count($componente) == 0) {
+        echo json_encode(array('status' => 'error', 'message' => 'Unidad Responsable no encontrada.'));
+        return;
+    }
+
+    $listado_trimestre = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($com_id);
+    
+    $tabla = '
+    <div class="table-responsive">
+        <table class="table table-bordered table-condensed" style="width: 100%; margin-bottom: 0; font-family: sans-serif; table-layout: fixed;">
+          <thead>
+            <tr style="font-size: 11px; background: #334155; color: #ffffff; height: 32px;">
+              <th style="width: 20%; text-align:center; vertical-align: middle;">TRIMESTRE</th>
+              <th style="width: 15%; text-align:center; vertical-align: middle;">NRO. PROGRAMADOS</th>
+              <th style="width: 15%; text-align:center; vertical-align: middle;">NRO. CUMPLIDOS</th>
+              <th style="width: 15%; text-align:center; vertical-align: middle;">NRO. PROCESO</th>
+              <th style="width: 15%; text-align:center; vertical-align: middle;">NRO. NO CUMPLIDOS</th>
+              <th style="width: 10%; text-align:center; vertical-align: middle;">(%) CUMP.</th>
+              <th style="width: 10%; text-align:center; vertical-align: middle;">(%) PROC.</th>
+              <th style="width: 10%; text-align:center; vertical-align: middle;">(%) N.CUMP.</th>
+            </tr>
+          </thead>
+          <tbody>';
+          
+          foreach($listado_trimestre as $row){
+            // 🌟 OPTIMIZACIÓN: Estilo en línea compacto para los inputs (Evita deformaciones en el modal)
+            $style_input = 'style="height: 26px; padding: 2px 5px; font-size: 12px; font-weight: bold; text-align: center; border-radius: 4px;"';
+            
+            $tabla .= '
+            <tr style="height: 35px; vertical-align: middle;">
+              <td style="vertical-align: middle; font-weight: bold; padding-left: 8px; color: #1e293b;">'.strtoupper($row['trimestre']).'</td>
+              <td style="vertical-align: middle; padding: 4px;"><input type="number" min="0" class="form-control" value="'.$row['poa_prog'].'" '.$style_input.' onchange="guardarAjusteAutomatico('.$row['eval_id'].', \'poa_prog\', this.value)"></td>
+              <td style="vertical-align: middle; padding: 4px;"><input type="number" min="0" class="form-control" value="'.$row['poa_cumplidos'].'" '.$style_input.' onchange="guardarAjusteAutomatico('.$row['eval_id'].', \'poa_cumplidos\', this.value)"></td>
+              <td style="vertical-align: middle; padding: 4px;"><input type="number" min="0" class="form-control" value="'.$row['poa_proceso'].'" '.$style_input.' onchange="guardarAjusteAutomatico('.$row['eval_id'].', \'poa_proceso\', this.value)"></td>
+              <td style="vertical-align: middle; padding: 4px;"><input type="number" min="0" class="form-control" value="'.$row['poa_no_cumplidos'].'" '.$style_input.' onchange="guardarAjusteAutomatico('.$row['eval_id'].', \'poa_no_cumplidos\', this.value)"></td>
+              
+              <!-- Celdas receptoras de recálculos de porcentajes asíncronos -->
+              <td style="vertical-align: middle; text-align:center; font-weight: bold; color: #16a34a;" id="pct_cump_'.$row['eval_id'].'">'.number_format($row['porcentaje_cumplimiento'], 2).'%</td>
+              <td style="vertical-align: middle; text-align:center; font-weight: bold; color: #ca8a04;" id="pct_proc_'.$row['eval_id'].'">'.number_format($row['porcentaje_proceso'], 2).'%</td>
+              <td style="vertical-align: middle; text-align:center; font-weight: bold; color: #dc2626;" id="pct_ncump_'.$row['eval_id'].'">'.number_format($row['porcentaje_no_cumplimiento'], 2).'%</td>
+            </tr>';
+          }
+          
+          $tabla .= '
+          </tbody>
+        </table>
+    </div>';
+
+    $respuesta = array(
+        'status'    => 'success',
+        'actividad' => $tabla
+    );
+
+    echo json_encode($respuesta);
+    return;
+}
+
+
+  //// Guardar el ajuste de los campoa del trimestre si corresponde
+  public function guardar_ajuste_campo_consolidado() {
+    // 1. Validar que la petición sea estrictamente AJAX
+    if (!$this->input->is_ajax_request()) {
+        show_404();
+        return;
+    }
+
+    // 2. Capturar y asegurar los parámetros del POST
+    $eval_id = intval($this->input->post('eval_id'));
+    $campo   = trim($this->input->post('campo'));
+    $valor   = intval($this->input->post('valor'));
+
+    // Lista blanca para evitar inyección de columnas maliciosas
+    $campos_permitidos = array('poa_prog', 'poa_cumplidos', 'poa_proceso', 'poa_no_cumplidos');
+
+    if ($eval_id == 0 || !in_array($campo, $campos_permitidos) || $valor < 0) {
+        echo json_encode(array('status' => 'error', 'message' => 'Parámetros o valores de ajuste no válidos.'));
+        return;
+    }
+
+    // 3. Actualizar el campo modificado en la base de datos
+    $update = array($campo => $valor);
+    $this->db->where('eval_id', $eval_id);
+    $this->db->update('detalle_evaluacion_poa_trimestral', $this->security->xss_clean($update));
+
+    // 4. 🌟 OBTENER DATOS ACTUALIZADOS: Consultamos la fila completa tras la edición
+    $this->db->where('eval_id', $eval_id);
+    $query = $this->db->get('detalle_evaluacion_poa_trimestral');
+    $registro_actualizado = $query->row_array(); // Ahora sí contiene la información real
+
+    if (empty($registro_actualizado)) {
+        echo json_encode(array('status' => 'error', 'message' => 'No se pudo recuperar el registro consolidado para recalcular los porcentajes.'));
+        return;
+    }
+
+    // Asignamos las variables con los datos de la fila de la base de datos
+    $poa_prog         = intval($registro_actualizado['poa_prog']);
+    $poa_cumplidos    = intval($registro_actualizado['poa_cumplidos']);
+    $poa_proceso      = intval($registro_actualizado['poa_proceso']);
+    $poa_no_cumplidos = intval($registro_actualizado['poa_no_cumplidos']);
+
+    // Inicializar porcentajes con precisión decimal para este corte trimestral
+    $pct_cumplimiento        = 0.00;
+    $pct_proceso            = 0.00;
+    $pct_no_cumplimiento    = 0.00;
+    $pct_no_cumplimiento_tot = 0.00;
+
+    // 5. 🧮 CALCULO MATEMÁTICO DE PORCENTAJES (Protegiendo la división entre cero)
+    if ($poa_prog > 0) {
+        $pct_cumplimiento        = round(($poa_cumplidos * 100) / $poa_prog, 2);
+        $pct_proceso            = round(($poa_proceso * 100) / $poa_prog, 2);
+        $pct_no_cumplimiento    = round(($poa_no_cumplidos * 100) / $poa_prog, 2);
+        $pct_no_cumplimiento_tot = round((($poa_proceso + $poa_no_cumplidos) * 100) / $poa_prog, 2);
+    }
+
+    // 6. PERSISTENCIA: Guardamos los nuevos porcentajes calculados en la base de datos
+    $data_porcentajes = array(
+        'porcentaje_cumplimiento'          => $pct_cumplimiento,
+        'porcentaje_proceso'               => $pct_proceso,
+        'porcentaje_no_cumplimiento'       => $pct_no_cumplimiento,
+        'porcentaje_no_cumplimiento_total' => $pct_no_cumplimiento_tot
+    );
+
+    $this->db->where('eval_id', $eval_id);
+    $this->db->update('detalle_evaluacion_poa_trimestral', $data_porcentajes);
+
+    // 7. Retornar los porcentajes ya listos al frontend
+    $respuesta = array(
+        'status'                    => 'success',
+        'nuevo_pct_cumplimiento'    => number_format($pct_cumplimiento, 2, '.', ''),
+        'nuevo_pct_proceso'         => number_format($pct_proceso, 2, '.', ''),
+        'nuevo_pct_no_cumplimiento' => number_format($pct_no_cumplimiento, 2, '.', '')
+    );
+
+    echo json_encode($respuesta);
+    return;
+  }
+
+
+
+
+
     //// Get Obtiene (lista) Seguimiento de Actividades x Unidad Responsable
     public function obtener_detalle_seguimiento_de_actividad_x_UnidadResponsable() {
       $com_id = intval($this->input->post('com_id'));
@@ -1035,17 +1181,55 @@ public function eliminar_seguimiento() {
         $tabla .= '
       </tbody>
     </table>
+
   </div>';
 
 
       // Obtener los datos consolidados específicos del trimestre actual seleccionado para el pastel
       if($tp_nivel==0){
-        $datos_trimestre_actual = $this->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral($id, $this->tmes); 
-       // $datos_trimestre_actual = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($id, $this->tmes); 
+        $datos_trimestre_actual = $this->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral($id, $this->tmes); /// componente
       }
       else{
-        $datos_trimestre_actual = $this->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral_UnidadOrganizacional($id, $this->tmes); 
-        //$datos_trimestre_actual = $this->model_evaluacionpoa->lista_consolidado_evaluacion_trimestral_Unidadresponsable($com_id, $this->tmes); 
+        $datos_trimestre_actual = $this->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral_UnidadOrganizacional($id, $this->tmes); /// Proyecto
+        $lista_UniResponsables =$this->model_evaluacionpoa->get_lista_consolidado_evaluacion_trimestral_de_UnidadResponsable_x_UnidadOrganizacional($id,$this->tmes);
+        $tabla.='
+          DETALLE CUMPLIMIENTO TRIMESTRAL POR UNIDAD RESPONSABLE: 
+          <table class="table table-bordered table-striped" style="width: 100%; font-size: 11.5px; margin-top: 15px; font-family: sans-serif;">
+            <thead>
+              <tr style="background: #475569; color: #ffffff; height: 32px;">
+                <th style="vertical-align: middle; width: 2%; text-align:center; padding-left: 10px;">#</th>
+                <th style="vertical-align: middle; width: 20%; text-align:center; padding-left: 10px;">UNIDAD RESPONSABLE</th>
+                <th style="vertical-align: middle; width: 8%; text-align:center; padding-left: 10px;">N° PROG.</th>
+                <th style="vertical-align: middle; width: 8%; text-align:center; padding-left: 10px;">N° CUMP.</th>
+                <th style="vertical-align: middle; width: 8%; text-align:center; padding-left: 10px;">N° PROC.</th>
+                <th style="vertical-align: middle; width: 8%; text-align:center; padding-left: 10px;">N° NO CUMP.</th>
+                <th style="vertical-align: middle; width: 8%; text-align:center; padding-left: 10px;">(%) CUMP.</th>
+                <th style="vertical-align: middle; width: 8%; text-align:center; padding-left: 10px;">(%) NO CUMP.</th>
+                <th style="vertical-align: middle; width: 10%; text-align:center; padding-left: 10px;"></th>
+              </tr>
+            </thead>
+            <tbody>';
+            $nro=0;
+            foreach ($lista_UniResponsables as $fila) {
+              $nro++;
+              $tabla.='
+              <tr>
+                <td style="text-align: center; font-weight: bold; ">'.$nro.'</td>
+                <td style="text-align: left; font-weight: bold; ">' . $fila['tipo_subactividad'] . ' ' . $fila['com_componente'] . '</td>
+                <td style="text-align: right; font-weight: bold; ">' . $fila['poa_prog'] . ' </td>
+                <td style="text-align: right; font-weight: bold; ">' . $fila['poa_cumplidos'] . '</td>
+                <td style="text-align: right; font-weight: bold; ">' . $fila['poa_proceso'] . '</td>
+                <td style="text-align: right; font-weight: bold; ">' . $fila['poa_no_cumplidos'] . '</td>
+                <td style="text-align: right; font-weight: bold; color: #16a34a;"><b>' . $fila['porcentaje_cumplimiento'] . '%</b></td>
+                <td style="text-align: right; font-weight: bold; color: #ef4444;"><b>' . $fila['porcentaje_no_cumplimiento_total'] . '%</b></td>
+                <td style="text-align: center; font-weight: bold; ">
+                  <button type="button" class="btn btn-'.$fila['color_semaforo'].'" style="font-size:9px;">' . $fila['parametro'] . '</button>
+                </td>
+              </tr>';
+            }
+            $tabla.='
+            </tbody>
+          </table>';
       }
       
 

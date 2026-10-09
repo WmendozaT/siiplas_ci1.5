@@ -180,7 +180,7 @@ class Cmod_presupuestario extends CI_Controller {
       $tab='dt_basic1';
     }
 
-    if($this->fun_id==399){
+    if($this->tp_adm==1){
        $tabla.='<br>
               <a href="'.site_url("").'/mod_ppto/actualizar_modppto/'.$mp_id.'/'.$tp.'" title="ACTUALIZAR MONTOS" class="btn btn-info " style="width:30%;">Actualizar Modificacion</a>';
     }

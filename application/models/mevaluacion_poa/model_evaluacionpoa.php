@@ -21,12 +21,13 @@ class Model_evaluacionpoa extends CI_Model{
         // 2. Construir dinámicamente los nombres de las columnas
         $prog_trimestre  = 'prog_trm' . $t;
         $saldo_trimestre = 'saldo_acumulado_trm' . $t;
+        $saldo_trm = 'saldo_trm' . $t;
 
         // 3. Crear el molde SQL usando el signo de interrogación '?' para bindings
         $sql = "SELECT *
                 FROM vista_formN4_para_evaluacionPoa_x_UniResponsable
                 WHERE com_id = ? 
-                  AND (" . $prog_trimestre . " != 0 OR " . $saldo_trimestre . " != 0)
+                  AND (" . $prog_trimestre . " != 0 OR " . $saldo_trimestre . " != 0 OR " . $saldo_trm . " != 0)
                   AND estado != 3 
                 ORDER BY prod_id, prod_cod ASC";
 
@@ -392,4 +393,39 @@ class Model_evaluacionpoa extends CI_Model{
     }
 
 
+
+    //// cuadro consolidado de Evaluacion LISTADO DE unidad Responsable por Proyecto
+    public function get_lista_consolidado_evaluacion_trimestral_de_UnidadResponsable_x_UnidadOrganizacional($proy_id,$trimestre){
+        $sql = "
+        SELECT uResp.proy_id,uResp.com_id,uResp.tipo_subactividad,uResp.com_componente,eval.trm_id,eval.poa_prog,eval.poa_cumplidos,eval.poa_proceso,eval.poa_no_cumplidos,eval.porcentaje_cumplimiento,eval.porcentaje_no_cumplimiento_total
+        ,CASE 
+            WHEN trm_id=1 THEN 'PRIMER TRIMESTRE'::text
+            WHEN trm_id=2 THEN 'SEGUNDO TRIMESTRE'::text
+            WHEN trm_id=3 THEN 'TERCER TRIMESTRE'::text
+            WHEN trm_id=4 THEN 'CUARTO TRIMESTRE'::text
+            ELSE 'SIN RANGO'::text
+        END AS trimestre,
+        CASE 
+            WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
+            WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'REGULAR (75% - 90%)'::text
+            WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
+            WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'OPTIMO (100%)'::text
+            ELSE 'SIN RANGO'::text
+        END AS parametro,
+        CASE 
+            WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
+            WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'warning'::text
+            WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'info'::text
+            WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'success'::text
+            ELSE 'danger'::text
+            END AS color_semaforo
+                
+        from vista_lista_UnidadesResponsables uResp
+        INNER JOIN detalle_evaluacion_poa_trimestral eval ON eval.com_id = uResp.com_id
+        where uResp.proy_id=".$proy_id." and eval.trm_id=".$trimestre."
+        order by uResp.com_id, eval.trm_id asc";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 }
