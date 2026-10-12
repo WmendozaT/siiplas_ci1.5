@@ -840,6 +840,41 @@ class Proyecto extends CI_Controller {
   }
 
 
+//// Actualizando Apertura Programatica ultimo2027
+public function guardar_formulario_tradicional() {
+    // 1. Validar la sesión antes de procesar cualquier cambio
+    if ($this->session->userdata('fun_id') != null && $this->session->userdata('fun_estado') != 3) {
+        
+        // 2. Capturar los datos enviados por el método POST del formulario
+        $id = $this->input->post('aper_id');
+        
+        $update_data = array(
+            'aper_programa'  => $this->input->post('aper_programa'),
+            'aper_actividad' => $this->input->post('aper_actividad')
+        );
+
+        // 3. Ejecutar la actualización en la base de datos usando Active Record
+        $this->db->where('aper_id', $id);
+        $resultado = $this->db->update('aperturaprogramatica', $update_data); // Ajusta 'apertura_programatica' si se llama distinto
+
+        if ($resultado) {
+            // Opcional: Puedes guardar un mensaje temporal en la sesión para mostrar que se guardó con éxito
+            $this->session->set_flashdata('correcto', 'Los datos se actualizaron correctamente.');
+        } else {
+            $this->session->set_flashdata('error', 'Hubo un problema al guardar en la base de datos.');
+        }
+
+        // 4. Redireccionar de vuelta al formulario original para actualizar la vista
+        // Reemplaza "formulario_seguimiento_poa/..." por el método y parámetros de tu pantalla actual
+        redirect('admin/proy/list_proy', 'refresh');
+
+    } else {
+        // Si no hay sesión válida, destruye y manda al login
+        $this->session->sess_destroy();
+        redirect('/', 'refresh');
+    }
+}
+
 
     /*--- ACTIVAR, DESACTIVAR OBJETIVO REGIONAL -----*/
     function estado_oregional(){

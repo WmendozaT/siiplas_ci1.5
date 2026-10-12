@@ -847,11 +847,30 @@ class Programacionpoa extends CI_Controller{
             </fieldset>
             <center><div class="alert alert-warning alert-block"><h1>'.$proyecto[0]['aper_programa'].''.$proyecto[0]['aper_proyecto'].''.$proyecto[0]['aper_actividad'].' - '.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</h1></div></center>
         </form>
-        </div>
+        </div>';
+        if($this->tp_adm==1){ 
+            $tabla.='
+            <form action="'.site_url("").'/programacion/proyecto/guardar_formulario_tradicional'.'" method="POST" style="display: inline-block;">
+    
+                <!-- Input oculto para enviar el ID de la apertura sin que el usuario lo vea -->
+                <input type="hidden" name="aper_id" value="'.$proyecto[0]['aper_id'].'">
+
+                <label for="prog">Programa:</label>
+                <input type="number" id="prog" name="aper_programa" value="'.$proyecto[0]['aper_programa'].'">
+
+                <label for="act">Actividad:</label>
+                <input type="number" id="act" name="aper_actividad" value="'.$proyecto[0]['aper_actividad'].'">
+
+                <!-- Botón para procesar los cambios -->
+                <button type="submit" class="btn btn-success">Guardar Cambios</button>
+            </form>';
+        }
+        $tabla.='
       </article>';
 
       return $tabla;
     }
+
 
 
 
