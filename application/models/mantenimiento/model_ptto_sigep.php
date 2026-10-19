@@ -467,13 +467,13 @@ class Model_ptto_sigep extends CI_Model{
     // }
 
     // /*------- Presupuesto Sigep Inicial (Proyecto de Inversion) 2027 sirve----------*/
-    // public function get_ptto_sigep_pi($aper_id,$partida){
-    //     $sql = 'select *
-    //             from ptto_partidas_sigep
-    //             where aper_id='.$aper_id.' and partida=\''.$partida.'\' and g_id='.$this->gestion.' and estado!=\'3\'';
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+    public function get_ptto_sigep_pi($aper_id,$partida){
+        $sql = 'select *
+                from ptto_partidas_sigep
+                where aper_id='.$aper_id.' and partida=\''.$partida.'\' and g_id='.$this->gestion.' and estado!=\'3\'';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     // /*-------------------- Presupuesto Sigep Aprobado ------------------------*/
     // public function get_ptto_sigep_aprobado($da,$ue,$programa,$proyecto,$actividad,$partida){
@@ -1075,36 +1075,36 @@ class Model_ptto_sigep extends CI_Model{
 
 
     /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO POR REGIONAL PINVERSION (2023) VIGENTE-----*/
-    // public function suma_ptto_regional_pi_aprobados($dep_id,$tp){
-    //     // 1 : PTO ASIGNADO
-    //     // 2 : PTO PROGRAMADO
-    //     if($tp==1){
-    //         $sql = 'select p.dep_id,SUM(partidas_asig.importe) as asignado
-    //                 FROM lista_poa_pinversion_nacional('.$this->gestion.') p
-    //                 Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
-    //                 where p.dep_id='.$dep_id.' and partidas_asig.estado!=\'3\'
-    //                 group by p.dep_id';
-    //     }
-    //     else{
-    //         $sql = 'select p.dep_id, SUM(i.ins_costo_total) as programado
-    //                 FROM lista_poa_pinversion_nacional('.$this->gestion.') p
-    //                 Inner Join insumos as i On i.aper_id=p.aper_id
-    //                 where p.dep_id='.$dep_id.' and i.ins_tipo_modificacion=\'0\'
-    //                 group by p.dep_id';
+    public function suma_ptto_regional_pi_aprobados($dep_id,$tp){
+        // 1 : PTO ASIGNADO
+        // 2 : PTO PROGRAMADO
+        if($tp==1){
+            $sql = 'select p.dep_id,SUM(partidas_asig.importe) as asignado
+                    FROM lista_poa_pinversion_nacional('.$this->gestion.') p
+                    Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
+                    where p.dep_id='.$dep_id.' and partidas_asig.estado!=\'3\'
+                    group by p.dep_id';
+        }
+        else{
+            $sql = 'select p.dep_id, SUM(i.ins_costo_total) as programado
+                    FROM lista_poa_pinversion_nacional('.$this->gestion.') p
+                    Inner Join insumos as i On i.aper_id=p.aper_id
+                    where p.dep_id='.$dep_id.' and i.ins_tipo_modificacion=\'0\'
+                    group by p.dep_id';
 
-    //         /*$sql = 'select poa.dep_id,SUM(temp.ipm_fis) programado
-    //                 from lista_poa_pinversion_nacional('.$this->gestion.') poa
-    //                 Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-    //                 Inner Join _productos as prod On prod.com_id=c.com_id
-    //                 Inner Join _insumoproducto as insp On insp.prod_id=prod.prod_id
-    //                 Inner Join temporalidad_prog_insumo as temp On temp.ins_id=insp.ins_id
-    //                 where poa.dep_id='.$dep_id.' and prod.estado!=\'3\' 
-    //                 group by poa.dep_id';*/
-    //     }
+            /*$sql = 'select poa.dep_id,SUM(temp.ipm_fis) programado
+                    from lista_poa_pinversion_nacional('.$this->gestion.') poa
+                    Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+                    Inner Join _productos as prod On prod.com_id=c.com_id
+                    Inner Join _insumoproducto as insp On insp.prod_id=prod.prod_id
+                    Inner Join temporalidad_prog_insumo as temp On temp.ins_id=insp.ins_id
+                    where poa.dep_id='.$dep_id.' and prod.estado!=\'3\' 
+                    group by poa.dep_id';*/
+        }
     
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
     /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO INSTITUCIONAL GASTO CORRIENTE (2023) VIGENTE-----*/

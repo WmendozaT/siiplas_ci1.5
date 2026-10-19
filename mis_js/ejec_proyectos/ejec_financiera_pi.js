@@ -668,6 +668,7 @@ $(document).ready(function() {
   pageSetUp();
   $("#dep_id").change(function () {
     $("#dep_id option:selected").each(function () {
+      
       dep_id=$(this).val();
 
       $('#lista_consolidado').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Información ...</div>');
