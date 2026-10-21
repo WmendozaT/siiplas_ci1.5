@@ -1052,7 +1052,7 @@ public function eliminar_seguimiento() {
 
       // Inicializamos variables acumuladoras fuera del bucle (para actualizar informacion de la evaluacion)
       if($tp_nivel==0){
-        if($this->lib_seguimientopoa->verif_eval()==true || $tp_adm==1){ /// se actualiza mientras este vigente el plazo
+        if($this->lib_seguimientopoa->verif_eval()==true || $this->tp_adm==1){ /// se actualiza mientras este vigente el plazo
           $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($id,$Unidad_data);
         }
         
@@ -1065,7 +1065,7 @@ public function eliminar_seguimiento() {
         </a>';
       }
       else{
-        if($this->lib_seguimientopoa->verif_eval()==true || $tp_adm==1){ /// se actualiza mientras este vigente el plazo
+        if($this->lib_seguimientopoa->verif_eval()==true || $this->tp_adm==1){ /// se actualiza mientras este vigente el plazo
           $unidades_responsables=$this->model_componente->lista_UnidadesResponsables($id);
           foreach ($unidades_responsables as $row) {
             $this->lib_seguimientopoa->migracion_evaluacion_poa_UnidadResponsable($row['com_id'],$Unidad_data);

@@ -45,7 +45,7 @@ class Cevaluacion_form2 extends CI_Controller {
       $data['titulo']=$this->eval_oregional->titulo();
 
 
-    if($this->tp_adm==1){
+      if($this->tp_adm==1){
         $data['tabla']=$this->eval_oregional->regionales();
       }
       else{
@@ -53,8 +53,6 @@ class Cevaluacion_form2 extends CI_Controller {
       }
 
       $this->load->view('admin/evaluacion/evaluacion_form2/menu_regionales', $data);
-
-      
     }
 
 

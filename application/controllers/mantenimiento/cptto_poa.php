@@ -748,7 +748,7 @@ class Cptto_poa extends CI_Controller {
 
 
     //// PARA TODAS LAS UNIDADES DE LA UNIDAD ORGANIZACIONAL
-       public function valida_migracion_techo() {
+    public function valida_migracion_techo() {
         ini_set('max_execution_time', 2400); 
         ini_set('memory_limit', '2048M'); 
 

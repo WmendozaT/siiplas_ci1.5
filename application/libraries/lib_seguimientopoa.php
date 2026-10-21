@@ -670,7 +670,7 @@ class Lib_seguimientopoa {
                 <a href="#" class="btn btn-'.$color_boton.'" onclick="cargarCuadrosEvaluacion(this, '.$componente[0]['com_id'].',0)" title="ACTUALIZAR CUADROS DE EVALUACION POA">
                   <img src="'.base_url().'assets/Iconos/chart_line.png" WIDTH="20" HEIGHT="20"/>&nbsp;<b>'.$titulo_boton.'</b>
                 </a>';
-              if($tp_adm==1){
+              if($this->tp_adm==1){
                 $tabla.='
                 <button type="button" 
                       class="btn btn-info" 

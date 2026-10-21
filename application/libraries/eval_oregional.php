@@ -111,7 +111,7 @@ class Eval_oregional extends CI_Controller{
 
   
 
-  //// FORMULARIO DE EVALUACION DE FORMULARIO 2 - REGIONAL ALINEADO A OBJETIVOS REGIONALES 2024
+  //// FORMULARIO DE EVALUACION DE FORMULARIO 2 - REGIONAL ALINEADO A OBJETIVOS REGIONALES 2027 ajustando
   public function ver_relacion_ogestion($dep_id){
     $tabla='';
     $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id);
@@ -510,7 +510,7 @@ class Eval_oregional extends CI_Controller{
       $valor = array( '1' => '0','2' => '0','3' => '0','4' => '0');
 
       if(count($this->model_objetivoregion->verif_temporalidad_oregional($or_id))!=0){
-        $suma_total_prog=0; $suma_prog=0; $suma_ejec=0;
+        $suma_total_prog=0; $suma_prog=0; $suma_ejec=0;$ejecucion=0;
         
         if($tp_or==0){ //// GASTO CORRIENTE
               
@@ -555,30 +555,30 @@ class Eval_oregional extends CI_Controller{
                 }
 
         }
-        // else{ //// INVERSION
-        //     $get_trm=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,$trimestre); /// Temporalidad Programado Inversion
-        //     $get_trm_ejec=$this->model_objetivoregion->get_trm_temporalidad_ejec_oregional($or_id,$trimestre); /// Temporalidad Ejecutado Inversion
-        //     $suma_total_prog=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,4);
+        else{ //// INVERSION
+            $get_trm=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,$trimestre); /// Temporalidad Programado Inversion
+            $get_trm_ejec=$this->model_objetivoregion->get_trm_temporalidad_ejec_oregional($or_id,$trimestre); /// Temporalidad Ejecutado Inversion
+            $suma_total_prog=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,4);
 
-        //       if(count($get_trm)!=0){
-        //         $suma_prog=round($get_trm[0]['pg_fis'],2); 
-        //       }
+              if(count($get_trm)!=0){
+                $suma_prog=round($get_trm[0]['pg_fis'],2); 
+              }
 
-        //       if(count($get_trm_ejec)!=0){
-        //         $suma_ejec=round($get_trm_ejec[0]['ejec_fis'],2);
-        //       }
+              if(count($get_trm_ejec)!=0){
+                $suma_ejec=round($get_trm_ejec[0]['ejec_fis'],2);
+              }
 
-        //       $ejecucion=0;
-        //       if($suma_ejec!=0 && $suma_prog!=0){
-        //         $ejecucion=round((($suma_ejec/$suma_prog)*$suma_total_prog[0]['pg_fis']),2);
-        //       }
+              $ejecucion=0;
+              if($suma_ejec!=0 && $suma_prog!=0){
+                $ejecucion=round((($suma_ejec/$suma_prog)*$suma_total_prog[0]['pg_fis']),2);
+              }
 
-        //       $cumplimiento_gestion=0;
-        //       if(count($suma_total_prog)!=0){
-        //         $cumplimiento_gestion=round((($suma_ejec/$suma_total_prog[0]['pg_fis'])*100),2);
-        //       }
+              $cumplimiento_gestion=0;
+              if(count($suma_total_prog)!=0){
+                $cumplimiento_gestion=round((($suma_ejec/$suma_total_prog[0]['pg_fis'])*100),2);
+              }
 
-        // }
+        }
 
           $valor[1]=$suma_prog; /// Programado Acumulado al trimestre
           $valor[2]=$suma_ejec; /// Ejecutado Acumulado al trimestre

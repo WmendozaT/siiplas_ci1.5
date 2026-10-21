@@ -337,7 +337,10 @@ class Proyecto extends CI_Controller {
 
       if($proy_estado==1){ /// Inicial
         foreach($unidades as $row){
-          
+         $color_campo='';
+          if($row['ppto_saldo']<0){
+            $color_campo='#F5DAD5';
+          }
           $nro++;
           $tabla.='<tr style="height:35px;">';
             $tabla.= '<td align=center title="'.$row['aper_id'].'"><b>'.$nro.'</b></td>';
@@ -361,14 +364,14 @@ class Proyecto extends CI_Controller {
               }
             $tabla.='</td>';
             $tabla .='<td bgcolor="#fafafa">';
-              if($this->conf_form4==1){
+     
                 $tabla.='<center><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default enlace" name="'.$row['proy_id'].'" id="'.strtoupper($row['tipo']).' '.strtoupper($row['proy_nombre']).' - '.strtoupper($row['abrev']).'"><img src="'.base_url().'assets/ifinal/doc.jpg" WIDTH="30" HEIGHT="30" title="VER POA '.$this->gestion.'"/></a></center>';
-              }
+              
             $tabla.='</td>';
             $tabla .='<td bgcolor="#fafafa">';
-              if($this->conf_form4==1){
+             
                 $tabla.='<center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" class="btn btn-default" title="CONSOLIDADO POA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30" title="VER POA '.$this->gestion.'"/></a></center>';
-              }
+              
             $tabla.='
             </td>
             <td style="text-align: center; vertical-align: middle; padding: 4px; background: #ffffff; border: 1px solid #cbd5e1;">';
@@ -417,14 +420,15 @@ class Proyecto extends CI_Controller {
               /*---------------------------------------------*/
               if($this->fun_id==401 || $this->fun_id==399){
                 $tabla .= '<center><a href="'.site_url("admin").'/proy/delete/1/'.$row['proy_id'].'" title="ELIMINAR" onclick="return confirmar()" class="btn btn-default"><img src="'.base_url().'assets/ifinal/eliminar.png" WIDTH="30" HEIGHT="30"/></a></center>';
-              }                 
+              }
+
             $tabla .= '</td>';
             $tabla .= '<td style="font-size: 14px;"><center><b>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</b></center></td>';
             $tabla.='<td style="font-size: 11px;"><b>'.$row['tipo'].' '.$row['act_descripcion'].' - '.$row['abrev'].'</b></td>';
             $tabla.='<td>'.strtoupper($row['dist_distrital']).'</td>';
-            $tabla.='<td>'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>';
-            $tabla.='<td>'.number_format($row['ppto_poa'], 2, ',', '.').'</td>';
-            $tabla.='<td>'.number_format($row['ppto_saldo'], 2, ',', '.').'</td>';
+            $tabla.='<td style="background-color: #E1FAF8; color:blue; text-align:right; font-size:11px;"><b>'.number_format($row['ppto_asignado'], 2, ',', '.').'</b></td>';
+            $tabla.='<td style="background-color: #F7F4EB;  text-align:right; font-size:11px;"><b>'.number_format($row['ppto_poa'], 2, ',', '.').'</b></td>';
+            $tabla.='<td style="background-color: '.$color_campo.';  text-align:right; font-size:11px;"><b>'.number_format($row['ppto_saldo'], 2, ',', '.').'</b></td>';
             $tabla.='<td><b>'.$row['estado_poa'].'</b></td>';
           $tabla.='</tr>';
         }
@@ -479,7 +483,7 @@ class Proyecto extends CI_Controller {
       return $tabla;
     }
 
-    /*---- Lista de Proyectos de Inversion (2020) -----*/
+    /*---- Lista de Proyectos de Inversion (2027) -----*/
     public function list_pinversion($proy_estado){
       $tabla='';
       $proyectos=$this->model_proyecto->list_unidades(1,$proy_estado);
@@ -504,7 +508,7 @@ class Proyecto extends CI_Controller {
             $tabla .='<td bgcolor="#5B9360"><center><a href="#" data-toggle="modal" data-target="#modal_nuevo_ff" class="btn btn-default enlace" name="'.$row['proy_id'].'" id="'.strtoupper($row['proy_nombre']).'"><img src="'.base_url().'assets/ifinal/doc.jpg" WIDTH="35" HEIGHT="35"/></a></center></td>';
             $tabla.='
             <td bgcolor="#fafafa">';
-              if(count($fase)!=0 & $this->conf_form4==1){
+              if(count($fase)!=0){
                 $tabla.='<center><a href="javascript:abreVentana_poa(\''.site_url("").'/prog/reporte_form4_consolidado/'.$row['proy_id'].'\');" class="btn btn-default" title="CONSOLIDADO POA"><img src="'.base_url().'assets/ifinal/requerimiento.png" WIDTH="30" HEIGHT="30" title="VER POA '.$this->gestion.'"/></a></center>';
               }
             $tabla.='

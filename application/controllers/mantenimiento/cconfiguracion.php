@@ -41,7 +41,7 @@ class Cconfiguracion extends CI_Controller {
     /*------- CONFIGURACIÓN SISTEMA ----------*/
     public function main_configuracion(){ 
       $data['menu']=$this->menu(9);
-      if($this->fun_id==399){
+      if($this->fun_id==399 || $this->fun_id==401){
         $data['conf'] = $this->model_configuracion->get_configuracion_session();
         $data['mes'] = $this->model_configuracion->get_mes();
         $data['trimestre'] = $this->model_configuracion->get_mes_trimestre();
