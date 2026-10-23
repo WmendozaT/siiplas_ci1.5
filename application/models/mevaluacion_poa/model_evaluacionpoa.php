@@ -167,17 +167,17 @@ class Model_evaluacionpoa extends CI_Model{
                     ELSE 'SIN RANGO'::text
                 END AS trimestre,
                 CASE 
-                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
-                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'REGULAR (75% - 90%)'::text
-                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
+                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=50 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                    WHEN porcentaje_cumplimiento > 51 AND porcentaje_cumplimiento <=75 THEN 'REGULAR (75% - 90%)'::text
+                    WHEN porcentaje_cumplimiento > 76 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
                     WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'OPTIMO (100%)'::text
                     ELSE 'SIN RANGO'::text
                 END AS parametro,
 
                 CASE 
-                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
-                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'warning'::text
-                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'info'::text
+                    WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=50 THEN 'danger'::text
+                    WHEN porcentaje_cumplimiento > 51 AND porcentaje_cumplimiento <=75 THEN 'warning'::text
+                    WHEN porcentaje_cumplimiento > 76 AND porcentaje_cumplimiento <=99 THEN 'info'::text
                     WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'success'::text
                     ELSE 'danger'::text
                 END AS color_semaforo
@@ -239,9 +239,9 @@ class Model_evaluacionpoa extends CI_Model{
             CASE 
                 WHEN c.poa_prog = 0 THEN 'SIN PROGRAMACIÓN (0%)'::text
                 WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) = 0.00 THEN 'PENDIENTE (0%)'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 0.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'INSATISFACTORIO (0% - 75%)'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 75.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 90.00 THEN 'REGULAR (75% - 90%)'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 90.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'BUENO (90% - 99%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 0.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 50.00 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 51.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'REGULAR (75% - 90%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 76.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'BUENO (90% - 99%)'::text
                 WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 99.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 100.00 THEN 'OPTIMO (100%)'::text
                 ELSE 'SIN RANGO'::text
             END AS parametro,
@@ -249,9 +249,9 @@ class Model_evaluacionpoa extends CI_Model{
             -- Colores del Semáforo Nativos
             CASE 
                 WHEN c.poa_prog = 0 THEN 'danger'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'danger'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 75.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 90.00 THEN 'warning'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 90.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'info'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 50.00 THEN 'danger'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 51.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'warning'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 76.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'info'::text
                 WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 99.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 100.00 THEN 'success'::text
                 ELSE 'danger'::text
             END AS color_semaforo
@@ -288,17 +288,17 @@ class Model_evaluacionpoa extends CI_Model{
                     ELSE 'SIN RANGO'::text
                 END AS trimestre,
                 CASE 
-                    WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
-                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'REGULAR (75% - 90%)'::text
-                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
+                    WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=50 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                    WHEN porcentaje_cumplimiento > 51 AND porcentaje_cumplimiento <=75 THEN 'REGULAR (75% - 90%)'::text
+                    WHEN porcentaje_cumplimiento > 76 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
                     WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'OPTIMO (100%)'::text
                     ELSE 'SIN RANGO'::text
                 END AS parametro,
 
                 CASE 
-                    WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
-                    WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'warning'::text
-                    WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'info'::text
+                    WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=50 THEN 'danger'::text
+                    WHEN porcentaje_cumplimiento > 51 AND porcentaje_cumplimiento <=75 THEN 'warning'::text
+                    WHEN porcentaje_cumplimiento > 76 AND porcentaje_cumplimiento <=99 THEN 'info'::text
                     WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'success'::text
                     ELSE 'danger'::text
                 END AS color_semaforo
@@ -356,9 +356,9 @@ class Model_evaluacionpoa extends CI_Model{
             CASE 
                 WHEN c.poa_prog = 0 THEN 'SIN PROGRAMACIÓN (0%)'::text
                 WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) = 0.00 THEN 'PENDIENTE (0%)'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 0.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'INSATISFACTORIO (0% - 75%)'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 75.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 90.00 THEN 'REGULAR (75% - 90%)'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 90.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'BUENO (90% - 99%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 0.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 50.00 THEN 'INSATISFACTORIO (0% - 75%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 51.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'REGULAR (75% - 90%)'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 76.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'BUENO (90% - 99%)'::text
                 WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 99.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 100.00 THEN 'OPTIMO (100%)'::text
                 ELSE 'SIN RANGO'::text
             END AS parametro,
@@ -366,9 +366,9 @@ class Model_evaluacionpoa extends CI_Model{
             -- Colores del Semáforo Nativos
             CASE 
                 WHEN c.poa_prog = 0 THEN 'danger'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'danger'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 75.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 90.00 THEN 'warning'::text
-                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 90.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'info'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 50.00 THEN 'danger'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 51.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 75.00 THEN 'warning'::text
+                WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 76.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 99.00 THEN 'info'::text
                 WHEN ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) > 99.00 AND ROUND((c.poa_cumplidos * 100.0) / c.poa_prog, 2) <= 100.00 THEN 'success'::text
                 ELSE 'danger'::text
             END AS color_semaforo
@@ -406,16 +406,16 @@ class Model_evaluacionpoa extends CI_Model{
             ELSE 'SIN RANGO'::text
         END AS trimestre,
         CASE 
-            WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=75 THEN 'INSATISFACTORIO (0% - 75%)'::text
-            WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'REGULAR (75% - 90%)'::text
-            WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'BUENO (90% - 99%)'::text
+            WHEN porcentaje_cumplimiento > 0 AND porcentaje_cumplimiento <=50 THEN 'INSATISFACTORIO (0% - 50%)'::text
+            WHEN porcentaje_cumplimiento > 51 AND porcentaje_cumplimiento <=75 THEN 'REGULAR (51% - 75%)'::text
+            WHEN porcentaje_cumplimiento > 76 AND porcentaje_cumplimiento <=99 THEN 'BUENO (76% - 99%)'::text
             WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'OPTIMO (100%)'::text
             ELSE 'SIN RANGO'::text
         END AS parametro,
         CASE 
-            WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=75 THEN 'danger'::text
-            WHEN porcentaje_cumplimiento > 75 AND porcentaje_cumplimiento <=90 THEN 'warning'::text
-            WHEN porcentaje_cumplimiento > 90 AND porcentaje_cumplimiento <=99 THEN 'info'::text
+            WHEN porcentaje_cumplimiento > 0.00 AND porcentaje_cumplimiento <=50 THEN 'danger'::text
+            WHEN porcentaje_cumplimiento > 51 AND porcentaje_cumplimiento <=75 THEN 'warning'::text
+            WHEN porcentaje_cumplimiento > 76 AND porcentaje_cumplimiento <=99 THEN 'info'::text
             WHEN porcentaje_cumplimiento > 99 AND porcentaje_cumplimiento <=100 THEN 'success'::text
             ELSE 'danger'::text
             END AS color_semaforo

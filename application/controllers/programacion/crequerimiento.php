@@ -229,7 +229,7 @@ class crequerimiento extends CI_Controller {
 
                 // Columnas descriptivas base del clasificador nacional
                 $tabla .= '<td style="text-align: center; font-weight: bold; color: #1e293b; padding: 6px; vertical-align: middle;">';
-                if (($this->tp_adm == 1 || $this->conf_form5 == 1) && $ins_cert == 0) {
+                if (($this->tp_adm == 1 || $this->conf_form5 == 1) || $ins_cert == 0) {
                   $tabla.='<select class="form-control select-actividad" data-id="' . $row['ins_id'] . '" style="width: auto; min-width: 50px;">';
                                 foreach ($lista_form4 as $pr) {
                                     $selected = ($pr['prod_id'] == $row['prod_id']) ? 'selected' : '';
