@@ -57,38 +57,11 @@ class Ccertificacion_poa extends CI_Controller {
         $data['resp']=$this->session->userdata('funcionario');
         $data['reg'] = $this->model_proyecto->dep_dist($this->dist);
         $data['res_dep']=$this->certificacionpoa->tp_resp();
-
         $data['titulo']='SELECCIONAR ALINEACIÓN ACTIVIDAD - '.$this->gestion.'';
-
         $data['proyectos']=$this->certificacionpoa->list_pinversion(4); /// Proyectos de Inversion
         $data['operacion']=$this->certificacionpoa->list_unidades_es(4); /// Gasto Corriente
 
         $this->load->view('admin/ejecucion/certificacion_poa/form_cpoa/list_poas_aprobados', $data);
-/*         $proy_id = 3922;
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
-        
-        if($proyecto[0]['tp_id']==1){
-          $tabla=$this->certificacionpoa->mis_formulariosN4($proy_id); /// Mis operaciones por Unidad Responsable
-        }
-        else{
-          $presupuesto=$this->model_certificacion->saldo_presupuesto_unidad($proy_id);
-
-          if((($presupuesto[0]['saldo']>0 || $presupuesto[0]['saldo']==0) & count($presupuesto)!=0)){
-            $tabla=$this->certificacionpoa->mis_formulariosN4($proy_id); /// Mis Formularios n° 4 por Unidad Responsable
-          }
-          else{
-            $tabla='<div class="alert alert-danger" role="alert">
-                      SE DEBE AJUSTAR EL PRESUPUESTO POA DEBIDO A QUE EXISTE UN SOBREGIRO NEGATIVO : '.number_format($presupuesto[0]['saldo'], 2, ',', '.').' Bs.
-                    </div>';
-          }
-        }
-
-        $result = array(
-          'respuesta' => 'correcto',
-          'tabla'=>$tabla,
-        );
-          
-        echo json_encode($result);*/
       }
       else{
         redirect('admin/dashboard');
@@ -354,8 +327,8 @@ class Ccertificacion_poa extends CI_Controller {
   //// redirecciona a la vista para Certificacion POA
   public function lista_requerimientos_cpoa($cpoa_id){
     if($this->fun_id==399 || $this->fun_id==401){
-      $this->lista_requerimientos_cpoa2($cpoa_id); //// Generacion normal de Certificacion POA
-     // $this->lista_requerimientos_cpoa_cert_rapida($cpoa_id); //// manera rapida
+      //$this->lista_requerimientos_cpoa2($cpoa_id); //// Generacion normal de Certificacion POA
+      $this->lista_requerimientos_cpoa_cert_rapida($cpoa_id); //// manera rapida
     }
     else{
       $this->lista_requerimientos_cpoa2($cpoa_id); //// Generacion normal de Certificacion POA
@@ -751,11 +724,11 @@ class Ccertificacion_poa extends CI_Controller {
 
           //$codigo='CPOA.'.$get_cpoa[0]['adm'].'-'.$get_cpoa[0]['abrev'].'-'.$nro_cdep.''.$nro_cpoa;
           
-          if($this->gestion>2025){
-          $codigo='DNP.'.$get_cpoa[0]['adm'].'.'.$get_cpoa[0]['abrev'].''.$nro_cdep.''.$nro_cpoa; /// 2026
+          if($this->gestion>2026){
+            $codigo='DNP.'.$get_cpoa[0]['adm'].'/'.$get_cpoa[0]['abrev'].''.$nro_cdep.''.$nro_cpoa; /// 2027
           }
           else{
-            $codigo='DNP.'.$nro_cdep.''.$nro_cpoa.'-'.$get_cpoa[0]['adm'].'.'.$get_cpoa[0]['abrev']; /// 2025
+            $codigo='DNP.'.$get_cpoa[0]['adm'].'.'.$get_cpoa[0]['abrev'].''.$nro_cdep.''.$nro_cpoa; /// 2026
             //$codigo='CPOA.'.$nro_cdep.''.$nro_cpoa.'-'.$get_cpoa[0]['adm'].'-'.$get_cpoa[0]['abrev']; /// 2024
           }
           

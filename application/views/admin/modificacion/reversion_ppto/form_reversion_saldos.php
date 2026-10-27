@@ -254,7 +254,7 @@
 	function verif_ppto_cert(nro,valor,ppto_cert){
 		const base = $('#base').val();
 		if(valor!=0 && valor!=''){
-			if((parseFloat($('[id="saldo'+nro+'"]').val())<parseFloat($('[id="ppto_cert'+nro+'"]').val()))) {
+			if((parseFloat($('[id="saldo'+nro+'"]').val())<=parseFloat($('[id="ppto_cert'+nro+'"]').val()))) {
 				$('#buton_save').slideDown();
 				$('#verif'+nro).html('<br><img src="'+base+'/assets/img/ok1.jpg" alt="loading" style="width:45px; height:38px;"/><br><font color=green size="1px">SALDO A REVERTIR</font>');
 				document.getElementById("saldo"+nro).style.backgroundColor = "#DBFCF9";

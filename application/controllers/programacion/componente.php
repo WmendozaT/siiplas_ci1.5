@@ -46,7 +46,13 @@ class Componente extends CI_Controller {
                 }
                 else{
                     $componente=$this->model_componente->proyecto_componente($proy_id); /// Programas Bolsa
-                    redirect(site_url("").'/admin/prog/list_prod/'.$componente[0]['com_id'].''); /// redireccionadmos a Lista de form 4
+                    if($this->conf_form4==1 || $this->tp_adm==1){
+                      redirect(site_url("").'/admin/prog/list_prod/'.$componente[0]['com_id'].''); /// redireccionadmos a Lista de form 4
+                    }
+                    else{
+                      redirect(site_url("").'/prog/requerimiento_x_uresponsable/'.$componente[0]['com_id'].''); /// redireccionamos a Lista de Actividades por Unidad Responsable
+                    }
+                    
                 }
             }
         }

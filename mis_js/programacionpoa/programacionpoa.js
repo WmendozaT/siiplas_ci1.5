@@ -371,7 +371,7 @@ $(document).ready(function() {
         
   }
 
-  /// Seleccionar TODO Operaciones Regionales
+  /// Seleccionar TODO Operaciones Regionales (alineacion a form2)
   function seleccionar_todo(){
     proy_id = document.getElementById("proy_id").value;
     nro = document.getElementById("nro_ope").value;
@@ -453,124 +453,47 @@ $(document).ready(function() {
       });
   });
 
-  /*------ AJUSTE POA ------*/
-/*  $(function () {
-    $(".enlace2").on("click", function (e) {
-        proy_id = $(this).attr('name');
-        establecimiento = $(this).attr('id');
-       
-        $('#titulo2').html('<font size=3><b>'+establecimiento+'</b></font>');
-        $('#content2').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Poa - <br>'+establecimiento+'</div>');
-        
-        var url = base+"index.php/programacion/proyecto/get_poa_ajuste";
-        var request;
-        if (request) {
-            request.abort();
-        }
-        request = $.ajax({
-            url: url,
-            type: "POST",
-            dataType: 'json',
-            data: "proy_id="+proy_id
-        });
-
-        request.done(function (response, textStatus, jqXHR) {
-        if (response.respuesta == 'correcto') {
-            $('#content2').fadeIn(1000).html(response.tabla);
-        }
-        else{
-            alertify.error("ERROR AL RECUPERAR DATOS DE LOS SERVICIOS");
-        }
-
-        });
-        request.fail(function (jqXHR, textStatus, thrown) {
-            console.log("ERROR: " + textStatus);
-        });
-        request.always(function () {
-            //console.log("termino la ejecuicion de ajax");
-        });
-        e.preventDefault();
-      });
-  });*/
-
-  /*------------ VERIFICANDO POA ----------------*/
- /* $(function () {
-      $(".verif_poa").on("click", function (e) {
-        proy_id = $(this).attr('name');
-
-          document.getElementById("proy_id").value=proy_id;
-          
-          establecimiento = $(this).attr('id');
-          $('#titulo').html('<font size=3><b>'+establecimiento+'</b></font>');
-          $('#content_valida').html('<div class="loading" align="center"><h2>Verificando Presupuesto POA  <br>'+establecimiento+'</h2><br><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /></div>');
-          $('#but').slideUp();
-
-          var url = base+"index.php/programacion/proyecto/verif_poa";
-          var request;
-          if (request) {
-              request.abort();
-          }
-          request = $.ajax({
-              url: url,
-              type: "POST",
-              dataType: 'json',
-              data: "proy_id="+proy_id
-          });
-
-          request.done(function (response, textStatus, jqXHR) {
-          if (response.respuesta == 'correcto') {
-            $('#content_valida').fadeIn(1000).html(response.tabla);
-                  if(response.valor==0){
-                      $('#but').slideDown();
+  /*------ Ver techos Presupuestarios por UnidadOrganizacional 2027 ------*/
+  $(document).ready(function() {
+        // Escuchador de evento clic sobre el botón "Ver Techos"
+        $('.btn-ver-techos-global').on('click', function(e) {
+            e.preventDefault();
+            // 1. Extraemos los parámetros de control inyectados en la fila
+            var aper_id = $(this).attr('data-id');
+            var nombre_unidad = $(this).attr('data-nombre');
+            // 2. Personalizamos dinámicamente los títulos de la cabecera del modal
+            $('#subtitulo_modal_techos').html('<i class="fa fa-building"></i> UNIDAD ORGANIZACIONAL: ' + nombre_unidad);
+            
+            // 3. Limpiamos el contenedor e inyectamos un mensaje de carga elegante (Spinner)
+            $('#contenedor_reporte_techos').html('<div style="text-align:center; padding:30px; font-weight:bold; color:#64748b;"><i class="fa fa-refresh fa-spin" style="font-size:24px; color:#2563eb;"></i><br><br>Consultando matriz de requerimientos presupuestarios SIGEP...</div>');
+            
+            // 4. Invocamos mediante AJAX al controlador optimizado de desglose
+            $.ajax({
+                url: base + "index.php/mantenimiento/cptto_poa/get_desglose_partidas_unidad_ajax",
+                type: 'POST',
+                data: { aper_id: aper_id },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status == 'success' || response.respuesta == 'correcto') {
+                        
+                        // 🎯 INYECCIÓN EN CALIENTE: Pintamos toda la estructura con el selector e inputs modificables
+                        $('#contenedor_reporte_techos').html(response.html_reporte);
+                        
+                        console.log('Desglose presupuestario cargado con éxito para aper_id: ' + aper_id);
+                    } else {
+                        $('#contenedor_reporte_techos').html('<div class="alert alert-danger" style="margin:0;"><i class="fa fa-exclamation-triangle"></i> ' + (response.msg || 'Error devuelto por el servidor.') + '</div>');
+                    }
+                },
+                error: function() {
+                    $('#contenedor_reporte_techos').html('<div class="alert alert-danger" style="margin:0;"><i class="fa fa-exclamation-triangle"></i> Error crítico de red. No se pudo establecer comunicación con el controlador.</div>');
                 }
-          }
-          else{
-              alertify.error("ERROR AL RECUPERAR DATOS");
-          }
+            });
+        });
+    });
 
-          });
-          request.fail(function (jqXHR, textStatus, thrown) {
-              console.log("ERROR: " + textStatus);
-          });
-          request.always(function () {
-              //console.log("termino la ejecuicion de ajax");
-          });
-          e.preventDefault();
-          // =============================VALIDAR EL FORMULARIO DE MODIFICACION
-          $("#enviar_ff").on("click", function (e) {
-              var $valid = $("#form_vpoa").valid();
-              if (!$valid) {
-                  $validator.focusInvalid();
-              } else {
-
-                  alertify.confirm("ESTA SEGURO EN VALIDAR EL POA, PARA SU APROBACIÓN ?", function (a) {
-                      if (a) {
-                      var url = base+"index.php/programacion/proyecto/validar_poa";
-                      $.ajax({
-                          type: "post",
-                          url: url,
-                          data: {
-                              proy_id: proy_id
-                          },
-                          success: function (date) {
-                              window.location.reload(true);
-                              alertify.success("VALIDACION EXITOSA ...");
-                          }
-                      });
-
-                      } else {
-                          alertify.error("OPCI\u00D3N CANCELADA");
-                      }
-                  });
-
-              }
-          });
-      });
-  });*/
 
 
 $(document).ready(function() {
-    
     // 🌟 REPARADO CORE 1: Variables perimetrales de red globales en la raíz del archivo
     var xhr_verif_poa = null;
     var xhr_validar_final = null;

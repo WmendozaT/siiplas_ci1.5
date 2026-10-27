@@ -1255,7 +1255,7 @@ class Cmod_presupuestario extends CI_Controller {
               if($_POST["saldo"][$como]!=0){ /// saldo != 0
                 $get_ppto_partida_asignado=$this->model_ptto_sigep->vista_get_seguimiento_partida_UOrganizacional($cpoa[0]['aper_id'],$_POST["par_id"][$como]);
 
-                if(($_POST["saldo"][$como]<$_POST["ppto_cert"][$como]) && count($get_ppto_partida_asignado)!=0){
+                if(($_POST["saldo"][$como]<=$_POST["ppto_cert"][$como]) && count($get_ppto_partida_asignado)!=0){
                     //echo $get_ppto_partida_asignado[0]['sp_id'].'----->'.$_POST["par_id"][$como].'---'.$_POST["saldo"][$como].'<br>';
                   //$partida_ppto=$this->model_ptto_sigep->get_sp_id($get_ppto_partida_asignado[0]['sp_id']);
 
