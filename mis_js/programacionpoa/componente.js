@@ -255,7 +255,7 @@ var xhr_cambia_subactividad = null;
     });
 
 
-    $(".mod_ff").on("click", function (e) {
+    $(".mod_comp").on("click", function (e) {
             com_id = $(this).attr('name');
             var url = base+"index.php/programacion/componente/get_componente";
             var request;

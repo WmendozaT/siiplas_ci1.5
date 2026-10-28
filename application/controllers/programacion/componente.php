@@ -295,7 +295,7 @@ class Componente extends CI_Controller {
                             $tabla.='<td title="'.$row['com_id'].'">'.$num.'</td>';
                         }
                         $tabla.='
-                        <td><a href="#" data-toggle="modal" data-target="#modal_mod_ff" class="btn btn-default mod_ff" name="'.$row['com_id'].'" title="MODIFICAR COMPONENTE" ><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a></td>
+                        <td><a href="#" data-toggle="modal" data-target="#modal_mod_comp" class="btn btn-default mod_comp" name="'.$row['com_id'].'" title="MODIFICAR COMPONENTE" ><img src="'.base_url().'assets/ifinal/modificar.png" WIDTH="35" HEIGHT="35"/></a></td>
                         <td bgcolor="#d4f1fb" align="center" ><font color="blue" size=2><b>'.$row['serv_cod'].' .- '.$row['serv_descripcion'].'</b></font></td>
                         <td>'.$row['com_componente'].'</td>
                         <td align=center bgcolor="#bee6e1"><font size=2 color=blue>'.count($this->model_producto->lista_productos($row['com_id'])).'</font></td>

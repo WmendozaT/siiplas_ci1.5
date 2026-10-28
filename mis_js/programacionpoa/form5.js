@@ -433,7 +433,43 @@ var xhr_guardar_f5 = null;
 
 
 
-
+  /*--- MODAL : Ver techos Presupuestarios por UnidadOrganizacional 2027 ---*/
+    $(document).ready(function() {
+        // Escuchador de evento clic sobre el botón "Ver Techos"
+        $('.btn-ver-techos-global').on('click', function(e) {
+            e.preventDefault();
+            // 1. Extraemos los parámetros de control inyectados en la fila
+            var aper_id = $(this).attr('data-id');
+            var nombre_unidad = $(this).attr('data-nombre');
+            // 2. Personalizamos dinámicamente los títulos de la cabecera del modal
+            $('#subtitulo_modal_techos').html('<i class="fa fa-building"></i> UNIDAD ORGANIZACIONAL: ' + nombre_unidad);
+            
+            // 3. Limpiamos el contenedor e inyectamos un mensaje de carga elegante (Spinner)
+            $('#contenedor_reporte_techos').html('<div style="text-align:center; padding:30px; font-weight:bold; color:#64748b;"><i class="fa fa-refresh fa-spin" style="font-size:24px; color:#2563eb;"></i><br><br>Consultando matriz de requerimientos presupuestarios SIGEP...</div>');
+            
+            // 4. Invocamos mediante AJAX al controlador optimizado de desglose
+            $.ajax({
+                url: base + "index.php/programacion/proyecto/get_desglose_partidas_unidad_ajax",
+                type: 'POST',
+                data: { aper_id: aper_id },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status == 'success' || response.respuesta == 'correcto') {
+                        
+                        // 🎯 INYECCIÓN EN CALIENTE: Pintamos toda la estructura con el selector e inputs modificables
+                        $('#contenedor_reporte_techos').html(response.html_reporte);
+                        
+                        console.log('Desglose presupuestario cargado con éxito para aper_id: ' + aper_id);
+                    } else {
+                        $('#contenedor_reporte_techos').html('<div class="alert alert-danger" style="margin:0;"><i class="fa fa-exclamation-triangle"></i> ' + (response.msg || 'Error devuelto por el servidor.') + '</div>');
+                    }
+                },
+                error: function() {
+                    $('#contenedor_reporte_techos').html('<div class="alert alert-danger" style="margin:0;"><i class="fa fa-exclamation-triangle"></i> Error crítico de red. No se pudo establecer comunicación con el controlador.</div>');
+                }
+            });
+        });
+    });
 
 
 

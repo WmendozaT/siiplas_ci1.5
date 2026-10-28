@@ -4,17 +4,12 @@ class Proyecto extends CI_Controller {
       parent::__construct();
       if($this->session->userdata('fun_id')!=null){
       $this->load->library('pdf2');
-      //$this->load->model('menu_modelo');
-      //$this->load->model('Users_model','',true);
       $this->load->model('programacion/model_faseetapa');
       $this->load->model('programacion/model_proyecto');
       $this->load->model('programacion/model_componente');
       $this->load->model('programacion/model_producto');
       $this->load->model('analisis_situacion/model_analisis_situacion');
-      $this->load->model('mantenimiento/mapertura_programatica');
-      //$this->load->model('mantenimiento/munidad_organizacional');
       $this->load->model('mantenimiento/model_estructura_org');
-      //$this->load->model('programacion/insumos/minsumos');
       $this->load->model('programacion/insumos/model_insumo');
       $this->load->model('mestrategico/model_objetivoregion');
       $this->load->model('mantenimiento/model_ptto_sigep');
@@ -661,27 +656,6 @@ class Proyecto extends CI_Controller {
 
    
 
-    /*-------- GET AJUSTE DATOS POA --------*/
-/*    public function get_poa_ajuste(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// PROYECTO
-
-        $tabla=$this->programacionpoa->mi_poa_ajuste($proy_id);
-        $result = array(
-            'respuesta' => 'correcto',
-            'tabla'=>$tabla,
-          );
-          
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }*/
-
-
-
     /*-------- GET VERIF POA para su APROBACION --------*/
     public function verif_poa(){
         if($this->input->is_ajax_request() && $this->input->post()){
@@ -760,100 +734,81 @@ class Proyecto extends CI_Controller {
     }
 
 
-    /*public function verif_poa(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-        $post = $this->input->post();
-        $proy_id = $this->security->xss_clean($post['proy_id']);
-        $proyecto = $this->model_proyecto->get_UnidadOrganizacional($proy_id); /// Unidad Organizacional
-        $partidas=$this->model_ptto_sigep->vista_get_lista_ppto_partidas_UOrganizacional($proyecto[0]['aper_id']); /// Partidas
-        $nro_dif=1;
-        if(count($partidas)!=0){
-            $ppto_variacion=$this->model_ptto_sigep->verif_variacion_ppto_x_UnidadOrganizacional($proyecto[0]['aper_id']);
-            if($ppto_variacion[0]['total_variaciones']==0){
-                $tabla.='
-              <hr><h3><b>&nbsp;&nbsp;'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</b></h3><hr>
-              <div class="alert alert-success alert-block" align=center>
-                <h2> POA-PRESUPUESTO '.$this->gestion.' LISTO PARA SER VALIDADO</2> 
-              </div>';
-              $nro_dif=0;
+
+    //// get detalle de partidas por Unidad Organizacional
+    public function get_desglose_partidas_unidad_ajax() {
+        if ($this->input->is_ajax_request() && $this->input->post()) {
+            $aper_id = intval($this->input->post('aper_id'));
+            $g_id   = intval($this->gestion);
+
+            $list_partidas = $this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($aper_id);
+            $proyecto=$this->model_proyecto->get_aper_programa($aper_id);
+
+            $total_asignado            = 0;
+            $total_asignado_mod        = 0;
+            $total_programado          = 0;
+            $total_saldo               = 0;
+            $total_asig_revertido      = 0;
+            $total_prog_revertido      = 0;
+            $total_saldo_revertido     = 0;
+
+            if (!empty($list_partidas)) {
+                foreach ($list_partidas as $row) {
+                    $total_asignado        += floatval($row['ppto_asignado']);
+                    $total_asignado_mod    += floatval($row['ppto_asignado']); // Toma el valor base inicializado
+                    $total_programado      += floatval($row['ppto_programado']);
+                    $total_saldo           += floatval($row['saldo_poa']);
+                    $total_asig_revertido  += floatval($row['ppto_asignado_revertido']);
+                    $total_prog_revertido  += floatval($row['ppto_programado_revertido']);
+                    $total_saldo_revertido += floatval($row['saldo_revertido']);
+                }
             }
-            else{
-                $tabla.='
-                <hr><h3><b>&nbsp;&nbsp;'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</b></h3><hr>
-                <div class="alert alert-danger alert-block" align=center>
-                    <h2>POR CORREGIR PRESUPUESTO POA '.$this->gestion.'</h2>
-                </div>';
-            }
-        }
-        else{
-            $tabla.='
-              <hr><h3><b>&nbsp;&nbsp;'.$proyecto[0]['tipo'].' '.$proyecto[0]['act_descripcion'].' - '.$proyecto[0]['abrev'].'</b></h3><hr>
-              <div class="alert alert-danger alert-block" align=center>
-                  <h2>SIN PRESUPUESTO ASIGNADO '.$this->gestion.'</h2>
+
+            
+            // Modificamos la cabecera para incrustar el selector a la izquierda del botón imprimir
+            $html = '
+             
+            <div id="contenedor_general_partidas" style="font-family: Arial, sans-serif; margin-bottom: 15px;">
+              <!-- 🧮 PANEL DE SUMATORIAS TOTALES (Estilo Tarjetas) -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1-fr)); gap: 10px; margin-bottom: 15px;">
+                  
+                  <div style="background: #1e3a8a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #1d4ed8;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Presupuesto Asignado</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_asignado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #1e293b; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #475569;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Programado POA</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: #22c55e;">Bs. ' . number_format($total_programado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #0f172a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #0aa699;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Saldo Disponible</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: ' . ($total_saldo < 0 ? '#ef4444' : '#38bdf8') . ';">Bs. ' . number_format($total_saldo, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #fdf2f2; color: #991b1b; padding: 10px; border-radius: 4px; text-align: center; border: 1px solid #fca5a5; border-left: 5px solid #dc2626;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; color: #7f1d1d;">Total Saldo Revertido</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_saldo_revertido, 2, ',', '.') . '</div>
+                  </div>
               </div>';
+
+            // ==========================================================================
+            // 📊 SUPERESTRUCTURA DE LA TABLA EJECUTIVA FORMAL
+            // ==========================================================================
+            $html .= $this->programacionpoa->modal_partidas_unidad_organizacional($proyecto);
+
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            header('Content-Type: application/json; charset=utf-8');
+
+            echo json_encode(array(
+                'status' => 'success',
+                'respuesta' => 'correcto',
+                'html_reporte' => $html
+            ));
+            exit;
         }
-        
-        $result = array(
-            'respuesta' => 'correcto',
-            'tabla'=>$tabla,
-            'proyecto'=>$proyecto,
-            'valor'=>$nro_dif,
-          );
-          
-        echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }*/
-
-    /*------ CUADRO COMPARATIVO PTTO. ASIG - PROG (Para aprobar)------*/
-/*    public function verif_cuadro_comparativo($proyecto){
-      $partidas_asig=$this->model_ptto_sigep->partidas_accion_region($proyecto[0]['dep_id'],$proyecto[0]['aper_id'],1); // Asig
-      $partidas_prog=$this->model_ptto_sigep->partidas_accion_region($proyecto[0]['dep_id'],$proyecto[0]['aper_id'],2); // Prog
-
-      $nro_dif=0;
-      foreach($partidas_asig as $row){
-        $part=$this->model_ptto_sigep->get_partida_programado_poa($proyecto[0]['aper_id'],$row['par_id']);
-        $prog=0;
-        
-        if(count($part)!=0){
-          $prog=$part[0]['ppto_programado'];
-        }
-
-        $dif=($row['ppto_asignado']-$prog);
-        
-        if($dif!=0){
-          $nro_dif++;
-          break;
-        }
-      }
-
-      foreach($partidas_prog as $row){
-        $part=$this->model_ptto_sigep->get_partida_asignado_sigep($proyecto[0]['aper_id'],$row['par_id']);
-         if(count($part)==0){ 
-          $asig=0;
-          if(count($part)!=0){
-            $asig=$part[0]['ppto_asignado'];
-          }
-          $dif=($asig-$row['monto']);
-
-          if($dif!=0){
-            $nro_dif++;
-            break;
-          }
-
-        }  
-      }
-
-      return $nro_dif;
-    }*/
-
-
-   
-
-
-
-
+    }
 
 
   /*----- FORMULARIO DE REGISTRO DE UNIDADES/ESTABLECIMIENTOS (2020) -----*/
@@ -889,40 +844,40 @@ class Proyecto extends CI_Controller {
   }
 
 
-//// Actualizando Apertura Programatica ultimo2027
-public function guardar_formulario_tradicional() {
-    // 1. Validar la sesión antes de procesar cualquier cambio
-    if ($this->session->userdata('fun_id') != null && $this->session->userdata('fun_estado') != 3) {
-        
-        // 2. Capturar los datos enviados por el método POST del formulario
-        $id = $this->input->post('aper_id');
-        
-        $update_data = array(
-            'aper_programa'  => $this->input->post('aper_programa'),
-            'aper_actividad' => $this->input->post('aper_actividad')
-        );
+    //// Actualizando Apertura Programatica ultimo2027
+    public function guardar_formulario_tradicional() {
+        // 1. Validar la sesión antes de procesar cualquier cambio
+        if ($this->session->userdata('fun_id') != null && $this->session->userdata('fun_estado') != 3) {
+            
+            // 2. Capturar los datos enviados por el método POST del formulario
+            $id = $this->input->post('aper_id');
+            
+            $update_data = array(
+                'aper_programa'  => $this->input->post('aper_programa'),
+                'aper_actividad' => $this->input->post('aper_actividad')
+            );
 
-        // 3. Ejecutar la actualización en la base de datos usando Active Record
-        $this->db->where('aper_id', $id);
-        $resultado = $this->db->update('aperturaprogramatica', $update_data); // Ajusta 'apertura_programatica' si se llama distinto
+            // 3. Ejecutar la actualización en la base de datos usando Active Record
+            $this->db->where('aper_id', $id);
+            $resultado = $this->db->update('aperturaprogramatica', $update_data); // Ajusta 'apertura_programatica' si se llama distinto
 
-        if ($resultado) {
-            // Opcional: Puedes guardar un mensaje temporal en la sesión para mostrar que se guardó con éxito
-            $this->session->set_flashdata('correcto', 'Los datos se actualizaron correctamente.');
+            if ($resultado) {
+                // Opcional: Puedes guardar un mensaje temporal en la sesión para mostrar que se guardó con éxito
+                $this->session->set_flashdata('correcto', 'Los datos se actualizaron correctamente.');
+            } else {
+                $this->session->set_flashdata('error', 'Hubo un problema al guardar en la base de datos.');
+            }
+
+            // 4. Redireccionar de vuelta al formulario original para actualizar la vista
+            // Reemplaza "formulario_seguimiento_poa/..." por el método y parámetros de tu pantalla actual
+            redirect('admin/proy/list_proy', 'refresh');
+
         } else {
-            $this->session->set_flashdata('error', 'Hubo un problema al guardar en la base de datos.');
+            // Si no hay sesión válida, destruye y manda al login
+            $this->session->sess_destroy();
+            redirect('/', 'refresh');
         }
-
-        // 4. Redireccionar de vuelta al formulario original para actualizar la vista
-        // Reemplaza "formulario_seguimiento_poa/..." por el método y parámetros de tu pantalla actual
-        redirect('admin/proy/list_proy', 'refresh');
-
-    } else {
-        // Si no hay sesión válida, destruye y manda al login
-        $this->session->sess_destroy();
-        redirect('/', 'refresh');
     }
-}
 
 
     /*--- ACTIVAR, DESACTIVAR OBJETIVO REGIONAL -----*/
@@ -1422,6 +1377,7 @@ public function guardar_formulario_tradicional() {
     }
      
   }
+
     /*---------- VALIDA PROYECTO DE INVERSION ---------*/
     function valida_proyecto(){
     if ($this->input->post()) {
@@ -1942,52 +1898,52 @@ public function guardar_formulario_tradicional() {
     }
 
     /*------------------------ Get Presupuesto Operacion ----------------------*/
-    public function obtiene_presupuesto(){
-      if($this->input->is_ajax_request() && $this->input->post()){
-          $post = $this->input->post();
-          $proy_id = $this->security->xss_clean($post['proy_id']);
-          $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// Datos Proyecto
-          $fase = $this->model_faseetapa->get_id_fase($proy_id); //// Datos de la Fase
-          $fase_gestion=$this->model_faseetapa->list_fases_gestiones($fase[0]['id']); /// Lista de Fases Gestiones
+    // public function obtiene_presupuesto(){
+    //   if($this->input->is_ajax_request() && $this->input->post()){
+    //       $post = $this->input->post();
+    //       $proy_id = $this->security->xss_clean($post['proy_id']);
+    //       $proyecto = $this->model_proyecto->get_id_proyecto($proy_id); /// Datos Proyecto
+    //       $fase = $this->model_faseetapa->get_id_fase($proy_id); //// Datos de la Fase
+    //       $fase_gestion=$this->model_faseetapa->list_fases_gestiones($fase[0]['id']); /// Lista de Fases Gestiones
           
-          if(count($proyecto)!=0){
-            $result = array(
-              'respuesta' => 'correcto',
-              'proyecto' => $proyecto,
-              'fase' => $fase,
-              'fase_gestion' => $fase_gestion
-            );
-          }
-          else{
-            $result = array(
-                'respuesta' => 'error'
-            );
-          }
-          echo json_encode($result);
-      }else{
-          show_404();
-      }
-    }
+    //       if(count($proyecto)!=0){
+    //         $result = array(
+    //           'respuesta' => 'correcto',
+    //           'proyecto' => $proyecto,
+    //           'fase' => $fase,
+    //           'fase_gestion' => $fase_gestion
+    //         );
+    //       }
+    //       else{
+    //         $result = array(
+    //             'respuesta' => 'error'
+    //         );
+    //       }
+    //       echo json_encode($result);
+    //   }else{
+    //       show_404();
+    //   }
+    // }
 
     /*================ OBTIENE LOS DATOS DEL PROYECTO ================*/
-    public function get_proyecto(){
-        if($this->input->is_ajax_request() && $this->input->post()){
-            $post = $this->input->post();
-            $cod = $post['id_proy'];
-            $id = $this->security->xss_clean($cod);
-            $dato_proy = $this->model_proyecto->get_id_proyecto($id);
-            //caso para modificar el codigo de proyecto y actividades
-            foreach($dato_proy as $row){
-                $result = array(
-                  'proy_id' => $row['proy_id'],
-                  "proy_nombre" =>$row['proy_nombre']
-                );
-            }
-            echo json_encode($result);
-        }else{
-            show_404();
-        }
-    }
+    // public function get_proyecto(){
+    //     if($this->input->is_ajax_request() && $this->input->post()){
+    //         $post = $this->input->post();
+    //         $cod = $post['id_proy'];
+    //         $id = $this->security->xss_clean($cod);
+    //         $dato_proy = $this->model_proyecto->get_id_proyecto($id);
+    //         //caso para modificar el codigo de proyecto y actividades
+    //         foreach($dato_proy as $row){
+    //             $result = array(
+    //               'proy_id' => $row['proy_id'],
+    //               "proy_nombre" =>$row['proy_nombre']
+    //             );
+    //         }
+    //         echo json_encode($result);
+    //     }else{
+    //         show_404();
+    //     }
+    // }
 
 
 /*====================================================================================================================*/

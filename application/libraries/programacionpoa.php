@@ -410,17 +410,17 @@ class Programacionpoa extends CI_Controller{
             <table id="tabla_techos_reporte_cns" class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11px; border-collapse: collapse;">
               <thead>
                 <tr style="background: #334155; color: #ffffff; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; height: 38px; vertical-align: middle;">
-                  <th style="text-align: left; padding-left: 10px; min-width: 240px; background: #1e293b;">PARTIDA CONTABLE</th>
-                  <th style="text-align: right; padding-right: 10px; width: 12%; background: #1e3a8a;">PPTO. ASIGNADO</th>';
+                  <th style="text-align: center; padding-left: 10px; min-width: 240px; background: #1e293b;">PARTIDA PRESUPUESTARIA</th>
+                  <th style="text-align: center; padding-right: 10px; width: 12%; background: #1e3a8a;">PPTO. ASIGNADO '.$this->gestion.'</th>';
                   
                   // CABECERA: Bucle elástico de unidades responsables
                   foreach($componente as $rowc){
-                    $tabla .= '<th style="text-align: right; padding-right: 8px; min-width: 95px;">' . $rowc['tipo_subactividad'] . '<br><small style="color:#94a3b8; font-size:8.5px; font-weight:normal;">' . substr(strtoupper($rowc['com_componente']), 0, 12) . '.</small></th>';
+                    $tabla .= '<th style="text-align: center; padding-right: 8px; min-width: 95px;" title="' . $rowc['tipo_subactividad'] . ' ' . $rowc['com_componente'] . '">' . $rowc['tipo_subactividad'] . '<br><small style="color:#94a3b8; font-size:8.5px; font-weight:normal;">' . substr(strtoupper($rowc['com_componente']), 0, 12) . '.</small></th>';
                   }
                   
               $tabla .= '
-                  <th style="text-align: right; padding-right: 10px; width: 11%; background: #d97706;">TOTAL POA</th>
-                  <th style="text-align: right; padding-right: 10px; width: 11%; background: #475569;">SALDO DISP.</th>
+                  <th style="text-align: center; padding-right: 10px; width: 11%; background: #d97706;">TOTAL POA</th>
+                  <th style="text-align: center; padding-right: 10px; width: 11%; background: #475569;">SALDO DISP.</th>
                 </tr>
               </thead>
               <tbody>';

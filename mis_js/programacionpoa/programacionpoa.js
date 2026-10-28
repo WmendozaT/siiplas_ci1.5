@@ -453,8 +453,9 @@ $(document).ready(function() {
       });
   });
 
-  /*------ Ver techos Presupuestarios por UnidadOrganizacional 2027 ------*/
-  $(document).ready(function() {
+
+  /*--- MODAL : Ver techos Presupuestarios por UnidadOrganizacional 2027 ---*/
+    $(document).ready(function() {
         // Escuchador de evento clic sobre el botón "Ver Techos"
         $('.btn-ver-techos-global').on('click', function(e) {
             e.preventDefault();
@@ -469,7 +470,7 @@ $(document).ready(function() {
             
             // 4. Invocamos mediante AJAX al controlador optimizado de desglose
             $.ajax({
-                url: base + "index.php/mantenimiento/cptto_poa/get_desglose_partidas_unidad_ajax",
+                url: base + "index.php/programacion/proyecto/get_desglose_partidas_unidad_ajax",
                 type: 'POST',
                 data: { aper_id: aper_id },
                 dataType: 'json',

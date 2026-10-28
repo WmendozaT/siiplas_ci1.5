@@ -39,20 +39,53 @@ class crequerimiento extends CI_Controller {
         $data['stylo'] = $this->programacionpoa->estilo_tabla_form5();
         $get_componente = $this->model_componente->get_componente($com_id, $this->gestion);
         if (!empty($get_componente) && count($get_componente) > 0) {
-            $data['part_padres'] = $this->model_partidas->lista_padres(); // Partidas padres (Agrupadores)
-            $data['part_hijos']  = $this->model_partidas->lista_partidas(); // Partidas hijos (Sub-ítems)
-            $data['titulo']=$this->cabecera_f5_uresponsable($get_componente); //// Cabecera 
-        
-            // Recuperamos la colección base de requerimientos vinculados (Form 5)
-            $lista_insumos = $this->model_insumo->list_requerimientos_uresponsable($com_id);
-            $lista_form4=$this->model_producto->lista_productos($com_id);
-            $base='<input type="hidden" name="com_id" id="com_id" value="' . $com_id . '">';
-            $tabla.=$this->vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$this->button_opciones_componente($get_componente));
-            $tabla.=$this->programacionpoa->modal_migracion_form5x_componente($get_componente);
-            $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_responsable();
+          $data['part_padres'] = $this->model_partidas->lista_padres(); // Partidas padres (Agrupadores)
+          $data['part_hijos']  = $this->model_partidas->lista_partidas(); // Partidas hijos (Sub-ítems)
+          $data['titulo']=$this->cabecera_f5_uresponsable($get_componente); //// Cabecera 
+      
+          // Recuperamos la colección base de requerimientos vinculados (Form 5)
+          $lista_insumos = $this->model_insumo->list_requerimientos_uresponsable($com_id);
+          $lista_form4=$this->model_producto->lista_productos($com_id);
+          $base='<input type="hidden" name="com_id" id="com_id" value="' . $com_id . '">';
+          $tabla.=$this->vista_listado_de_requerimientos_programados($lista_insumos,$lista_form4,$base,$this->button_opciones_componente($get_componente));
+          $tabla.=$this->programacionpoa->modal_migracion_form5x_componente($get_componente);
+          $tabla.=$this->programacionpoa->modal_partidas_programadas_unidad_responsable();
 
-            $data['tabla']=$tabla;
-            $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
+          //// modal para el techo por partidas
+        $tabla.='
+        <div class="modal fade" id="modal_techos_resumen_global" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.45);">
+            <div class="modal-dialog modal-lg" style="width: 80% !important; max-width: 95%; margin: 25px auto;"><!-- Ancho expandido para las nuevas columnas de reversión -->
+                <div class="modal-content" style="border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+                    
+                    <!-- Cabecera del Modal -->
+                    <div class="modal-header" style="background: #1e293b; color: #ffffff; padding: 12px 16px;">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color: #ffffff; opacity: 0.8;">&times;</button>
+                        <h4 class="modal-title" style="font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; letter-spacing: 0.3px;">
+                            <i class="fa fa-calculator text-info"></i> DESGLOSE DE TECHOS PRESUPUESTARIOS POR UNIDAD ORGANIZACIONAL
+                        </h4>
+                        <div id="subtitulo_modal_techos" style="font-size: 11.5px; color: #94a3b8; font-weight: bold; margin-top: 4px;"></div>
+                    </div>
+                    
+                    <!-- Cuerpo del Modal -->
+                    <div class="modal-body" style="padding: 15px; background: #f8fafc;">
+                        
+                        <!-- 🎯 CONTENEDOR DINÁMICO: Aquí se inyectará el HTML generado por get_desglose_partidas_unidad_ajax -->
+                        <div id="contenedor_reporte_techos"></div>
+                        
+                    </div>
+                    
+                    <!-- Pie del Modal -->
+                    <div class="modal-footer" style="padding: 10px 16px; background: #f1f5f9; border-top: 1px solid #e2e8f0;">
+                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" style="font-weight: bold; font-size: 11px;">
+                            <i class="fa fa-times"></i> Cerrar Ventana
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>';
+
+          $data['tabla']=$tabla;
+          $this->load->view('admin/programacion/requerimiento/form_anteproyecto_form5', $data); /// Gasto Corriente
       }
       else{
         show_error("🚨 Error SIIPLAS: La Actividad física solicitada no existe en PostgreSQL o fue purgada del Formulario N° 4.");
@@ -605,19 +638,39 @@ class crequerimiento extends CI_Controller {
                 </div>
 
                 <button type="button" 
-                        class="btn btn-xs btn-default btn-ver-partidas-unidad" 
+                        class="btn btn-sm btn-primary btn-ver-techos-global" 
+                        data-id="'.$componente[0]['aper_id'].'" 
+                        data-nombre="'.htmlspecialchars(strtoupper($componente[0]['tipo'].' '.$componente[0]['act_descripcion'].' - '.$componente[0]['abrev']), ENT_QUOTES, 'UTF-8').'"
+                        data-toggle="modal" 
+                        data-target="#modal_techos_resumen_global" 
+                        style="font-weight: bold; background: #2563eb; border-color: #2563eb;">
+                    <i class="fa fa-sliders"></i> Ver Techo Presupuestario
+                </button>
+
+                <button type="button" 
+                        class="btn btn-sm btn-primary btn-ver-partidas-unidad" 
                         data-id="' . $componente[0]['com_id']. '" 
                         data-codigo="' . $componente[0]['serv_cod'] . ' ' . $componente[0]['tipo_subactividad'] . '" 
                         data-nombre="' . htmlspecialchars($componente[0]['serv_descripcion'], ENT_QUOTES, 'UTF-8') . '" 
                         data-toggle="modal" 
                         data-target="#modal_desglose_partidas_unidad"
                         title="VER MATRIZ DE REQUERIMIENTOS POR PARTIDA" 
-                        style="font-weight: bold; padding: 5px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius:3px; color:#334155;">
-                    <i class="fa fa-table text-info"></i> Ver Detalle de Partidas
+                        style="font-weight: bold; background: #2563eb; border-color: #2563eb;">
+                    <i class="fa fa-table"></i> Ver Detalle de Partidas
                 </button>
 
                 <!-- Bloque Derecho: Reportes Oficiales en PDF (Salidas de Auditoría) -->
                 <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <!-- 🖨️ Reporte POA Estándar de la Unidad -->
+                    <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form4_uresponsable/" . $componente[0]['com_id']) . '\');" 
+                       title="GENERAR REPORTE POA FORMULARIO N° 4 ESTÁNDAR (PDF)" 
+                       class="btn btn-sm btn-default" 
+                       style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; padding: 6px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s ease;"
+                       onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
+                       onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
+                        <i class="fa fa-file-pdf-o text-danger" style="font-size: 13px;"></i> Form. N° 4 (Actividades)
+                    </a>
+
                     <!-- 🖨️ Reporte POA Estándar de la Unidad -->
                     <a href="javascript:abreVentana(\'' . site_url("prog/reporte_form5_uresponsable/" . $componente[0]['com_id']) . '\');" 
                        title="GENERAR REPORTE POA FORMULARIO N° 5 ESTÁNDAR (PDF)" 
