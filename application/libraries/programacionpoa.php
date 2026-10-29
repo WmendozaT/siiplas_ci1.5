@@ -259,7 +259,7 @@ class Programacionpoa extends CI_Controller{
     return $tabla;
   }
 
-    //// Modal de migracion requerimientos x Actividad
+    //// Modal de migracion requerimientos x Actividad 2027
     public function modal_migracion_form5x_actividad($producto, $componente){
         $prog_especial = '';
         $bloquear_formulario = false;
@@ -458,7 +458,7 @@ class Programacionpoa extends CI_Controller{
         return $tabla;
     }
 
-    //// Modal lista de partidas programados por Unidad Responsable
+    //// Modal lista de partidas programados por Unidad Responsable (componente)
     public function modal_partidas_programadas_unidad_organizacional($proyecto){
         $tabla='';
         $tabla.='
@@ -529,8 +529,167 @@ class Programacionpoa extends CI_Controller{
         return $tabla;
     }
 
+    //// lista de partidas asignados y programados para el Anteproyecto POA Institucional
+    public function detalle_ppto_asignado_anteproyectopoa_Institucional(){
+        $list_partidas = $this->model_ptto_sigep->get_lista_ppto_partidas_Institucional();
+        $list_regionales =$this->model_proyecto->list_departamentos();
+            $total_asignado            = 0;
+            $total_asignado_mod        = 0;
+            $total_programado          = 0;
+            $total_saldo               = 0;
+        
+            if (!empty($list_partidas)) {
+                foreach ($list_partidas as $row) {
+                    $total_asignado        += floatval($row['ppto_asignado']);
+                    $total_asignado_mod    += floatval($row['ppto_asignado']); // Toma el valor base inicializado
+                    $total_programado      += floatval($row['ppto_programado']);
+                    $total_saldo           += floatval($row['saldo_poa']);
+                }
+            }
+
+            $html = '
+            <div id="contenedor_general_partidas" style="font-family: Arial, sans-serif; margin-bottom: 15px;">
+              <!-- 🧮 PANEL DE SUMATORIAS TOTALES (Estilo Tarjetas) -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1-fr)); gap: 10px; margin-bottom: 15px;">
+                  
+                  <div style="background: #1e3a8a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #1d4ed8;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Presupuesto Asignado</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_asignado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #1e293b; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #475569;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Programado POA</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: #22c55e;">Bs. ' . number_format($total_programado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #0f172a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #0aa699;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Saldo Disponible</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: ' . ($total_saldo < 0 ? '#ef4444' : '#38bdf8') . ';">Bs. ' . number_format($total_saldo, 2, ',', '.') . '</div>
+                  </div>
+              </div>
+
+                <div style="margin-bottom: 12px; display: flex; gap: 6px; justify-content: flex-end; background: #f8fafc; padding: 8px; border: 1px dashed #cbd5e1; border-radius: 4px;">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-sm btn-default" onclick="imprimirTechosModal();" style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; padding: 5px 12px; font-size:11.5px; color:#334155; border-radius:3px;">
+                        <i class="fa fa-print text-primary" style="font-size:13px;"></i> Imprimir Cuadro
+                    </button>
+                    <!-- Botón Excel Masivo Directo -->
+                    <button type="button" class="btn btn-sm btn-default" onclick="exportarExcelModalDirecto();" style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; padding: 5px 12px; font-size:11.5px; color:#334155; border-radius:3px;">
+                        <i class="fa fa-file-excel-o text-success" style="font-size:13px;"></i> Descargar Excel
+                    </button>
+                </div>';
+
+        // ==========================================================================
+        // 🚨 TU LÓGICA DE LISTADO ORIGINAL (MANTENIDA INTACTA AL 100%)
+        // ==========================================================================
+        $html.='
+        <div id="area_impresion_techos_f5" class="table-responsive" style="overflow-x: auto; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px;">
+            <table id="tabla_techos_reporte_cns" class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; font-family: Arial, sans-serif; font-size: 11px; border-collapse: collapse;">
+              <thead>
+                <tr style="background: #334155; color: #ffffff; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; height: 38px; vertical-align: middle;">
+                  <th style="text-align: center; padding-left: 10px; min-width: 240px; background: #1e293b;">PARTIDA PRESUPUESTARIA</th>
+                  <th style="text-align: center; padding-right: 10px; width: 12%; background: #1e3a8a;">PPTO. ASIGNADO '.$this->gestion.'</th>';
+                  
+                  // CABECERA: Bucle elástico de unidades responsables
+                  foreach($list_regionales as $rowc){
+                    $html .= '<th style="text-align: center; padding-right: 8px; min-width: 95px;" title="' . $rowc['dep_departamento'] . '">'.strtoupper($rowc['dep_departamento']).'</th>';
+                  }
+                  
+              $html .= '
+                  <th style="text-align: center; padding-right: 10px; width: 11%; background: #d97706;">TOTAL POA</th>
+                  <th style="text-align: center; padding-right: 10px; width: 11%; background: #475569;">SALDO DISP.</th>
+                </tr>
+              </thead>
+              <tbody>';
+          foreach($list_partidas as $row){
+            $saldo_item    = floatval($row['saldo_poa']);
+            $style_saldo = ($saldo_item < 0) ? 'background: #fef2f2; color: #dc2626; font-weight: bold;' : 'background: #f0f9ff; color: #2563eb; font-weight: bold;';
+
+            $html.='
+            <tr style="height: 30px; vertical-align: middle;">
+              <td style="font-weight: bold; color: #1e293b; padding-left: 10px; background: #f8fafc; border-right: 2px solid #e2e8f0;" >'.$row['par_codigo'].' - '.$row['par_nombre'].'</td>
+              <td style="text-align: right; padding-right: 10px; font-weight: 600; background: #f8fafc;">' . number_format($row['ppto_asignado'], 2, '.', ',') . '</td>';
+              // foreach($componente as $rowc){
+              //   $get_partida=$this->model_insumo->get_partida_programado_x_uresponsable($rowc['com_id'],$row['par_id']);
+              //   $html.='
+              //   <td style="text-align: right; padding-right: 8px; font-weight: 500;">';
+              //   if(count($get_partida)!=0){
+              //     $tabla.=number_format($get_partida[0]['ppto_poa'], 2, '.', ',');
+              //   }
+              //   else{
+              //     $html.='0.00';
+              //   }
+              //   $tabla.='
+              //   </td>';
+              // }
+            $html.='
+            <td style="text-align: right; font-weight: bold; background: #fef3c7; color: #b45309; padding-right: 10px;">' . number_format($row['ppto_programado'], 2, '.', ',') . '</td>
+            <td style="text-align: right; padding-right: 10px; ' . $style_saldo . '">' . number_format($row['saldo_poa'], 2, '.', ',') . '</td>
+            </tr>';
+          }
+        $html.='
+        </tbody>
+        </table>
+        </div>';
+
+        return $html;
+    }
 
 
+    //// lista de partidas asignados y programados para el Anteproyecto POA x UnidadOrganizacional
+    public function detalle_ppto_asignado_anteproyectopoa_UnidadOrganizacional($aper_id){
+        $list_partidas = $this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($aper_id);
+            $proyecto=$this->model_proyecto->get_aper_programa($aper_id);
+
+            $total_asignado            = 0;
+            $total_asignado_mod        = 0;
+            $total_programado          = 0;
+            $total_saldo               = 0;
+            $total_asig_revertido      = 0;
+            $total_prog_revertido      = 0;
+            $total_saldo_revertido     = 0;
+
+            if (!empty($list_partidas)) {
+                foreach ($list_partidas as $row) {
+                    $total_asignado        += floatval($row['ppto_asignado']);
+                    $total_asignado_mod    += floatval($row['ppto_asignado']); // Toma el valor base inicializado
+                    $total_programado      += floatval($row['ppto_programado']);
+                    $total_saldo           += floatval($row['saldo_poa']);
+                    $total_asig_revertido  += floatval($row['ppto_asignado_revertido']);
+                    $total_prog_revertido  += floatval($row['ppto_programado_revertido']);
+                    $total_saldo_revertido += floatval($row['saldo_revertido']);
+                }
+            }
+
+            $html = '
+            <div id="contenedor_general_partidas" style="font-family: Arial, sans-serif; margin-bottom: 15px;">
+              <!-- 🧮 PANEL DE SUMATORIAS TOTALES (Estilo Tarjetas) -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1-fr)); gap: 10px; margin-bottom: 15px;">
+                  
+                  <div style="background: #1e3a8a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #1d4ed8;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Presupuesto Asignado</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_asignado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #1e293b; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #475569;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Programado POA</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: #22c55e;">Bs. ' . number_format($total_programado, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #0f172a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #0aa699;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Saldo Disponible</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: ' . ($total_saldo < 0 ? '#ef4444' : '#38bdf8') . ';">Bs. ' . number_format($total_saldo, 2, ',', '.') . '</div>
+                  </div>
+
+                  <div style="background: #fdf2f2; color: #991b1b; padding: 10px; border-radius: 4px; text-align: center; border: 1px solid #fca5a5; border-left: 5px solid #dc2626;">
+                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; color: #7f1d1d;">Total Saldo Revertido</div>
+                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_saldo_revertido, 2, ',', '.') . '</div>
+                  </div>
+              </div>';
+            $html .= $this->modal_partidas_unidad_organizacional($proyecto);
+
+        return $html;
+    }
 
 
 

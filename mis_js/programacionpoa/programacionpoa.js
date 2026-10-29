@@ -494,7 +494,7 @@ $(document).ready(function() {
 
 
 
-$(document).ready(function() {
+    $(document).ready(function() {
     // 🌟 REPARADO CORE 1: Variables perimetrales de red globales en la raíz del archivo
     var xhr_verif_poa = null;
     var xhr_validar_final = null;

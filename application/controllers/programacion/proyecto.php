@@ -106,11 +106,17 @@ class Proyecto extends CI_Controller {
                                         </a>';
                                        $tabla.=$this->programacionpoa->select_eliminacion_formularios_anteproyectopoa();
                                     }
-                                    // <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal_techos_resumen_global" style="font-weight: bold; background: #2563eb; border-color: #2563eb;">
-                                    //     <i class="fa fa-sliders"></i> Ver Techos Generales
-                                    // </button>
+                                     
                                 $tabla .= '
-
+                                    <button type="button" 
+                                            class="btn btn-sm btn-primary btn-ver-techos-global" 
+                                            data-id="0" 
+                                            data-nombre="ASIGNACION DE PRESUPUESTO INSTITUCIONAL"
+                                            data-toggle="modal" 
+                                            data-target="#modal_techos_resumen_global" 
+                                            style="font-weight: bold; background: #1e3a8a; border-color: #1e3a8a;">
+                                        <i class="fa fa-sliders"></i> VER PPTO. INSTITUCIONAL '.$this->gestion.'
+                                    </button>
                                 </div>
 
                                 <!-- 🌟 REPARADO: Contenedor elástico responsivo con scrolling horizontal controlado -->
@@ -217,7 +223,7 @@ class Proyecto extends CI_Controller {
                     <div class="modal-header" style="background: #1e293b; color: #ffffff; padding: 12px 16px;">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color: #ffffff; opacity: 0.8;">&times;</button>
                         <h4 class="modal-title" style="font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; letter-spacing: 0.3px;">
-                            <i class="fa fa-calculator text-info"></i> DESGLOSE DE TECHOS PRESUPUESTARIOS POR UNIDAD ORGANIZACIONAL
+                            <i class="fa fa-calculator text-info"></i> DESGLOSE DE ASIGNACIÓN DEL TECHO PRESUPUESTARIO '.$this->gestion.'
                         </h4>
                         <div id="subtitulo_modal_techos" style="font-size: 11.5px; color: #94a3b8; font-weight: bold; margin-top: 4px;"></div>
                     </div>
@@ -241,6 +247,8 @@ class Proyecto extends CI_Controller {
         </div>';
         $data['listado']=$tabla;
         $this->load->view('admin/programacion/proy_anual/top/list_proy', $data);
+        //echo $this->programacionpoa->detalle_ppto_asignado_anteproyectopoa_Institucional();
+
     }
 
     /*--- Programacion - POA APROBADO (2027) ---*/
@@ -355,6 +363,7 @@ class Proyecto extends CI_Controller {
 
       $data['listado']=$listado;
       $this->load->view('admin/programacion/proy_anual/aprobados/list_proy', $data);
+
     }
 
 
@@ -735,68 +744,19 @@ class Proyecto extends CI_Controller {
 
 
 
-    //// get detalle de partidas por Unidad Organizacional
+    //// get detalle de partidas Institucional y por Unidad Organizacional 2027
     public function get_desglose_partidas_unidad_ajax() {
         if ($this->input->is_ajax_request() && $this->input->post()) {
             $aper_id = intval($this->input->post('aper_id'));
             $g_id   = intval($this->gestion);
-
-            $list_partidas = $this->model_ptto_sigep->get_lista_ppto_partidas_UOrganizacional($aper_id);
-            $proyecto=$this->model_proyecto->get_aper_programa($aper_id);
-
-            $total_asignado            = 0;
-            $total_asignado_mod        = 0;
-            $total_programado          = 0;
-            $total_saldo               = 0;
-            $total_asig_revertido      = 0;
-            $total_prog_revertido      = 0;
-            $total_saldo_revertido     = 0;
-
-            if (!empty($list_partidas)) {
-                foreach ($list_partidas as $row) {
-                    $total_asignado        += floatval($row['ppto_asignado']);
-                    $total_asignado_mod    += floatval($row['ppto_asignado']); // Toma el valor base inicializado
-                    $total_programado      += floatval($row['ppto_programado']);
-                    $total_saldo           += floatval($row['saldo_poa']);
-                    $total_asig_revertido  += floatval($row['ppto_asignado_revertido']);
-                    $total_prog_revertido  += floatval($row['ppto_programado_revertido']);
-                    $total_saldo_revertido += floatval($row['saldo_revertido']);
-                }
+            $html = '';
+            if($aper_id==0){ /// Institucional
+                $html.=$this->programacionpoa->detalle_ppto_asignado_anteproyectopoa_Institucional(); /// listado Institucional
+            }
+            else{ /// Unidad Organizacional
+                $html.=$this->programacionpoa->detalle_ppto_asignado_anteproyectopoa_UnidadOrganizacional($aper_id); /// listado por Unidad Organizacional
             }
 
-            
-            // Modificamos la cabecera para incrustar el selector a la izquierda del botón imprimir
-            $html = '
-             
-            <div id="contenedor_general_partidas" style="font-family: Arial, sans-serif; margin-bottom: 15px;">
-              <!-- 🧮 PANEL DE SUMATORIAS TOTALES (Estilo Tarjetas) -->
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1-fr)); gap: 10px; margin-bottom: 15px;">
-                  
-                  <div style="background: #1e3a8a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #1d4ed8;">
-                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Presupuesto Asignado</div>
-                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_asignado, 2, ',', '.') . '</div>
-                  </div>
-
-                  <div style="background: #1e293b; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #475569;">
-                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Programado POA</div>
-                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: #22c55e;">Bs. ' . number_format($total_programado, 2, ',', '.') . '</div>
-                  </div>
-
-                  <div style="background: #0f172a; color: white; padding: 10px; border-radius: 4px; text-align: center; border-left: 5px solid #0aa699;">
-                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Total Saldo Disponible</div>
-                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: ' . ($total_saldo < 0 ? '#ef4444' : '#38bdf8') . ';">Bs. ' . number_format($total_saldo, 2, ',', '.') . '</div>
-                  </div>
-
-                  <div style="background: #fdf2f2; color: #991b1b; padding: 10px; border-radius: 4px; text-align: center; border: 1px solid #fca5a5; border-left: 5px solid #dc2626;">
-                      <div style="font-size: 9px; text-transform: uppercase; font-weight: bold; color: #7f1d1d;">Total Saldo Revertido</div>
-                      <div style="font-size: 14px; font-weight: bold; margin-top: 3px;">Bs. ' . number_format($total_saldo_revertido, 2, ',', '.') . '</div>
-                  </div>
-              </div>';
-
-            // ==========================================================================
-            // 📊 SUPERESTRUCTURA DE LA TABLA EJECUTIVA FORMAL
-            // ==========================================================================
-            $html .= $this->programacionpoa->modal_partidas_unidad_organizacional($proyecto);
 
             while (ob_get_level() > 0) { ob_end_clean(); }
             header('Content-Type: application/json; charset=utf-8');

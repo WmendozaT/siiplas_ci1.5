@@ -2040,3 +2040,75 @@ select uResp.proy_id,uResp.com_id,uResp.tipo_subactividad,uResp.com_componente,e
         INNER JOIN detalle_evaluacion_poa_trimestral eval ON eval.com_id = uResp.com_id
         where uResp.proy_id=3922 and eval.trm_id=3
         order by uResp.com_id, eval.trm_id asc
+
+
+
+---------------------------
+
+CREATE OR REPLACE VIEW public.vista_balance_partidas_sigep_vs_poa_form5 AS 
+WITH poa_programado AS (
+     SELECT 
+        c.aper_id,
+        c.pfec_id,
+        c.proy_id,
+        c.aper_gestion,
+        i.par_id,
+        par.par_codigo,
+        par.par_nombre,
+        SUM(i.ins_costo_total) AS ppto_poa,
+        SUM(i.ins_monto_certificado) AS ppto_certificado
+     FROM vista_lista_unidadesresponsables c
+     -- 🛠️ OPTIMIZACIÓN 1: Removido el ::numeric para no anular los índices de Postgres
+     JOIN insumos i ON i.com_id = c.com_id 
+                   AND i.ins_estado <> 3 
+                   AND i.aper_id <> 0 
+                   AND i.ins_tp_reg = 0 
+                   AND i.ins_gestion = c.aper_gestion
+     JOIN partidas par ON par.par_id = i.par_id
+     GROUP BY c.aper_id, c.pfec_id, c.proy_id, c.aper_gestion, i.par_id, par.par_codigo, par.par_nombre
+), 
+sigep_asignado AS (
+     SELECT 
+        sig.aper_id,
+        sig.par_id,
+        sig.g_id,
+        SUM(sig.ppto_inicial) AS ppto_inicial, -- 🛠️ REPARADO: Nombre de columna corregido a ppto_inicial
+        SUM(sig.importe) AS ppto_asignado
+     FROM ptto_partidas_sigep sig
+     WHERE sig.estado != 3 -- Aseguramos omitir eliminados lógicos en la asignación
+     GROUP BY sig.aper_id, sig.par_id, sig.g_id
+)
+SELECT 
+    COALESCE(poa.aper_id, sigep.aper_id) AS aper_id,
+    COALESCE(poa.par_id, sigep.par_id) AS par_id,
+    COALESCE(poa.par_codigo, master_par.par_codigo)::varchar AS par_codigo,
+    COALESCE(poa.par_nombre, master_par.par_nombre)::varchar AS par_nombre,
+    COALESCE(poa.aper_gestion, sigep.g_id) AS gestion_fiscal,
+    
+    -- 🛠️ REPARADO: Cruzamos con la tabla maestra de proyectos para no dejar campos nulos si el POA está vacío
+    COALESCE(poa.pfec_id, ap_proy.pfec_id)::numeric AS pfec_id,
+    COALESCE(poa.proy_id, ap_proy.proy_id)::numeric AS proy_id,
+    
+    COALESCE(sigep.ppto_inicial, 0.00)::numeric(18,2) AS presupuesto_inicial,
+    COALESCE(sigep.ppto_asignado, 0.00)::numeric(18,2) AS presupuesto_asignado_sigep,
+    COALESCE(poa.ppto_poa, 0.00)::numeric(18,2) AS presupuesto_programado_poa,
+    COALESCE(poa.ppto_certificado, 0.00)::numeric(18,2) AS presupuesto_certificado,
+    (COALESCE(sigep.ppto_asignado, 0.00) - COALESCE(poa.ppto_poa, 0.00))::numeric(18,2) AS saldo_disponible
+    
+FROM poa_programado poa
+FULL JOIN sigep_asignado sigep ON poa.par_id = sigep.par_id 
+                              AND poa.aper_id = sigep.aper_id 
+                              AND poa.aper_gestion = sigep.g_id
+LEFT JOIN partidas master_par ON master_par.par_id = COALESCE(poa.par_id, sigep.par_id)
+
+-- 🛠️ UNIÓN CLAVE: Vinculamos la estructura de proyectos para blindar pfec_id y proy_id
+LEFT JOIN (
+    SELECT ap.aper_id, pfe.pfec_id, ap.proy_id 
+    FROM aperturaproyectos ap
+    JOIN _proyectofaseetapacomponente pfe ON pfe.aper_id = ap.aper_id
+) ap_proy ON ap_proy.aper_id = COALESCE(poa.aper_id, sigep.aper_id)
+
+ORDER BY par_codigo ASC;
+
+ALTER TABLE public.vista_balance_partidas_sigep_vs_poa_form5
+  OWNER TO postgres;

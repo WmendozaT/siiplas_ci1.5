@@ -187,7 +187,7 @@
 
             // 6. Construcción idéntica de la sábana de datos en una sola variable string
             $tabla = '';
-            $tabla.= $this->stream_lista_excel_actividades($form4,$tp_id);
+            $tabla.= $this->stream_lista_excel_actividades($form4,0);
             
             // 7. Despacho directo del buffer de datos purificado hacia la red institucional
             echo $tabla;
@@ -254,7 +254,7 @@
     }
 
      //// matriz Actividades segun el tipo de Gasto
-    private function stream_lista_excel_actividades($form4,$tp_id) {
+    private function stream_lista_excel_actividades($form4) {
       $tabla='';
       $tabla .= '
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
