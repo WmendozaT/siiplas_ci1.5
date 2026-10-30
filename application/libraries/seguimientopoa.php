@@ -1933,7 +1933,178 @@ class Seguimientopoa extends CI_Controller{
 
 
     /*--- LISTA DE FORMULARIO N 4 PROGRAMADOS AL MES ACTUAL 2027 ---*/
-    function lista_operaciones_programados($form4,$mes_id){
+    function lista_operaciones_programados($com_id,$mes_id){
+      $form4=$this->model_producto->lista_productos($com_id); /// lISTA DE FORM 4
+      $tabla='';
+      $tabla.=' 
+      <form class="smart-form" method="post">
+      <br>
+      <input type="hidden" name="base" value="'.base_url().'">
+          <div class="row">
+            <section class="col col-3">
+              <b>BUSCADOR: </b>
+              <input id="searchTerm" type="text" onkeyup="doSearch()" class="form-control" placeholder="Buscador...."/>
+            </section>  
+            '.$this->verif_btn_evaluacionpoa().''; /// Meses del trimestre
+            $tabla.='
+            <div id="loading" style="display:none;" style="width:20%;">
+              <img src="'.base_url().'/assets/img/cargando-loading-039.gif" width="40%" height="30%">
+            </div>
+          </div>
+          
+        </fieldset>
+        <fieldset>
+          <div class="table-responsive">
+          <table class="table table-bordered"width="100%" id="datos">
+              <thead>                 
+                <tr>
+                  <th style="width:0.5%; font-size:11px;text-align:center;"></th>
+                  <th style="width:0.5%; font-size:11px;text-align:center;"><b>COD. OPE.</b></th>
+                  <th style="width:0.5%; font-size:11px;text-align:center;"><b>COD. ACT.</b></th>
+                  <th style="width:10%; font-size:11px;text-align:center;">ACTIVIDAD</th>
+                  <th style="width:7%; font-size:11px;text-align:center;">INDICADOR</th>
+                  <th style="width:7%; font-size:11px;text-align:center;">UNIDAD RESPONSABLE</th>
+                  <th style="width:2%; font-size:11px;text-align:center;">META TOTAL</th>
+                  <th style="width:2%; font-size:11px;text-align:center;">EJEC. PENDIENTE</th>
+                  <th style="width:3%; font-size:11px;text-align:center;">PROG. MES '.$this->verif_mes[2].'</th>
+                  <th style="width:5%; font-size:11px;text-align:center;">EJEC. MES '.$this->verif_mes[2].'</th>
+                  <th style="width:6%; font-size:11px;text-align:center;">FUENTE DE VERIFICACIÓN POA</th>
+                  <th style="width:2%;"></th>
+                  <th style="width:8%; background:#38393b; font-size:11px;text-align:center;"><b style="color:white;">MEDIO DE VERIFICACI&Oacute;N A PRESENTAR EN EL SEGUIMIENTO / EVALUACION</b></th>
+                  <th style="width:8%; background:#38393b; font-size:11px;text-align:center;"><b style="color:white;">PROBLEMAS PRESENTADOS</b><br><br></th>
+                  <th style="width:8%; background:#38393b; font-size:11px;text-align:center;"><b style="color:white;">ACCIONES REALIZADOS</b><br><br></th>
+                  <th style="width:2%;"></th>
+                  <th style="width:2%; font-size:11px;"></th>
+                  <th style="width:3%;"></th>
+                </tr>
+              </thead>
+              <tbody>';
+              $nro=0;
+              foreach($form4 as $row){
+                $indi_id='';
+                if($row['indi_id']==2){
+                  $indi_id='%';
+                }
+          
+                ///----------------
+                ///---------- unidad responsable
+                if($row['uni_resp']==0){
+                  $uresp=strtoupper($row['prod_unidades']);
+                }
+                else{
+                  $unidad=$this->model_componente->get_componente($row['uni_resp'],$this->gestion);
+                  
+                  $uresp='';
+                  if(count($unidad)!=0){
+                    $proy = $this->model_proyecto->get_UnidadOrganizacional($unidad[0]['proy_id']);
+                    $uresp='<font size=1.5px;><b>'.strtoupper($proy[0]['tipo'].' '.$proy[0]['act_descripcion'].' - '.$proy[0]['abrev'].' -> '.$unidad[0]['tipo_subactividad'].' '.$unidad[0]['serv_descripcion']).'</b></font>';
+                  }
+                }
+                /// ------------------------------
+
+                $diferencia=$this->verif_valor_no_ejecutado($row['prod_id'],$mes_id,$row['mt_id']);
+                if($diferencia[1]!=0 || $diferencia[2]!=0){
+                  $ejec=$this->model_seguimientopoa->get_seguimiento_poa_mes($row['prod_id'],$mes_id); // Ejecutado
+                  $tp=0;$mes_ejec=0;$mverificacion='';$prob_presentados='';$acciones=''; 
+                  $btn_='<font color=red size=1px><b>GUARDAR ?</b></font>';
+                  $background='style="background:#fdeaeb;"';
+
+                  if(count($ejec)!=0){
+                    $tp=1;$mes_ejec=round($ejec[0]['pejec_fis'],2);$mverificacion=$ejec[0]['medio_verificacion'];$prob_presentados=$ejec[0]['observacion'];$acciones=$ejec[0]['acciones'];
+                    $btn_='<font color=green size=1px><b>MODIFICAR</b></font>';
+                    $background='style="background:#ffffff;"';
+                  }
+                  else{
+                    $no_ejec=$this->model_seguimientopoa->get_seguimiento_poa_mes_noejec($row['prod_id'],$mes_id);
+                    if(count($no_ejec)!=0){
+                      $tp=0;$mes_ejec=0;$mverificacion=$no_ejec[0]['medio_verificacion'];$prob_presentados=$no_ejec[0]['observacion'];$acciones=$no_ejec[0]['acciones'];
+                      $btn_='<font color=orange size=1px><b>MODIFICAR</b></font>';
+                      $background='style="background:#fdeaeb;"';
+                    }
+                  }
+                  
+                  $nro++;
+                  $tabla.='
+                  <tr>
+                    <td align=center title="'.$row['prod_id'].'">';
+                    if($row['prod_priori']==0){
+                      $tabla.=$nro;
+                    }
+                    else{
+                      $tabla.='<br><img src="'.base_url().'assets/ifinal/ok.png" WIDTH="37" HEIGHT="30"/><br><font size=1 color=green><b>ACTIVIDAD<br>PRIORIZADA</b></font>';
+                    }
+                    $tabla.='
+                    </td>
+                    <td style="width:0.5%;font-size: 20px;" align=center><b>'.$row['or_codigo'].'</b></td>
+                    <td style="width:0.5%;font-size: 20px;" align=center title="'.$row['prod_id'].'"><b>'.$row['prod_cod'].'</b></td>
+                    <td style="font-size:10.5px;"><b>'.$row['prod_producto'].'</b></td>
+                    <td style="font-size:10px;"><b>'.$row['prod_indicador'].'</b></td>
+                    <td style="font-size:10px;"><b>'.$uresp.'</b></td>
+                    <td style="font-size:11px;" align=right title="'.$row['mt_tipo'].' : '.$row['mt_descripcion'].'"><b>'.round($row['prod_meta'],2).' '.$indi_id.'</b></td>
+                    <td align=center bgcolor="#f7e1e2">';
+                    if($row['mt_id']==3){
+                      $tabla.=$diferencia[1];
+                    }
+                    $tabla.='
+                    </td>
+                    <td align=center bgcolor="#f6fbf4">'.$diferencia[2].' '.$indi_id.' <input type="hidden" name="pg_fis[]" value="'.($diferencia[1]+$diferencia[2]).'"></td>
+                    <td>
+                      <label class="input">
+                        
+                        <input type="text" id=ejec'.$nro.' value="'.$mes_ejec.'" '.$background.' onkeyup="verif_valor('.($diferencia[1]+$diferencia[2]).',this.value,'.$row['prod_id'].','.$nro.','.$tp.','.$mes_id.');" title="'.($diferencia[1]+$diferencia[2]).'" onkeypress="if (this.value.length < 10) { return numerosDecimales(event);}else{return false; }" onpaste="return false">
+                      </label>
+                    </td>
+                    <td bgcolor="#f6fbf4">
+                      <label class="textarea">
+                       <b style="color:blue;font-size:11px;">'.$row['prod_fuente_verificacion'].'</b>
+                      </label>
+                    </td>
+                    <td style="text-align:center;">
+                      <img src="'.base_url().'assets/ifinal/fl.png" style="width:50px; height:100px;" class="movimiento" />
+                    </td>
+                    <td>
+                      <label class="textarea">
+                        <textarea rows="3" style="border: 3px solid #43d308;" id=mv'.$nro.' title="MEDIO DE VERIFICACIÓN">'.$mverificacion.'</textarea>
+                      </label>
+                    </td>
+                    <td>
+                      <label class="textarea">
+                        <textarea rows="3" style="border: 3px solid #43d308;" id=obs'.$nro.' title="PROBLEMAS PRESENTADOS">'.$prob_presentados.'</textarea>
+                      </label>
+                    </td>
+                    <td>
+                      <label class="textarea">
+                        
+                        <textarea rows="3" style="border: 3px solid #43d308;" id=acc'.$nro.' title="ACCIONES REALIZADOS">'.$acciones.'</textarea>
+                      </label>
+                    </td>
+                    <td align=center title="GUARDAR/MODIFICAR">
+                      <div id="but'.$nro.'"><button type="button" name="'.$row['prod_id'].'" id="'.$nro.'" onclick="guardar('.$row['prod_id'].','.$nro.');"  class="btn btn-default"><img src="'.base_url().'assets/Iconos/disk.png" WIDTH="40" HEIGHT="40"/><br><div id="btn'.$nro.'">'.$btn_.'</div></button></div>
+                    </td>
+                    <td align="center">
+                      
+                      <a href="#" data-toggle="modal" data-target="#modal_del_ope" class="btn btn-default del_ope" title="ELIMINAR REGISTRO SEGUIMIENTO POA"  name="'.$row['prod_id'].'" id="'.$mes_id.'">
+                        <img src="'.base_url().'assets/img/delete.png" width="30" height="30"/>
+                        <br><font size=0.1px color=red><b>ELIMNAR<br>REGISTRO<b></font>
+                      </a>
+                    </td>';
+
+                    $tabla.='
+                    <td align="center"><br><div id="calif'.$nro.'">'.$this->calificacion_form4($row['prod_id'],$diferencia).'</div></td>
+                  </tr>';
+                }
+              }
+              $tabla.='
+              </tbody>
+          </table>
+          </div>
+        </fieldset>   
+        </form>';
+
+      return $tabla;
+    }
+    
+    function lista_operaciones_programados2($form4,$mes_id){
       
       $tabla='';
       $tabla.=' 

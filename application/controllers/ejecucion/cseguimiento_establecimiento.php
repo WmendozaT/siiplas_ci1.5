@@ -41,40 +41,6 @@ class Cseguimiento_establecimiento extends CI_Controller {
     $data['com_id']=$com_id;
     $data['proy_id']=$this->establecimiento[0]['proy_id'];
     if(count($data['componente'])!=0){
-
-        ///-------------------------------------------
-/*        $registro=$this->model_seguimientopoa->verif_llenado_impresion_seguimientpoa($this->establecimiento[0]['com_id'],$this->verif_mes[1]);
-        if(count($registro)!=0){
-
-            $update_seg= array(
-              'ingreso_form' => ($registro[0]['ingreso_form']+1),
-              'ingreso_fecha' => date("d/m/Y H:i:s")
-            );
-            $this->db->where('reg_id', $registro[0]['reg_id']);
-            $this->db->update('registro_seguimientopoa', $this->security->xss_clean($update_seg));
-
-          /// update
-        }
-        else{
-          $data_to_store3 = array(
-            'fun_id' => $this->establecimiento[0]['com_id'],
-            'proy_id' => $this->establecimiento[0]['proy_id'],
-            'com_id' => $this->establecimiento[0]['com_id'],
-            'ingreso_form' => 1,
-            'ingreso_fecha' => date('d/m/Y h:i:s'),
-            'impresion_form' => 0,
-            'impresion_fecha' => date('d/m/Y h:i:s'),
-            'mes' => $this->verif_mes[1],
-            'gestion' => $this->gestion,
-            'num_ip' => $this->input->ip_address(), 
-            'nom_ip' => gethostbyaddr($_SERVER['REMOTE_ADDR']),
-            );
-            $this->db->insert('registro_seguimientopoa', $data_to_store3);
-            $reg_id=$this->db->insert_id();
-          /// insert
-        }*/
-        //// -----------------------------------------
-
       $data['datos_mes'] = $this->verif_mes;
       $fase=$this->model_faseetapa->get_fase($data['componente'][0]['pfec_id']);
       $data['proyecto'] = $this->model_proyecto->get_UnidadOrganizacional($fase[0]['proy_id']);

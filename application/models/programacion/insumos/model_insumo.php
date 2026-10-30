@@ -402,7 +402,20 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    // ------ Get sumatoria por partida de la unidad responsable
+    
+    // ------ Get sumatoria por partida x regional para el institucional 2027
+    public function get_partida_programado_x_regional($dep_id,$par_id){
+        $sql = 'SELECT poa.dep_id,i.par_id,COALESCE(SUM(i.ins_costo_total), 0.00)::numeric(18,2) AS ppto_poa
+                from fn_lista_poa_nacional_sp('.$this->gestion.') poa
+                Inner Join insumos as i on i.aper_id = poa.aper_id
+                where poa.dep_id='.$dep_id.' and i.par_id='.$par_id.' AND i.ins_estado != 3 AND i.aper_id != 0 AND i.ins_tp_reg = 0
+                group by poa.dep_id,i.par_id';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    // ------ Get sumatoria por partida de la unidad responsable (componente) 2027
     public function get_partida_programado_x_uresponsable($com_id,$par_id){
         $sql = 'SELECT i.par_id,i.com_id,COALESCE(SUM(i.ins_costo_total), 0.00)::numeric(18,2) AS ppto_poa
                    from insumos i

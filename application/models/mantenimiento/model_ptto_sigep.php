@@ -10,49 +10,19 @@ class Model_ptto_sigep extends CI_Model{
         $this->dist_tp = $this->session->userData('dist_tp');
     }
     
+    /// GET TOTAL PPTO ASIGNADOS Y PROGRAMADOS INSTITUCIONAL para el Anteproyecto
+    public function get_total_ppto_partidas_Institucional(){
+        $sql = "
+        SELECT SUM(presupuesto_inicial) ppto_inicial,SUM(presupuesto_asignado_sigep) ppto_asignado,SUM(presupuesto_programado_poa) ppto_programado,SUM(saldo_disponible) saldo_poa, SUM(presupuesto_certificado) ppto_certificado
+            FROM public.vista_balance_partidas_sigep_vs_poa_form5
+            WHERE gestion_fiscal = ".$this->gestion."";
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     /// GET LISTA PPTO X PARTIDAS ASIGNADOS Y PROGRAMADOS INSTITUCIONAL para el Anteproyecto
     public function get_lista_ppto_partidas_Institucional(){
-        /*$sql = "
-        SELECT 
-            COALESCE(asig.par_codigo, prog.par_codigo) AS par_codigo,
-            COALESCE(asig.par_nombre, prog.par_nombre, 'PARTIDA NO DEFINIDA') AS par_nombre,
-            
-            -- Sumatorias consolidadas a nivel nacional (Institucional)
-            COALESCE(asig.total_ppto_asignado, 0) AS ppto_asignado,
-            COALESCE(prog.total_ppto_programado, 0) AS ppto_programado,
-            
-            -- Cálculo matemático del Saldo Disponible Global Institucional
-            (COALESCE(asig.total_ppto_asignado, 0) - COALESCE(prog.total_ppto_programado, 0)) AS saldo_poa
-
-        FROM (
-            -- 📊 SUB-CONSULTA A: Sumatoria Nacional de Asignaciones (SIGEP)
-            SELECT 
-                par.par_codigo,
-                par.par_nombre,
-                SUM(pg.importe) AS total_ppto_asignado
-            FROM public.ptto_partidas_sigep pg
-            INNER JOIN public.partidas par ON par.par_id = pg.par_id
-            WHERE pg.g_id = ".$this->gestion."          -- 🎯 Filtrado exclusivo por la gestión 2027
-              AND pg.estado != 3          -- Excluye registros borrados lógicamente
-            GROUP BY par.par_codigo, par.par_nombre
-        ) asig
-
-        FULL OUTER JOIN (
-            -- 📊 SUB-CONSULTA B: Sumatoria Nacional de Programación Física (POA)
-            SELECT 
-                par.par_codigo,
-                par.par_nombre,
-                SUM(CASE WHEN i.ins_tipo_modificacion = 0 THEN i.ins_costo_total ELSE 0 END) AS total_ppto_programado
-            FROM public.insumos i
-            INNER JOIN public.partidas par ON par.par_id = i.par_id
-            INNER JOIN public.aperturaprogramatica apg ON apg.aper_id = i.aper_id
-            WHERE apg.aper_gestion = ".$this->gestion." -- 🎯 Relaciona de forma estricta el año en insumos
-              AND i.ins_tipo_modificacion = 0  -- Solo toma el presupuesto aprobado inicial
-            GROUP BY par.par_codigo, par.par_nombre
-        ) prog ON asig.par_codigo = prog.par_codigo
-
-        ORDER BY par_codigo ASC;";*/
-
         $sql = "
         SELECT par_id,par_codigo,par_nombre,SUM(presupuesto_inicial) ppto_inicial,SUM(presupuesto_asignado_sigep) ppto_asignado,SUM(presupuesto_programado_poa) ppto_programado,SUM(saldo_disponible) saldo_poa, SUM(presupuesto_certificado) ppto_certificado
             FROM public.vista_balance_partidas_sigep_vs_poa_form5
