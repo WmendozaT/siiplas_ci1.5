@@ -640,6 +640,7 @@ function cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_
 /*------ ACTUALIZANDO DATOS DE EVALUACION POA AL TRIMESTRE ACTUAL (EJECUCION)------*/
 $(function() {
   $(".update_evaluacion").on("click", function(e) {
+    //alert('hola mundo')
     document.getElementById("load_update_temp_general").style.display = 'block';
     e.preventDefault();
     var url = base+"index.php/ejecucion/cevaluacion_form2/update_evaluacion_oregional";
@@ -729,7 +730,7 @@ $(function() {
   }
 
 
-  /// Lista de Actividades Priorizados por cada Objetivo Regional FORM 2
+  /// Lista de Actividades Priorizados por cada Objetivo Regional FORM 2 2027
   //// ACTUALIZAR EVALUACION TRIMESTRAL
   function update_temp(dep_id) {
       $('#load_update').fadeIn(1000).html('<img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/><b>Actualizando Temporalidad de Operaciones .....</b>');

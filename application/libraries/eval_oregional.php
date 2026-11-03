@@ -592,7 +592,7 @@ class Eval_oregional extends CI_Controller{
 
 
     
-    /*-- UPDATE TEMPORALIDAD PARA OBJETIVOS REGIONAL POR REGIONAL --*/
+    /*-- UPDATE TEMPORALIDAD PARA OBJETIVOS REGIONAL POR REGIONAL 2027 (optimizar) --*/
     public function create_temporalidad_oregional($dep_id){
       $form2=$this->model_objetivogestion->get_list_ogestion_por_regional($dep_id);
       foreach($form2 as $row){

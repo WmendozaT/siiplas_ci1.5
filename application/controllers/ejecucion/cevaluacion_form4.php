@@ -110,10 +110,8 @@ class Cevaluacion_form4 extends CI_Controller {
                           <table id="dt_basic" class="table table-bordered table-striped table-hover" style="width:100%; margin-bottom: 0; min-width: 1500px; font-size: 11px; border-collapse: collapse;">
                             <thead>
                               <tr style="height: 42px; background: #475569; color: #ffffff; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.3px;">
-                                <th style="width:1%;"></th>
-                                <th style="width:10%;"title="REPORTE POA">REPORTE POA</th>
-                                <th style="width:10%;" title="REPORTE POA APROBADO">EJECUCION POA '.$this->gestion.'</th>
-                                <th style="width:5%;" title="ERROR EN EL POA"></th>
+                                <th style="width:2%;" title="REPORTE POA APROBADO">#</th>
+                                <th style="width:10%;" title="">EJECUCION POA '.$this->gestion.'</th>
                                 <th style="width:10%;" title="APERTURA PROGRAM&Aacute;TICA">CATEGORIA PROGRAM&Aacute;TICA</th>
                                 <th style="width:25%;" title="NOMBRE DEL PROYECTO DE INVERSI&Oacute;N">PROYECTO DE INVERSIÓN</th>
                                 <th style="width:10%;" title="C&Oacute;DIGO SISIN">C&Oacute;DIGO_SISIN</th>
@@ -256,7 +254,7 @@ class Cevaluacion_form4 extends CI_Controller {
           $componentes = $this->model_componente->lista_UnidadesResponsables_con_actividades($row['proy_id']);
           $nro++;
           $tabla.='
-          <tr style="height:35px;">
+          <tr style="height:40px;">
             <td title='.$row['proy_id'].'><center>'.$nro.'</center></td>
             <td>';
                 foreach($componentes as $rowc){
@@ -268,8 +266,6 @@ class Cevaluacion_form4 extends CI_Controller {
                 }
                 $tabla.='
             </td>
-            <td></td>
-            <td></td>
             <td><center>'.$row['aper_programa'].''.$row['proy_sisin'].''.$row['aper_actividad'].'</center></td>
             <td>'.$row['proy_nombre'].'</td>
             <td>'.$row['proy_sisin'].'</td>
@@ -324,8 +320,9 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
       <thead>
         <tr style="background: #334155; color: #ffffff; height: 32px;">
           <th style="width:8%; text-align: center; vertical-align: middle;">COD.</th>
-          <th style="width:72%; vertical-align: middle; padding-left: 10px;">UNIDAD RESPONSABLE A EVALUAR</th>
-          <th style="width:30%; text-align: center; vertical-align: middle;">ACCIONES</th>
+          <th style="width:62%; vertical-align: middle; padding-left: 10px;">UNIDAD RESPONSABLE A EVALUAR</th>
+          <th style="width:20%; text-align: center; vertical-align: middle;">ACCIONES</th>
+          <th style="width:20%; text-align: center; vertical-align: middle;">FORMULARIO</th>
         </tr>
       </thead>
       <tbody>';
@@ -346,6 +343,16 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
                 <!-- 🌟 AJUSTE AQUÍ: href cambiado por # y evento onclick para activar el Loading de pantalla completa -->
                 <a href="#" onclick="cargarFormularioEvaluacion(event, \''.$url_destino.'\', \''.addslashes($rowc['com_componente']).'\')" class="btn btn-xs btn-success btn-block" style="background: #16a34a; border: none; font-weight: bold; padding: 5px 0;" title="Ingresar a evaluar actividades">
                     <i class="fa fa-pencil-square-o"></i> FORMULARIO POA
+                </a>
+              </td>
+              <td style="text-align: center; vertical-align: middle; padding: 4px;">
+                <a href="javascript:abreVentana(\'' . site_url("eval/reporte_eval_poa/".$rowc['com_id']).'/'.$this->tmes.'\');" 
+                   title="FORMULARIO DE EVALUACIÓN POA (PDF)" 
+                   class="btn btn-sm btn-default" 
+                   style="font-weight: bold; background: #ffffff; border: 1px solid #cbd5e1; color: #334155; padding: 6px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s ease;"
+                   onmouseover="this.style.background=\'#f1f5f9\'; this.style.borderColor=\'#94a3b8\';"
+                   onmouseout="this.style.background=\'#ffffff\'; this.style.borderColor=\'#cbd5e1\';">
+                    <i class="fa fa-file-pdf-o text-danger" style="font-size: 13px;"></i> Form. N° 4 (Eval. POA.)
                 </a>
               </td>
             </tr>';
