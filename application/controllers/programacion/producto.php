@@ -1257,19 +1257,6 @@ class Producto extends CI_Controller {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     /// ==== MIGRACION EXCEL DE REQUERIMIENTOS GLOBAL - Formulario N° 5 / 2027
       public function valida_migracion_form5_consolidado() {
         ini_set('max_execution_time', 900); // 15 minutos máximos de procesamiento de CPU
@@ -1295,14 +1282,12 @@ class Producto extends CI_Controller {
         try {
             $archivoTipo = PHPExcel_IOFactory::identify($archivo);
             $lector      = PHPExcel_IOFactory::createReader($archivoTipo);
-            
             // OPTIMIZACIÓN DE MEMORIA: Ignoramos estilos gráficos pesados para no colapsar la RAM
             $lector->setReadDataOnly(true);
             
             $phpExcel    = $lector->load($archivo);
             $hoja        = $phpExcel->getSheet(0);
             $filasMax    = $hoja->getHighestRow();
-            
             // --- 1. VALIDACIÓN DE ESTRUCTURA METRICA (Columnas Max V = 22) ---
             $columnaMaxLetra = $hoja->getHighestDataColumn(); 
             $totalColumnas   = PHPExcel_Cell::columnIndexFromString($columnaMaxLetra);
@@ -1313,12 +1298,10 @@ class Producto extends CI_Controller {
                 return;
             }
 
-            // --- 2. VALIDACIÓN FILA POR FILA ---
            for ($i = 2; $i <= $filasMax; $i++) {
                 $prod_id = 0;
                 $par_id  = 0;
-                
-                // Extraer valores básicos de la fila activa según la imagen enviada
+
                 $cod_act       = trim($hoja->getCell('A' . $i)->getValue());
                 $partida       = trim($hoja->getCell('B' . $i)->getValue());
                 $requerimiento = trim($hoja->getCell('C' . $i)->getValue());
@@ -1329,9 +1312,6 @@ class Producto extends CI_Controller {
                 $total_raw     = $hoja->getCell('G' . $i)->getCalculatedValue();
                 $observacion   = trim($hoja->getCell('T' . $i)->getValue());
 
-                // ==========================================================================
-                // 🛠️ AJUSTADO: TOLERANCIA CERO A FILAS VACÍAS O CON RESIDUOS DE FORMATO
-                // ==========================================================================
                 if (empty($cod_act) && empty($partida) && empty($requerimiento) && (empty($total_raw) || floatval($total_raw) == 0)) {
                     
                     // Alerta institucional con la instrucción didáctica de limpieza
@@ -1340,8 +1320,6 @@ class Producto extends CI_Controller {
                     // Detiene el bucle por completo para no procesar hileras vacías inferiores
                     break; 
                 }
-
-                // 📋 REGLA 1: VALIDACIÓN DE CANTIDAD ENTERA (Sin decimales)
                 if ($cantidad_raw === NULL || trim($cantidad_raw) === '' || !is_numeric($cantidad_raw)) {
                     $errores[] = "Fila $i: La 'CANTIDAD' es obligatoria y debe ser numérica.";
                 } else {
@@ -1351,8 +1329,6 @@ class Producto extends CI_Controller {
                     }
                 }
                 $cantidad = intval($cantidad_raw);
-
-                // 📋 REGLA 2: VALIDACIÓN DE PRECIO UNITARIO (Máximo 2 decimales)
                 if ($precio_raw === NULL || trim($precio_raw) === '' || !is_numeric($precio_raw)) {
                     $errores[] = "Fila $i: El 'PRECIO UNITARIO' es obligatorio y debe ser numérico.";
                 } else {
@@ -1362,16 +1338,12 @@ class Producto extends CI_Controller {
                     }
                 }
                 $precio = round(floatval($precio_raw), 2);
-
-                // 📋 REGLA 3: VALIDACIÓN DEL COSTO TOTAL MATEMÁTICO (Cantidad * Precio)
                 $total_calculado = round(($cantidad * $precio), 2);
                 $total_archivo   = round(floatval($total_raw), 2);
 
                 if (abs($total_archivo - $total_calculado) > 0.05) {
                     $errores[] = "Fila $i: El 'PRECIO TOTAL' registrado ($total_raw) no coincide con la ecuación aritmética (Cantidad: $cantidad * Precio: $precio = $total_calculado).";
                 }
-
-                // Validación y alineación relacional con la actividad (Formulario N° 4)
                 if (!empty($cod_act)) {
                     $get_form4 = $this->model_producto->verif_form4_vigente_para_alineacion($com_id, $cod_act);
                     
@@ -1387,8 +1359,6 @@ class Producto extends CI_Controller {
                 } else {
                     $errores[] = "Fila $i: El 'CÓDIGO DE ACTIVIDAD' es obligatorio para enlazar físicamente el requerimiento.";
                 }
-
-                 // Validación de Partida
                 if (!empty($partida)) {
                     if (strlen($partida) != 5) {
                         $errores[] = "Fila $i: La 'PARTIDA' ($partida) debe tener exactamente 5 caracteres.";
@@ -1403,14 +1373,11 @@ class Producto extends CI_Controller {
                 } else {
                     $errores[] = "Fila $i: La 'PARTIDA' es obligatoria.";
                 }
-
-                // 📋 REGLA 4: VALIDACIÓN MÁSTER Y RESOLUCIÓN DE FÓRMULAS EN LOS 12 MESES (H hasta la S)
                 $suma_meses = 0;
                 $columnas_meses = array('H' => 1,'I' => 2,'J' => 3,'K' => 4,'L' => 5,'M' => 6,'N' => 7,'O' => 8,'P' => 9,'Q' => 10,'R' => 11,'S' => 12);
                 $meses_valores = array();
                 
                 foreach ($columnas_meses as $col => $mes_nro) {
-                    // 🛠️ REPARADO: getCalculatedValue() resuelve la fórmula de Excel (ej: =SUMA(), =5000/12) y extrae el resultado numérico puro
                     $celda_cruda = $hoja->getCell($col . $i)->getCalculatedValue();
                     $val_mes     = ($celda_cruda === NULL || trim($celda_cruda) === '') ? 0 : trim($celda_cruda);
                     
@@ -1423,8 +1390,6 @@ class Producto extends CI_Controller {
                     $suma_meses += $monto_mes;
                     $meses_valores[$mes_nro] = $monto_mes; 
                 }
-
-                // 📋 REGLA 5: COMPROBACIÓN DE COINCIDENCIA (Suma de meses == Costo Total)
                 if (abs($suma_meses - $total_archivo) > 0.05) { 
                     $errores[] = "Fila $i: La suma de la distribución mensual ($suma_meses) no cuadra con el PRECIO TOTAL ($total_archivo) de la celda G.";
                 }
@@ -1445,7 +1410,8 @@ class Producto extends CI_Controller {
                             'ins_gestion'             => $this->gestion,
                             'aper_id'                 => $get_unidad[0]['aper_id'], 
                             'com_id'                  => $get_unidad[0]['com_id'], 
-                            'form4_cod'               => intval($cod_act), 
+                            'form4_cod'               => intval($cod_act),
+                            'prod_id'                 => $prod_id,
                             'ins_mod'                 => 1, // Conmutador de registro insertado
                             'num_ip'                  => $this->input->ip_address(), 
                             'nom_ip'                  => gethostbyaddr($_SERVER['REMOTE_ADDR'])
@@ -1456,33 +1422,26 @@ class Producto extends CI_Controller {
             }
 
             if (empty($errores) && count($data_insertar) > 0) {
-                
-                // Levantamos los muros de control transaccional para aislar fallas de presupuesto
                 $this->db->trans_start(); 
                 $filas_insertadas_conteo = 0;
-
                 foreach ($data_insertar as $registro) {
+                    // Extraemos el prod_id específico que guardamos para este registro concreto
+                    $prod_id_fila = $registro['maestro']['prod_id'];
                     
-                    // 🛠️ REPARADO: Se inserta únicamente la estructura plana del sub-arreglo 'maestro'
-                    $this->db->insert('insumos', $registro['maestro']);
-                    
-                    // Recuperamos el ID autogenerado asignado por la secuencia en Postgres
-                    $ins_id = $this->db->insert_id();
+                    // Opcional: Si el campo 'prod_id' no existe en tu tabla 'insumos', lo removemos del array 
+                    // justo antes de insertar para que CodeIgniter no lance un error de columna inexistente
+                    unset($registro['maestro']['prod_id']);
 
-                    /*-----------------------------------------------*/
-                    // B. Registro de la alineación relacional en la tabla _insumoproducto
+
+                    $this->db->insert('insumos', $registro['maestro']);
+                    $ins_id = $this->db->insert_id();
                     $data_to_store2 = array(
-                        'prod_id' => $prod_id, // Variable física relacional obtenida en la validación
+                        'prod_id' => $prod_id_fila, // Variable física relacional obtenida en la validación
                         'ins_id'  => $ins_id
                     );
                     $this->db->insert('_insumoproducto', $data_to_store2);
-                    /*---------------------------------------------*/
-                    
-                    /*------------ REGISTRO DE LA TEMPORALIDAD ---------*/
-                    // 🛠️ REPARADO: Se recorre la colección real 'meses' usando $m_id para no pisar el iterador superior $i
                     for ($m_id = 1; $m_id <= 12; $m_id++) {
                         $pfin = isset($registro['meses'][$m_id]) ? $registro['meses'][$m_id] : 0;
-                        
                         if ($pfin != 0) {
                             $data_to_store4 = array( 
                                 'ins_id'  => $ins_id,          // Id Insumo maestro correlativo
@@ -1493,14 +1452,9 @@ class Producto extends CI_Controller {
                             $this->db->insert('temporalidad_prog_insumo', $data_to_store4);
                         }
                     }
-                    
                     $filas_insertadas_conteo++;
                 }
-
-                // Cerramos e indicamos a CodeIgniter que evalúe el estatus de las inserciones
                 $this->db->trans_complete();
-
-                // Si PostgreSQL detecta un desbordamiento numérico o violación de tope, aplica Rollback total
                 if ($this->db->trans_status() === FALSE) {
                     echo json_encode(array(
                         'status'    => 'error', 
@@ -1509,8 +1463,6 @@ class Producto extends CI_Controller {
                     ));
                     return;
                 }
-
-                // 🌟 ÉXITO ABSOLUTO: Despachamos el payload esperado por tu $.ajax en form4.js
                 echo json_encode(array(
                     'status'           => 'success',
                     'respuesta'        => 'correcto',
@@ -1519,7 +1471,6 @@ class Producto extends CI_Controller {
                 ));
 
             } else {
-                // Si la colección de errores contiene advertencias estructurales, frena e informa al usuario
                 echo json_encode(array(
                     'status'    => 'error',
                     'respuesta' => 'error',
@@ -1529,7 +1480,6 @@ class Producto extends CI_Controller {
             }
 
         } catch (Exception $e) {
-            // Captura forense de desbordamientos de memoria del motor de PHPExcel
             echo json_encode(array(
                 'status'    => 'error', 
                 'respuesta' => 'error', 
