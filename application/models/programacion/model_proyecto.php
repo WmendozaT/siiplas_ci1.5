@@ -1248,6 +1248,15 @@ class Model_proyecto extends CI_Model{
         return $query->result_array();
     }
 
+    /*-------- LISTA POA con SALDO (para el ajuste Dashboard) 2027 --------*/
+    public function lista_poa_consolidado_con_saldos($dist_id){
+        $sql = 'SELECT *
+                from fn_lista_poa_nacional('.$this->gestion.')
+                where dist_id='.$dist_id.' and (ppto_saldo>1 or ppto_saldo<0)';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     /*-------- LISTA OPERACION DE FUNCIONAMIENTO - GASTO CORRIENTE POR REGIONAL --------*/
     public function list_gasto_corriente_regional($dep_id){
         $sql = 'select *

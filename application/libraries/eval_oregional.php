@@ -194,8 +194,8 @@ class Eval_oregional extends CI_Controller{
                     <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (II) TRIMESTRE</th>
                     <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (III) TRIMESTRE</th>
                     <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (IV) TRIMESTRE</th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">% CUMP. AL TRIMESTRE</th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">% CUMP. A LA GESTIÓN</th>
+                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. AL TRIMESTRE</th>
+                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. A LA GESTIÓN</th>
                     <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
                     <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
                   </tr>
@@ -254,7 +254,7 @@ class Eval_oregional extends CI_Controller{
 
                     $tabla.='
                       <tr style="font-size: 10px;" bgcolor='.$color.'>
-                        <td style="width:1%; height:10px;" align=center title='.$row['pog_id'].'>'.$nro_ope.'</td>
+                        <td style="width:1%; height:10px;" align=center title='.$row['pog_id'].'>'.$nro_ope.' - '.$row['or_tp'].'</td>
                         <td style="width:1.5%; font-size: 17px; color:blue" align="center"><b>'.$row['og_codigo'].'</b></td>
                         <td style="width:1.5%; font-size: 17px;" align="center" bgcolor="#f1eeee" title='.$row['or_id'].'><b>'.$row['or_codigo'].'</b></td>
                         <td style="width:11%;">'.$row['or_objetivo'].'</td>
@@ -685,7 +685,7 @@ class Eval_oregional extends CI_Controller{
 
     }
 
-    //// GENERA TEMPORALIDAD FORM 2 (GASTO CORRIENTE)
+    //// GENERA TEMPORALIDAD FORM 2 (GASTO CORRIENTE) a eliminar
     public function Genera_temporalidad_GastoCorriente($row){
       //echo $row['og_id'].'/'.$row['or_id'].'.-  '.$row['og_codigo'].'.'.$row['or_codigo'].'---'.$row['indi_id'].'<br>';
         if($row['indi_id']==1 || $row['indi_id']==3){
@@ -772,8 +772,82 @@ class Eval_oregional extends CI_Controller{
 
 
 
+    //// Lista de Actividades Priorizados a la Operacion 2027 (Gasto Corriente)
+    public function get_mis_form4_priorizados_x_oregional($detalle_oregional){
+      $tabla='<script src = "'.base_url().'mis_js/programacion/programacion/tablas.js"></script>';
+      $list_form4_priorizados=$this->model_producto->lista_form4_priorizados_x_form2($detalle_oregional[0]['or_id']);
 
-
+      $tabla.='
+          <div class="table-responsive">
+            <table id="dt_basic" class="table table-bordered" border=0.2 style="width:100%;">
+              <thead>
+                <tr style="font-size: 11px;" bgcolor="#eceaea" >
+                  <th style="width:1%;height:10px; text-align: center">#</th>
+                  <th style="width:4%; text-align: center"><b>PROGRAMA</b></th>
+                  <th style="width:8%; text-align: center"><b>GASTO CORRIENTE</b></th>
+                  <th style="width:8%; text-align: center"><b>UNIDAD RESPONSABLE</b></th>
+                  <th style="width:2%; text-align: center">COD. ACT.</th>
+                  <th style="width:8%; text-align: center">ACTIVIDAD</th>
+                  <th style="width:7%; text-align: center">RESPONSABLE</th>
+                  <th style="width:8%; text-align: center">INDICADOR</th>
+                  <th style="width:3%; text-align: center">META</th>
+                  <th style="width:2.3%; text-align: center">ENE.</th>
+                  <th style="width:2.3%; text-align: center">FEB.</th>
+                  <th style="width:2.3%; text-align: center">MAR.</th>
+                  <th style="width:2.3%; text-align: center">ABR.</th>
+                  <th style="width:2.3%; text-align: center">MAY.</th>
+                  <th style="width:2.3%; text-align: center">JUN.</th>
+                  <th style="width:2.3%; text-align: center">JUL.</th>
+                  <th style="width:2.3%; text-align: center">AGO.</th>
+                  <th style="width:2.3%; text-align: center">SEPT.</th>
+                  <th style="width:2.3%; text-align: center">OCT.</th>
+                  <th style="width:2.3%; text-align: center">NOV.</th>
+                  <th style="width:2.3%; text-align: center">DIC.</th>
+                  <th style="width:7%; text-align: center">MEDIO DE VERIFICACIÓN</th>
+                </tr>
+              </thead>
+              <tbody>';
+              $nro=0;$suma_meta=0;
+              foreach($list_form4_priorizados as $row){
+                $nro++;
+                $suma_meta=$suma_meta+$row['prod_meta'];
+                $tp_indi='';
+                if($row['indi_id']==2){
+                  $tp_indi='%';
+                }
+                $tabla.='
+                <tr style="font-size: 10.5px;">
+                  <td style="width:1%;">'.$nro.'</td>
+                  <td style="width:4%;" bgcolor="#f9fdfc"><b>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</b></td>
+                  <td style="width:8%;" bgcolor="#f9fdfc"><b>'.$row['tipo'].' '.$row['proy_nombre'].' '.$row['abrev'].'</b></td>
+                  <td style="width:8%;" bgcolor="#f9fdfc"><b>'.$row['tipo_subactividad'].' '.$row['com_componente'].'</b></td>
+                  <td style="width:2%; text-align:center; font-size: 12px;"><b>'.$row['prod_cod'].'</b></td>
+                  <td style="width:8%;">'.$row['prod_producto'].'</td>
+                  <td style="width:7%;">'.$row['prod_unidades'].'</td>
+                  <td style="width:8%;">'.$row['prod_indicador'].'</td>
+                  <td style="width:3%; text-align:center; font-size: 12px;"><b>'.round($row['prod_meta'],2).''.$tp_indi.'</b></td>';
+                  for ($i=1; $i <=12; $i++) { 
+                    $tabla.='
+                    <td style="width:2.3; font-size: 11px;"><b>
+                    P : '.round($row['m'.$i],2).''.$tp_indi.'<br>
+                    E : '.round($row['ejec_m'.$i],2).''.$tp_indi.'
+                    </b></td>';
+                  }
+                $tabla.='
+                  <td style="width:7%;">'.$row['prod_fuente_verificacion'].'</td>
+                </tr>';
+              }
+        $tabla.='
+              </tbody>
+              <tr>
+                <td style="height:10px;"colspan=8 align=right><b>META PRIORIZADO : </b></td>
+                <td style="width:2%; height:5px; font-size:13px;" align=right><b>'.round($suma_meta,2).''.$tp_indi.'</b></td>
+                <td colspan=13></td>
+              </tr>
+            </table>
+        </div>';
+      return $tabla;
+    }
 
 
 
@@ -781,167 +855,167 @@ class Eval_oregional extends CI_Controller{
 
 
     //// LISTA DE ACTIVIDADES PRIORIZADOS POR OBJ REGIONAL
-    public function get_mis_form4_priorizados_x_oregional($or_id,$tp_rep){
-      /// tp rep 0: normal
-      /// tprep 1: reporte 
-      $tabla='';
-      $tab='';
-      $titulo='';
-      $detalle_oregional=$this->model_objetivoregion->get_objetivosregional($or_id);
-      $regional=$this->model_proyecto->get_departamento($detalle_oregional[0]['dep_id']);
+    // public function get_mis_form4_priorizados_x_oregional2($detalle_oregional,$tp_rep){
+    //   /// tp rep 0: normal
+    //   /// tprep 1: reporte 
+    //   $tabla='';
+    //   $tab='';
+    //   $titulo='';
+    //   //$detalle_oregional=$this->model_objetivoregion->get_objetivosregional($or_id);
+    //   $regional=$this->model_proyecto->get_departamento($detalle_oregional[0]['dep_id']);
 
-        $meta='';
-        if($detalle_oregional[0]['indi_id']==2){
-          $meta='%';
-        }
+    //     $meta='';
+    //     if($detalle_oregional[0]['indi_id']==2){
+    //       $meta='%';
+    //     }
 
-      if($tp_rep==0){
-        $tabla='<script src = "'.base_url().'mis_js/programacion/programacion/tablas.js"></script>';
-        $tab='id="dt_basic" class="table table-bordered" border=0.2 style="width:100%;"';
-        $size_th='font-size: 11px;';
-        $size_td='font-size: 10.5px;';
-        $size_meta='font-size: 16px;';
-      }
-      elseif($tp_rep==1){
-        $tab='cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;" align=center';
-        $size_th='font-size: 6.7px;';
-        $size_td='font-size: 6.5px;';
-        $size_meta='font-size: 7px;';
-        $titulo='
+    //   if($tp_rep==0){
+    //     $tabla='<script src = "'.base_url().'mis_js/programacion/programacion/tablas.js"></script>';
+    //     $tab='id="dt_basic" class="table table-bordered" border=0.2 style="width:100%;"';
+    //     $size_th='font-size: 11px;';
+    //     $size_td='font-size: 10.5px;';
+    //     $size_meta='font-size: 16px;';
+    //   }
+    //   elseif($tp_rep==1){
+    //     $tab='cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;" align=center';
+    //     $size_th='font-size: 6.7px;';
+    //     $size_td='font-size: 6.5px;';
+    //     $size_meta='font-size: 7px;';
+    //     $titulo='
 
-        <b style="font-family:Arial;font-size: 10px;height:10px;>ACTIVIDADES PRIORIZADOS</b><br>
-        <div style="font-family:Arial;font-size: 10px;height:8px;">
-          OBJ. REGIONAL ('.strtoupper($regional[0]['dep_departamento']).'): '.$detalle_oregional[0]['og_codigo'].'.'.$detalle_oregional[0]['or_codigo'].'. '.$detalle_oregional[0]['or_objetivo'].'<br>
-          META '.$this->gestion.' : '.round($detalle_oregional[0]['or_meta'],2).' '.$meta.'<br>
-        </div><br>';
-      }
+    //     <b style="font-family:Arial;font-size: 10px;height:10px;>ACTIVIDADES PRIORIZADOS</b><br>
+    //     <div style="font-family:Arial;font-size: 10px;height:8px;">
+    //       OBJ. REGIONAL ('.strtoupper($regional[0]['dep_departamento']).'): '.$detalle_oregional[0]['og_codigo'].'.'.$detalle_oregional[0]['or_codigo'].'. '.$detalle_oregional[0]['or_objetivo'].'<br>
+    //       META '.$this->gestion.' : '.round($detalle_oregional[0]['or_meta'],2).' '.$meta.'<br>
+    //     </div><br>';
+    //   }
 
-        $form4=$this->model_objetivoregion->get_lista_form_priorizados_x_oregional($or_id);
-        if(count($form4)!=0){
-            $tabla.='
-            '.$titulo.'
-            <div class="table-responsive">
-            <table '.$tab.'>
-              <thead>
-                <tr style="'.$size_th.'" bgcolor="#eceaea" >
-                  <th style="width:1%;height:10px; text-align: center">#</th>
-                  <th style="width:5%; text-align: center"><b>PROGRAMA</b></th>
-                  <th style="width:11%; text-align: center"><b>GASTO CORRIENTE / PROY. INVERSIÓN</b></th>
-                  <th style="width:9%; text-align: center"><b>UNIDAD RESPONSABLE</b></th>
-                  <th style="width:2%; text-align: center">COD. ACT.</th>
-                  <th style="width:11%; text-align: center">ACTIVIDAD</th>
-                  <th style="width:10%; text-align: center">RESULTADO</th>
-                  <th style="width:7%; text-align: center">RESPONSABLE</th>
-                  <th style="width:9%; text-align: center">INDICADOR</th>
-                  <th style="width:3%; text-align: center">META</th>
-                  <th style="width:2%; text-align: center">ENE.</th>
-                  <th style="width:2%; text-align: center">FEB.</th>
-                  <th style="width:2%; text-align: center">MAR.</th>
-                  <th style="width:2%; text-align: center">ABR.</th>
-                  <th style="width:2%; text-align: center">MAY.</th>
-                  <th style="width:2%; text-align: center">JUN.</th>
-                  <th style="width:2%; text-align: center">JUL.</th>
-                  <th style="width:2%; text-align: center">AGO.</th>
-                  <th style="width:2%; text-align: center">SEPT.</th>
-                  <th style="width:2%; text-align: center">OCT.</th>
-                  <th style="width:2%; text-align: center">NOV.</th>
-                  <th style="width:2%; text-align: center">DIC.</th>
-                  <th style="width:8%; text-align: center">MEDIO DE VERIFICACIÓN</th>
-                </tr>
-              </thead>
-              <tbody>';
+    //     $form4=$this->model_objetivoregion->get_lista_form_priorizados_x_oregional($or_id);
+    //     if(count($form4)!=0){
+    //         $tabla.='
+    //         '.$titulo.'
+    //         <div class="table-responsive">
+    //         <table '.$tab.'>
+    //           <thead>
+    //             <tr style="'.$size_th.'" bgcolor="#eceaea" >
+    //               <th style="width:1%;height:10px; text-align: center">#</th>
+    //               <th style="width:5%; text-align: center"><b>PROGRAMA</b></th>
+    //               <th style="width:11%; text-align: center"><b>GASTO CORRIENTE / PROY. INVERSIÓN</b></th>
+    //               <th style="width:9%; text-align: center"><b>UNIDAD RESPONSABLE</b></th>
+    //               <th style="width:2%; text-align: center">COD. ACT.</th>
+    //               <th style="width:11%; text-align: center">ACTIVIDAD</th>
+    //               <th style="width:10%; text-align: center">RESULTADO</th>
+    //               <th style="width:7%; text-align: center">RESPONSABLE</th>
+    //               <th style="width:9%; text-align: center">INDICADOR</th>
+    //               <th style="width:3%; text-align: center">META</th>
+    //               <th style="width:2%; text-align: center">ENE.</th>
+    //               <th style="width:2%; text-align: center">FEB.</th>
+    //               <th style="width:2%; text-align: center">MAR.</th>
+    //               <th style="width:2%; text-align: center">ABR.</th>
+    //               <th style="width:2%; text-align: center">MAY.</th>
+    //               <th style="width:2%; text-align: center">JUN.</th>
+    //               <th style="width:2%; text-align: center">JUL.</th>
+    //               <th style="width:2%; text-align: center">AGO.</th>
+    //               <th style="width:2%; text-align: center">SEPT.</th>
+    //               <th style="width:2%; text-align: center">OCT.</th>
+    //               <th style="width:2%; text-align: center">NOV.</th>
+    //               <th style="width:2%; text-align: center">DIC.</th>
+    //               <th style="width:8%; text-align: center">MEDIO DE VERIFICACIÓN</th>
+    //             </tr>
+    //           </thead>
+    //           <tbody>';
             
-            $nro=0;$suma_meta=0;
-            foreach($form4 as $row){
-              $nro++;
-              $suma_meta=$suma_meta+$row['prod_meta'];
-              $tp_indi='';
-              if($row['indi_id']==2){
-                $tp_indi='%';
-              }
+    //         $nro=0;$suma_meta=0;
+    //         foreach($form4 as $row){
+    //           $nro++;
+    //           $suma_meta=$suma_meta+$row['prod_meta'];
+    //           $tp_indi='';
+    //           if($row['indi_id']==2){
+    //             $tp_indi='%';
+    //           }
 
-              $tabla.='
-              <tr style="'.$size_td.'">
-                <td style="width:1%; height:5px;" align=center title='.$row['prod_id'].' bgcolor="#f9fdfc">'.$nro.'</td>';
-                  if($row['tp_id']==1){
-                    $tabla.='
-                    <td style="width:5%;" bgcolor="#f9fdfc"><b>'.$row['aper_programa'].' '.$row['proy_sisin'].' '.$row['aper_actividad'].'</b></td>
-                    <td style="width:11%;" bgcolor="#f9fdfc"><b>'.$row['proy_nombre'].'</b></td>';
-                  }
-                  else{
-                    $tabla.='
-                    <td style="width:5%;" bgcolor="#f9fdfc"><b>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</b></td>
-                    <td style="width:11%;" bgcolor="#f9fdfc"><b>'.$row['tipo'].' '.$row['act_descripcion'].' - '.$row['abrev'].'</b></td>';
-                  }
-                $tabla.='
+    //           $tabla.='
+    //           <tr style="'.$size_td.'">
+    //             <td style="width:1%; height:5px;" align=center title='.$row['prod_id'].' bgcolor="#f9fdfc">'.$nro.'</td>';
+    //               if($row['tp_id']==1){
+    //                 $tabla.='
+    //                 <td style="width:5%;" bgcolor="#f9fdfc"><b>'.$row['aper_programa'].' '.$row['proy_sisin'].' '.$row['aper_actividad'].'</b></td>
+    //                 <td style="width:11%;" bgcolor="#f9fdfc"><b>'.$row['proy_nombre'].'</b></td>';
+    //               }
+    //               else{
+    //                 $tabla.='
+    //                 <td style="width:5%;" bgcolor="#f9fdfc"><b>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</b></td>
+    //                 <td style="width:11%;" bgcolor="#f9fdfc"><b>'.$row['tipo'].' '.$row['act_descripcion'].' - '.$row['abrev'].'</b></td>';
+    //               }
+    //             $tabla.='
                 
-                <td style="width:9%;" bgcolor="#f9fdfc"><b>'.$row['serv_cod'].' .- '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</b></td>
-                <td style="width:2%; '.$size_meta.'" align=center><b>'.$row['prod_cod'].'</b></td>
-                <td style="width:11%;">'.$row['prod_producto'].'</td>
-                <td style="width:10%;">'.$row['prod_resultado'].'</td>
-                <td style="width:7%;">'.$row['prod_unidades'].'</td>
-                <td style="width:9%;">'.$row['prod_indicador'].'</td>
-                <td style="width:3%; '.$size_meta.'" align=right><b>'.round($row['prod_meta'],2).''.$tp_indi.'</b></td>
-                '.$this->genera_temporalidad_form4($row['prod_id'],$tp_indi).'
-                <td style="width:8%;">'.$row['prod_fuente_verificacion'].'</td>
-              </tr>';
-            }
+    //             <td style="width:9%;" bgcolor="#f9fdfc"><b>'.$row['serv_cod'].' .- '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</b></td>
+    //             <td style="width:2%; '.$size_meta.'" align=center><b>'.$row['prod_cod'].'</b></td>
+    //             <td style="width:11%;">'.$row['prod_producto'].'</td>
+    //             <td style="width:10%;">'.$row['prod_resultado'].'</td>
+    //             <td style="width:7%;">'.$row['prod_unidades'].'</td>
+    //             <td style="width:9%;">'.$row['prod_indicador'].'</td>
+    //             <td style="width:3%; '.$size_meta.'" align=right><b>'.round($row['prod_meta'],2).''.$tp_indi.'</b></td>
+    //             '.$this->genera_temporalidad_form4($row['prod_id'],$tp_indi).'
+    //             <td style="width:8%;">'.$row['prod_fuente_verificacion'].'</td>
+    //           </tr>';
+    //         }
 
-            if($row['indi_id']==2){
-                $suma_meta=($suma_meta/count($form4));
-            }
+    //         if($row['indi_id']==2){
+    //             $suma_meta=($suma_meta/count($form4));
+    //         }
             
-            $tabla.='
-              </tbody>
-              <tr>
-                <td style="height:10px;"colspan=9 align=right><b>META PRIORIZADO : </b></td>
-                <td style="width:2%; height:5px;'.$size_meta.'" align=right><b>'.round($suma_meta,2).''.$tp_indi.'</b></td>
-                <td colspan=13></td>
-              </tr>
-            </table>
-            </div>';
-        }
-        else{
-          $tabla.='<br><br><b><font color=red>SIN ACTIVIDADES ALINEADOS A LA OPERACION</font></b>';
-        }
+    //         $tabla.='
+    //           </tbody>
+    //           <tr>
+    //             <td style="height:10px;"colspan=9 align=right><b>META PRIORIZADO : </b></td>
+    //             <td style="width:2%; height:5px;'.$size_meta.'" align=right><b>'.round($suma_meta,2).''.$tp_indi.'</b></td>
+    //             <td colspan=13></td>
+    //           </tr>
+    //         </table>
+    //         </div>';
+    //     }
+    //     else{
+    //       $tabla.='<br><br><b><font color=red>SIN ACTIVIDADES ALINEADOS A LA OPERACION</font></b>';
+    //     }
        
 
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
     /// arma temoralidad de formulario N 4
-    public function genera_temporalidad_form4($prod_id,$tp_indi){
-      $tabla='';
+    // public function genera_temporalidad_form4($prod_id,$tp_indi){
+    //   $tabla='';
 
-      if(count($this->model_producto->programado_producto($prod_id))!=0){
-        for ($i=1; $i <=12 ; $i++) { 
-          $mes_prog=$this->model_producto->get_mes_programado_form4($prod_id,$i);
-          $mes_ejec=$this->model_producto->verif_ope_evaluado_mes($prod_id,$i);
-          $mes=0;$mes_e=' 0';
+    //   if(count($this->model_producto->programado_producto($prod_id))!=0){
+    //     for ($i=1; $i <=12 ; $i++) { 
+    //       $mes_prog=$this->model_producto->get_mes_programado_form4($prod_id,$i);
+    //       $mes_ejec=$this->model_producto->verif_ope_evaluado_mes($prod_id,$i);
+    //       $mes=0;$mes_e=' 0';
 
-          if(count($mes_prog)!=0){
-            $mes=$mes_prog[0]['pg_fis'];
-          }
+    //       if(count($mes_prog)!=0){
+    //         $mes=$mes_prog[0]['pg_fis'];
+    //       }
 
-          if(count($mes_ejec)!=0){
-            $mes_e=$mes_ejec[0]['pejec_fis'];
-          }
+    //       if(count($mes_ejec)!=0){
+    //         $mes_e=$mes_ejec[0]['pejec_fis'];
+    //       }
 
-          $color='';
-          if($i<=($this->tmes*3)){
-            $color='#ecfbf9';
-          }
-          $tabla.='<td style="width:2%; text-align: right" bgcolor="'.$color.'"><b>P:'.round($mes,2).''.$tp_indi.'</b><br><b>E:'.round($mes_e,2).''.$tp_indi.'</b></td>';
-        }
-      }
-      else{
-        for ($i=1; $i <=12 ; $i++) { 
-          $tabla.='<td style="width:2%; text-align: right" > - </td>';
-        }
-      }
+    //       $color='';
+    //       if($i<=($this->tmes*3)){
+    //         $color='#ecfbf9';
+    //       }
+    //       $tabla.='<td style="width:2%; text-align: right" bgcolor="'.$color.'"><b>P:'.round($mes,2).''.$tp_indi.'</b><br><b>E:'.round($mes_e,2).''.$tp_indi.'</b></td>';
+    //     }
+    //   }
+    //   else{
+    //     for ($i=1; $i <=12 ; $i++) { 
+    //       $tabla.='<td style="width:2%; text-align: right" > - </td>';
+    //     }
+    //   }
 
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
 
 

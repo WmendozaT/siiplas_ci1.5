@@ -697,7 +697,7 @@ class Proyecto extends CI_Controller {
                     $ppto_variacion = $this->model_ptto_sigep->verif_variacion_ppto_x_UnidadOrganizacional(intval($proyecto[0]['aper_id']));
                     
                     // Evaluamos de manera matemática que la subconsulta agrupada RAM de PostgreSQL retorne cero variaciones
-                    if(intval($ppto_variacion[0]['total_variaciones']) === 0 || $proyecto[0]['proy_id']==17130){
+                    if(intval($ppto_variacion[0]['total_variaciones']) === 0 || $proyecto[0]['aper_id']==17130){
                         $tabla .= $membrete_unidad . '
                         <div class="alert alert-success text-center" style="border-left: 4px solid #16a34a; background-color: #f0fdf4; color: #15803d; padding: 15px; border-radius: 4px;">
                             <i class="fa fa-check-circle fa-2x" style="margin-bottom:8px; display:block;"></i>

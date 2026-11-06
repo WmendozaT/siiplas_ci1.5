@@ -10,6 +10,26 @@ class Model_ptto_sigep extends CI_Model{
         $this->dist_tp = $this->session->userData('dist_tp');
     }
     
+    // PPTO ASIGNADO - PPTO POA x regional 2027
+    function verif_saldo_ppto_distrital($dist_id){
+        $sql = 'SELECT 
+                    COALESCE(SUM(ppto_saldo), 0) AS ppto_saldo    
+                FROM fn_lista_poa_nacional('.$this->gestion.')
+                WHERE dist_id = '.$dist_id.'
+                GROUP BY dist_id';
+
+        $query = $this->db->query($sql);
+        
+        // 1. Verificamos si la consulta devolvió algún registro
+        if ($query->num_rows() > 0) {
+            $row = $query->row_array(); // Extrae solo la primera fila como arreglo asociativo
+            return (float) $row['ppto_saldo']; // Retorna el valor convertido a número decimal
+        }
+        
+        // 2. Si la distrital no existe o no tiene registros en la función, retornamos 0
+        return 0.0;
+    }
+
     /// GET TOTAL PPTO ASIGNADOS Y PROGRAMADOS INSTITUCIONAL para el Anteproyecto
     public function get_total_ppto_partidas_Institucional(){
         $sql = "
@@ -35,7 +55,7 @@ class Model_ptto_sigep extends CI_Model{
     }
 
 
-    /// GET LISTA PPTO X PARTIDAS ASIGNADOS Y PROGRAMADOS + (REVERTIDOS) 2026 (SE GENERA RAPIDO)
+    /// GET LISTA PPTO X PARTIDAS ASIGNADOS Y PROGRAMADOS + (REVERTIDOS) 2027 (SE GENERA RAPIDO)
     public function get_lista_ppto_partidas_UOrganizacional($aper_id){
         $sql = "
         SELECT 
@@ -145,7 +165,7 @@ class Model_ptto_sigep extends CI_Model{
 
 
 
-    /// GET  seguimiento A LA PARTIDA ASIGNADOS Y PROGRAMADOS + (REVERTIDOS) 2026 (POR UNIDAD)
+    /// GET  seguimiento A LA PARTIDA ASIGNADOS Y PROGRAMADOS + (REVERTIDOS) 2027 (POR UNIDAD)
     public function vista_get_seguimiento_partida_UOrganizacional($aper_id,$par_id){
         $sql = "
         SELECT 
@@ -1099,82 +1119,82 @@ class Model_ptto_sigep extends CI_Model{
 
 
     /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO POR REGIONAL PINVERSION (2023) VIGENTE-----*/
-    public function suma_ptto_regional_pi_aprobados($dep_id,$tp){
-        // 1 : PTO ASIGNADO
-        // 2 : PTO PROGRAMADO
-        if($tp==1){
-            $sql = 'select p.dep_id,SUM(partidas_asig.importe) as asignado
-                    FROM lista_poa_pinversion_nacional('.$this->gestion.') p
-                    Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
-                    where p.dep_id='.$dep_id.' and partidas_asig.estado!=\'3\'
-                    group by p.dep_id';
-        }
-        else{
-            $sql = 'select p.dep_id, SUM(i.ins_costo_total) as programado
-                    FROM lista_poa_pinversion_nacional('.$this->gestion.') p
-                    Inner Join insumos as i On i.aper_id=p.aper_id
-                    where p.dep_id='.$dep_id.' and i.ins_tipo_modificacion=\'0\'
-                    group by p.dep_id';
+    // public function suma_ptto_regional_pi_aprobados($dep_id,$tp){
+    //     // 1 : PTO ASIGNADO
+    //     // 2 : PTO PROGRAMADO
+    //     if($tp==1){
+    //         $sql = 'select p.dep_id,SUM(partidas_asig.importe) as asignado
+    //                 FROM lista_poa_pinversion_nacional('.$this->gestion.') p
+    //                 Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
+    //                 where p.dep_id='.$dep_id.' and partidas_asig.estado!=\'3\'
+    //                 group by p.dep_id';
+    //     }
+    //     else{
+    //         $sql = 'select p.dep_id, SUM(i.ins_costo_total) as programado
+    //                 FROM lista_poa_pinversion_nacional('.$this->gestion.') p
+    //                 Inner Join insumos as i On i.aper_id=p.aper_id
+    //                 where p.dep_id='.$dep_id.' and i.ins_tipo_modificacion=\'0\'
+    //                 group by p.dep_id';
 
-            /*$sql = 'select poa.dep_id,SUM(temp.ipm_fis) programado
-                    from lista_poa_pinversion_nacional('.$this->gestion.') poa
-                    Inner Join _componentes as c On c.pfec_id=poa.pfec_id
-                    Inner Join _productos as prod On prod.com_id=c.com_id
-                    Inner Join _insumoproducto as insp On insp.prod_id=prod.prod_id
-                    Inner Join temporalidad_prog_insumo as temp On temp.ins_id=insp.ins_id
-                    where poa.dep_id='.$dep_id.' and prod.estado!=\'3\' 
-                    group by poa.dep_id';*/
-        }
+    //         /*$sql = 'select poa.dep_id,SUM(temp.ipm_fis) programado
+    //                 from lista_poa_pinversion_nacional('.$this->gestion.') poa
+    //                 Inner Join _componentes as c On c.pfec_id=poa.pfec_id
+    //                 Inner Join _productos as prod On prod.com_id=c.com_id
+    //                 Inner Join _insumoproducto as insp On insp.prod_id=prod.prod_id
+    //                 Inner Join temporalidad_prog_insumo as temp On temp.ins_id=insp.ins_id
+    //                 where poa.dep_id='.$dep_id.' and prod.estado!=\'3\' 
+    //                 group by poa.dep_id';*/
+    //     }
     
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO INSTITUCIONAL GASTO CORRIENTE (2023) VIGENTE-----*/
-    public function suma_ptto_institucional($tp){
-        // 1 : PTO ASIGNADO
-        // 2 : PTO PROGRAMADO
-        if($tp==1){
-            $sql = 'select SUM(partidas_asig.importe) as asignado
-                    FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
-                    Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
-                    and partidas_asig.estado!=\'3\'';
-        }
-        else{
-            $sql = 'select SUM(i.ins_costo_total) as programado
-                    FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
-                    Inner Join insumos as i On i.aper_id=p.aper_id
-                    where i.ins_tipo_modificacion=\'0\'';
-        }
+    // public function suma_ptto_institucional($tp){
+    //     // 1 : PTO ASIGNADO
+    //     // 2 : PTO PROGRAMADO
+    //     if($tp==1){
+    //         $sql = 'select SUM(partidas_asig.importe) as asignado
+    //                 FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
+    //                 Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
+    //                 and partidas_asig.estado!=\'3\'';
+    //     }
+    //     else{
+    //         $sql = 'select SUM(i.ins_costo_total) as programado
+    //                 FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
+    //                 Inner Join insumos as i On i.aper_id=p.aper_id
+    //                 where i.ins_tipo_modificacion=\'0\'';
+    //     }
     
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*----- MONTO PRESUPUESTO ASIGNADO Y PROGRAMADO POR REGIONAL GASTO CORRIENTE (2023) VIGENTE-----*/
-    public function suma_ptto_regional($dep_id,$tp){
-        // 1 : PTO ASIGNADO
-        // 2 : PTO PROGRAMADO
-        if($tp==1){
-            $sql = 'select p.dep_id,SUM(partidas_asig.importe) as asignado
-                    FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
-                    Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
-                    where p.dep_id='.$dep_id.' and partidas_asig.estado!=\'3\'
-                    group by p.dep_id';
-        }
-        else{
-            $sql = 'select p.dep_id, SUM(i.ins_costo_total) as programado
-                    FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
-                    Inner Join insumos as i On i.aper_id=p.aper_id
-                    where p.dep_id='.$dep_id.' and i.ins_estado!=\'3\' and i.ins_tipo_modificacion=\'0\'
-                    group by p.dep_id';
-        }
+    // public function suma_ptto_regional($dep_id,$tp){
+    //     // 1 : PTO ASIGNADO
+    //     // 2 : PTO PROGRAMADO
+    //     if($tp==1){
+    //         $sql = 'select p.dep_id,SUM(partidas_asig.importe) as asignado
+    //                 FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
+    //                 Inner Join ptto_partidas_sigep as partidas_asig On partidas_asig.aper_id=p.aper_id
+    //                 where p.dep_id='.$dep_id.' and partidas_asig.estado!=\'3\'
+    //                 group by p.dep_id';
+    //     }
+    //     else{
+    //         $sql = 'select p.dep_id, SUM(i.ins_costo_total) as programado
+    //                 FROM lista_poa_gastocorriente_nacional('.$this->gestion.') p
+    //                 Inner Join insumos as i On i.aper_id=p.aper_id
+    //                 where p.dep_id='.$dep_id.' and i.ins_estado!=\'3\' and i.ins_tipo_modificacion=\'0\'
+    //                 group by p.dep_id';
+    //     }
     
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*-------- Get Partida insumos programados por partida -------*/
@@ -1491,20 +1511,20 @@ class Model_ptto_sigep extends CI_Model{
 
 ///// ====== DISTRIBUCION DE PPTO APROBADO POR DISTRITAL
     /*-------- LISTA DE UNIDADES QUE TIENEN PPTO DISPONIBLE A PROGRAMAR (DASHBOARD) A NIVEL DISTRITAL --------*/
-    public function lista_unidades_con_saldo_a_distribuir($dep_id,$dist_id){
-        if($dep_id==2){ /// Regional La paz
-            $sql = 'select *
-                from lista_ppto_poa_nacional('.$this->gestion.')
-                where dep_id='.$dep_id.' and (saldo>\'2\' or saldo<\'0\') ';
-        }
-        else{
-            $sql = 'select *
-                from lista_ppto_poa_nacional('.$this->gestion.')
-                where dist_id='.$dist_id.' and (saldo>\'2\' or saldo<\'0\') ';
-        }
+    // public function lista_unidades_con_saldo_a_distribuir($dep_id,$dist_id){
+    //     if($dep_id==2){ /// Regional La paz
+    //         $sql = 'select *
+    //             from lista_ppto_poa_nacional('.$this->gestion.')
+    //             where dep_id='.$dep_id.' and (saldo>\'2\' or saldo<\'0\') ';
+    //     }
+    //     else{
+    //         $sql = 'select *
+    //             from lista_ppto_poa_nacional('.$this->gestion.')
+    //             where dist_id='.$dist_id.' and (saldo>\'2\' or saldo<\'0\') ';
+    //     }
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 }

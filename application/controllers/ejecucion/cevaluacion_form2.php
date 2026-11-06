@@ -211,9 +211,18 @@ class Cevaluacion_form2 extends CI_Controller {
           </div>
         </hr>';
 
+
+        $listado=$this->eval_oregional->get_mis_form4_priorizados_x_oregional($detalle_oregional);
+        if($detalle_oregional[0]['or_tp']==1){
+          $listado='Inversion or_id : '.$detalle_oregional[0]['or_id'];
+        }
+
+
+
+
         $result = array(
           'respuesta' => 'correcto',
-          'tabla'=>$this->eval_oregional->get_mis_form4_priorizados_x_oregional($or_id,0),
+          'tabla'=>$listado,
           'titulo'=>$titulo,
           'imprimir_act_priori'=>$boton_imprimir,
         );

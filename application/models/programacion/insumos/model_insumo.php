@@ -433,15 +433,7 @@ class Model_insumo extends CI_Model{
 
 
 
-
-
-
-
-    
-
-
-
-    /// lista de requerimientos (todos) en prog bolsas separado por cada programa
+    /// lista de requerimientos (todos) en prog bolsas separado por cada programa 2027
     function lista_requerimientos_inscritos_en_programas_bosas($aper_id,$com_id){
         $sql = 'SELECT p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre,
                 COALESCE(prog.mes1, 0) AS mes_1,
@@ -470,7 +462,7 @@ class Model_insumo extends CI_Model{
         return $query->result_array();
     }
 
-    /// lista total de requerimientos que estan en los prog bolsas (para exportar en excel)
+    /// lista total de requerimientos que estan en los prog bolsas (para exportar en excel) 2027
     function lista_total_requerimientos_inscritos_en_programas_bolsas_uresponsable($com_id){
         $sql = 'SELECT apg.aper_programa, apg.aper_descripcion,p.prod_id,p.uni_resp,p.prod_cod,i.ins_id,i.ins_cant_requerida,i.ins_costo_unitario,i.ins_costo_total,i.ins_detalle,i.ins_unidad_medida,i.ins_gestion,i.ins_estado,i.par_id,i.ins_observacion,i.aper_id,i.ins_monto_certificado,i.ins_tipo_modificacion,par.par_codigo,par.par_nombre,
                 COALESCE(prog.mes1, 0) AS mes_1,
@@ -513,7 +505,7 @@ class Model_insumo extends CI_Model{
     }
 
 
-    // LISTA CONSOLIDADO POR PARTIDAS PROGRAMAS BOLSAS 2026
+    // LISTA CONSOLIDADO POR PARTIDAS PROGRAMAS BOLSAS 2027
     function list_consolidado_partidas_programas_boLsas_uresponsable($aper_id,$com_id){
         $sql = 'SELECT 
                     par.par_id, 

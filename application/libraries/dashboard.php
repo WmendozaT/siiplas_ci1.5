@@ -30,8 +30,8 @@ class Dashboard extends CI_Controller{
         $this->gestion = $this->session->userData('gestion');
         $this->adm = $this->session->userData('adm');
         $this->rol = $this->session->userData('rol_id');
-       // $this->dist = $this->session->userData('dist');
         $this->dist_id = $this->session->userData('dist');
+        $this->dep_id = $this->session->userData('dep_id');
         //$this->dist_tp = $this->session->userData('dist_tp');
         $this->tmes = $this->session->userData('trimestre');
         $this->fun_id = $this->session->userData('fun_id');
@@ -1173,9 +1173,9 @@ class Dashboard extends CI_Controller{
     ///// popup para Ajustar Saldos
     public function popup_ajustar_saldos(){
         $popup_saldos='';
-            $ddep = $this->model_proyecto->dep_dist($this->dist_id);
+            $distrital = $this->model_proyecto->dep_dist($this->dist_id);
              if($this->conf_ajuste_poa==1){
-                if($this->verif_saldos_disponibles_distrital($this->dep_id,$this->dist_id)==1 & $this->dep_id!=10 & $this->gestion>2026){
+                if($this->model_ptto_sigep->verif_saldo_ppto_distrital($this->dist_id)!=0.00 & $this->gestion==2026 ){
                 
                     $popup_saldos = '
                         <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1">
@@ -1194,7 +1194,7 @@ class Dashboard extends CI_Controller{
                                         <div style="background-color: #fef2f2; border-left: 5px solid #ef4444; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
                                             <h5 style="color: #991b1b; margin-top: 0;">Hola, <b>'.$this->session->userdata('funcionario').'</b></h5>
                                             <p style="color: #7f1d1d; line-height: 1.6; margin-bottom: 0;">
-                                                La <b>'.strtoupper($ddep[0]['dist_distrital']).'</b> presenta saldos en su POA que deben ser ajustados o inscritos. 
+                                                La <b>'.strtoupper($distrital[0]['dist_distrital']).'</b> presenta saldos en su POA que deben ser ajustados o inscritos. 
                                                 Mientras no se regularice, las <b>CERTIFICACIONES POA</b> permanecerán inhabilitadas.
                                             </p>
                                         </div>
@@ -1204,7 +1204,7 @@ class Dashboard extends CI_Controller{
                                             <p style="font-weight: bold; color: #4b5563; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                                                 <i class="fa fa-list"></i> Unidades con saldos pendientes:
                                             </p>
-                                            '.$this->lista_unidades_con_saldo($this->dep_id, $this->dist_id).'
+                                            '.$this->lista_unidades_con_saldo($this->dist_id).'
                                         </div>
                                     </div>
 
@@ -1226,40 +1226,40 @@ class Dashboard extends CI_Controller{
     }
 
 /*----- VERIFICA SI EXISTE SALDO A DISTRBUIR (DASHBOARD) -----*/
-    public function verif_saldos_disponibles_distrital($dep_id,$dist_id){
-      $valor=0;
-      $ppto_asignado=0;
-      $ppto_programado=0;
+    // public function verif_saldos_disponibles_distrital($dep_id,$dist_id){
+    //   $valor=0;
+    //   $ppto_asignado=0;
+    //   $ppto_programado=0;
 
-      if($dep_id==2){ /// Regional La paz
-        $asignado=$this->model_ptto_sigep->suma_ptto_regional($dep_id,1);
-        $programado=$this->model_ptto_sigep->suma_ptto_regional($dep_id,2);
-      }
-      else{
-        $asignado=$this->model_ptto_sigep->suma_ptto_distrital($dist_id,1);
-        $programado=$this->model_ptto_sigep->suma_ptto_distrital($dist_id,2);
-      }
+    //   if($dep_id==2){ /// Regional La paz
+    //     $asignado=$this->model_ptto_sigep->suma_ptto_regional($dep_id,1);
+    //     $programado=$this->model_ptto_sigep->suma_ptto_regional($dep_id,2);
+    //   }
+    //   else{
+    //     $asignado=$this->model_ptto_sigep->suma_ptto_distrital($dist_id,1);
+    //     $programado=$this->model_ptto_sigep->suma_ptto_distrital($dist_id,2);
+    //   }
 
 
-      if(count($asignado)!=0){
-        $ppto_asignado=$asignado[0]['asignado'];
-      }
+    //   if(count($asignado)!=0){
+    //     $ppto_asignado=$asignado[0]['asignado'];
+    //   }
 
-      if(count($programado)!=0){
-        $ppto_programado=$programado[0]['programado'];
-      }
+    //   if(count($programado)!=0){
+    //     $ppto_programado=$programado[0]['programado'];
+    //   }
 
-      if(round(($ppto_asignado-$ppto_programado),2)>5 || round(($ppto_asignado-$ppto_programado),2)<0){ /// 
-        $valor=1;
-      }
+    //   if(round(($ppto_asignado-$ppto_programado),2)>5 || round(($ppto_asignado-$ppto_programado),2)<0){ /// 
+    //     $valor=1;
+    //   }
 
-      return $valor;
-    }
+    //   return $valor;
+    // }
 
 
     /*----- UNIDADES CON SALDOS A DISTRBUIR (DASHBOARD) -----*/
-    public function lista_unidades_con_saldo($dep_id, $dist_id) {
-    $unidades = $this->model_ptto_sigep->lista_unidades_con_saldo_a_distribuir($dep_id, $dist_id);
+    public function lista_unidades_con_saldo($dist_id) {
+    $unidades = $this->model_proyecto->lista_poa_consolidado_con_saldos($dist_id);
     $tabla = '';
 
     $tabla .= '
@@ -1284,8 +1284,8 @@ class Dashboard extends CI_Controller{
             <tr style="background-color: #1c7368; color: white;">
               <th style="padding: 10px; text-align: center; border: 1px solid #165a52;">#</th>
               <th style="padding: 10px; border: 1px solid #165a52;">UNIDAD ORGANIZACIONAL</th>
-              <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">PPTO. ASIGNADO</th>
-              <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">PPTO. PROGRAMADO</th>
+              <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">PPTO. VIGENTE</th>
+              <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">PPTO. POA</th>
               <th style="padding: 10px; text-align: right; border: 1px solid #165a52;">SALDO</th>
               <th style="padding: 10px; text-align: center; border: 1px solid #165a52;">AJUSTAR</th>
               <th style="padding: 10px; text-align: center; border: 1px solid #165a52;"></th>
@@ -1296,33 +1296,33 @@ class Dashboard extends CI_Controller{
     $nro = 0;
     foreach ($unidades as $row) {
         $nro++;
-        $bg_fila = ($row['saldo'] < 0) ? '#fff5f5' : '#f9fafb';
-        $color_texto = ($row['saldo'] < 0) ? '#c53030' : '#333';
+        $bg_fila = ($row['ppto_saldo'] < 0) ? '#fff5f5' : '#f9fafb';
+        $color_texto = ($row['ppto_saldo'] < 0) ? '#c53030' : '#333';
 
         $tabla .= '
         <tr style="background-color: '.$bg_fila.'; color: '.$color_texto.'; border-bottom: 1px solid #eee;">
             <td style="text-align: center; padding: 8px;">'.$nro.'</td>
             <td style="padding: 8px;">
-                <small style="color: #666; display: block; font-size: 9px;">'.$row['prog'].'</small>
+                <small style="color: #666; display: block; font-size: 9px;">'.$row['aper_programa'].'</small>
                 <b>'.$row['tipo'].' '.$row['proy_nombre'].'</b>
             </td>
-            <td style="text-align: right; padding: 8px;">'.number_format($row['asignado'], 2, ',', '.').'</td>
-            <td style="text-align: right; padding: 8px;">'.number_format($row['programado'], 2, ',', '.').'</td>
-            <td style="text-align: right; padding: 8px; font-weight: bold;">'.number_format($row['saldo'], 2, ',', '.').'</td>
+            <td style="text-align: right; padding: 8px;">'.number_format($row['ppto_asignado'], 2, ',', '.').'</td>
+            <td style="text-align: right; padding: 8px;">'.number_format($row['ppto_poa'], 2, ',', '.').'</td>
+            <td style="text-align: right; padding: 8px; font-weight: bold;">'.number_format($row['ppto_saldo'], 2, ',', '.').'</td>
             
             <!-- Icono Ajustar con Loading -->
             <td style="text-align: center; padding: 8px;">
                 <a href="javascript:void(0);" 
                    onclick="irFormulario(this, \''.site_url("mod/form5/".$row['proy_id']).'\')" 
                    class="btn-table-opt" title="AJUSTE POA">
-                    <img src="'.base_url().'assets/Iconos/page_edit.png" width="18" height="18"/>
+                    <img src="'.base_url().'assets/Iconos/page_edit.png" width="20" height="20"/>
                 </a>
             </td>
 
             <td style="text-align: center; padding: 8px;">
-                <a href="javascript:abreVentana(\''.site_url("proy/ptto_consolidado_comparativo/".$row['proy_id']).'\');" 
+                <a href="javascript:abreVentana(\''.site_url("prog/reporte_ptto_consolidado_comparativo_programa/".$row['proy_id']).'\');" 
                    class="btn-table-opt" title="COMPARATIVO">
-                    <img src="'.base_url().'assets/ifinal/requerimiento.png" width="18" height="18" />
+                    <img src="'.base_url().'assets/ifinal/requerimiento.png" width="20" height="20" />
                 </a>
             </td>
         </tr>';

@@ -202,10 +202,9 @@ class Model_objetivoregion extends CI_Model{
         return $query->result_array();
     }
 
-    /*---------- GET OBJETIVO REGIONAL --------------*/
+    /*---------- GET OBJETIVO REGIONAL 2027 --------------*/
     public function get_objetivosregional($or_id){
-        $sql = 'select 
-
+        $sql = 'SELECT 
                 oreg.or_id,
                 oreg.or_objetivo,
                 oreg.indi_id,
@@ -702,7 +701,7 @@ class Model_objetivoregion extends CI_Model{
 
 
     /*-- Get Lista de Actividades Priorizados --*/
-    public function get_lista_form_priorizados_x_oregional($or_id){
+/*    public function get_lista_form_priorizados_x_oregional($or_id){
         $sql = '
         select apg.*,p.*,ua.*,te.*,dist.*,tpsa.*,sa.*,pr.*
         from _productos pr
@@ -722,7 +721,7 @@ class Model_objetivoregion extends CI_Model{
         $query = $this->db->query($sql);
 
         return $query->result_array();
-    }
+    }*/
 
 
     //// REPORTE DE EVALUACION POA FORMUALRIO 2 - INSTITUCIONAL -----

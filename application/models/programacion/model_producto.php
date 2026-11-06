@@ -457,6 +457,19 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }
 
+
+    //// Lista formN4 priorizados por Operacion
+    function lista_form4_priorizados_x_form2($or_id){
+        $sql = ' SELECT *
+                 from get_formulario4_consolidado_nacional('.$this->gestion.')
+                 where or_id='.$or_id.' and prod_priori=1
+                 order by aper_programa, aper_actividad, prod_cod asc'; 
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
     /// lista POA Formulario N4 completo
     function lista_form4_x_regional_completo($dep_id,$tp_id){
         $sql = 'SELECT poa.*
@@ -548,13 +561,13 @@ class model_producto extends CI_Model {
     /*==================================================*/
 
     /*--------- VERIF MES EVALUADO-FORM 4 ---------*/
-    public function verif_ope_evaluado_mes($prod_id,$mes_id){
-        $sql = 'select *
-                from prod_ejecutado_mensual
-                where g_id='.$this->gestion.' and prod_id='.$prod_id.' and m_id='.$mes_id.'';
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    // public function verif_ope_evaluado_mes($prod_id,$mes_id){
+    //     $sql = 'select *
+    //             from prod_ejecutado_mensual
+    //             where g_id='.$this->gestion.' and prod_id='.$prod_id.' and m_id='.$mes_id.'';
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*===== AGREGAR PRODUCTO  EJECUTADO GESTION (Cumplido-En proceso) =====*/
     function add_prod_ejec_gest($id_prod,$gestion,$m_id,$ejecutado,$mverificacion,$observacion,$acciones){
@@ -643,13 +656,13 @@ class model_producto extends CI_Model {
     }
 
     /*------------------ GET PRODUCTO PROGRAMADO MES-------------------*/
-    public function get_mes_programado_form4($prod_id,$mes_id){ 
-        $sql = 'select *
-                from prod_programado_mensual
-                where prod_id='.$prod_id.' and m_id='.$mes_id.''; 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    // public function get_mes_programado_form4($prod_id,$mes_id){ 
+    //     $sql = 'select *
+    //             from prod_programado_mensual
+    //             where prod_id='.$prod_id.' and m_id='.$mes_id.''; 
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*------------------ SUMA PRODUCTO PROGRAMADO -------------------*/
     public function suma_programado_producto($prod_id,$gestion){ 

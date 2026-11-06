@@ -398,8 +398,13 @@ class User extends CI_Controller{
             $data['solicitudes_pass']=$this->dashboard->solicitudes_password();
             $data['popup_credenciales']=$this->dashboard->popup_credenciales_para_actualizar_contraseñas();
             ///------- Verificando Saldos
-            $data['popup_saldos']=$this->dashboard->popup_ajustar_saldos();
-
+            $data['popup_saldos']='';
+            // scr:1,cmg:2,lpz:3,cbba:4,oru:5,pts:6,tpz:7,unc:8,uyn:9,atc:10,tja:11,ycb:12,scz:13,vgr:14,cmr:15,ben:16,rbt:17,gya:18,pan:19,ofn:22
+            $distritales_excluidas =[3,5];
+            if ($this->tp_adm != 1 && !in_array($this->dist_id, $distritales_excluidas)) {
+                $data['popup_saldos'] = $this->dashboard->popup_ajustar_saldos();
+            }
+            
             $this->load->view('admin/dashboard',$data);
             
         } else{
