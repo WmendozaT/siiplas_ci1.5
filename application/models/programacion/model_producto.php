@@ -458,7 +458,7 @@ class model_producto extends CI_Model {
     }
 
 
-    //// Lista formN4 priorizados por Operacion
+    //// Lista formN4 priorizados por Operacion (Gasto Corriente) 2027
     function lista_form4_priorizados_x_form2($or_id){
         $sql = ' SELECT *
                  from get_formulario4_consolidado_nacional('.$this->gestion.')
@@ -469,6 +469,15 @@ class model_producto extends CI_Model {
         return $query->result_array();
     }
 
+    /* ----- Lista de Inversion alineados a la Operacion  or_tp=1 (todos Inversion de la regional)------*/
+    public function list_Inversion_todos_alineados_a_formN2($or_id){
+        $sql = 'select *
+                from f_lista_inversion_para_alineacion_a_form2('.$this->gestion.')
+                where or_id='.$or_id.'';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     /// lista POA Formulario N4 completo
     function lista_form4_x_regional_completo($dep_id,$tp_id){

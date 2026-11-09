@@ -1647,7 +1647,7 @@ class Certificacionpoa extends CI_Controller{
             $tabla.='
             </td>
             <td style="width: 20%;" align="center">
-                <qrcode value="'.$certpoa[0]['cpoa_codigo'].' '.$certpoa[0]['cpoa_cite'].'" style="border: none; width: 18mm; '.$color.'"></qrcode>
+                <qrcode value="DATA:'.trim($certpoa[0]['cpoa_codigo']).' '.trim($certpoa[0]['cpoa_cite']).'" style="border: none; width: 18mm; '.$color.'"></qrcode>
             </td>
           </tr>
           <tr>

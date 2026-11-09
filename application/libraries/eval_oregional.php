@@ -112,7 +112,229 @@ class Eval_oregional extends CI_Controller{
   
 
   //// FORMULARIO DE EVALUACION DE FORMULARIO 2 - REGIONAL ALINEADO A OBJETIVOS REGIONALES 2027 ajustando
-  public function ver_relacion_ogestion($dep_id){
+    public function ver_relacion_ogestion($dep_id){
+    $tabla='';
+    $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id);
+    $departamento=$this->model_proyecto->get_departamento($dep_id);
+    $trimestre=$this->model_evaluacion->trimestre();
+    $metas = $this->model_producto->tp_metas(); /// tp metas
+    $tabla.='
+      <input name="base" type="hidden" value="'.base_url().'">
+      <div class="jarviswidget well" id="wid-id-3" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+        <header>
+          <span class="widget-icon"> <i class="fa fa-comments"></i> </span>
+          <h2>...</h2>
+        </header>
+        <div>
+          <div class="jarviswidget-editbox">
+          </div>
+          <div class="widget-body">
+            <p>
+              <h2><b>EVALUACIÓN OPERACIONES '.strtoupper($departamento[0]['dep_departamento']).' </b> - '.$trimestre[0]['trm_descripcion'].' / '.$this->gestion.'</h2>
+              <br>
+                <a href="javascript:abreVentana(\''.site_url("").'/rep_oregional/'.$dep_id.'\');" title="REPORTE REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR OPERACIONES (Form N° 2)</b></a>
+                <a href="javascript:abreVentana(\''.site_url("").'/rep_eval_oregional/'.$dep_id.'\');" title="REPORTE EVALUACIÓN META REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR EVALUACIÓN (Form N° 2)</b></a>
+                <a href="#" data-toggle="modal" data-target="#modal_cumplimiento_grafico" class="btn btn-lg btn-default" name="'.$dep_id.'" onclick="nivel_cumplimiento_operaciones_grafico('.$dep_id.','.$this->tmes.');" title="NIVEL DE CUMPLIMIENTO DE OPERACIONES (GRAFICO)" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>DETALLE CUMPLIMIENTO (Form N° 2)</b></a>
+            </p>
+            <hr class="simple">
+            CALIFICACION
+            <hr class="simple">
+            <ul id="myTab1" class="nav nav-tabs bordered">';
+              $nro=0;
+              foreach($acp_regional as $row){
+                $nro++;
+                $activo='';
+                if($nro==1){
+                  $activo='class="active"';
+                }
+                $tabla.='
+                <li '.$activo.'>
+                  <a href="#s'.$nro.'" data-toggle="tab"><b>A. C. P.</b><span class="badge bg-color-green txt-color-white">'.$row['og_codigo'].'</span></a>
+                </li>';
+              }
+            $tabla.='
+            </ul>
+
+            <div id="myTabContent1" class="tab-content padding-10">';
+            $nro2=0;
+            foreach($acp_regional as $oge){
+              $lista_form2=$this->model_objetivoregion->list_form2_regional($oge['og_id'],$dep_id);
+              $nro2++;
+              $active='class="tab-pane fade"';
+              if($nro2==1){
+                $active='class="tab-pane fade in active"';
+              }
+
+              $tipo=''; $size='col col-5';
+              if($oge['indi_id']==2){
+                $tipo='%';
+                $size='col col-7';
+              }
+
+              $tabla.='
+              <div '.$active.' id="s'.$nro2.'">
+                <div class="row">
+                <form class="smart-form">
+                <legend><b>A.C.P. '.$oge['og_codigo'].'</b>.- '.$oge['og_objetivo'].'</legend>
+                <fieldset>
+                <table class="table table-bordered" border=0.2 style="width:100%;" id="datos">
+                  <thead>
+                  <tr style="font-size: 11px;">
+                    <th style="width:1%;height:10px;color:#FFF; text-align: center" bgcolor="#1c7368">#</th>
+                    <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. ACP.</b></th>
+                    <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. OPE.</b></th>
+                    <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">OPERACI&Oacute;N</th>
+                    <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">RESULTADO</th>
+                    <th style="width:10%;color:#FFF; text-align: center" bgcolor="#1c7368">INDICADOR</th>
+                    <th style="width:5%;color:#FFF; text-align: center" bgcolor="#1c7368">TP. INDI.</th>
+                    <th style="width:10%;color:#FFF; text-align: center" bgcolor="#1c7368">MEDIO VERIFICACI&Oacute;N</th>
+                    <th style="width:2%;color:#FFF; text-align: center" bgcolor="#1c7368">META</th>
+                    <th style="width:2%;color:#FFF; text-align: center" bgcolor="#1c7368">META ALINEADO</th>
+                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (I) TRIMESTRE</th>
+                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (II) TRIMESTRE</th>
+                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (III) TRIMESTRE</th>
+                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (IV) TRIMESTRE</th>
+                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. AL TRIMESTRE</th>
+                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. A LA GESTIÓN</th>
+                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
+                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
+                  </tr>
+                  </thead>
+                  <tbody>';
+                  $nro_ope=0;
+                  foreach($lista_form2 as $row){
+                    $meta='';
+                    if ($row['indi_id']==1 || $row['indi_id']==3) {
+                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']); //// suma metas trm4
+                    }
+                    elseif ($row['indi_id']==2) {
+                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']); //// nro
+                      $meta='%';
+                    }
+
+                    $tp_meta='ACUMULADO';
+                    if($row['tp_meta']==1){
+                      $tp_meta='RECURRENTE MENSUAL';
+                    }
+                    elseif($row['tp_meta']==5){
+                      $tp_meta='RECURRENTE TRIMESTRAL';
+                    }
+
+                    $color=''; $titulo='';$grafico='';
+                    $boton_ajustar_apriorizados='
+                        <center><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
+                        <br>AJUSTAR ALINEACIÓN </center>';
+
+                    if(count($metas_prior)!=0){
+                      if($row['indi_id']==1 || $row['indi_id']==2){
+                        $meta_priorizado=round($row['trm4'],2); /// suma trm4
+                      }
+                      else{
+                        $meta_priorizado=$row['nro']; /// nro
+                      }
+
+                      if(round($row['or_meta'],2)==$meta_priorizado){
+                        $boton_ajustar_apriorizados='<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
+                        $grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+                      }
+                      else{
+                        $boton_ajustar_apriorizados='
+                        <center><b>('.round($metas_prior[0]['meta_prog_actividades'],2).')</b><br><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
+                        <br>AJUSTAR ALINEACIÓN</center>';
+                      }
+                    }
+
+                    $nro_ope++;
+                    if($row['or_priorizado']==1){
+                      $titulo='OPERACION PRIORIZADO';
+                      $color='#e4f7f5';
+                    }
+
+                    $tabla.='
+                      <tr style="font-size: 10px;" bgcolor='.$color.'>
+                        <td style="width:1%; height:10px;" align=center title='.$row['pog_id'].'>'.$nro_ope.' - '.$row['or_tp'].'</td>
+                        <td style="width:1.5%; font-size: 17px; color:blue" align="center"><b>'.$row['og_codigo'].'</b></td>
+                        <td style="width:1.5%; font-size: 17px;" align="center" bgcolor="#f1eeee" title='.$row['or_id'].'><b>'.$row['or_codigo'].'</b></td>
+                        <td style="width:11%;">'.$row['or_objetivo'].'</td>
+                        <td style="width:11%;">'.$row['or_resultado'].'</td>
+                        <td style="width:10%;">'.$row['or_indicador'].'</td>
+                        <td style="width:5%;" title="'.$row['indi_id'].' -> '.$row['tp_meta'].'">
+                          <b>'.strtoupper($row['indi_descripcion']).'</b>';
+                          // if($row['indi_id']==2){
+                          //   $tabla.='
+                          //     <select class="form-control" id="tp_met" name="tp_met" style="width:100%; font-size:9px; color:blue; background-color: #e3fcf8;" title="SELECCIONE TIPO DE META" onchange="select_tp_meta(this.value,'.$row['or_id'].');">';
+                          //       foreach($metas as $rowm){ 
+                          //         if($rowm['mt_id']==$row['tp_meta']){
+                          //           $tabla.='<option value="'.$rowm['mt_id'].'" selected>'.$rowm['mt_tipo'].'</option>';
+                          //         }
+                          //         else{
+                          //           $tabla.='<option value="'.$rowm['mt_id'].'" >'.$rowm['mt_tipo'].'</option>';
+                          //         }
+                          //       }
+                          //       $tabla.='
+                          //     </select>';
+                          // }
+                        $tabla.='
+                          <font color=blue>'.$tp_meta.'</font>
+                        </td>
+                        <td style="width:10%;">'.$row['or_verificacion'].'</td>
+                        <td style="width:2%; font-size: 15px;" align=center title="'.$row['tp_meta'].'"><b>'.round($row['or_meta'],2).' '.$meta.'</b></td>
+                        <td style="width:2%;" align=center>'.$boton_ajustar_apriorizados.'</td>';
+                          $por='';
+                          if($row['or_tp']==1){
+                            $por='%';
+                          }
+
+                          for ($i=1; $i <=4 ; $i++) { 
+                            $tabla.='
+                              <td style="width:6%;" align=center>
+                                <table class="table table-bordered" border=0.2 style="width:100%;">
+                                  <tr>
+                                    <td style="width:50%;"><b>PROG.</b></td>
+                                    <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.round($row['trm'.$i],2).''.$por.'</b></td>
+                                  </tr>
+                                  <tr>
+                                    <td><b>EJEC.</b></td>
+                                    <td style="font-size: 12px; color:blue" align=right><b>'.round($row['e_trm'.$i],2).''.$por.'</b></td>
+                                  </tr>
+                                  <tr>
+                                    <td><b>%CUMP.</b></td>
+                                    <td style="font-size: 13px; color:blue" align=right><b>'.round($row['porc_cump_'.$i],2).'%</b></td>
+                                  </tr>
+                                </table>
+                            </td>';
+                          }
+
+                        $tabla.='
+                        <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.round($row['porc_cump_'.$this->tmes],2).' %</b></td>
+                        <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.round($row['trm_porc_ejec'.$this->tmes],2).' %</b></td>
+                        <td>
+                          <a href="#" data-toggle="modal" data-target="#modal_act_priorizados" style="font-size: 10px;" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="ver_actividades_priorizados('.$row['or_id'].','.$dep_id.');" title="VER MIS ACTIVIDADES PRIORIZADOS">ACT. PRIORIZADOS</a>
+                        </td>
+                        <td align=center>'.$grafico.'</td>
+                      </tr>';
+                  }
+                  $tabla.='
+                  </tbody>
+                </table>
+                </fieldset>
+                </form>
+              </div>
+              </div>';
+            }
+
+            $tabla.='
+            </div>
+          </div>
+        </div>
+      </div>';
+
+      return $tabla;
+    }
+
+
+
+  public function ver_relacion_ogestion2($dep_id){
     $tabla='';
     $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id);
     $departamento=$this->model_proyecto->get_departamento($dep_id);
@@ -205,10 +427,10 @@ class Eval_oregional extends CI_Controller{
                   foreach($lista_form2 as $row){
                     $meta='';
                     if ($row['indi_id']==1 || $row['indi_id']==3) {
-                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']);
+                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']); //// suma metas trm4
                     }
                     elseif ($row['indi_id']==2) {
-                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']);
+                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']); //// nro
                       $meta='%';
                     }
 
@@ -221,6 +443,7 @@ class Eval_oregional extends CI_Controller{
                     }
 
                     $color=''; $titulo='';$grafico='';
+                    //$calificacion='trab';
                     $calificacion=$this->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
                     
                     $boton_ajustar_apriorizados='
@@ -229,10 +452,10 @@ class Eval_oregional extends CI_Controller{
 
                     if(count($metas_prior)!=0){
                       if($row['indi_id']==1 || $row['indi_id']==2){
-                        $meta_priorizado=round($metas_prior[0]['meta_prog_actividades'],2);
+                        $meta_priorizado=round($metas_prior[0]['meta_prog_actividades'],2); /// suma trm4
                       }
                       else{
-                        $meta_priorizado=round($metas_prior[0]['nro'],2);
+                        $meta_priorizado=round($metas_prior[0]['nro'],2); /// nro
                       }
 
                       if(round($row['or_meta'],2)==$meta_priorizado){
@@ -853,170 +1076,58 @@ class Eval_oregional extends CI_Controller{
 
 
 
+    //// Lista de Proyectos Priorizados a la Operacion 2027 (Inversion todos de la regional)
+    public function get_mis_Inversion_priorizados_x_oregional($or_id){
+      $tabla='<script src = "'.base_url().'mis_js/programacion/programacion/tablas.js"></script>';
+      $list_form4_priorizados=$this->model_producto->list_Inversion_todos_alineados_a_formN2($or_id);
 
-    //// LISTA DE ACTIVIDADES PRIORIZADOS POR OBJ REGIONAL
-    // public function get_mis_form4_priorizados_x_oregional2($detalle_oregional,$tp_rep){
-    //   /// tp rep 0: normal
-    //   /// tprep 1: reporte 
-    //   $tabla='';
-    //   $tab='';
-    //   $titulo='';
-    //   //$detalle_oregional=$this->model_objetivoregion->get_objetivosregional($or_id);
-    //   $regional=$this->model_proyecto->get_departamento($detalle_oregional[0]['dep_id']);
-
-    //     $meta='';
-    //     if($detalle_oregional[0]['indi_id']==2){
-    //       $meta='%';
-    //     }
-
-    //   if($tp_rep==0){
-    //     $tabla='<script src = "'.base_url().'mis_js/programacion/programacion/tablas.js"></script>';
-    //     $tab='id="dt_basic" class="table table-bordered" border=0.2 style="width:100%;"';
-    //     $size_th='font-size: 11px;';
-    //     $size_td='font-size: 10.5px;';
-    //     $size_meta='font-size: 16px;';
-    //   }
-    //   elseif($tp_rep==1){
-    //     $tab='cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;" align=center';
-    //     $size_th='font-size: 6.7px;';
-    //     $size_td='font-size: 6.5px;';
-    //     $size_meta='font-size: 7px;';
-    //     $titulo='
-
-    //     <b style="font-family:Arial;font-size: 10px;height:10px;>ACTIVIDADES PRIORIZADOS</b><br>
-    //     <div style="font-family:Arial;font-size: 10px;height:8px;">
-    //       OBJ. REGIONAL ('.strtoupper($regional[0]['dep_departamento']).'): '.$detalle_oregional[0]['og_codigo'].'.'.$detalle_oregional[0]['or_codigo'].'. '.$detalle_oregional[0]['or_objetivo'].'<br>
-    //       META '.$this->gestion.' : '.round($detalle_oregional[0]['or_meta'],2).' '.$meta.'<br>
-    //     </div><br>';
-    //   }
-
-    //     $form4=$this->model_objetivoregion->get_lista_form_priorizados_x_oregional($or_id);
-    //     if(count($form4)!=0){
-    //         $tabla.='
-    //         '.$titulo.'
-    //         <div class="table-responsive">
-    //         <table '.$tab.'>
-    //           <thead>
-    //             <tr style="'.$size_th.'" bgcolor="#eceaea" >
-    //               <th style="width:1%;height:10px; text-align: center">#</th>
-    //               <th style="width:5%; text-align: center"><b>PROGRAMA</b></th>
-    //               <th style="width:11%; text-align: center"><b>GASTO CORRIENTE / PROY. INVERSIÓN</b></th>
-    //               <th style="width:9%; text-align: center"><b>UNIDAD RESPONSABLE</b></th>
-    //               <th style="width:2%; text-align: center">COD. ACT.</th>
-    //               <th style="width:11%; text-align: center">ACTIVIDAD</th>
-    //               <th style="width:10%; text-align: center">RESULTADO</th>
-    //               <th style="width:7%; text-align: center">RESPONSABLE</th>
-    //               <th style="width:9%; text-align: center">INDICADOR</th>
-    //               <th style="width:3%; text-align: center">META</th>
-    //               <th style="width:2%; text-align: center">ENE.</th>
-    //               <th style="width:2%; text-align: center">FEB.</th>
-    //               <th style="width:2%; text-align: center">MAR.</th>
-    //               <th style="width:2%; text-align: center">ABR.</th>
-    //               <th style="width:2%; text-align: center">MAY.</th>
-    //               <th style="width:2%; text-align: center">JUN.</th>
-    //               <th style="width:2%; text-align: center">JUL.</th>
-    //               <th style="width:2%; text-align: center">AGO.</th>
-    //               <th style="width:2%; text-align: center">SEPT.</th>
-    //               <th style="width:2%; text-align: center">OCT.</th>
-    //               <th style="width:2%; text-align: center">NOV.</th>
-    //               <th style="width:2%; text-align: center">DIC.</th>
-    //               <th style="width:8%; text-align: center">MEDIO DE VERIFICACIÓN</th>
-    //             </tr>
-    //           </thead>
-    //           <tbody>';
-            
-    //         $nro=0;$suma_meta=0;
-    //         foreach($form4 as $row){
-    //           $nro++;
-    //           $suma_meta=$suma_meta+$row['prod_meta'];
-    //           $tp_indi='';
-    //           if($row['indi_id']==2){
-    //             $tp_indi='%';
-    //           }
-
-    //           $tabla.='
-    //           <tr style="'.$size_td.'">
-    //             <td style="width:1%; height:5px;" align=center title='.$row['prod_id'].' bgcolor="#f9fdfc">'.$nro.'</td>';
-    //               if($row['tp_id']==1){
-    //                 $tabla.='
-    //                 <td style="width:5%;" bgcolor="#f9fdfc"><b>'.$row['aper_programa'].' '.$row['proy_sisin'].' '.$row['aper_actividad'].'</b></td>
-    //                 <td style="width:11%;" bgcolor="#f9fdfc"><b>'.$row['proy_nombre'].'</b></td>';
-    //               }
-    //               else{
-    //                 $tabla.='
-    //                 <td style="width:5%;" bgcolor="#f9fdfc"><b>'.$row['aper_programa'].' '.$row['aper_proyecto'].' '.$row['aper_actividad'].'</b></td>
-    //                 <td style="width:11%;" bgcolor="#f9fdfc"><b>'.$row['tipo'].' '.$row['act_descripcion'].' - '.$row['abrev'].'</b></td>';
-    //               }
-    //             $tabla.='
-                
-    //             <td style="width:9%;" bgcolor="#f9fdfc"><b>'.$row['serv_cod'].' .- '.$row['tipo_subactividad'].' '.$row['serv_descripcion'].'</b></td>
-    //             <td style="width:2%; '.$size_meta.'" align=center><b>'.$row['prod_cod'].'</b></td>
-    //             <td style="width:11%;">'.$row['prod_producto'].'</td>
-    //             <td style="width:10%;">'.$row['prod_resultado'].'</td>
-    //             <td style="width:7%;">'.$row['prod_unidades'].'</td>
-    //             <td style="width:9%;">'.$row['prod_indicador'].'</td>
-    //             <td style="width:3%; '.$size_meta.'" align=right><b>'.round($row['prod_meta'],2).''.$tp_indi.'</b></td>
-    //             '.$this->genera_temporalidad_form4($row['prod_id'],$tp_indi).'
-    //             <td style="width:8%;">'.$row['prod_fuente_verificacion'].'</td>
-    //           </tr>';
-    //         }
-
-    //         if($row['indi_id']==2){
-    //             $suma_meta=($suma_meta/count($form4));
-    //         }
-            
-    //         $tabla.='
-    //           </tbody>
-    //           <tr>
-    //             <td style="height:10px;"colspan=9 align=right><b>META PRIORIZADO : </b></td>
-    //             <td style="width:2%; height:5px;'.$size_meta.'" align=right><b>'.round($suma_meta,2).''.$tp_indi.'</b></td>
-    //             <td colspan=13></td>
-    //           </tr>
-    //         </table>
-    //         </div>';
-    //     }
-    //     else{
-    //       $tabla.='<br><br><b><font color=red>SIN ACTIVIDADES ALINEADOS A LA OPERACION</font></b>';
-    //     }
-       
-
-    //   return $tabla;
-    // }
-
-    /// arma temoralidad de formulario N 4
-    // public function genera_temporalidad_form4($prod_id,$tp_indi){
-    //   $tabla='';
-
-    //   if(count($this->model_producto->programado_producto($prod_id))!=0){
-    //     for ($i=1; $i <=12 ; $i++) { 
-    //       $mes_prog=$this->model_producto->get_mes_programado_form4($prod_id,$i);
-    //       $mes_ejec=$this->model_producto->verif_ope_evaluado_mes($prod_id,$i);
-    //       $mes=0;$mes_e=' 0';
-
-    //       if(count($mes_prog)!=0){
-    //         $mes=$mes_prog[0]['pg_fis'];
-    //       }
-
-    //       if(count($mes_ejec)!=0){
-    //         $mes_e=$mes_ejec[0]['pejec_fis'];
-    //       }
-
-    //       $color='';
-    //       if($i<=($this->tmes*3)){
-    //         $color='#ecfbf9';
-    //       }
-    //       $tabla.='<td style="width:2%; text-align: right" bgcolor="'.$color.'"><b>P:'.round($mes,2).''.$tp_indi.'</b><br><b>E:'.round($mes_e,2).''.$tp_indi.'</b></td>';
-    //     }
-    //   }
-    //   else{
-    //     for ($i=1; $i <=12 ; $i++) { 
-    //       $tabla.='<td style="width:2%; text-align: right" > - </td>';
-    //     }
-    //   }
-
-    //   return $tabla;
-    // }
-
+      $tabla.='
+          <div class="table-responsive">
+            <table id="dt_basic" class="table table-bordered" border=0.2 style="width:100%;">
+              <thead>
+                <tr style="font-size: 11px;" bgcolor="#eceaea" >
+                  <th style="width:1%;height:10px; text-align: center">#</th>
+                  <th style="width:10%; text-align: center"><b>CÓDIGO SISÍN</b></th>
+                  <th style="width:15%; text-align: center"><b>INVERSIÓN</b></th>
+                  <th style="width:2.2%; text-align: center">ENE.</th>
+                  <th style="width:2.2%; text-align: center">FEB.</th>
+                  <th style="width:2.2%; text-align: center">MAR.</th>
+                  <th style="width:2.2%; text-align: center">ABR.</th>
+                  <th style="width:2.2%; text-align: center">MAY.</th>
+                  <th style="width:2.2%; text-align: center">JUN.</th>
+                  <th style="width:2.2%; text-align: center">JUL.</th>
+                  <th style="width:2.2%; text-align: center">AGO.</th>
+                  <th style="width:2.2%; text-align: center">SEPT.</th>
+                  <th style="width:2.2%; text-align: center">OCT.</th>
+                  <th style="width:2.2%; text-align: center">NOV.</th>
+                  <th style="width:2.2%; text-align: center">DIC.</th>
+                </tr>
+              </thead>
+              <tbody>';
+              $nro=0;$suma_meta=0;
+              foreach($list_form4_priorizados as $row){
+                $nro++;
+                $tabla.='
+                <tr style="font-size: 10.5px;">
+                  <td style="width:1%;">'.$nro.'</td>
+                  <td style="width:10%;" bgcolor="#f9fdfc"><b>'.$row['proy_sisin'].'</b></td>
+                  <td style="width:15%;" bgcolor="#f9fdfc"><b>'.$row['proy_nombre'].'</b></td>';
+                  for ($i=1; $i <=12; $i++) { 
+                    $tabla.='
+                    <td style="width:2.2; font-size: 11px;"><b>
+                    P : '.number_format($row['mes'.$i], 2, ',', '.').'<br>
+                    E : '.number_format($row['e'.$i], 2, ',', '.').'
+                    </b></td>';
+                  }
+                $tabla.='
+                </tr>';
+              }
+        $tabla.='
+              </tbody>
+            </table>
+        </div>';
+      return $tabla;
+    }
 
 
 

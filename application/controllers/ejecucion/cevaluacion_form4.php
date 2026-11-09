@@ -391,16 +391,17 @@ public function lista_UnidadesResponsables_para_evaluacion($proy_id){
             redirect('form_ejec_pinversion/'.$com_id);
           }
           else{ ////// Gasto Corriente
-            if($this->lib_seguimientopoa->verif_eval()){
-              $data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente); /// formulario de Evaluacion poa
-            }
-            else{
-              $data['tabla'] = 'Formulario de Seguimiento'; //// Formulario de seguimiento Mensual
-            }
+            // if($this->lib_seguimientopoa->verif_eval()){
+            //   $data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente); /// formulario de Evaluacion poa
+            // }
+            // else{
+            //   $data['tabla'] = 'Formulario de Seguimiento'; //// Formulario de seguimiento Mensual
+            // }
+            $data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente); /// formulario de Evaluacion poa
             $this->load->view('admin/evaluacion/evaluacion_form4/form_evaluacion_form4', $data);
           }
         //$data['tabla'] = $this->lib_seguimientopoa->formulario_evaluacion_UnidadResponsable($componente); /// formulario de Evaluacion poa
-        $this->load->view('admin/evaluacion/evaluacion_form4/form_evaluacion_form4', $data);
+        //$this->load->view('admin/evaluacion/evaluacion_form4/form_evaluacion_form4', $data);
     }
 
 

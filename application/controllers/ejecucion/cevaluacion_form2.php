@@ -51,6 +51,8 @@ class Cevaluacion_form2 extends CI_Controller {
       }
 
       $this->load->view('admin/evaluacion/evaluacion_form2/menu_regionales', $data);
+      //echo $this->eval_oregional->ver_relacion_ogestion(1);
+
     }
 
 
@@ -212,9 +214,9 @@ class Cevaluacion_form2 extends CI_Controller {
         </hr>';
 
 
-        $listado=$this->eval_oregional->get_mis_form4_priorizados_x_oregional($detalle_oregional);
+        $listado=$this->eval_oregional->get_mis_form4_priorizados_x_oregional($detalle_oregional); /// lista de actividades 
         if($detalle_oregional[0]['or_tp']==1){
-          $listado='Inversion or_id : '.$detalle_oregional[0]['or_id'];
+          $listado=$this->eval_oregional->get_mis_Inversion_priorizados_x_oregional($detalle_oregional[0]['or_id']);
         }
 
 

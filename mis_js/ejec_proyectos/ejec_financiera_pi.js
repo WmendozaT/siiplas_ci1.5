@@ -671,6 +671,7 @@ $(document).ready(function() {
       
       dep_id=$(this).val();
 
+
       $('#lista_consolidado').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Información ...</div>');
       var url = base+"index.php/reporte_ejecucion_proyectos/creportejecucion_pi/get_detalle_ejecucion_ppto_pi_regional_institucional";
         var request;

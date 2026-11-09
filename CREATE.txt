@@ -2117,10 +2117,12 @@ ALTER TABLE public.vista_balance_partidas_sigep_vs_poa_form5
 ============================
 VISTA PARA ARMAR LA TEMPORALIDAD DE OPERACIONES:
 
+
 CREATE OR REPLACE FUNCTION public.v_trm_cumplimiento_consolidado_form2(p_gestion integer)
 RETURNS TABLE (
     or_id integer,
     prod_priori integer,
+    nro integer, -- Tercera columna esperada
     trm1 numeric, trm2 numeric, trm3 numeric, trm4 numeric,
     e_trm1 numeric, e_trm2 numeric, e_trm3 numeric, e_trm4 numeric,
     porc_cump_1 numeric, porc_cump_2 numeric, porc_cump_3 numeric, porc_cump_4 numeric,
@@ -2133,6 +2135,7 @@ BEGIN
         SELECT 
             f.or_id,
             f.prod_priori,
+            COUNT(f.or_id)::integer AS nro, -- Forzado a integer
             -- Metas Programadas Acumuladas
             SUM(f.m1 + f.m2 + f.m3) AS p1,
             SUM(f.m1 + f.m2 + f.m3 + f.m4 + f.m5 + f.m6) AS p2,
@@ -2148,32 +2151,41 @@ BEGIN
         GROUP BY f.or_id, f.prod_priori
     )
     SELECT 
-        t.or_id,
-        t.prod_priori,
-        -- Columnas Base (Convertidas a numeric para coincidir con la salida)
-        t.p1::numeric AS trm1, t.p2::numeric AS trm2, t.p3::numeric AS trm3, t.p4::numeric AS trm4,
-        t.e1::numeric AS e_trm1, t.e2::numeric AS e_trm2, t.e3::numeric AS e_trm3, t.e4::numeric AS e_trm4,
+        t.or_id::integer,
+        t.prod_priori::integer,
+        t.nro::integer, -- Se incluye en la posición 3 exacta
+        
+        -- Columnas Base (Mapeo exacto posicional)
+        t.p1::numeric, t.p2::numeric, t.p3::numeric, t.p4::numeric,
+        t.e1::numeric, t.e2::numeric, t.e3::numeric, t.e4::numeric,
 
         -- % Cumplimiento
-        ROUND((t.e1 / NULLIF(t.p1, 0) * 100)::numeric, 2) AS porc_cump_1,
-        ROUND((t.e2 / NULLIF(t.p2, 0) * 100)::numeric, 2) AS porc_cump_2,
-        ROUND((t.e3 / NULLIF(t.p3, 0) * 100)::numeric, 2) AS porc_cump_3,
-        ROUND((t.e4 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS porc_cump_4,
+        ROUND((t.e1 / NULLIF(t.p1, 0) * 100)::numeric, 2),
+        ROUND((t.e2 / NULLIF(t.p2, 0) * 100)::numeric, 2),
+        ROUND((t.e3 / NULLIF(t.p3, 0) * 100)::numeric, 2),
+        ROUND((t.e4 / NULLIF(t.p4, 0) * 100)::numeric, 2),
 
         -- % Participación de la Meta
-        ROUND((t.p1 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc1,
-        ROUND((t.p2 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc2,
-        ROUND((t.p3 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc3,
-        ROUND((t.p4 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc4,
+        ROUND((t.p1 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.p2 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.p3 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.p4 / NULLIF(t.p4, 0) * 100)::numeric, 2),
 
         -- % Participación de la Ejecución
-        ROUND((t.e1 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc_ejec1,
-        ROUND((t.e2 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc_ejec2,
-        ROUND((t.e3 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc_ejec3,
-        ROUND((t.e4 / NULLIF(t.p4, 0) * 100)::numeric, 2) AS trm_porc_ejec4
+        ROUND((t.e1 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.e2 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.e3 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.e4 / NULLIF(t.p4, 0) * 100)::numeric, 2)
     FROM totales_acumulados t;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
+
+
+
 
 ========================
 EJECUCION MENSUAL INVERSION 
@@ -2239,14 +2251,14 @@ ALTER TABLE public.vista_temporalidad_form5_ejec_unidad
 
 
 
-
+///// lista de proyectos alineados a formulario N° 2
 CREATE OR REPLACE FUNCTION public.f_lista_inversion_para_alineacion_a_form2(p_gestion integer)
 RETURNS TABLE (
     dep_id integer,
     aper_id integer,
     or_id integer,
     prod_priori integer,
-    proy_sisin varchar, -- Ajusta el tipo de dato si es necesario (ej. text)
+    proy_sisin varchar, 
     proy_nombre text,
     mes1 numeric, mes2 numeric, mes3 numeric, mes4 numeric, mes5 numeric, mes6 numeric,
     mes7 numeric, mes8 numeric, mes9 numeric, mes10 numeric, mes11 numeric, mes12 numeric,
@@ -2256,20 +2268,24 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT DISTINCT ON (poa.dep_id, poa.aper_id)
-        poa.dep_id,
-        poa.aper_id,
-        pr.or_id,
-        pr.prod_priori,
-        poa.proy_sisin::varchar,
-        poa.proy_nombre::text,
-        -- Programación mensual
-        temp.mes1::numeric, temp.mes2::numeric, temp.mes3::numeric, temp.mes4::numeric, temp.mes5::numeric, temp.mes6::numeric, 
-        temp.mes7::numeric, temp.mes8::numeric, temp.mes9::numeric, temp.mes10::numeric, temp.mes11::numeric, temp.mes12::numeric,
-        -- Ejecución mensual
-        COALESCE(ejec.e1, 0)::numeric AS e1, COALESCE(ejec.e2, 0)::numeric AS e2, COALESCE(ejec.e3, 0)::numeric AS e3, 
-        COALESCE(ejec.e4, 0)::numeric AS e4, COALESCE(ejec.e5, 0)::numeric AS e5, COALESCE(ejec.e6, 0)::numeric AS e6, 
-        COALESCE(ejec.e7, 0)::numeric AS e7, COALESCE(ejec.e8, 0)::numeric AS e8, COALESCE(ejec.e9, 0)::numeric AS e9, 
-        COALESCE(ejec.e10, 0)::numeric AS e10, COALESCE(ejec.e11, 0)::numeric AS e11, COALESCE(ejec.e12, 0)::numeric AS e12
+        poa.dep_id::integer,       -- Columna 1: Forzada a integer
+        poa.aper_id::integer,      -- Columna 2: Forzada a integer
+        pr.or_id::integer,         -- Columna 3: Forzada a integer
+        pr.prod_priori::integer,   -- Columna 4: Forzada a integer
+        poa.proy_sisin::varchar,   -- Columna 5: Forzada a varchar
+        poa.proy_nombre::text,     -- Columna 6: Forzada a text
+        
+        -- Programación mensual (Columnas 7 a 18)
+        COALESCE(temp.mes1, 0)::numeric,  COALESCE(temp.mes2, 0)::numeric,  COALESCE(temp.mes3, 0)::numeric, 
+        COALESCE(temp.mes4, 0)::numeric,  COALESCE(temp.mes5, 0)::numeric,  COALESCE(temp.mes6, 0)::numeric, 
+        COALESCE(temp.mes7, 0)::numeric,  COALESCE(temp.mes8, 0)::numeric,  COALESCE(temp.mes9, 0)::numeric, 
+        COALESCE(temp.mes10, 0)::numeric, COALESCE(temp.mes11, 0)::numeric, COALESCE(temp.mes12, 0)::numeric,
+        
+        -- Ejecución mensual (Columnas 19 a 30)
+        COALESCE(ejec.e1, 0)::numeric,    COALESCE(ejec.e2, 0)::numeric,    COALESCE(ejec.e3, 0)::numeric, 
+        COALESCE(ejec.e4, 0)::numeric,    COALESCE(ejec.e5, 0)::numeric,    COALESCE(ejec.e6, 0)::numeric, 
+        COALESCE(ejec.e7, 0)::numeric,    COALESCE(ejec.e8, 0)::numeric,    COALESCE(ejec.e9, 0)::numeric, 
+        COALESCE(ejec.e10, 0)::numeric,   COALESCE(ejec.e11, 0)::numeric,   COALESCE(ejec.e12, 0)::numeric
     FROM _productos pr
     INNER JOIN _componentes c ON c.com_id = pr.com_id
     INNER JOIN fn_lista_poa_nacional_sp(p_gestion) poa ON poa.pfec_id = c.pfec_id
