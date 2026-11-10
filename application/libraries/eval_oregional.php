@@ -204,11 +204,7 @@ class Eval_oregional extends CI_Controller{
                   $nro_ope=0;
                   foreach($lista_form2 as $row){
                     $meta='';
-                    if ($row['indi_id']==1 || $row['indi_id']==3) {
-                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']); //// suma metas trm4
-                    }
-                    elseif ($row['indi_id']==2) {
-                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']); //// nro
+                    if ($row['indi_id']==2) {
                       $meta='%';
                     }
 
@@ -225,7 +221,7 @@ class Eval_oregional extends CI_Controller{
                         <center><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
                         <br>AJUSTAR ALINEACIÓN </center>';
 
-                    if(count($metas_prior)!=0){
+                  
                       if($row['indi_id']==1 || $row['indi_id']==2){
                         $meta_priorizado=round($row['trm4'],2); /// suma trm4
                       }
@@ -239,15 +235,14 @@ class Eval_oregional extends CI_Controller{
                       }
                       else{
                         $boton_ajustar_apriorizados='
-                        <center><b>('.round($metas_prior[0]['meta_prog_actividades'],2).')</b><br><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
+                        <center><b>('.round($meta_priorizado,2).')</b><br><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
                         <br>AJUSTAR ALINEACIÓN</center>';
                       }
-                    }
+                    
 
                     $nro_ope++;
                     if($row['or_priorizado']==1){
-                      $titulo='OPERACION PRIORIZADO';
-                      $color='#e4f7f5';
+                      $color='#DFF5E0';
                     }
 
                     $tabla.='
@@ -260,51 +255,13 @@ class Eval_oregional extends CI_Controller{
                         <td style="width:10%;">'.$row['or_indicador'].'</td>
                         <td style="width:5%;" title="'.$row['indi_id'].' -> '.$row['tp_meta'].'">
                           <b>'.strtoupper($row['indi_descripcion']).'</b>';
-                          // if($row['indi_id']==2){
-                          //   $tabla.='
-                          //     <select class="form-control" id="tp_met" name="tp_met" style="width:100%; font-size:9px; color:blue; background-color: #e3fcf8;" title="SELECCIONE TIPO DE META" onchange="select_tp_meta(this.value,'.$row['or_id'].');">';
-                          //       foreach($metas as $rowm){ 
-                          //         if($rowm['mt_id']==$row['tp_meta']){
-                          //           $tabla.='<option value="'.$rowm['mt_id'].'" selected>'.$rowm['mt_tipo'].'</option>';
-                          //         }
-                          //         else{
-                          //           $tabla.='<option value="'.$rowm['mt_id'].'" >'.$rowm['mt_tipo'].'</option>';
-                          //         }
-                          //       }
-                          //       $tabla.='
-                          //     </select>';
-                          // }
                         $tabla.='
                           <font color=blue>'.$tp_meta.'</font>
                         </td>
                         <td style="width:10%;">'.$row['or_verificacion'].'</td>
                         <td style="width:2%; font-size: 15px;" align=center title="'.$row['tp_meta'].'"><b>'.round($row['or_meta'],2).' '.$meta.'</b></td>
                         <td style="width:2%;" align=center>'.$boton_ajustar_apriorizados.'</td>';
-                          $por='';
-                          if($row['or_tp']==1){
-                            $por='%';
-                          }
-
-                          for ($i=1; $i <=4 ; $i++) { 
-                            $tabla.='
-                              <td style="width:6%;" align=center>
-                                <table class="table table-bordered" border=0.2 style="width:100%;">
-                                  <tr>
-                                    <td style="width:50%;"><b>PROG.</b></td>
-                                    <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.round($row['trm'.$i],2).''.$por.'</b></td>
-                                  </tr>
-                                  <tr>
-                                    <td><b>EJEC.</b></td>
-                                    <td style="font-size: 12px; color:blue" align=right><b>'.round($row['e_trm'.$i],2).''.$por.'</b></td>
-                                  </tr>
-                                  <tr>
-                                    <td><b>%CUMP.</b></td>
-                                    <td style="font-size: 13px; color:blue" align=right><b>'.round($row['porc_cump_'.$i],2).'%</b></td>
-                                  </tr>
-                                </table>
-                            </td>';
-                          }
-
+                         $tabla.=$this->genera_temporalidad_form2($row);
                         $tabla.='
                         <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.round($row['porc_cump_'.$this->tmes],2).' %</b></td>
                         <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.round($row['trm_porc_ejec'.$this->tmes],2).' %</b></td>
@@ -329,6 +286,59 @@ class Eval_oregional extends CI_Controller{
         </div>
       </div>';
 
+      return $tabla;
+    }
+
+
+    ///// Genera temporalidad
+    public function genera_temporalidad_form2($row){
+      $tabla='';
+      $por='';
+      if($row['or_tp']==1){
+        $por='%';
+      }
+      if($row['or_tp']==1){ /// Inversion
+        for ($i=1; $i <=4 ; $i++) { 
+          $tabla.='
+            <td style="width:6%;" align=center>
+              <table class="table table-bordered" border=0.2 style="width:100%;">
+                <tr>
+                  <td style="width:50%;"><b>(%)PROG.</b></td>
+                  <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.round($row['trm_porc'.$i],2).''.$por.'</b></td>
+                </tr>
+                <tr>
+                  <td><b>(%)EJEC.</b></td>
+                  <td style="font-size: 12px; color:blue" align=right><b>'.round($row['trm_porc_ejec'.$i],2).''.$por.'</b></td>
+                </tr>
+              </table>
+          </td>';
+        }
+      }
+      else{
+        for ($i=1; $i <=4 ; $i++) { 
+          $tabla.='
+            <td style="width:6%;" align=center>
+              <table class="table table-bordered" border=0.2 style="width:100%;">
+                <tr>
+                  <td style="width:50%;"><b>PROG.</b></td>
+                  <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.round($row['trm'.$i],2).''.$por.'</b></td>
+                </tr>
+                <tr>
+                  <td><b>EJEC.</b></td>
+                  <td style="font-size: 12px; color:blue" align=right><b>'.round($row['e_trm'.$i],2).''.$por.'</b></td>
+                </tr>
+                <tr>
+                  <td><b>(%)</b></td>
+                  <td style="font-size: 13px; color:blue" align=right><b>'.round($row['porc_cump_'.$i],2).'%</b></td>
+                </tr>
+              </table>
+          </td>';
+        }
+      }
+      
+      
+
+      
       return $tabla;
     }
 

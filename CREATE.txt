@@ -2294,3 +2294,69 @@ BEGIN
     ORDER BY poa.dep_id, poa.aper_id;
 END;
 $$ LANGUAGE plpgsql;
+
+
+===================================
+
+CREATE OR REPLACE FUNCTION public.v_trm_cumplimiento_pi_consolidado_form2(p_gestion integer)
+RETURNS TABLE (
+    or_id integer,
+    prod_priori integer,
+    nro integer, -- Tercera columna esperada
+    trm1 numeric, trm2 numeric, trm3 numeric, trm4 numeric,
+    e_trm1 numeric, e_trm2 numeric, e_trm3 numeric, e_trm4 numeric,
+    porc_cump_1 numeric, porc_cump_2 numeric, porc_cump_3 numeric, porc_cump_4 numeric,
+    trm_porc1 numeric, trm_porc2 numeric, trm_porc3 numeric, trm_porc4 numeric,
+    trm_porc_ejec1 numeric, trm_porc_ejec2 numeric, trm_porc_ejec3 numeric, trm_porc_ejec4 numeric
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH totales_acumulados AS (
+        select 
+                f.or_id,
+                f.prod_priori,
+                COUNT(f.or_id)::integer AS nro,
+                -- Metas Programadas Acumuladas
+            SUM(f.mes1 + f.mes2 + f.mes3) AS p1,
+            SUM(f.mes1 + f.mes2 + f.mes3 + f.mes4 + f.mes5 + f.mes6) AS p2,
+            SUM(f.mes1 + f.mes2 + f.mes3 + f.mes4 + f.mes5 + f.mes6 + f.mes7 + f.mes8 + f.mes9) AS p3,
+            SUM(f.mes1 + f.mes2 + f.mes3 + f.mes4 + f.mes5 + f.mes6 + f.mes7 + f.mes8 + f.mes9 + f.mes10 + f.mes11 + f.mes12) AS p4,
+            
+            -- Metas Ejecutadas Acumuladas
+            SUM(f.e1 + e2 + e3) AS e1,
+            SUM(f.e1 + f.e2 + f.e3 + f.e4 + f.e5 + f.e6) AS e2,
+            SUM(f.e1 + f.e2 + f.e3 + f.e4 + f.e5 + f.e6 + f.e7 + f.e8 + f.e9) AS e3,
+            SUM(f.e1 + f.e2 + f.e3 + f.e4 + f.e5 + f.e6 + f.e7 + f.e8 + f.e9 + f.e10 + f.e11 + f.e12) AS e4
+            
+                from f_lista_inversion_para_alineacion_a_form2(p_gestion) f
+                GROUP BY f.or_id, f.prod_priori
+    )
+    SELECT 
+        t.or_id::integer,
+        t.prod_priori::integer,
+        t.nro::integer, -- Se incluye en la posición 3 exacta
+        
+        -- Columnas Base (Mapeo exacto posicional)
+        t.p1::numeric, t.p2::numeric, t.p3::numeric, t.p4::numeric,
+        t.e1::numeric, t.e2::numeric, t.e3::numeric, t.e4::numeric,
+
+        -- % Cumplimiento
+        ROUND((t.e1 / NULLIF(t.p1, 0) * 100)::numeric, 2),
+        ROUND((t.e2 / NULLIF(t.p2, 0) * 100)::numeric, 2),
+        ROUND((t.e3 / NULLIF(t.p3, 0) * 100)::numeric, 2),
+        ROUND((t.e4 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+
+        -- % Participación de la Meta
+        ROUND((t.p1 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.p2 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.p3 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.p4 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+
+        -- % Participación de la Ejecución
+        ROUND((t.e1 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.e2 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.e3 / NULLIF(t.p4, 0) * 100)::numeric, 2),
+        ROUND((t.e4 / NULLIF(t.p4, 0) * 100)::numeric, 2)
+    FROM totales_acumulados t;
+END;
+$$ LANGUAGE plpgsql;

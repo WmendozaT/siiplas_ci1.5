@@ -149,46 +149,56 @@ class Model_objetivoregion extends CI_Model{
     //// Lista de Form2 segun form1 por Regional con su temporalidad
     public function list_form2_regional($og_id,$dep_id){
         $sql = 'SELECT 
-                oreg.*, -- Te recomiendo especificar las columnas que necesitas de cada tabla
-                opg.*,
-                og.*,
-                tp.*,
-                COALESCE(form2.nro, 0) AS nro,
-                COALESCE(form2.trm1, 0) AS trm1,
-                COALESCE(form2.trm2, 0) AS trm2,
-                COALESCE(form2.trm3, 0) AS trm3,
-                COALESCE(form2.trm4, 0) AS trm4,
-                COALESCE(form2.e_trm1, 0) AS e_trm1,
-                COALESCE(form2.e_trm2, 0) AS e_trm2,
-                COALESCE(form2.e_trm3, 0) AS e_trm3,
-                COALESCE(form2.e_trm4, 0) AS e_trm4,
-                COALESCE(form2.porc_cump_1, 0) AS porc_cump_1,
-                COALESCE(form2.porc_cump_2, 0) AS porc_cump_2,
-                COALESCE(form2.porc_cump_3, 0) AS porc_cump_3,
-                COALESCE(form2.porc_cump_4, 0) AS porc_cump_4,
+                    oreg.*, 
+                    opg.*,
+                    og.*,
+                    tp.*,
+                    
+                    -- Selección condicional de campos basada en oreg.or_tp (0 para regular, 1 para pi)
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.nro          ELSE f2_pi.nro          END, 0) AS nro,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm1         ELSE f2_pi.trm1         END, 0) AS trm1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm2         ELSE f2_pi.trm2         END, 0) AS trm2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm3         ELSE f2_pi.trm3         END, 0) AS trm3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm4         ELSE f2_pi.trm4         END, 0) AS trm4,
+                    
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm1       ELSE f2_pi.e_trm1       END, 0) AS e_trm1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm2       ELSE f2_pi.e_trm2       END, 0) AS e_trm2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm3       ELSE f2_pi.e_trm3       END, 0) AS e_trm3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm4       ELSE f2_pi.e_trm4       END, 0) AS e_trm4,
+                    
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1  ELSE f2_pi.porc_cump_1  END, 0) AS porc_cump_1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2  ELSE f2_pi.porc_cump_2  END, 0) AS porc_cump_2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3  ELSE f2_pi.porc_cump_3  END, 0) AS porc_cump_3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4  ELSE f2_pi.porc_cump_4  END, 0) AS porc_cump_4,
 
-                COALESCE(form2.trm_porc1, 0) AS trm_porc1,
-                COALESCE(form2.trm_porc2, 0) AS trm_porc2,
-                COALESCE(form2.trm_porc3, 0) AS trm_porc3,
-                COALESCE(form2.trm_porc4, 0) AS trm_porc4,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc1    ELSE f2_pi.trm_porc1    END, 0) AS trm_porc1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc2    ELSE f2_pi.trm_porc2    END, 0) AS trm_porc2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc3    ELSE f2_pi.trm_porc3    END, 0) AS trm_porc3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc4    ELSE f2_pi.trm_porc4    END, 0) AS trm_porc4,
 
-                COALESCE(form2.trm_porc_ejec1, 0) AS trm_porc_ejec1,
-                COALESCE(form2.trm_porc_ejec2, 0) AS trm_porc_ejec2,
-                COALESCE(form2.trm_porc_ejec3, 0) AS trm_porc_ejec3,
-                COALESCE(form2.trm_porc_ejec4, 0) AS trm_porc_ejec4
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0) AS trm_porc_ejec1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0) AS trm_porc_ejec2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0) AS trm_porc_ejec3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0) AS trm_porc_ejec4
 
-            FROM objetivo_programado_mensual opg
-            INNER JOIN objetivo_gestion og ON og.og_id = opg.og_id
-            INNER JOIN objetivos_regionales oreg ON opg.pog_id = oreg.pog_id
-            INNER JOIN indicador tp ON oreg.indi_id = tp.indi_id
-            -- CAMBIO CLAVE: La condición de prioridad va en el ON para no romper el LEFT JOIN
-            LEFT JOIN v_trm_cumplimiento_consolidado_form2('.$this->gestion.') form2 
-                ON form2.or_id = oreg.or_id AND form2.prod_priori = 1
-            WHERE opg.og_id = '.$og_id.' 
-              AND opg.dep_id = '.$dep_id.' 
-              AND oreg.estado != 3
-              AND oreg.or_meta!=0
-            ORDER BY oreg.or_codigo ASC, oreg.or_id ASC';
+                FROM objetivo_programado_mensual opg
+                INNER JOIN objetivo_gestion og ON og.og_id = opg.og_id
+                INNER JOIN objetivos_regionales oreg ON opg.pog_id = oreg.pog_id
+                INNER JOIN indicador tp ON oreg.indi_id = tp.indi_id
+
+                -- FUNCIÓN 1: Se activa de manera limpia solo si or_tp = 0
+                LEFT JOIN v_trm_cumplimiento_consolidado_form2('.$this->gestion.') f2_reg 
+                    ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
+
+                -- FUNCIÓN 2: Se activa de manera limpia solo si or_tp = 1
+                LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2('.$this->gestion.') f2_pi 
+                    ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
+
+                WHERE opg.og_id = '.$og_id.' 
+                      AND opg.dep_id = '.$dep_id.' 
+                      AND oreg.estado != 3
+                      AND oreg.or_meta!=0
+                ORDER BY oreg.or_codigo ASC, oreg.or_id ASC;';
 
         $query = $this->db->query($sql);
         return $query->result_array();
@@ -390,21 +400,21 @@ class Model_objetivoregion extends CI_Model{
     }
 
     /*----- LISTA VINCULO PROYECTO - OBJETIVO REGIONAL revisar -----*/
-    // public function list_proyecto_oregional($proy_id){
-    //     $sql = 'SELECT *
-    //             from proy_oregional por
-    //             Inner Join objetivo_regional_programado as orp On orp.por_id=por.por_id
-    //             Inner Join objetivos_regionales as obr On obr.or_id=orp.or_id
-    //             Inner Join objetivo_programado_mensual as opm On obr.pog_id=opm.pog_id
-    //             Inner Join objetivo_gestion as og On og.og_id=opm.og_id 
-    //             Inner Join _objetivos_estrategicos as oe On oe.obj_id=og.oe_id
-    //             Inner Join aperturaprogramatica as apg On apg.aper_id=og.aper_id
-    //             where por.proy_id='.$proy_id.' and obr.estado!=\'3\' and og.g_id='.$this->gestion.'
-    //             order by og.og_codigo,obr.or_codigo asc';
+    public function list_proyecto_oregional($proy_id){
+        $sql = 'SELECT *
+                from proy_oregional por
+                Inner Join objetivo_regional_programado as orp On orp.por_id=por.por_id
+                Inner Join objetivos_regionales as obr On obr.or_id=orp.or_id
+                Inner Join objetivo_programado_mensual as opm On obr.pog_id=opm.pog_id
+                Inner Join objetivo_gestion as og On og.og_id=opm.og_id 
+                Inner Join _objetivos_estrategicos as oe On oe.obj_id=og.oe_id
+                Inner Join aperturaprogramatica as apg On apg.aper_id=og.aper_id
+                where por.proy_id='.$proy_id.' and obr.estado!=\'3\' and og.g_id='.$this->gestion.'
+                order by og.og_codigo,obr.or_codigo asc';
 
-    //     $query = $this->db->query($sql);
-    //     return $query->result_array();
-    // }
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
     /*----- GET VINCULO PROYECTO - OBJETIVO REGIONAL -----*/
     public function get_alineacion_proyecto_oregional($proy_id,$og_codigo,$or_codigo){

@@ -51,7 +51,7 @@ class Cevaluacion_form2 extends CI_Controller {
       }
 
       $this->load->view('admin/evaluacion/evaluacion_form2/menu_regionales', $data);
-      //echo $this->eval_oregional->ver_relacion_ogestion(1);
+     // echo $this->eval_oregional->ver_relacion_ogestion(1);
 
     }
 
