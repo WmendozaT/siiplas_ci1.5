@@ -229,9 +229,18 @@ class Eval_oregional extends CI_Controller{
                         $meta_priorizado=$row['nro']; /// nro
                       }
 
-                      if(round($row['or_meta'],2)==$meta_priorizado){
-                        $boton_ajustar_apriorizados='<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
-                        $grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+                      // if(round($row['or_meta'],2)==$meta_priorizado){
+                      //   $boton_ajustar_apriorizados='<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
+                      //   $grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row.');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+                        
+                      // }
+                      if(round($row['or_meta'], 2) == $meta_priorizado) {
+                          $boton_ajustar_apriorizados = '<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
+                          
+                          // 🔥 CORRECCIÓN: Convertimos el array $row a JSON y escapamos las comillas para el atributo HTML
+                          $datos_fila_json = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
+
+                          $grafico = '<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'" onclick="nivel_cumplimiento(this, '.$datos_fila_json.');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
                       }
                       else{
                         $boton_ajustar_apriorizados='
@@ -264,11 +273,20 @@ class Eval_oregional extends CI_Controller{
                          $tabla.=$this->genera_temporalidad_form2($row);
                         $tabla.='
                         <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.round($row['porc_cump_'.$this->tmes],2).' %</b></td>
-                        <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.round($row['trm_porc_ejec'.$this->tmes],2).' %</b></td>
-                        <td>
-                          <a href="#" data-toggle="modal" data-target="#modal_act_priorizados" style="font-size: 10px;" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="ver_actividades_priorizados('.$row['or_id'].','.$dep_id.');" title="VER MIS ACTIVIDADES PRIORIZADOS">ACT. PRIORIZADOS</a>
-                        </td>
-                        <td align=center>'.$grafico.'</td>
+                        <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.round($row['trm_porc_ejec'.$this->tmes],2).' %</b></td>';
+                        if($meta_priorizado==0){
+                          $tabla.='
+                          <td></td>
+                          <td></td>';
+                        }
+                        else{
+                          $tabla.='
+                          <td>
+                            <a href="#" data-toggle="modal" data-target="#modal_act_priorizados" style="font-size: 10px;" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="ver_actividades_priorizados('.$row['or_id'].','.$dep_id.');" title="VER MIS ACTIVIDADES PRIORIZADOS">ACT. PRIORIZADOS</a>
+                          </td>
+                          <td align=center>'.$grafico.'</td>';
+                        }
+                        $tabla.='
                       </tr>';
                   }
                   $tabla.='
@@ -290,6 +308,96 @@ class Eval_oregional extends CI_Controller{
     }
 
 
+
+    //// Modal graficos por OR_ID
+    public function modal_graficos_x_form2(){
+      $tabla='';
+      $tabla.='
+          <div class="modal fade" id="modal_cumplimiento" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog" id="mdialTamanio3">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                    </div>
+                    <div class="modal-body">
+                    <h2 class="alert alert-info"><center>(%) CUMPLIMIENTO OPERACIÓN - '.$this->gestion.'</center></h2>
+                        <div class="row">
+                          <div> 
+                            <h3 class="text-primary" id="titulo_grafico"></h3><hr>
+                            <div class="row">
+                              <article class="col-sm-12 col-md-12 col-lg-6">
+                                <div class="well">
+                                  <center><div id="parametro_efi" style="width: 750px; height: 390px; margin: 0 auto"></div></center>
+                                </div>
+                                <hr>
+                                  <table class="table table-bordered" border=0.2 style="width:100%;">
+                                    <thead>
+                                      <tr>
+                                        <th><center>I TRIMESTRE</center></th>
+                                        <th><center>II TRIMESTRE</center></th>
+                                        <th><center>III TRIMESTRE</center></th>
+                                        <th><center>IV TRIMESTRE</center></th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr id="tab"></tr>  
+                                    </tbody>
+                                  </table>
+                              </article>
+                            
+                              <article class="col-sm-12 col-md-12 col-lg-6">
+                                <div class="well">
+                                  <center><div id="parametro_efi2" style="width: 750px; height: 390px; margin: 0 auto"></div></center>
+                                </div>
+                                <hr>
+                                  <table class="table table-bordered" border=0.2 style="width:100%;">
+                                    <thead>
+                                      <tr>
+                                        <th><center>I TRIMESTRE</center></th>
+                                        <th><center>II TRIMESTRE</center></th>
+                                        <th><center>III TRIMESTRE</center></th>
+                                        <th><center>IV TRIMESTRE</center></th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr id="tab_acumulado"></tr>  
+                                    </tbody>
+                                  </table>
+                              </article>
+                            </div>
+                            <hr>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>';
+      return $tabla;
+    }
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ///// Genera temporalidad
     public function genera_temporalidad_form2($row){
       $tabla='';
@@ -297,18 +405,23 @@ class Eval_oregional extends CI_Controller{
       if($row['or_tp']==1){
         $por='%';
       }
+      $color='color:blue';
+      if($row['trm4']==0){
+        $color='color:red;';
+      }
       if($row['or_tp']==1){ /// Inversion
         for ($i=1; $i <=4 ; $i++) { 
+
           $tabla.='
             <td style="width:6%;" align=center>
               <table class="table table-bordered" border=0.2 style="width:100%;">
                 <tr>
                   <td style="width:50%;"><b>(%)PROG.</b></td>
-                  <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.round($row['trm_porc'.$i],2).''.$por.'</b></td>
+                  <td style="width:50%;font-size: 12px; '.$color.'" align=right><b>'.round($row['trm_porc'.$i],2).''.$por.'</b></td>
                 </tr>
                 <tr>
                   <td><b>(%)EJEC.</b></td>
-                  <td style="font-size: 12px; color:blue" align=right><b>'.round($row['trm_porc_ejec'.$i],2).''.$por.'</b></td>
+                  <td style="font-size: 12px; '.$color.'" align=right><b>'.round($row['trm_porc_ejec'.$i],2).''.$por.'</b></td>
                 </tr>
               </table>
           </td>';
@@ -321,23 +434,20 @@ class Eval_oregional extends CI_Controller{
               <table class="table table-bordered" border=0.2 style="width:100%;">
                 <tr>
                   <td style="width:50%;"><b>PROG.</b></td>
-                  <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.round($row['trm'.$i],2).''.$por.'</b></td>
+                  <td style="width:50%;font-size: 12px; '.$color.'" align=right><b>'.round($row['trm'.$i],2).''.$por.'</b></td>
                 </tr>
                 <tr>
                   <td><b>EJEC.</b></td>
-                  <td style="font-size: 12px; color:blue" align=right><b>'.round($row['e_trm'.$i],2).''.$por.'</b></td>
+                  <td style="font-size: 12px; '.$color.'" align=right><b>'.round($row['e_trm'.$i],2).''.$por.'</b></td>
                 </tr>
                 <tr>
                   <td><b>(%)</b></td>
-                  <td style="font-size: 13px; color:blue" align=right><b>'.round($row['porc_cump_'.$i],2).'%</b></td>
+                  <td style="font-size: 13px; '.$color.'" align=right><b>'.round($row['porc_cump_'.$i],2).'%</b></td>
                 </tr>
               </table>
           </td>';
         }
       }
-      
-      
-
       
       return $tabla;
     }
@@ -471,6 +581,7 @@ class Eval_oregional extends CI_Controller{
                       if(round($row['or_meta'],2)==$meta_priorizado){
                         $boton_ajustar_apriorizados='<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
                         $grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+                        //$grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
                       }
                       else{
                         $boton_ajustar_apriorizados='
@@ -738,7 +849,7 @@ class Eval_oregional extends CI_Controller{
       return $matriz;
     }
 
-    /*-- CALIFICACION TRIMESTRAL POR OBJETIVO REGIONAL GASTO CORRIENTE --*/
+    /*-- CALIFICACION TRIMESTRAL POR OBJETIVO REGIONAL GASTO CORRIENTE wil--*/
     public function calificacion_trimestral_acumulado_x_oregional($or_id,$trimestre,$tp_or,$tp_meta){
       $valor = array( '1' => '0','2' => '0','3' => '0','4' => '0');
 

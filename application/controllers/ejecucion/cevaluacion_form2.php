@@ -50,6 +50,7 @@ class Cevaluacion_form2 extends CI_Controller {
         $data['tabla']=$this->eval_oregional->ver_relacion_ogestion($this->dep_id);
       }
 
+      $data['modal_grafico_x_form2']=$this->eval_oregional->modal_graficos_x_form2();
       $this->load->view('admin/evaluacion/evaluacion_form2/menu_regionales', $data);
      // echo $this->eval_oregional->ver_relacion_ogestion(1);
 
@@ -216,11 +217,8 @@ class Cevaluacion_form2 extends CI_Controller {
 
         $listado=$this->eval_oregional->get_mis_form4_priorizados_x_oregional($detalle_oregional); /// lista de actividades 
         if($detalle_oregional[0]['or_tp']==1){
-          $listado=$this->eval_oregional->get_mis_Inversion_priorizados_x_oregional($detalle_oregional[0]['or_id']);
+          $listado=$this->eval_oregional->get_mis_Inversion_priorizados_x_oregional($detalle_oregional[0]['or_id']); //// lista inversion
         }
-
-
-
 
         $result = array(
           'respuesta' => 'correcto',
@@ -237,7 +235,7 @@ class Cevaluacion_form2 extends CI_Controller {
 
 
 
-    /*---- FUNCION GET NIVEL DE CUMPLIMIENTO DE LA OPERACION (GRAFICOS) --------*/
+    /*---- FUNCION GET NIVEL DE CUMPLIMIENTO DE LA OPERACION (GRAFICOS) a eliminar--------*/
     public function ver_datos_avance_oregional(){
       if($this->input->is_ajax_request() && $this->input->post()){
         $post = $this->input->post();
@@ -246,7 +244,6 @@ class Cevaluacion_form2 extends CI_Controller {
         $or_tp = $this->security->xss_clean($post['or_tp']); /// or tp (1 inversion), (0 gasto corriente) 
         $detalle_oregional=$this->model_objetivoregion->get_objetivosregional($post['or_id']); /// Objetivo Regional
         $regional=$this->model_proyecto->get_departamento($dep_id);
-      //  $calificacion=$this->eval_oregional->calificacion_trimestral_acumulado_x_oregional($or_id,$this->tmes);
         $matriz=$this->eval_oregional->tabla_trimestral_acumulado_x_oregional($or_id,$or_tp,$detalle_oregional[0]['tp_meta']); /// Matriz de Metas Trimestrales
         $tab=$this->eval_oregional->get_temporalidad_objetivo_regional($or_id,0,$or_tp,$detalle_oregional[0]['tp_meta']);
         $tab_acumulado=$this->eval_oregional->get_temporalidad_acumulado_objetivo_regional($or_id,0,$or_tp,$detalle_oregional[0]['tp_meta']);

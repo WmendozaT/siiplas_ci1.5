@@ -146,7 +146,7 @@ class Model_objetivoregion extends CI_Model{
     }
 
 
-    //// Lista de Form2 segun form1 por Regional con su temporalidad
+    //// Lista de Form2 segun form1 por Regional con su temporalidad 2027
     public function list_form2_regional($og_id,$dep_id){
         $sql = 'SELECT 
                     oreg.*, 
