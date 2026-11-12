@@ -73,7 +73,6 @@
 ///// =================== MODULO DE REPORTES POA - EVALUACION DE FORMULARIO 2
 ////------- menu select regionales
   $("#d_id").change(function () {
- 
     $("#d_id option:selected").each(function () {
       dep_id=$(this).val();
 
@@ -639,70 +638,81 @@ function cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_
 
 /*------ ACTUALIZANDO DATOS DE EVALUACION POA AL TRIMESTRE ACTUAL (EJECUCION)------*/
 $(function() {
-  $(".update_evaluacion").on("click", function(e) {
-    //alert('hola mundo')
-    document.getElementById("load_update_temp_general").style.display = 'block';
-    e.preventDefault();
-    var url = base+"index.php/ejecucion/cevaluacion_form2/update_evaluacion_oregional";
-    $.ajax({
-      type: "POST",
-      url: url,
-    //  data: $("#form").serialize(),
-      success: function(data) {
-       if(data.trim()){
-          window.location.reload(true);
-          alertify.success("ACTUALIZACIÓN EXITOSA ...");
-       }
-       else{
-        alertify.error("ERROR AL ACTUALIZAR DATOS DE EVALUACIÓN POA !!!");
-       }
+  // $(".update_evaluacion").on("click", function(e) {
+  //   //alert('hola mundo')
+  //   document.getElementById("load_update_temp_general").style.display = 'block';
+  //   e.preventDefault();
+  //   var url = base+"index.php/ejecucion/cevaluacion_form2/update_evaluacion_oregional";
+  //   $.ajax({
+  //     type: "POST",
+  //     url: url,
+  //   //  data: $("#form").serialize(),
+  //     success: function(data) {
+  //      if(data.trim()){
+  //         window.location.reload(true);
+  //         alertify.success("ACTUALIZACIÓN EXITOSA ...");
+  //      }
+  //      else{
+  //       alertify.error("ERROR AL ACTUALIZAR DATOS DE EVALUACIÓN POA !!!");
+  //      }
 
-      }
-    });
-    return false;
+  //     }
+  //   });
+  //   return false;
 
-  });
+  // });
 
 
-  //// LISTA DE OPERACIONES POR REGIONAL 2022
-  $("#dep_id").change(function () {
-    $("#dep_id option:selected").each(function () {
-        dep_id=$(this).val();
-        $('#load_update').html('');
-        if(dep_id!=0){
-          $('#titulo_lista').html('<font size=3><b>Cargando Informacion ..... </b></font>');
-            var url = base+"index.php/ejecucion/cevaluacion_form2/get_lista_operaciones_x_regionales";
-            var request;
-            if (request) {
-                request.abort();
-            }
-            request = $.ajax({
-                url: url,
-                type: "POST",
-                dataType: 'json',
-                data: "dep_id="+dep_id
-            });
+  //// LISTA DE OPERACIONES POR REGIONAL 2027
+  var requestOperaciones = null; // Declarada fuera para abortar peticiones previas si cambian rápido de opción
 
-            request.done(function (response, textStatus, jqXHR) {
+  jQuery("#dep_id").on("change", function () {
+      var dep_id = jQuery(this).val();
+      var baseUrl = jQuery('input[name="base"]').val(); // Captura segura de la URL base
 
-            if (response.respuesta == 'correcto') {
-                $('#titulo_lista').html(response.tabla);
-                $('#detalles').slideDown();
-                $('#update').slideDown();
-                $('#btn_update').html(response.btn_update);
-            }
-            else{
-                alertify.error("ERROR AL RECUPERAR INFORMACION");
-            }
+      if (dep_id != 0) {
+          // Indicador visual de carga centrado
+          jQuery('#titulo_lista').html(
+              '<div style="padding: 40px 20px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 15px;">' +
+                  '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
+                  '<h4 style="margin: 0; font-weight: bold; color: #334155;">Consultando y Actualizando Operaciones de la regional</h4>' +
+                  '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
+              '</div>'
+          );
 
+          // Si ya había una petición en curso, la cancela para evitar cruces de datos
+          if (requestOperaciones != null) {
+              requestOperaciones.abort();
+          }
+
+          requestOperaciones = jQuery.ajax({
+              url: baseUrl + "index.php/ejecucion/cevaluacion_form2/get_lista_operaciones_x_regionales",
+              type: "POST",
+              dataType: "json",
+              data: { dep_id: dep_id }
           });
-        }
-        else{
-          $('#titulo_lista').html('');
-          $('#detalles').slideUp();
-        }
-    });
+
+          requestOperaciones.done(function (response) {
+              if (response.respuesta === 'correcto') {
+                  jQuery('#titulo_lista').html(response.tabla);
+              } else {
+                  jQuery('#titulo_lista').html('');
+                  alertify.error("ERROR AL RECUPERAR INFORMACIÓN");
+              }
+          });
+
+          requestOperaciones.fail(function (jqXHR, textStatus) {
+              // Ignora el mensaje de error si fue cancelada intencionalmente por el usuario
+              if (textStatus !== 'abort') {
+                  jQuery('#titulo_lista').html('<div class="alert alert-danger">Error de comunicación con el servidor.</div>');
+              }
+          });
+
+      } else {
+          jQuery('#titulo_lista').html('');
+      }
   });
+
 
 });
 
@@ -732,36 +742,37 @@ $(function() {
 
   /// Lista de Actividades Priorizados por cada Objetivo Regional FORM 2 2027
   //// ACTUALIZAR EVALUACION TRIMESTRAL
-  function update_temp(dep_id) {
-      $('#load_update').fadeIn(1000).html('<img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/><b>Actualizando Temporalidad de Operaciones .....</b>');
-      var url = base+"index.php/ejecucion/cevaluacion_form2/update_temporalidad_oregional";
-      var request;
-      if (request) {
-          request.abort();
-      }
-      request = $.ajax({
-          url: url,
-          type: "POST",
-          dataType: 'json',
-          data: "dep_id="+dep_id
-      });
+  // function update_temp(dep_id) {
 
-      request.done(function (response, textStatus, jqXHR) {
-      if (response.respuesta == 'correcto') {
-          $('#load_update').fadeIn(1000).html('<font color=green size=5><b>Temporalidad Actualizado !!! .....</b></font>');
-          $('#titulo_lista').html(response.tabla);
-      }
-      else{
-          alertify.error("ERROR AL RECUPERAR DATOS");
-      }
+  //     $('#load_update').fadeIn(1000).html('<img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/><b>Actualizando Temporalidad de Operaciones .....</b>');
+  //     var url = base+"index.php/ejecucion/cevaluacion_form2/update_temporalidad_oregional";
+  //     var request;
+  //     if (request) {
+  //         request.abort();
+  //     }
+  //     request = $.ajax({
+  //         url: url,
+  //         type: "POST",
+  //         dataType: 'json',
+  //         data: "dep_id="+dep_id
+  //     });
 
-      });
-      request.fail(function (jqXHR, textStatus, thrown) {
-          console.log("ERROR: " + textStatus);
-      });
-      request.always(function () {
-      });
-  }
+  //     request.done(function (response, textStatus, jqXHR) {
+  //     if (response.respuesta == 'correcto') {
+  //         $('#load_update').fadeIn(1000).html('<font color=green size=5><b>Temporalidad Actualizado !!! .....</b></font>');
+  //         $('#titulo_lista').html(response.tabla);
+  //     }
+  //     else{
+  //         alertify.error("ERROR AL RECUPERAR DATOS");
+  //     }
+
+  //     });
+  //     request.fail(function (jqXHR, textStatus, thrown) {
+  //         console.log("ERROR: " + textStatus);
+  //     });
+  //     request.always(function () {
+  //     });
+  // }
 
   /// Lista de Actividades Priorizados por cada Objetivo Regional FORM 2
   function ver_actividades_priorizados(or_id,dep_id) {
@@ -795,7 +806,7 @@ $(function() {
     });
   }
 
-  // Variables globales para controlar las instancias de los gráficos de este modal
+  // Variables globales para controlar las instancias de los gráficos de este modal 2027
   function nivel_cumplimiento(elemento, datosFila) {
     // 1. Extraer metadatos para el encabezado del modal
     var codigoOpe = datosFila.or_codigo || '';
@@ -835,20 +846,124 @@ $(function() {
     var trm_ejec_porc4 = parseFloat(datosFila.trm_porc_ejec4) || 0;
 
         // 4. Llenar la tabla TRIMESTRAL (<tr id="tab">)
-    var htmlTrimestral = 
-        '<td align="center"><b>Prog:</b> ' + trm1 + '<br><b>Ejec:</b> ' + etrm1 + '<br><span style="color:#16a34a; font-weight:bold;">' + porc1 + '%</span></td>' +
-        '<td align="center"><b>Prog:</b> ' + trm2 + '<br><b>Ejec:</b> ' + etrm2 + '<br><span style="color:#16a34a; font-weight:bold;">' + porc2 + '%</span></td>' +
-        '<td align="center"><b>Prog:</b> ' + trm3 + '<br><b>Ejec:</b> ' + etrm3 + '<br><span style="color:#16a34a; font-weight:bold;">' + porc3 + '%</span></td>' +
-        '<td align="center"><b>Prog:</b> ' + trm4 + '<br><b>Ejec:</b> ' + etrm4 + '<br><span style="color:#16a34a; font-weight:bold;">' + porc4 + '%</span></td>';
+     var htmlTrimestral = 
+         '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm1 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + etrm1 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%)</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + porc1 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'+
+         '</td>' +
+         '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm2 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + etrm2 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%)</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + porc2 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'+
+         '</td>' +
+         '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm3 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + etrm3 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%)</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + porc3 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'+
+         '</td>' +
+         '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm4 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + etrm4 + '</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%)</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + porc4 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'
+         '</td>';
     
-    jQuery('#tab').html(htmlTrimestral);
+     jQuery('#tab').html(htmlTrimestral);
 
-    // 5. Llenar la tabla ACUMULADA (<tr id="tab_acumulado">)
+    // // 5. Llenar la tabla ACUMULADA (<tr id="tab_acumulado">)
     var htmlAcumulado = 
-        '<td align="center"><b>Prog:</b> ' + trm_porc2 + '<br><b>Ejec:</b> ' + trm_ejec_porc1 + '</td>' +
-        '<td align="center"><b>Prog:</b> ' + trm_porc3 + '<br><b>Ejec:</b> ' + trm_ejec_porc2 + '</td>' +
-        '<td align="center"><b>Prog:</b> ' + trm_porc4 + '<br><b>Ejec:</b> ' + trm_ejec_porc3 + '</td>' +
-        '<td align="center"><b>Prog:</b> ' + trm_porc5 + '<br><b>Ejec:</b> ' + trm_ejec_porc4 + '</td>';
+        '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>(%) PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm_porc1 + '%</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%) EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + trm_ejec_porc1 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'+
+         '</td>' +
+         '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>(%) PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm_porc2 + '%</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%) EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + trm_ejec_porc2 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'+
+         '</td>' +
+         '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>(%) PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm_porc3 + '%</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%) EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + trm_ejec_porc3 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'+
+         '</td>' +
+         '<td align="center" style="font-size:15px;">' +
+            '<table class="table table-bordered" border=0.2 style="width:80%;">'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;;width:50%;"><b>(%) PROG.</b></td>'+
+                  '  <td style="width:50%;font-size: 11px; color:blue" align=right><b>' + trm_porc4 + '%</b></td>'+
+                  '</tr>'+
+                  '<tr>'+
+                  '  <td style="font-size: 11px;"><b>(%) EJEC.</b></td>'+
+                  '  <td style="font-size: 11px; color:blue" align=right><b>' + trm_ejec_porc4 + '%</b></td>'+
+                  '</tr>'+
+            '</table>'
+         '</td>';
     
     jQuery('#tab_acumulado').html(htmlAcumulado);
 
@@ -867,7 +982,7 @@ $(function() {
                 text: 'Cód. Ope: ' + codigoOpe + ' - ' + objetivo
             },
             xAxis: {
-                categories: ['', 'I Trimestre', 'II Trimestre', 'III Trimestre', 'IV Trimestre'],
+                categories: ['', 'I TRIMESTRE', 'II TRIMESTRE', 'III TRIMESTRE', 'IV TRIMESTRE'],
                 title: {
                     text: 'Periodos de Evaluación Trimestral'
                 }
@@ -876,7 +991,7 @@ $(function() {
             yAxis: [
                 {
                     // Eje izquierdo (Índice 0): Para Meta Programada y Ejecutada
-                    title: { text: 'Cantidad / Meta Física' },
+                    title: { text: 'Cantidad / Meta' },
                     min: 0
                 },
                 {
@@ -928,14 +1043,14 @@ $(function() {
           defaultSeriesType: 'line' // Pongo que tipo de gráfica es
         },
         title: {
-          text: '% EJECUCIÓN ACUMULADO TRIMESTRAL'  // Titulo (Opcional)
+          text: '% EJECUCIÓN ANUAL'  // Titulo (Opcional)
         },
         subtitle: {
-          text: ''   // Subtitulo (Opcional)
+          text: 'Cód. Ope: ' + codigoOpe + ' - ' + objetivo
         },
         // Pongo los datos en el eje de las 'X'
         xAxis: {
-          categories: ['','I Trimestre','II Trimestre','III Trimestre','IV Trimestre'],
+          categories: ['','I TRIMESTRE','II TRIMESTRE','III TRIMESTRE','IV TRIMESTRE'],
           // Pongo el título para el eje de las 'X'
           title: {
             text: '% Operaciones Acumulados por Trimestre'
@@ -967,7 +1082,7 @@ $(function() {
         // Doy los datos de la gráfica para dibujarlas
         series: [{
             name: '(%) Programado',
-            data: [0,trm_ejec_porc1,trm_ejec_porc2,trm_ejec_porc3,trm_ejec_porc4]
+            data: [0,trm_porc1,trm_porc2,trm_porc3,trm_porc4]
           },
           {
             name: '(%) Ejecutado',
@@ -978,155 +1093,7 @@ $(function() {
   }
 
 
-  /// grado de cumplimiento por Objetivo Regional FORM 2
-  // function nivel_cumplimiento(or_id,dep_id,or_tp) {
 
-  //   $('#titulo_grafico').html('<font size=3><b>Cargando ..</b></font>');
-  //   $('#content1').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Ediciones </div>');
-  // //  alert(dep_id)
-  //   var url = base+"index.php/ejecucion/cevaluacion_form2/ver_datos_avance_oregional";
-  //   var request;
-  //   if (request) {
-  //       request.abort();
-  //   }
-  //   request = $.ajax({
-  //       url: url,
-  //       type: "POST",
-  //       dataType: 'json',
-  //       data: "or_id="+or_id+"&dep_id="+dep_id+"&or_tp="+or_tp
-  //   });
-
-  //   request.done(function (response, textStatus, jqXHR) {
-  //     if (response.respuesta == 'correcto') {
-
-  //       $('#titulo_grafico').html(response.titulo);
-  //       $('#tab').html(response.tab);
-  //       $('#tab_acumulado').html(response.tab_acu);
-
-  //       ////////// TRIMESTRAL
-  //       chart = new Highcharts.Chart({
-  //       chart: {
-  //         renderTo: 'parametro_efi',  // Le doy el nombre a la gráfica
-  //         defaultSeriesType: 'line' // Pongo que tipo de gráfica es
-  //       },
-  //       title: {
-  //         text: 'EJECUCIÓN DE OPERACIONES POR TRIMESTRE'  // Titulo (Opcional)
-  //       },
-  //       subtitle: {
-  //         text: ''   // Subtitulo (Opcional)
-  //       },
-  //       // Pongo los datos en el eje de las 'X'
-  //       xAxis: {
-  //         categories: ['','I Trimestre','II Trimestre','III Trimestre','IV Trimestre'],
-  //         // Pongo el título para el eje de las 'X'
-  //         title: {
-  //           text: 'N° Operaciones por Trimestre'
-  //         }
-  //       },
-  //       yAxis: {
-  //         // Pongo el título para el eje de las 'Y'
-  //         title: {
-  //           text: 'N° operaciones'
-  //         }
-  //       },
-  //       // Doy formato al la "cajita" que sale al pasar el ratón por encima de la gráfica
-  //       tooltip: {
-  //         enabled: true,
-  //         formatter: function() {
-  //           return '<b>'+ this.series.name +'</b><br/>'+
-  //             this.x +': '+ this.y +' '+this.series.name;
-  //         }
-  //       },
-  //       // Doy opciones a la gráfica
-  //       plotOptions: {
-  //         line: {
-  //           dataLabels: {
-  //             enabled: true
-  //           },
-  //           enableMouseTracking: true
-  //         }
-  //       },
-  //       // Doy los datos de la gráfica para dibujarlas
-  //       series: [
-  //           {
-  //             name: 'Meta Programado',
-  //             data: [0,response.matriz_acumulado[1][1],response.matriz_acumulado[1][2],response.matriz_acumulado[1][3],response.matriz_acumulado[1][4]]
-  //           },
-  //           {
-  //             name: 'Meta Ejecutado',
-  //             data: [0,response.matriz_acumulado[2][1],response.matriz_acumulado[2][2],response.matriz_acumulado[2][3],response.matriz_acumulado[2][4]]
-  //           },
-  //           {
-  //             name: '% Cumplimiento',
-  //             data: [0,response.matriz_acumulado[3][1],response.matriz_acumulado[3][2],response.matriz_acumulado[3][3],response.matriz_acumulado[3][4]]
-  //           }
-  //         ],
-          
-  //       });
-
-  //       /////////// ACUMULADO
-
-
-  //       chart = new Highcharts.Chart({
-  //       chart: {
-  //         renderTo: 'parametro_efi2',  // Le doy el nombre a la gráfica
-  //         defaultSeriesType: 'line' // Pongo que tipo de gráfica es
-  //       },
-  //       title: {
-  //         text: '% EJECUCIÓN ACUMULADO TRIMESTRAL'  // Titulo (Opcional)
-  //       },
-  //       subtitle: {
-  //         text: ''   // Subtitulo (Opcional)
-  //       },
-  //       // Pongo los datos en el eje de las 'X'
-  //       xAxis: {
-  //         categories: ['','I Trimestre','II Trimestre','III Trimestre','IV Trimestre'],
-  //         // Pongo el título para el eje de las 'X'
-  //         title: {
-  //           text: '% Operaciones Acumulados por Trimestre'
-  //         }
-  //       },
-  //       yAxis: {
-  //         // Pongo el título para el eje de las 'Y'
-  //         title: {
-  //           text: '% Ejecucion'
-  //         }
-  //       },
-  //       // Doy formato al la "cajita" que sale al pasar el ratón por encima de la gráfica
-  //       tooltip: {
-  //         enabled: true,
-  //         formatter: function() {
-  //           return '<b>'+ this.series.name +'</b><br/>'+
-  //             this.x +': '+ this.y +' '+this.series.name;
-  //         }
-  //       },
-  //       // Doy opciones a la gráfica
-  //       plotOptions: {
-  //         line: {
-  //           dataLabels: {
-  //             enabled: true
-  //           },
-  //           enableMouseTracking: true
-  //         }
-  //       },
-  //       // Doy los datos de la gráfica para dibujarlas
-  //       series: [{
-  //           name: '(%) Programado',
-  //           data: [0,response.matriz_acumulado[5][1],response.matriz_acumulado[5][2],response.matriz_acumulado[5][3],response.matriz_acumulado[5][4]]
-  //         },
-  //         {
-  //           name: '(%) Ejecutado',
-  //           data: [0,response.matriz_acumulado[6][1],response.matriz_acumulado[6][2],response.matriz_acumulado[6][3],response.matriz_acumulado[6][4]]
-  //         }],
-  //       });
-
-  //     }
-  //     else{
-  //         alertify.error("ERROR AL RECUPERAR INFORMACION");
-  //     }
-
-  //   });
-  // }
 
 
   /// GRADO DE CUMPLIMIENTO DE OPERACIONES CONSOLIDADO POR REGIONAL (GRAFICO) FORM 2

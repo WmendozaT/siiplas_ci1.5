@@ -146,8 +146,8 @@ class Model_objetivoregion extends CI_Model{
     }
 
 
-    //// Lista de Form2 segun form1 por Regional con su temporalidad 2027
-    public function list_form2_regional($og_id,$dep_id){
+    //// Lista de Form2 x form1 por Regional con su temporalidad 2027 (Vista)
+    public function list_form2_regional_x_form1($og_id,$dep_id){
         $sql = 'SELECT 
                     oreg.*, 
                     opg.*,
@@ -205,6 +205,64 @@ class Model_objetivoregion extends CI_Model{
     }
 
 
+    //// Lista de Form2 x Regional
+    public function list_form2_regional_x_regional($dep_id){
+        $sql = '
+            SELECT 
+                    og.og_codigo, 
+                    oreg.*,
+                    tp.*,
+                    
+                    -- Selección condicional de campos basada en oreg.or_tp (0 para regular, 1 para pi)
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.nro          ELSE f2_pi.nro          END, 0) AS nro,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm1         ELSE f2_pi.trm1         END, 0) AS trm1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm2         ELSE f2_pi.trm2         END, 0) AS trm2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm3         ELSE f2_pi.trm3         END, 0) AS trm3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm4         ELSE f2_pi.trm4         END, 0) AS trm4,
+                    
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm1       ELSE f2_pi.e_trm1       END, 0) AS e_trm1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm2       ELSE f2_pi.e_trm2       END, 0) AS e_trm2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm3       ELSE f2_pi.e_trm3       END, 0) AS e_trm3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm4       ELSE f2_pi.e_trm4       END, 0) AS e_trm4,
+                    
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1  ELSE f2_pi.porc_cump_1  END, 0) AS porc_cump_1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2  ELSE f2_pi.porc_cump_2  END, 0) AS porc_cump_2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3  ELSE f2_pi.porc_cump_3  END, 0) AS porc_cump_3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4  ELSE f2_pi.porc_cump_4  END, 0) AS porc_cump_4,
+
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc1    ELSE f2_pi.trm_porc1    END, 0) AS trm_porc1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc2    ELSE f2_pi.trm_porc2    END, 0) AS trm_porc2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc3    ELSE f2_pi.trm_porc3    END, 0) AS trm_porc3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc4    ELSE f2_pi.trm_porc4    END, 0) AS trm_porc4,
+
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0) AS trm_porc_ejec1,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0) AS trm_porc_ejec2,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0) AS trm_porc_ejec3,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0) AS trm_porc_ejec4
+
+                FROM objetivo_programado_mensual opg
+                INNER JOIN objetivo_gestion og ON og.og_id = opg.og_id
+                INNER JOIN objetivos_regionales oreg ON opg.pog_id = oreg.pog_id
+                INNER JOIN indicador tp ON oreg.indi_id = tp.indi_id
+
+                -- FUNCIÓN 1: Se activa de manera limpia solo si or_tp = 0
+                LEFT JOIN v_trm_cumplimiento_consolidado_form2('.$this->gestion.') f2_reg 
+                    ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
+
+                -- FUNCIÓN 2: Se activa de manera limpia solo si or_tp = 1
+                LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2('.$this->gestion.') f2_pi 
+                    ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
+
+                WHERE 
+                      opg.dep_id = '.$dep_id.'
+                      AND og.g_id='.$this->gestion.'
+                      AND oreg.estado != 3
+                      AND oreg.or_meta!=0
+                ORDER BY og.og_codigo,oreg.or_codigo ASC, oreg.or_id ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
 
 
 

@@ -70,36 +70,29 @@ class Eval_oregional extends CI_Controller{
     public function regionales(){
       $regionales=$this->model_proyecto->list_departamentos();
       $trimestre=$this->model_evaluacion->trimestre();
-      $tabla='
-      <input name="base" type="hidden" value="'.base_url().'">
-      <article class="col-sm-12">
-        <div class="well">
-          <form class="smart-form">
-            <header><h2><b>EVALUACI&Oacute;N DE OPERACIONES (FORMULARIO N° 2) </b> - '.$trimestre[0]['trm_descripcion'].' / '.$this->gestion.'</h2></header>
-            <fieldset>          
-              <div class="row">
-                <section class="col col-2">
-                  <label class="label">DIRECCIÓN ADMINISTRATIVA</label>
-                  <select class="form-control" id="dep_id" name="dep_id" title="SELECCIONE REGIONAL">
-                  <option value="0"><b>SELECCIONE REGIONAL</b></option>';
-                  foreach($regionales as $row){
-                    if($row['dep_id']!=0){
-                      $tabla.='<option value="'.$row['dep_id'].'">'.$row['dep_id'].'.- '.strtoupper($row['dep_departamento']).'</option>';
-                    }
-                  }
-                  $tabla.='
-                  </select>
-                </section>
-
-                <div id="update" style="display:none;">
-                  <section class="col col-2">
-                    <label class="label"></label>
-                    <div id="btn_update"></div>
+      $tabla = '
+        <input name="base" type="hidden" value="'.base_url().'">
+        <article class="col-sm-12">
+          <div class="well">
+            <form class="smart-form">
+              <header><h2><b>EVALUACI&Oacute;N DE OPERACIONES (FORMULARIO N° 2) </b> - '.$trimestre[0]['trm_descripcion'].' / '.$this->gestion.'</h2></header>
+              <fieldset>          
+                <div class="row">
+                  <section class="col col-3">
+                    <label class="label">DIRECCIÓN ADMINISTRATIVA</label>
+                    <select class="form-control" id="dep_id" name="dep_id" title="SELECCIONE REGIONAL">
+                      <option value="0">SELECCIONE REGIONAL</option>';
+                      foreach($regionales as $row){
+                        if($row['dep_id'] != 0){
+                          $tabla .= '<option value="'.$row['dep_id'].'">'.$row['dep_id'].'.- '.strtoupper($row['dep_departamento']).'</option>';
+                        }
+                      }
+                    $tabla .= '
+                    </select>
                   </section>
                 </div>
-            </fieldset>
-            <div id="load_update"></div>
-          </form>
+              </fieldset>
+            </form>
           </div>
         </article>
         <article class="col-sm-12">
@@ -136,9 +129,6 @@ class Eval_oregional extends CI_Controller{
                 <a href="javascript:abreVentana(\''.site_url("").'/rep_eval_oregional/'.$dep_id.'\');" title="REPORTE EVALUACIÓN META REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR EVALUACIÓN (Form N° 2)</b></a>
                 <a href="#" data-toggle="modal" data-target="#modal_cumplimiento_grafico" class="btn btn-lg btn-default" name="'.$dep_id.'" onclick="nivel_cumplimiento_operaciones_grafico('.$dep_id.','.$this->tmes.');" title="NIVEL DE CUMPLIMIENTO DE OPERACIONES (GRAFICO)" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>DETALLE CUMPLIMIENTO (Form N° 2)</b></a>
             </p>
-            <hr class="simple">
-            CALIFICACION
-            <hr class="simple">
             <ul id="myTab1" class="nav nav-tabs bordered">';
               $nro=0;
               foreach($acp_regional as $row){
@@ -158,7 +148,7 @@ class Eval_oregional extends CI_Controller{
             <div id="myTabContent1" class="tab-content padding-10">';
             $nro2=0;
             foreach($acp_regional as $oge){
-              $lista_form2=$this->model_objetivoregion->list_form2_regional($oge['og_id'],$dep_id);
+              $lista_form2=$this->model_objetivoregion->list_form2_regional_x_form1($oge['og_id'],$dep_id);
               $nro2++;
               $active='class="tab-pane fade"';
               if($nro2==1){
@@ -229,18 +219,44 @@ class Eval_oregional extends CI_Controller{
                         $meta_priorizado=$row['nro']; /// nro
                       }
 
-                      // if(round($row['or_meta'],2)==$meta_priorizado){
-                      //   $boton_ajustar_apriorizados='<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
-                      //   $grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row.');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
-                        
-                      // }
+                      ///-----------------------------------------------------
+                        $this->db->where('or_id', $row['or_id']);
+                        $this->db->delete('temp_trm_prog_objetivos_regionales');
+
+                         /// --- eliminando ejecucion de Objetivos Regionales
+                         $this->db->where('or_id', $row['or_id']);
+                         $this->db->delete('temp_trm_ejec_objetivos_regionales');
+                      ///-----------------------------------------------------
+
+
                       if(round($row['or_meta'], 2) == $meta_priorizado) {
                           $boton_ajustar_apriorizados = '<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
-                          
-                          // 🔥 CORRECCIÓN: Convertimos el array $row a JSON y escapamos las comillas para el atributo HTML
                           $datos_fila_json = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
-
                           $grafico = '<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'" onclick="nivel_cumplimiento(this, '.$datos_fila_json.');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+                        
+                          /// registrando temporalidad
+                          for ($i=1; $i <=4 ; $i++) { 
+                            if($row['trm'.$i]!=0){
+                                $data_to_store2 = array( ///// Tabla temp prog oregional
+                                'or_id' => $row['or_id'], /// or id
+                                'trm_id' => $i, /// trimestre
+                                'pg_fis' => round($row['trm'.$i],2), /// valor Programado Trimestral
+                                'g_id' => $this->gestion, /// gestion                
+                              );
+                              $this->db->insert('temp_trm_prog_objetivos_regionales', $data_to_store2);
+                            }
+                            
+                            if($row['e_trm'.$i]!=0){
+                              $data_to_store2 = array( ///// Tabla temp prog oregional
+                                'or_id' => $row['or_id'], /// or id
+                                'trm_id' => $i, /// trimestre
+                                'ejec_fis' => round($row['e_trm'.$i],2), /// valor Ejecutado Trimestral
+                                'g_id' => $this->gestion, /// gestion                
+                              );
+                              $this->db->insert('temp_trm_ejec_objetivos_regionales', $data_to_store2);
+                            }
+                          }
+                          /// -----------------------
                       }
                       else{
                         $boton_ajustar_apriorizados='
@@ -256,7 +272,7 @@ class Eval_oregional extends CI_Controller{
 
                     $tabla.='
                       <tr style="font-size: 10px;" bgcolor='.$color.'>
-                        <td style="width:1%; height:10px;" align=center title='.$row['pog_id'].'>'.$nro_ope.' - '.$row['or_tp'].'</td>
+                        <td style="width:1%; height:10px;" align=center title='.$row['pog_id'].'>'.$nro_ope.'</td>
                         <td style="width:1.5%; font-size: 17px; color:blue" align="center"><b>'.$row['og_codigo'].'</b></td>
                         <td style="width:1.5%; font-size: 17px;" align="center" bgcolor="#f1eeee" title='.$row['or_id'].'><b>'.$row['or_codigo'].'</b></td>
                         <td style="width:11%;">'.$row['or_objetivo'].'</td>
@@ -398,7 +414,7 @@ class Eval_oregional extends CI_Controller{
 
 
 
-    ///// Genera temporalidad
+    ///// Genera temporalidad 2027
     public function genera_temporalidad_form2($row){
       $tabla='';
       $por='';
@@ -454,204 +470,204 @@ class Eval_oregional extends CI_Controller{
 
 
 
-  public function ver_relacion_ogestion2($dep_id){
-    $tabla='';
-    $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id);
-    $departamento=$this->model_proyecto->get_departamento($dep_id);
-    $trimestre=$this->model_evaluacion->trimestre();
-    $metas = $this->model_producto->tp_metas(); /// tp metas
-    $tabla.='
-      <input name="base" type="hidden" value="'.base_url().'">
-      <div class="jarviswidget well" id="wid-id-3" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
-        <header>
-          <span class="widget-icon"> <i class="fa fa-comments"></i> </span>
-          <h2>...</h2>
-        </header>
-        <div>
-          <div class="jarviswidget-editbox">
-          </div>
-          <div class="widget-body">
-            <p>
-              <h2><b>EVALUACIÓN OPERACIONES '.strtoupper($departamento[0]['dep_departamento']).' </b> - '.$trimestre[0]['trm_descripcion'].' / '.$this->gestion.'</h2>
-              <br>
-                <a href="javascript:abreVentana(\''.site_url("").'/rep_oregional/'.$dep_id.'\');" title="REPORTE REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR OPERACIONES (Form N° 2)</b></a>
-                <a href="javascript:abreVentana(\''.site_url("").'/rep_eval_oregional/'.$dep_id.'\');" title="REPORTE EVALUACIÓN META REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR EVALUACIÓN (Form N° 2)</b></a>
-                <a href="#" data-toggle="modal" data-target="#modal_cumplimiento_grafico" class="btn btn-lg btn-default" name="'.$dep_id.'" onclick="nivel_cumplimiento_operaciones_grafico('.$dep_id.','.$this->tmes.');" title="NIVEL DE CUMPLIMIENTO DE OPERACIONES (GRAFICO)" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>DETALLE CUMPLIMIENTO (Form N° 2)</b></a>
-            </p>
-            <hr class="simple">
-            '.$this->calificacion_total_form2_regional($dep_id,1).'
-            <hr class="simple">
-            <ul id="myTab1" class="nav nav-tabs bordered">';
-              $nro=0;
-              foreach($acp_regional as $row){
-                $nro++;
-                $activo='';
-                if($nro==1){
-                  $activo='class="active"';
-                }
-                $tabla.='
-                <li '.$activo.'>
-                  <a href="#s'.$nro.'" data-toggle="tab"><b>A. C. P.</b><span class="badge bg-color-green txt-color-white">'.$row['og_codigo'].'</span></a>
-                </li>';
-              }
-            $tabla.='
-            </ul>
+  // public function ver_relacion_ogestion2($dep_id){
+  //   $tabla='';
+  //   $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id);
+  //   $departamento=$this->model_proyecto->get_departamento($dep_id);
+  //   $trimestre=$this->model_evaluacion->trimestre();
+  //   $metas = $this->model_producto->tp_metas(); /// tp metas
+  //   $tabla.='
+  //     <input name="base" type="hidden" value="'.base_url().'">
+  //     <div class="jarviswidget well" id="wid-id-3" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+  //       <header>
+  //         <span class="widget-icon"> <i class="fa fa-comments"></i> </span>
+  //         <h2>...</h2>
+  //       </header>
+  //       <div>
+  //         <div class="jarviswidget-editbox">
+  //         </div>
+  //         <div class="widget-body">
+  //           <p>
+  //             <h2><b>EVALUACIÓN OPERACIONES '.strtoupper($departamento[0]['dep_departamento']).' </b> - '.$trimestre[0]['trm_descripcion'].' / '.$this->gestion.'</h2>
+  //             <br>
+  //               <a href="javascript:abreVentana(\''.site_url("").'/rep_oregional/'.$dep_id.'\');" title="REPORTE REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR OPERACIONES (Form N° 2)</b></a>
+  //               <a href="javascript:abreVentana(\''.site_url("").'/rep_eval_oregional/'.$dep_id.'\');" title="REPORTE EVALUACIÓN META REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR EVALUACIÓN (Form N° 2)</b></a>
+  //               <a href="#" data-toggle="modal" data-target="#modal_cumplimiento_grafico" class="btn btn-lg btn-default" name="'.$dep_id.'" onclick="nivel_cumplimiento_operaciones_grafico('.$dep_id.','.$this->tmes.');" title="NIVEL DE CUMPLIMIENTO DE OPERACIONES (GRAFICO)" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>DETALLE CUMPLIMIENTO (Form N° 2)</b></a>
+  //           </p>
+  //           <hr class="simple">
+  //           '.$this->calificacion_total_form2_regional($dep_id,1).'
+  //           <hr class="simple">
+  //           <ul id="myTab1" class="nav nav-tabs bordered">';
+  //             $nro=0;
+  //             foreach($acp_regional as $row){
+  //               $nro++;
+  //               $activo='';
+  //               if($nro==1){
+  //                 $activo='class="active"';
+  //               }
+  //               $tabla.='
+  //               <li '.$activo.'>
+  //                 <a href="#s'.$nro.'" data-toggle="tab"><b>A. C. P.</b><span class="badge bg-color-green txt-color-white">'.$row['og_codigo'].'</span></a>
+  //               </li>';
+  //             }
+  //           $tabla.='
+  //           </ul>
 
-            <div id="myTabContent1" class="tab-content padding-10">';
-            $nro2=0;
-            foreach($acp_regional as $oge){
-              $lista_form2=$this->model_objetivoregion->list_oregional_regional($oge['og_id'],$dep_id);
-              $nro2++;
-              $active='class="tab-pane fade"';
-              if($nro2==1){
-                $active='class="tab-pane fade in active"';
-              }
+  //           <div id="myTabContent1" class="tab-content padding-10">';
+  //           $nro2=0;
+  //           foreach($acp_regional as $oge){
+  //             $lista_form2=$this->model_objetivoregion->list_oregional_regional($oge['og_id'],$dep_id);
+  //             $nro2++;
+  //             $active='class="tab-pane fade"';
+  //             if($nro2==1){
+  //               $active='class="tab-pane fade in active"';
+  //             }
 
-              $tipo=''; $size='col col-5';
-              if($oge['indi_id']==2){
-                $tipo='%';
-                $size='col col-7';
-              }
+  //             $tipo=''; $size='col col-5';
+  //             if($oge['indi_id']==2){
+  //               $tipo='%';
+  //               $size='col col-7';
+  //             }
 
-              $tabla.='
-              <div '.$active.' id="s'.$nro2.'">
-                <div class="row">
-                <form class="smart-form">
-                <legend><b>A.C.P. '.$oge['og_codigo'].'</b>.- '.$oge['og_objetivo'].'</legend>
-                <fieldset>
-                <table class="table table-bordered" border=0.2 style="width:100%;" id="datos">
-                  <thead>
-                  <tr style="font-size: 11px;">
-                    <th style="width:1%;height:10px;color:#FFF; text-align: center" bgcolor="#1c7368">#</th>
-                    <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. ACP.</b></th>
-                    <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. OPE.</b></th>
-                    <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">OPERACI&Oacute;N</th>
-                    <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">RESULTADO</th>
-                    <th style="width:10%;color:#FFF; text-align: center" bgcolor="#1c7368">INDICADOR</th>
-                    <th style="width:5%;color:#FFF; text-align: center" bgcolor="#1c7368">TP. INDI.</th>
-                    <th style="width:10%;color:#FFF; text-align: center" bgcolor="#1c7368">MEDIO VERIFICACI&Oacute;N</th>
-                    <th style="width:2%;color:#FFF; text-align: center" bgcolor="#1c7368">META</th>
-                    <th style="width:2%;color:#FFF; text-align: center" bgcolor="#1c7368">META ALINEADO</th>
-                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (I) TRIMESTRE</th>
-                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (II) TRIMESTRE</th>
-                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (III) TRIMESTRE</th>
-                    <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (IV) TRIMESTRE</th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. AL TRIMESTRE</th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. A LA GESTIÓN</th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
-                  </tr>
-                  </thead>
-                  <tbody>';
-                   $nro_ope=0;
-                  foreach($lista_form2 as $row){
-                    $meta='';
-                    if ($row['indi_id']==1 || $row['indi_id']==3) {
-                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']); //// suma metas trm4
-                    }
-                    elseif ($row['indi_id']==2) {
-                      $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']); //// nro
-                      $meta='%';
-                    }
+  //             $tabla.='
+  //             <div '.$active.' id="s'.$nro2.'">
+  //               <div class="row">
+  //               <form class="smart-form">
+  //               <legend><b>A.C.P. '.$oge['og_codigo'].'</b>.- '.$oge['og_objetivo'].'</legend>
+  //               <fieldset>
+  //               <table class="table table-bordered" border=0.2 style="width:100%;" id="datos">
+  //                 <thead>
+  //                 <tr style="font-size: 11px;">
+  //                   <th style="width:1%;height:10px;color:#FFF; text-align: center" bgcolor="#1c7368">#</th>
+  //                   <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. ACP.</b></th>
+  //                   <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. OPE.</b></th>
+  //                   <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">OPERACI&Oacute;N</th>
+  //                   <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">RESULTADO</th>
+  //                   <th style="width:10%;color:#FFF; text-align: center" bgcolor="#1c7368">INDICADOR</th>
+  //                   <th style="width:5%;color:#FFF; text-align: center" bgcolor="#1c7368">TP. INDI.</th>
+  //                   <th style="width:10%;color:#FFF; text-align: center" bgcolor="#1c7368">MEDIO VERIFICACI&Oacute;N</th>
+  //                   <th style="width:2%;color:#FFF; text-align: center" bgcolor="#1c7368">META</th>
+  //                   <th style="width:2%;color:#FFF; text-align: center" bgcolor="#1c7368">META ALINEADO</th>
+  //                   <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (I) TRIMESTRE</th>
+  //                   <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (II) TRIMESTRE</th>
+  //                   <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (III) TRIMESTRE</th>
+  //                   <th style="width:6%;color:#FFF; text-align: center" bgcolor="#1c7368">META (IV) TRIMESTRE</th>
+  //                   <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. AL TRIMESTRE</th>
+  //                   <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. A LA GESTIÓN</th>
+  //                   <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
+  //                   <th style="width:5%;color:#FFF;" bgcolor="#1c7368"></th>
+  //                 </tr>
+  //                 </thead>
+  //                 <tbody>';
+  //                  $nro_ope=0;
+  //                 foreach($lista_form2 as $row){
+  //                   $meta='';
+  //                   if ($row['indi_id']==1 || $row['indi_id']==3) {
+  //                     $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']); //// suma metas trm4
+  //                   }
+  //                   elseif ($row['indi_id']==2) {
+  //                     $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']); //// nro
+  //                     $meta='%';
+  //                   }
 
-                    $tp_meta='ACUMULADO';
-                    if($row['tp_meta']==1){
-                      $tp_meta='RECURRENTE MENSUAL';
-                    }
-                    elseif($row['tp_meta']==5){
-                      $tp_meta='RECURRENTE TRIMESTRAL';
-                    }
+  //                   $tp_meta='ACUMULADO';
+  //                   if($row['tp_meta']==1){
+  //                     $tp_meta='RECURRENTE MENSUAL';
+  //                   }
+  //                   elseif($row['tp_meta']==5){
+  //                     $tp_meta='RECURRENTE TRIMESTRAL';
+  //                   }
 
-                    $color=''; $titulo='';$grafico='';
-                    //$calificacion='trab';
-                    $calificacion=$this->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
+  //                   $color=''; $titulo='';$grafico='';
+  //                   //$calificacion='trab';
+  //                   $calificacion=$this->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
                     
-                    $boton_ajustar_apriorizados='
-                        <center><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
-                        <br>AJUSTAR ALINEACIÓN </center>';
+  //                   $boton_ajustar_apriorizados='
+  //                       <center><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
+  //                       <br>AJUSTAR ALINEACIÓN </center>';
 
-                    if(count($metas_prior)!=0){
-                      if($row['indi_id']==1 || $row['indi_id']==2){
-                        $meta_priorizado=round($metas_prior[0]['meta_prog_actividades'],2); /// suma trm4
-                      }
-                      else{
-                        $meta_priorizado=round($metas_prior[0]['nro'],2); /// nro
-                      }
+  //                   if(count($metas_prior)!=0){
+  //                     if($row['indi_id']==1 || $row['indi_id']==2){
+  //                       $meta_priorizado=round($metas_prior[0]['meta_prog_actividades'],2); /// suma trm4
+  //                     }
+  //                     else{
+  //                       $meta_priorizado=round($metas_prior[0]['nro'],2); /// nro
+  //                     }
 
-                      if(round($row['or_meta'],2)==$meta_priorizado){
-                        $boton_ajustar_apriorizados='<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
-                        $grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
-                        //$grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
-                      }
-                      else{
-                        $boton_ajustar_apriorizados='
-                        <center><b>('.round($metas_prior[0]['meta_prog_actividades'],2).')</b><br><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
-                        <br>AJUSTAR ALINEACIÓN</center>';
-                      }
-                    }
+  //                     if(round($row['or_meta'],2)==$meta_priorizado){
+  //                       $boton_ajustar_apriorizados='<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
+  //                       $grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+  //                       //$grafico='<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="nivel_cumplimiento('.$row['or_id'].','.$dep_id.','.$row['tp_meta'].');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+  //                     }
+  //                     else{
+  //                       $boton_ajustar_apriorizados='
+  //                       <center><b>('.round($metas_prior[0]['meta_prog_actividades'],2).')</b><br><a href="'.site_url("").'/me/alineacion_ope_acp/'.$row['og_id'].'" target="_blank" class="btn btn-default" title="VER ALINEACION ACP-FORM4"><img src="'.base_url().'assets/Iconos/application_double.png" WIDTH="30" HEIGHT="30"/></a>
+  //                       <br>AJUSTAR ALINEACIÓN</center>';
+  //                     }
+  //                   }
 
-                    $nro_ope++;
-                    if($row['or_priorizado']==1){
-                      $titulo='OPERACION PRIORIZADO';
-                      $color='#e4f7f5';
-                    }
+  //                   $nro_ope++;
+  //                   if($row['or_priorizado']==1){
+  //                     $titulo='OPERACION PRIORIZADO';
+  //                     $color='#e4f7f5';
+  //                   }
 
-                    $tabla.='
-                      <tr style="font-size: 10px;" bgcolor='.$color.'>
-                        <td style="width:1%; height:10px;" align=center title='.$row['pog_id'].'>'.$nro_ope.' - '.$row['or_tp'].'</td>
-                        <td style="width:1.5%; font-size: 17px; color:blue" align="center"><b>'.$row['og_codigo'].'</b></td>
-                        <td style="width:1.5%; font-size: 17px;" align="center" bgcolor="#f1eeee" title='.$row['or_id'].'><b>'.$row['or_codigo'].'</b></td>
-                        <td style="width:11%;">'.$row['or_objetivo'].'</td>
-                        <td style="width:11%;">'.$row['or_resultado'].'</td>
-                        <td style="width:10%;">'.$row['or_indicador'].'</td>
-                        <td style="width:5%;" title="'.$row['indi_id'].' -> '.$row['tp_meta'].'">
-                          <b>'.strtoupper($row['indi_descripcion']).'</b>';
-                          if($row['indi_id']==2){
-                            $tabla.='
-                              <select class="form-control" id="tp_met" name="tp_met" style="width:100%; font-size:9px; color:blue; background-color: #e3fcf8;" title="SELECCIONE TIPO DE META" onchange="select_tp_meta(this.value,'.$row['or_id'].');">';
-                                foreach($metas as $rowm){ 
-                                  if($rowm['mt_id']==$row['tp_meta']){
-                                    $tabla.='<option value="'.$rowm['mt_id'].'" selected>'.$rowm['mt_tipo'].'</option>';
-                                  }
-                                  else{
-                                    $tabla.='<option value="'.$rowm['mt_id'].'" >'.$rowm['mt_tipo'].'</option>';
-                                  }
-                                }
-                                $tabla.='
-                              </select>';
-                          }
-                        $tabla.='
-                          <font color=blue>'.$tp_meta.'</font>
-                        </td>
-                        <td style="width:10%;">'.$row['or_verificacion'].'</td>
-                        <td style="width:2%; font-size: 15px;" align=center title="'.$row['tp_meta'].'"><b>'.round($row['or_meta'],2).' '.$meta.'</b></td>
-                        <td style="width:2%;" align=center>'.$boton_ajustar_apriorizados.'</td>
-                        '.$this->get_temporalidad_objetivo_regional($row['or_id'],0,$row['or_tp'],$row['tp_meta']).'
-                        <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.$calificacion[3].' %</b></td>
-                        <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.$calificacion[4].' %</b></td>
-                        <td>
-                          <a href="#" data-toggle="modal" data-target="#modal_act_priorizados" style="font-size: 10px;" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="ver_actividades_priorizados('.$row['or_id'].','.$dep_id.');" title="VER MIS ACTIVIDADES PRIORIZADOS">ACT. PRIORIZADOS</a>
-                        </td>
-                        <td align=center>'.$grafico.'</td>
-                      </tr>';
-                  }
-                  $tabla.='
-                  </tbody>
-                </table>
-                </fieldset>
-                </form>
-              </div>
-              </div>';
-            }
+  //                   $tabla.='
+  //                     <tr style="font-size: 10px;" bgcolor='.$color.'>
+  //                       <td style="width:1%; height:10px;" align=center title='.$row['pog_id'].'>'.$nro_ope.' - '.$row['or_tp'].'</td>
+  //                       <td style="width:1.5%; font-size: 17px; color:blue" align="center"><b>'.$row['og_codigo'].'</b></td>
+  //                       <td style="width:1.5%; font-size: 17px;" align="center" bgcolor="#f1eeee" title='.$row['or_id'].'><b>'.$row['or_codigo'].'</b></td>
+  //                       <td style="width:11%;">'.$row['or_objetivo'].'</td>
+  //                       <td style="width:11%;">'.$row['or_resultado'].'</td>
+  //                       <td style="width:10%;">'.$row['or_indicador'].'</td>
+  //                       <td style="width:5%;" title="'.$row['indi_id'].' -> '.$row['tp_meta'].'">
+  //                         <b>'.strtoupper($row['indi_descripcion']).'</b>';
+  //                         if($row['indi_id']==2){
+  //                           $tabla.='
+  //                             <select class="form-control" id="tp_met" name="tp_met" style="width:100%; font-size:9px; color:blue; background-color: #e3fcf8;" title="SELECCIONE TIPO DE META" onchange="select_tp_meta(this.value,'.$row['or_id'].');">';
+  //                               foreach($metas as $rowm){ 
+  //                                 if($rowm['mt_id']==$row['tp_meta']){
+  //                                   $tabla.='<option value="'.$rowm['mt_id'].'" selected>'.$rowm['mt_tipo'].'</option>';
+  //                                 }
+  //                                 else{
+  //                                   $tabla.='<option value="'.$rowm['mt_id'].'" >'.$rowm['mt_tipo'].'</option>';
+  //                                 }
+  //                               }
+  //                               $tabla.='
+  //                             </select>';
+  //                         }
+  //                       $tabla.='
+  //                         <font color=blue>'.$tp_meta.'</font>
+  //                       </td>
+  //                       <td style="width:10%;">'.$row['or_verificacion'].'</td>
+  //                       <td style="width:2%; font-size: 15px;" align=center title="'.$row['tp_meta'].'"><b>'.round($row['or_meta'],2).' '.$meta.'</b></td>
+  //                       <td style="width:2%;" align=center>'.$boton_ajustar_apriorizados.'</td>
+  //                       '.$this->get_temporalidad_objetivo_regional($row['or_id'],0,$row['or_tp'],$row['tp_meta']).'
+  //                       <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.$calificacion[3].' %</b></td>
+  //                       <td style="font-family:Verdana;font-size: 18px;" align=center><b>'.$calificacion[4].' %</b></td>
+  //                       <td>
+  //                         <a href="#" data-toggle="modal" data-target="#modal_act_priorizados" style="font-size: 10px;" class="btn btn-lg btn-default" name="'.$row['or_id'].'"  onclick="ver_actividades_priorizados('.$row['or_id'].','.$dep_id.');" title="VER MIS ACTIVIDADES PRIORIZADOS">ACT. PRIORIZADOS</a>
+  //                       </td>
+  //                       <td align=center>'.$grafico.'</td>
+  //                     </tr>';
+  //                 }
+  //                 $tabla.='
+  //                 </tbody>
+  //               </table>
+  //               </fieldset>
+  //               </form>
+  //             </div>
+  //             </div>';
+  //           }
 
-            $tabla.='
-            </div>
-          </div>
-        </div>
-      </div>';
+  //           $tabla.='
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>';
 
-      return $tabla;
-    }
+  //     return $tabla;
+  //   }
 
 
     /*--- ACTUALIZA PARAMETRO DE CALIFICACION OPERACIONES REGIONAL ---*/
@@ -705,77 +721,77 @@ class Eval_oregional extends CI_Controller{
 
 
     /*-- ARMANDO TEMPORALIDAD PARA OBJETIVOS REGIONAL POR REGIONAL (TRIMESTRAL) 2024 --*/
-    public function get_temporalidad_objetivo_regional($or_id,$tp_rep,$tp_or,$tp_meta){
-      /// tp_rep=0 normal
-      /// tp_rep=1 Reporte
-      /// tp_or=1 (inversion), 0 (gasto corriente)
+    // public function get_temporalidad_objetivo_regional($or_id,$tp_rep,$tp_or,$tp_meta){
+    //   /// tp_rep=0 normal
+    //   /// tp_rep=1 Reporte
+    //   /// tp_or=1 (inversion), 0 (gasto corriente)
 
-      $verif_temp=$this->model_objetivoregion->verif_temporalidad_oregional($or_id);
-      $tabla='';
-      $por='';
-      if($tp_or==1){
-        $por='%';
-      }
+    //   $verif_temp=$this->model_objetivoregion->verif_temporalidad_oregional($or_id);
+    //   $tabla='';
+    //   $por='';
+    //   if($tp_or==1){
+    //     $por='%';
+    //   }
 
-      if(count($verif_temp)!=0){
-        for ($i=1; $i <=4 ; $i++) {
-          $valor=$this->calificacion_trimestral_acumulado_x_oregional($or_id,$i,$tp_or,$tp_meta); /// GASTO CORRIENTE / INVERSION
+    //   if(count($verif_temp)!=0){
+    //     for ($i=1; $i <=4 ; $i++) {
+    //       $valor=$this->calificacion_trimestral_acumulado_x_oregional($or_id,$i,$tp_or,$tp_meta); /// GASTO CORRIENTE / INVERSION
           
-          $color='#f1f5f4';
-          if($i<=$this->tmes){
-            $color='#e4fdf7';
-          }
+    //       $color='#f1f5f4';
+    //       if($i<=$this->tmes){
+    //         $color='#e4fdf7';
+    //       }
 
 
-          if($tp_rep==0){ /// VISTA NORMAL
-            $tabla.='
-            <td style="width:6%;" bgcolor="'.$color.'" align=center>
-              <table class="table table-bordered" border=0.2 style="width:80%;">
-                <tr>
-                  <td style="width:50%;"><b>PROG.</b></td>
-                  <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.$valor[1].''.$por.'</b></td>
-                </tr>
-                <tr>
-                  <td><b>EJEC.</b></td>
-                  <td style="font-size: 12px; color:blue" align=right><b>'.$valor[2].''.$por.'</b></td>
-                </tr>
-                <tr>
-                  <td><b>%CUMP.</b></td>
-                  <td style="font-size: 13px; color:blue" align=right><b>'.$valor[3].'%</b></td>
-                </tr>
-              </table>
-            </td>';
-          }
-          else{ /// VISTA PARA REPORTES
-            $tabla.='
-            <td style="width:4.5%;" align=center>
-              <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:90%;" align=center>
-                <tr>
-                  <td style="width:50%; height: 1.5%; font-size: 8px;"><b>P.</b></td>
-                  <td style="width:50%;font-size: 8.5px;" align=right><b>'.$valor[1].''.$por.'</b></td>
-                </tr>
-                <tr>
-                  <td style="width:50%; height: 1.5%; font-size: 8px;"><b>E.</b></td>
-                  <td style="font-size: 8.5px;" align=right><b>'.$valor[2].''.$por.'</b></td>
-                </tr>
-              </table>
-            </td>';
-          }
+    //       if($tp_rep==0){ /// VISTA NORMAL
+    //         $tabla.='
+    //         <td style="width:6%;" bgcolor="'.$color.'" align=center>
+    //           <table class="table table-bordered" border=0.2 style="width:80%;">
+    //             <tr>
+    //               <td style="width:50%;"><b>PROG.</b></td>
+    //               <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.$valor[1].''.$por.'</b></td>
+    //             </tr>
+    //             <tr>
+    //               <td><b>EJEC.</b></td>
+    //               <td style="font-size: 12px; color:blue" align=right><b>'.$valor[2].''.$por.'</b></td>
+    //             </tr>
+    //             <tr>
+    //               <td><b>%CUMP.</b></td>
+    //               <td style="font-size: 13px; color:blue" align=right><b>'.$valor[3].'%</b></td>
+    //             </tr>
+    //           </table>
+    //         </td>';
+    //       }
+    //       else{ /// VISTA PARA REPORTES
+    //         $tabla.='
+    //         <td style="width:4.5%;" align=center>
+    //           <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:90%;" align=center>
+    //             <tr>
+    //               <td style="width:50%; height: 1.5%; font-size: 8px;"><b>P.</b></td>
+    //               <td style="width:50%;font-size: 8.5px;" align=right><b>'.$valor[1].''.$por.'</b></td>
+    //             </tr>
+    //             <tr>
+    //               <td style="width:50%; height: 1.5%; font-size: 8px;"><b>E.</b></td>
+    //               <td style="font-size: 8.5px;" align=right><b>'.$valor[2].''.$por.'</b></td>
+    //             </tr>
+    //           </table>
+    //         </td>';
+    //       }
 
-        }
-      }
-      else{
-        for ($i=1; $i <=4 ; $i++) { 
-          $color='#fbf6f6';
-          if($i<=$this->tmes){
-            $color='#f7e0e0';
-          }
-          $tabla.='<td bgcolor="'.$color.'" align=center title="SIN TEMPORALIDAD">-</td>';
-        }
-      }
+    //     }
+    //   }
+    //   else{
+    //     for ($i=1; $i <=4 ; $i++) { 
+    //       $color='#fbf6f6';
+    //       if($i<=$this->tmes){
+    //         $color='#f7e0e0';
+    //       }
+    //       $tabla.='<td bgcolor="'.$color.'" align=center title="SIN TEMPORALIDAD">-</td>';
+    //     }
+    //   }
 
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
 
     /*-- ARMANDO TEMPORALIDAD PARA OBJETIVOS REGIONAL POR REGIONAL (ACUMULADO) --*/
@@ -937,182 +953,182 @@ class Eval_oregional extends CI_Controller{
 
     
     /*-- UPDATE TEMPORALIDAD PARA OBJETIVOS REGIONAL POR REGIONAL 2027 (optimizar) --*/
-    public function create_temporalidad_oregional($dep_id){
-      $form2=$this->model_objetivogestion->get_list_ogestion_por_regional($dep_id);
-      foreach($form2 as $row){
+    // public function create_temporalidad_oregional($dep_id){
+    //   $form2=$this->model_objetivogestion->get_list_ogestion_por_regional($dep_id);
+    //   foreach($form2 as $row){
 
-        if($row['or_tp']==0){ //// Generacion de Temporalidad - Gasto Corriente
-          $this->Genera_temporalidad_GastoCorriente($row);
-        }
-        else{ //// Generacion de Temporalidad - Proyecto de Inversion
-          //$this->Genera_temporalidad_ProyectoInversion($row);
-        }
+    //     if($row['or_tp']==0){ //// Generacion de Temporalidad - Gasto Corriente
+    //       $this->Genera_temporalidad_GastoCorriente($row);
+    //     }
+    //     else{ //// Generacion de Temporalidad - Proyecto de Inversion
+    //       //$this->Genera_temporalidad_ProyectoInversion($row);
+    //     }
 
-      }
+    //   }
 
-    }
+    // }
 
 
     //// GENERA TEMPORALIDAD FORM 2 (PROYECTO DE INVERSION)
-    public function Genera_temporalidad_ProyectoInversion($row){
-      /// Borrando temporalidad programado de Objetivos Regionales
-      $this->db->where('or_id', $row['or_id']);
-      $this->db->delete('temp_trm_prog_objetivos_regionales');
+    // public function Genera_temporalidad_ProyectoInversion($row){
+    //   /// Borrando temporalidad programado de Objetivos Regionales
+    //   $this->db->where('or_id', $row['or_id']);
+    //   $this->db->delete('temp_trm_prog_objetivos_regionales');
 
-      /// --- eliminando ejecucion de Objetivos Regionales
-      $this->db->where('or_id', $row['or_id']);
-      $this->db->delete('temp_trm_ejec_objetivos_regionales');
+    //   /// --- eliminando ejecucion de Objetivos Regionales
+    //   $this->db->where('or_id', $row['or_id']);
+    //   $this->db->delete('temp_trm_ejec_objetivos_regionales');
 
-      /// TECHO PPTO por OBJETIVO REGIONAL
+    //   /// TECHO PPTO por OBJETIVO REGIONAL
       
-      if($this->verif_mes>2){ //// ppto actual (ya con modificaciones poa y presupuestrias al proyecto)
-        $techo_ini_actual=$this->model_insumo->techo_ppto_actual_inversion_regional($row['or_id']); //// Techo actual
-      }
-      else{
-        $techo_ini_actual=$this->model_insumo->techo_ppto_inicial_inversion_regional($row['or_id']); //// Techo inicial asignado aprobado por Gestion
-      }
+    //   if($this->verif_mes>2){ //// ppto actual (ya con modificaciones poa y presupuestrias al proyecto)
+    //     $techo_ini_actual=$this->model_insumo->techo_ppto_actual_inversion_regional($row['or_id']); //// Techo actual
+    //   }
+    //   else{
+    //     $techo_ini_actual=$this->model_insumo->techo_ppto_inicial_inversion_regional($row['or_id']); //// Techo inicial asignado aprobado por Gestion
+    //   }
 
-      if(count($techo_ini_actual)!=0){
+    //   if(count($techo_ini_actual)!=0){
           
-          if($this->verif_mes>2){
-            $techo_ppto=$techo_ini_actual[0]['techo_ppto_actual']; /// TECHO PPTO ACTUAL
-          }
-          else{
-            $techo_ppto=$techo_ini_actual[0]['techo_ppto_inicial']; /// TECHO PPTO INICIAL
-          }
+    //       if($this->verif_mes>2){
+    //         $techo_ppto=$techo_ini_actual[0]['techo_ppto_actual']; /// TECHO PPTO ACTUAL
+    //       }
+    //       else{
+    //         $techo_ppto=$techo_ini_actual[0]['techo_ppto_inicial']; /// TECHO PPTO INICIAL
+    //       }
 
-          for ($i=1; $i <=4; $i++) {
+    //       for ($i=1; $i <=4; $i++) {
           
-            if($this->verif_mes>2){
-              $ppto_trimestre=$this->model_insumo->ppto_actual_inversion_regional_trimestre($row['or_id'],$i); /// Suma ppto actual
-            }
-            else{
-              $ppto_trimestre=$this->model_insumo->ppto_inicial_inversion_regional_trimestre($row['or_id'],$i); /// Suma ppto asignado inicialmente
-            }
+    //         if($this->verif_mes>2){
+    //           $ppto_trimestre=$this->model_insumo->ppto_actual_inversion_regional_trimestre($row['or_id'],$i); /// Suma ppto actual
+    //         }
+    //         else{
+    //           $ppto_trimestre=$this->model_insumo->ppto_inicial_inversion_regional_trimestre($row['or_id'],$i); /// Suma ppto asignado inicialmente
+    //         }
 
-            /*----------------------------------------------------*/
-            if(count($ppto_trimestre)!=0){
+    //         /*----------------------------------------------------*/
+    //         if(count($ppto_trimestre)!=0){
               
-              if($this->verif_mes>2){
-                $ppto_trimestre_prog=$ppto_trimestre[0]['ppto_actual_trimestre']; /// valor ppto actual al trimestre
-              }
-              else{
-                $ppto_trimestre_prog=$ppto_trimestre[0]['ppto_inicial_trimestre']; /// valor ppto inicial al trimestre
-              }
+    //           if($this->verif_mes>2){
+    //             $ppto_trimestre_prog=$ppto_trimestre[0]['ppto_actual_trimestre']; /// valor ppto actual al trimestre
+    //           }
+    //           else{
+    //             $ppto_trimestre_prog=$ppto_trimestre[0]['ppto_inicial_trimestre']; /// valor ppto inicial al trimestre
+    //           }
 
-              $data_to_store2 = array( ///// Tabla temp prog oregional
-                'or_id' => $row['or_id'], /// or id
-                'trm_id' => $i, /// trimestre
-                'tp_id' => 1, /// inversion
-                'pg_fis' => round((($ppto_trimestre_prog/$techo_ppto)*100),2), /// valor Programado %
-                'g_id' => $this->gestion, /// gestion                
-              );
-              $this->db->insert('temp_trm_prog_objetivos_regionales', $data_to_store2);
-            }
+    //           $data_to_store2 = array( ///// Tabla temp prog oregional
+    //             'or_id' => $row['or_id'], /// or id
+    //             'trm_id' => $i, /// trimestre
+    //             'tp_id' => 1, /// inversion
+    //             'pg_fis' => round((($ppto_trimestre_prog/$techo_ppto)*100),2), /// valor Programado %
+    //             'g_id' => $this->gestion, /// gestion                
+    //           );
+    //           $this->db->insert('temp_trm_prog_objetivos_regionales', $data_to_store2);
+    //         }
 
-            $ppto_trimestre_ejec=$this->model_ptto_sigep->ppto_ejecutado_inversion_regional_trimestre($row['or_id'],$i); /// Suma ppto ejecutado al trimestre
-            /*----------------------------------------------------*/
-            if(count($ppto_trimestre_ejec)!=0){
-                $data_to_store2 = array( ///// Tabla temp ejec oregional
-                  'or_id' => $row['or_id'], /// or id
-                  'trm_id' => $i, /// trimestre
-                  'tp_id' => 1, /// inversion
-                  'ejec_fis' => round((($ppto_trimestre_ejec[0]['ppto_ejec_trimestre']/$techo_ppto)*100),2), /// valor Ejecutado %
-                  'g_id' => $this->gestion, /// gestion                
-                );
-                $this->db->insert('temp_trm_ejec_objetivos_regionales', $data_to_store2);
-                /*----------------------------------------------------------*/
-            }
+    //         $ppto_trimestre_ejec=$this->model_ptto_sigep->ppto_ejecutado_inversion_regional_trimestre($row['or_id'],$i); /// Suma ppto ejecutado al trimestre
+    //         /*----------------------------------------------------*/
+    //         if(count($ppto_trimestre_ejec)!=0){
+    //             $data_to_store2 = array( ///// Tabla temp ejec oregional
+    //               'or_id' => $row['or_id'], /// or id
+    //               'trm_id' => $i, /// trimestre
+    //               'tp_id' => 1, /// inversion
+    //               'ejec_fis' => round((($ppto_trimestre_ejec[0]['ppto_ejec_trimestre']/$techo_ppto)*100),2), /// valor Ejecutado %
+    //               'g_id' => $this->gestion, /// gestion                
+    //             );
+    //             $this->db->insert('temp_trm_ejec_objetivos_regionales', $data_to_store2);
+    //             /*----------------------------------------------------------*/
+    //         }
             
-          }
-      }
+    //       }
+    //   }
 
-    }
+    // }
 
     //// GENERA TEMPORALIDAD FORM 2 (GASTO CORRIENTE) a eliminar
-    public function Genera_temporalidad_GastoCorriente($row){
-      //echo $row['og_id'].'/'.$row['or_id'].'.-  '.$row['og_codigo'].'.'.$row['or_codigo'].'---'.$row['indi_id'].'<br>';
-        if($row['indi_id']==1 || $row['indi_id']==3){
-          $denominador=1;
-          $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']);
-        }
-        else{ /// $row['indi_id']==2 (relativo : absoluto recurrente y trimestral)
-          $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']); /// meta recurrente
-         // $denominador=3;
-        }
+    // public function Genera_temporalidad_GastoCorriente($row){
+    //   //echo $row['og_id'].'/'.$row['or_id'].'.-  '.$row['og_codigo'].'.'.$row['or_codigo'].'---'.$row['indi_id'].'<br>';
+    //     if($row['indi_id']==1 || $row['indi_id']==3){
+    //       $denominador=1;
+    //       $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional($row['or_id']);
+    //     }
+    //     else{ /// $row['indi_id']==2 (relativo : absoluto recurrente y trimestral)
+    //       $metas_prior=$this->model_objetivoregion->get_suma_meta_form4_x_oregional_recurrentes($row['or_id'],$row['tp_meta']); /// meta recurrente
+    //      // $denominador=3;
+    //     }
 
-        /// Borrando temporalidad programado de Objetivos Regionales
-            $this->db->where('or_id', $row['or_id']);
-            $this->db->delete('temp_trm_prog_objetivos_regionales');
+    //     /// Borrando temporalidad programado de Objetivos Regionales
+    //         $this->db->where('or_id', $row['or_id']);
+    //         $this->db->delete('temp_trm_prog_objetivos_regionales');
 
-            /// --- eliminando ejecucion de Objetivos Regionales
-            $this->db->where('or_id', $row['or_id']);
-            $this->db->delete('temp_trm_ejec_objetivos_regionales');
-        ///---------------------------------------------------------
+    //         /// --- eliminando ejecucion de Objetivos Regionales
+    //         $this->db->where('or_id', $row['or_id']);
+    //         $this->db->delete('temp_trm_ejec_objetivos_regionales');
+    //     ///---------------------------------------------------------
 
-        if(count($metas_prior)!=0){
-            $metas_prioritarios=0;
-            if($row['indi_id']==1){ /// absoluto
-              $metas_prioritarios=round($metas_prior[0]['meta_prog_actividades'],2);
-            }
-            elseif($row['indi_id']==2) { /// Recurrente
+    //     if(count($metas_prior)!=0){
+    //         $metas_prioritarios=0;
+    //         if($row['indi_id']==1){ /// absoluto
+    //           $metas_prioritarios=round($metas_prior[0]['meta_prog_actividades'],2);
+    //         }
+    //         elseif($row['indi_id']==2) { /// Recurrente
                 
-              $suma_meta_form4_alineados_todos=$this->model_objetivoregion->get_suma_meta_form4_alineado_x_oregional_todos($row['or_id']);
-              if(count($suma_meta_form4_alineados_todos)!=0){
-                $metas_prioritarios=round(($suma_meta_form4_alineados_todos[0]['suma_meta']/count($this->model_objetivoregion->get_lista_form4_alineado_x_oregional_todos($row['or_id']))),2);
-              }
+    //           $suma_meta_form4_alineados_todos=$this->model_objetivoregion->get_suma_meta_form4_alineado_x_oregional_todos($row['or_id']);
+    //           if(count($suma_meta_form4_alineados_todos)!=0){
+    //             $metas_prioritarios=round(($suma_meta_form4_alineados_todos[0]['suma_meta']/count($this->model_objetivoregion->get_lista_form4_alineado_x_oregional_todos($row['or_id']))),2);
+    //           }
               
 
-              if($row['tp_meta']==3){
-                $denominador=1; /// absoluto 
-              }
-              elseif($row['tp_meta']==1){ /// recurrente mensual
-                $denominador=$metas_prior[0]['nro']*3;
-              }
-              elseif($row['tp_meta']==5){ /// recurrente trimestral
-                $denominador=$metas_prior[0]['nro'];
-              }
+    //           if($row['tp_meta']==3){
+    //             $denominador=1; /// absoluto 
+    //           }
+    //           elseif($row['tp_meta']==1){ /// recurrente mensual
+    //             $denominador=$metas_prior[0]['nro']*3;
+    //           }
+    //           elseif($row['tp_meta']==5){ /// recurrente trimestral
+    //             $denominador=$metas_prior[0]['nro'];
+    //           }
               
-            }
-            elseif($row['indi_id']==3){ /// Acumulativo 
-              $metas_prioritarios=round($metas_prior[0]['nro'],2);
-            } 
-            //echo round($row['or_meta'],2).'----'.$metas_prioritarios.'<br>';
-            if(round($row['or_meta'],2)==$metas_prioritarios) { /// META == META ACUMULADO FORN 4
-              /// creamos registro
-                for ($i=1; $i <=4 ; $i++) { 
-                  $get_dato_trimestre=$this->model_objetivoregion->get_suma_trimestre_para_oregional($row['or_id'],$i);
+    //         }
+    //         elseif($row['indi_id']==3){ /// Acumulativo 
+    //           $metas_prioritarios=round($metas_prior[0]['nro'],2);
+    //         } 
+    //         //echo round($row['or_meta'],2).'----'.$metas_prioritarios.'<br>';
+    //         if(round($row['or_meta'],2)==$metas_prioritarios) { /// META == META ACUMULADO FORN 4
+    //           /// creamos registro
+    //             for ($i=1; $i <=4 ; $i++) { 
+    //               $get_dato_trimestre=$this->model_objetivoregion->get_suma_trimestre_para_oregional($row['or_id'],$i);
                   
-                    if(count($get_dato_trimestre)!=0){
-                      /*--------------------------------------------------------*/
-                      $data_to_store2 = array( ///// Tabla temp prog oregional
-                        'or_id' => $row['or_id'], /// or id
-                        'trm_id' => $i, /// trimestre
-                        'pg_fis' => round(($get_dato_trimestre[0]['trimestre']/$denominador),2), /// valor Programado Trimestral
-                        'g_id' => $this->gestion, /// gestion                
-                      );
-                      $this->db->insert('temp_trm_prog_objetivos_regionales', $data_to_store2);
-                      /*----------------------------------------------------------*/
-                    }
+    //                 if(count($get_dato_trimestre)!=0){
+    //                   /*--------------------------------------------------------*/
+    //                   $data_to_store2 = array( ///// Tabla temp prog oregional
+    //                     'or_id' => $row['or_id'], /// or id
+    //                     'trm_id' => $i, /// trimestre
+    //                     'pg_fis' => round(($get_dato_trimestre[0]['trimestre']/$denominador),2), /// valor Programado Trimestral
+    //                     'g_id' => $this->gestion, /// gestion                
+    //                   );
+    //                   $this->db->insert('temp_trm_prog_objetivos_regionales', $data_to_store2);
+    //                   /*----------------------------------------------------------*/
+    //                 }
 
 
-                    $get_dato_trimestre=$this->model_objetivoregion->get_suma_trimestre_ejecucion_oregional($row['or_id'],$i);
-                    if(count($get_dato_trimestre)!=0){
-                      /*--------------------------------------------------------*/
-                      $data_to_store2 = array( ///// Tabla temp prog oregional
-                        'or_id' => $row['or_id'], /// or id
-                        'trm_id' => $i, /// trimestre
-                        'ejec_fis' => round(($get_dato_trimestre[0]['trimestre']/$denominador),2), /// valor Ejecutado Trimestral
-                        'g_id' => $this->gestion, /// gestion                
-                      );
-                      $this->db->insert('temp_trm_ejec_objetivos_regionales', $data_to_store2);
-                      /*----------------------------------------------------------*/
-                    }
-                }
+    //                 $get_dato_trimestre=$this->model_objetivoregion->get_suma_trimestre_ejecucion_oregional($row['or_id'],$i);
+    //                 if(count($get_dato_trimestre)!=0){
+    //                   /*--------------------------------------------------------*/
+    //                   $data_to_store2 = array( ///// Tabla temp prog oregional
+    //                     'or_id' => $row['or_id'], /// or id
+    //                     'trm_id' => $i, /// trimestre
+    //                     'ejec_fis' => round(($get_dato_trimestre[0]['trimestre']/$denominador),2), /// valor Ejecutado Trimestral
+    //                     'g_id' => $this->gestion, /// gestion                
+    //                   );
+    //                   $this->db->insert('temp_trm_ejec_objetivos_regionales', $data_to_store2);
+    //                   /*----------------------------------------------------------*/
+    //                 }
+    //             }
               
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
 
 
@@ -1438,10 +1454,10 @@ class Eval_oregional extends CI_Controller{
     return $tabla;
   }
 
-  //// Evaluacion de Operaciones Regional form 2
+  //// Lista Evaluacion de Operaciones Regional form 2 para el Reporte
   public function rep_lista_form2($dep_id){ 
     $tabla='';
-    $lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional($dep_id);
+    $lista_form2=$this->model_objetivoregion->list_form2_regional_x_regional($dep_id); /// List Operaciones x Regional
 
     $tabla.='
     <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:100%;" align=center>
@@ -1450,25 +1466,24 @@ class Eval_oregional extends CI_Controller{
           <th style="width:0.9%;height:20px;">#</th>
           <th style="width:2.1%;"><b>COD. ACP.</b></th>
           <th style="width:2.1%;"><b>COD. OPE.</b></th>
-          <th style="width:12%;">OPERACI&Oacute;N REGIONAL '.$this->gestion.'</th>
-          <th style="width:12%;">PRODUCTO</th>
-          <th style="width:12%;">RESULTADO</th>
-          <th style="width:12%;">INDICADOR</th>
+          <th style="width:11.5%;">OPERACI&Oacute;N REGIONAL</th>
+          <th style="width:11.5%;">PRODUCTO</th>
+          <th style="width:11.5%;">RESULTADO</th>
+          <th style="width:11%;">INDICADOR</th>
           <th style="width:4%;">META</th>
-          <th style="width:5.2%;">I TRIM.</th>
-          <th style="width:5.2%;">II. TRIM.</th>
-          <th style="width:5.2%;">III. TRIM.</th>
-          <th style="width:5.2%;">IV. TRIM.</th>
+          <th style="width:5.3%;">I TRIM.</th>
+          <th style="width:5.3%;">II. TRIM.</th>
+          <th style="width:5.3%;">III. TRIM.</th>
+          <th style="width:5.3%;">IV. TRIM.</th>
           <th style="width:4%;"></th>
-          <th style="width:4%;">% CUMP.<br>TRIM.</th>
-          <th style="width:4%;">% CUMP.<br>'.$this->gestion.'</th>
+          <th style="width:4.5%;">(%) CUMP.<br>TRIM.</th>
+          <th style="width:4.5%;">(%) CUMP.<br>'.$this->gestion.'</th>
           <th style="width:8%;">MEDIO DE VERIFICACI&Oacute;N</th>
         </tr>
       </thead>
       <tbody>';
     $nro=0;$monto_total=0; $suma1=0;
-    foreach($lista_ogestion as $row){
-      $calificacion=$this->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
+    foreach($lista_form2 as $row){
       $por='';
       if($row['or_tp']==1){
         $por='%';
@@ -1478,15 +1493,15 @@ class Eval_oregional extends CI_Controller{
         $bgcolor='#ecf7f5';
       }
 
-      if($calificacion[1]==0){
+      if($row['trm'.$this->tmes]==0){
         $semaforo='<img src="'.getcwd().'/assets/ifinal/blanco.JPG" class="img-responsive" style="width:70%; height:3.5%;" align=center />';
       }
       else{
         $semaforo='<img src="'.getcwd().'/assets/ifinal/rojo1.JPG" class="img-responsive" style="width:70%; height:3.5%;" align=center />';
-        if($calificacion[3]>50 & $calificacion[3]<=80){
+        if($row['trm'.$this->tmes]>50 & $row['trm'.$this->tmes]<=80){
           $semaforo='<img src="'.getcwd().'/assets/ifinal/amarillo.JPG" class="img-responsive" style="width:70%; height:3.5%;" align=center />';
         }
-        elseif($calificacion[3]>80 & $calificacion[3]<=100){
+        elseif($row['trm'.$this->tmes]>80 & $row['trm'.$this->tmes]<=100){
           $semaforo='<img src="'.getcwd().'/assets/ifinal/verde.JPG" class="img-responsive" style="width:70%; height:3.5%;" align=center />';
         }
       }
@@ -1494,18 +1509,39 @@ class Eval_oregional extends CI_Controller{
       $tabla.='
       <tr style="font-size: 6.5px;" bgcolor='.$bgcolor.'>
         <td style="width:0.9%; height:18px;" align=center>'.$nro.'</td>
-        <td style="width:2.2%; font-size: 10px;" align="center"><b>'.$row['og_codigo'].'</b></td>
-        <td style="width:2.2%; font-size: 10px;" align="center"><b>'.$row['or_codigo'].'</b></td>
-        <td style="width:12%;">'.$row['or_objetivo'].'</td>
-        <td style="width:12%;">'.$row['or_producto'].'</td>
-        <td style="width:12%;">'.$row['or_resultado'].'</td>
-        <td style="width:12%;">'.$row['or_indicador'].'</td>
-        <td style="width:4%; font-size: 9px;" align=center><b>'.round($row['or_meta'],2).''.$por.'</b></td>
-        '.$this->get_temporalidad_objetivo_regional($row['or_id'],1,$row['or_tp'],$row['tp_meta']).'
+        <td style="width:2.1%; font-size: 10px;" align="center"><b>'.$row['og_codigo'].'</b></td>
+        <td style="width:2.1%; font-size: 10px;" align="center"><b>'.$row['or_codigo'].'</b></td>
+        <td style="width:11.5%;text-align: justify;">'.$row['or_objetivo'].'</td>
+        <td style="width:11.5%;text-align: justify;">'.$row['or_producto'].'</td>
+        <td style="width:11.5%;text-align: justify;">'.$row['or_resultado'].'</td>
+        <td style="width:11%;text-align: justify;">'.$row['or_indicador'].'</td>
+        <td style="width:4%; font-size: 9px;" align=center><b>'.round($row['or_meta'],2).''.$por.'</b></td>';
+        $campo_prog='trm'; $campo_ejec='e_trm'; 
+        if($row['or_tp']==1){
+          $campo_prog='trm_porc'; $campo_ejec='trm_porc_ejec';
+        }
+
+
+          for ($i=1; $i <=4 ; $i++) { 
+          $tabla.='
+            <td style="width:5.3%;" align=center>
+              <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:90%;" align=center>
+                <tr>
+                  <td style="width:50%; height: 1.5%; font-size: 8px;"><b>P.</b></td>
+                  <td style="width:50%;font-size: 8.5px;" align=right><b>'.round($row[$campo_prog.$i],2).''.$por.'</b></td>
+                </tr>
+                <tr>
+                  <td style="width:50%; height: 1.5%; font-size: 8px;"><b>E.</b></td>
+                  <td style="font-size: 8.5px;" align=right><b>'.round($row[$campo_ejec.$i],2).''.$por.'</b></td>
+                </tr>
+              </table>
+            </td>';
+          }
+        $tabla.='
         <td style="width:4%; text-align:center">'.$semaforo.'</td>
-        <td style="font-family:Arial;font-size: 11px;" align=right><b>'.$calificacion[3].'%</b></td>
-        <td style="font-family:Arial;font-size: 11px;" align=right><b>'.$calificacion[4].'%</b></td>
-        <td style="width:8%;">'.$row['or_verificacion'].'</td>
+        <td style="font-family:Arial;font-size: 11px;width:4%;" align=right><b>'.round($row['porc_cump_'.$this->tmes],2).'%</b></td>
+        <td style="font-family:Arial;font-size: 11px;width:4%;" align=right><b>'.round($row['trm_porc_ejec'.$this->tmes],2).'%</b></td>
+        <td style="width:8%;text-align: justify;">'.$row['or_verificacion'].'</td>
       </tr>';
     }
     $tabla.='
