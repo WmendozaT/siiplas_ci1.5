@@ -267,14 +267,14 @@ class Model_objetivoregion extends CI_Model{
 
 
 
-    /*---- get unidad responsable por objetivo regional ----*/
+    /*---- get unidades responsables alineados a Form2 2027 ----*/
     public function get_urep_oregional($or_id){
         $sql = '    
-            select p.or_id,poa.proy_id,poa.proy_nombre, poa.tipo,poa.abrev
+            SELECT p.or_id,poa.proy_id,poa.proy_nombre, poa.tipo,poa.abrev
             from _productos p
             Inner Join _componentes as c On c.com_id=p.com_id
-            Inner Join lista_poa_nacional('.$this->gestion.') as poa On c.pfec_id=poa.pfec_id
-            where p.or_id='.$or_id.' and p.estado!=\'3\' and p.prod_priori=\'1\'
+            Inner Join fn_lista_poa_nacional_sp('.$this->gestion.') as poa On c.pfec_id=poa.pfec_id
+            where p.or_id='.$or_id.' and p.estado!=3 and p.prod_priori=1
             group by p.or_id,poa.proy_id,poa.proy_nombre, poa.tipo,poa.abrev
             order by poa.proy_id asc';
 

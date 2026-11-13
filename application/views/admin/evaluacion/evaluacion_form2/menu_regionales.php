@@ -16,9 +16,6 @@
 		<!-- Demo purpose only: goes with demo.js, you can delete this css when designing your own WebApp -->
 		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/demo.min.css">
 		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/estilosh.css">
-		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.core.css" />
-		<link rel="stylesheet" href="<?php echo base_url(); ?>assets/themes_alerta/alertify.default.css" id="toggleCSS" />
-		<script src="<?php echo base_url(); ?>assets/lib_alerta/alertify.min.js"></script> 
 		<meta name="viewport" content="width=device-width">
 			<style>
 		    #comparativo{
@@ -139,24 +136,7 @@
 
         <!-- MODAL LISTA DE ACTIVIDADES PRIORIZADOS -->
         <?php echo $modal_grafico_x_form2;?>
-        <!--  =============== -->   
-
-        <!-- MODAL CUMPLIMIENTO DE OPERACIONES (GRAFICOS) regional -->
-        <div class="modal fade" id="modal_cumplimiento_grafico" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog" id="mdialTamanio">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-                    </div>
-                    <div class="modal-body">
-                    <h2 class="alert alert-info"><center>CUADRO DE EVALUACI&Oacute;N DE OPERACIONES GESTI&Oacute;N <?php echo $this->session->userData('gestion');?><div id="titulo_graf"></div></center></h2>
-                        <div class="row">
-                        	<div id="tabla"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php echo $modal_grafico_form2_regional;?>
         <!--  =============== -->   
 
 		<!-- PAGE FOOTER -->
@@ -230,7 +210,7 @@
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.tableTools.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatables/dataTables.bootstrap.min.js"></script>
 		<script src="<?php echo base_url(); ?>assets/js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
 		<script src="<?php echo base_url(); ?>mis_js/seguimientooregional/seguimiento_oregional.js"></script> 
-	
 	</body>
 </html>

@@ -78,7 +78,7 @@ class Crep_evalform2 extends CI_Controller {
     $tabla='';
     $tabla.='<div class="well">
               <div class="jumbotron">
-                <h1>Evaluaci&oacute;n Operaciones '.$this->gestion.'</h1>
+                <h1>Cuadro Evaluaci&oacute;n Operaciones '.$this->gestion.'</h1>
                   <p>
                     Reporte consolidado de evaluaci&oacute;n de Operaciones (formulario N° 2) al '.$this->trimestre[0]['trm_descripcion'].' de '.$this->gestion.' a nivel Institucional, Regional.
                   </p>
