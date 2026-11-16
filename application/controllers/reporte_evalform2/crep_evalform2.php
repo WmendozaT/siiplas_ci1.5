@@ -77,16 +77,21 @@ class Crep_evalform2 extends CI_Controller {
     $data['da']=$this->model_proyecto->list_departamentos();
     $tabla='';
     $tabla.='<div class="well">
-              <div class="jumbotron">
-                <h1>Cuadro Evaluaci&oacute;n Operaciones '.$this->gestion.'</h1>
-                  <p>
-                    Reporte consolidado de evaluaci&oacute;n de Operaciones (formulario N° 2) al '.$this->trimestre[0]['trm_descripcion'].' de '.$this->gestion.' a nivel Institucional, Regional.
-                  </p>
+              <div id="lista_consolidado">
+                <div class="jumbotron">
+                  <h1>Cuadro Evaluaci&oacute;n Operaciones '.$this->gestion.'</h1>
+                    <p>
+                      Reporte consolidado de evaluaci&oacute;n de Operaciones (formulario N° 2) al '.$this->trimestre[0]['trm_descripcion'].' de '.$this->gestion.' a nivel Institucional, Regional.
+                    </p>
+                </div>
               </div>
             </div>';
 
     $data['titulo_modulo']=$tabla;
+    $data['modal_form4_priorizados']=$this->eval_oregional->modal_form4_priorizados();
+    $data['modal_grafico_x_form2']=$this->eval_oregional->modal_graficos_x_form2();
     $this->load->view('admin/reportes_cns/repevaluacion_form2/rep_menu', $data);
+   // echo $this->get_lista_acp_regional_con_operaciones(1);
   }
 
 
@@ -241,24 +246,25 @@ class Crep_evalform2 extends CI_Controller {
       $regional=$this->model_proyecto->get_departamento($dep_id);
 
       $titulo=strtoupper($regional[0]['dep_departamento']).' / '.$this->gestion;
-      $nro=count($this->model_objetivogestion->get_list_ogestion_por_regional($dep_id));
+      $nro=0;
+      //$nro=count($this->model_objetivogestion->get_list_ogestion_por_regional($dep_id));
       //$nro=count($this->model_objetivogestion->get_list_ogestion_por_regional_priorizado($dep_id));
-      $matriz=$this->eval_oregional->matriz_cumplimiento_operaciones_regional($dep_id); /// Cumplimiento de Operaciones trimestral y anual 
-      $cabecera=$this->eval_oregional->cabecera_reporte_grafico($regional);
-      $calificacion_anual=$this->eval_oregional->calificacion_total_form2_regional($dep_id,1); /// cumplimiento Acumulado Anual
-      $calificacion_trimestral=$this->eval_oregional->calificacion_total_form2_regional($dep_id,0); /// cumplimiento trimestral
+      //$matriz=$this->eval_oregional->matriz_cumplimiento_operaciones_regional($dep_id); /// Cumplimiento de Operaciones trimestral y anual 
+      //$cabecera=$this->eval_oregional->cabecera_reporte_grafico($regional);
+      //$calificacion_anual=$this->eval_oregional->calificacion_total_form2_regional($dep_id,1); /// cumplimiento Acumulado Anual
+      //$calificacion_trimestral=$this->eval_oregional->calificacion_total_form2_regional($dep_id,0); /// cumplimiento trimestral
 
       
       /// ---------------------------------------------------------------------------------------------
       $lista='';
-      $lista.='<div style="font-family: Arial;">DETALLE DE OPERACIONES REGIONALES '.$this->gestion.'</div>
-                <table>';
-                  for ($i=0; $i <$nro; $i++) { 
-                    $lista.='<tr><td style="font-family: Arial;font-size: 8px;height: 1%;">OPE. '.$matriz[$i][0].'.'.$matriz[$i][1].'.- '.$matriz[$i][2].' - <b>'.$matriz[$i][4].' %</b></td></tr>';
-                  }
-                  $lista.='
-                </table>
-                <hr>';
+      // $lista.='<div style="font-family: Arial;">DETALLE DE OPERACIONES REGIONALES '.$this->gestion.'</div>
+      //           <table>';
+      //             for ($i=0; $i <$nro; $i++) { 
+      //               $lista.='<tr><td style="font-family: Arial;font-size: 8px;height: 1%;">OPE. '.$matriz[$i][0].'.'.$matriz[$i][1].'.- '.$matriz[$i][2].' - <b>'.$matriz[$i][4].' %</b></td></tr>';
+      //             }
+      //             $lista.='
+      //           </table>
+      //           <hr>';
       $lista_operaciones=$lista;
       /// ----------------------------------------------------------------------------------------------
 
@@ -268,7 +274,7 @@ class Crep_evalform2 extends CI_Controller {
       $tabla.='
       <div class="jarviswidget well" id="wid-id-3" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
         <header>
-          <div id="cabecera" style="display: none">'.$cabecera.'</div>
+          <div id="cabecera" style="display: none">cabecera</div>
         </header>
         <div>
             <h2>Evaluación del Formulario N° 2 (Operaciones) - '.$titulo.'</h2>
@@ -285,7 +291,7 @@ class Crep_evalform2 extends CI_Controller {
                 <div class="tab-pane fade in active" id="sA">
                   <div class="row">
                   <article class="col-sm-12 col-md-12 col-lg-6">
-                    <div id="calificacion_trimestral">'.$calificacion_trimestral.'</div>
+                    <div id="calificacion_trimestral">calificacion trimestral</div>
                     <div class="rows" align=center>
                       <div id="graf_detalle1">
                         <div id="grafico_trimestral" style="width: 900px; height: 850px; margin: 2 auto"></div>
@@ -293,7 +299,7 @@ class Crep_evalform2 extends CI_Controller {
                     </div>
                   </article>
                   <article class="col-sm-12 col-md-12 col-lg-6">
-                    <div id="calificacion">'.$calificacion_anual.'</div>
+                    <div id="calificacion">calificacion anual</div>
                     <div class="rows" align=center>
                       <div id="graf_detalle1">
                         <div id="grafico1" style="width: 900px; height: 850px; margin: 2 auto"></div>
@@ -301,7 +307,7 @@ class Crep_evalform2 extends CI_Controller {
                     </div>
 
                     <div id="tabla_impresion_detalle1" style="display: none">
-                     '.$lista_operaciones.'
+                     lista de Operaciones
                     </div>
                     <div align="right">
                       <button  onClick="imprimir_grafico1()" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="30" HEIGHT="30"/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -323,10 +329,10 @@ class Crep_evalform2 extends CI_Controller {
 
       $result = array(
         'respuesta' => 'correcto',
-        'titulo'=>$titulo,
+        //'titulo'=>$titulo,
         'tabla'=>$tabla,
         'nro'=>$nro,
-        'matriz'=>$matriz,
+        //'matriz'=>$matriz,
         'trimestre'=>$this->model_evaluacion->trimestre(),
         'gestion'=>$this->gestion,
         'regional'=>strtoupper($regional[0]['dep_departamento']),
@@ -348,8 +354,8 @@ class Crep_evalform2 extends CI_Controller {
       $dep_id = $this->security->xss_clean($post['dep_id']); /// Regional
       $regional=$this->model_proyecto->get_departamento($dep_id);
       $acp_regional=$this->model_objetivogestion->get_objetivosgestion($og_id);
-
-      $matriz=$this->matriz_cumplimiento_operaciones_acp_regional($og_id,$dep_id);
+      $form2=$this->model_objetivoregion->list_form2_regional_x_form1($og_id,$dep_id);
+     // $matriz=$this->matriz_cumplimiento_operaciones_acp_regional($og_id,$dep_id);
       $tabla='';
       $tabla.='
       <div class="row" align=center>
@@ -381,17 +387,17 @@ class Crep_evalform2 extends CI_Controller {
                 </thead>
                   <tbody>';
                   $nro=0;
-                for ($i=0; $i < count($this->model_objetivoregion->list_oregional_regional_graf2($og_id,$dep_id)); $i++) { 
-                  $nro++;
-                  $tabla.='
-                  <tr>
-                    <td style="font-size: 10px;font-family: Arial;text-align:center">'.$nro.'</td>
-                    <td style="font-size: 11px;font-family: Arial;"><b>'.$matriz[$i][0].'.'.$matriz[$i][1].'.- </b>'.$matriz[$i][2].'</td>
-                    <td style="font-size: 10px;font-family: Arial;text-align:right">'.$matriz[$i][3].'</td>
-                    <td style="font-size: 12px;font-family: Arial;text-align:right;" bgcolor="#e6fdfb"><b>'.$matriz[$i][4].' %</b></td>
-                    <td style="font-size: 10px;font-family: Arial;text-align:right">'.$matriz[$i][5].' %</td>
-                  </tr>';
-                }
+                  foreach($form2 as $reg){
+                    $nro++;
+                    $tabla.='
+                    <tr>
+                      <td style="font-size: 10px;font-family: Arial;text-align:center">'.$nro.'</td>
+                      <td style="font-size: 11px;font-family: Arial;"><b>'.$reg['og_codigo'].'.'.$reg['or_codigo'].'.- </b>'.$reg['or_objetivo'].'</td>
+                      <td style="font-size: 10px;font-family: Arial;text-align:right">'.round($reg['or_meta'],2).'</td>
+                      <td style="font-size: 12px;font-family: Arial;text-align:right;" bgcolor="#e6fdfb"><b>'.round($reg['porc_cump_'.$this->tmes],2).' %</b></td>
+                      <td style="font-size: 10px;font-family: Arial;text-align:right">'.round($reg['trm_porc_ejec'.$this->tmes],2).' %</td>
+                    </tr>';
+                  }
                 $tabla.='
                 </tbody>
               </table>
@@ -403,8 +409,8 @@ class Crep_evalform2 extends CI_Controller {
           'respuesta' => 'correcto',
           'acp_regional' => $acp_regional,
           'tabla' => $tabla,
-          'matriz' => $matriz,
-          'nro' => count($this->model_objetivoregion->list_oregional_regional_graf2($og_id,$dep_id)),
+          //'matriz' => $matriz,
+          'nro' => $nro,
           'trimestre'=>$this->model_evaluacion->trimestre(),
           'gestion'=>$this->gestion,
           'regional'=>strtoupper($regional[0]['dep_departamento']),
@@ -420,31 +426,30 @@ class Crep_evalform2 extends CI_Controller {
 
 
   /*---- MATRIZ DETALLE DE CUMPLIMIENTO DE OPERACIONES POR ACP REGIONAL ---*/
-  public function matriz_cumplimiento_operaciones_acp_regional($og_id,$dep_id){
-    $matriz='';
-    $lista_form2=$this->model_objetivoregion->list_oregional_regional_graf2($og_id,$dep_id);
+  // public function matriz_cumplimiento_operaciones_acp_regional($og_id,$dep_id){
+  //   $matriz='';
+  //   $lista_form2=$this->model_objetivoregion->list_oregional_regional_graf2($og_id,$dep_id);
 
-    $nro=0;
-    foreach($lista_form2 as $row){
-      $calificacion=$this->eval_oregional->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
-      $matriz[$nro][0]=$row['og_codigo'];
-      $matriz[$nro][1]=$row['or_codigo'];
-      $matriz[$nro][2]=$row['or_objetivo'];
-      $matriz[$nro][3]=round($row['or_meta'],2);
-      $matriz[$nro][4]=round($calificacion[3],2); /// cumplimiento al trimestre
-      $matriz[$nro][5]=round($calificacion[4],2); /// cumplimiento a la gestion
-      $matriz[$nro][6]=$row['or_id']; /// or_id
-      $nro++;
-    }
+  //   $nro=0;
+  //   foreach($lista_form2 as $row){
+  //     $calificacion=$this->eval_oregional->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
+  //     $matriz[$nro][0]=$row['og_codigo'];
+  //     $matriz[$nro][1]=$row['or_codigo'];
+  //     $matriz[$nro][2]=$row['or_objetivo'];
+  //     $matriz[$nro][3]=round($row['or_meta'],2);
+  //     $matriz[$nro][4]=round($calificacion[3],2); /// cumplimiento al trimestre
+  //     $matriz[$nro][5]=round($calificacion[4],2); /// cumplimiento a la gestion
+  //     $matriz[$nro][6]=$row['or_id']; /// or_id
+  //     $nro++;
+  //   }
     
-    return $matriz;
-  }
+  //   return $matriz;
+  // }
 
 
-  /*---- LISTA DE ACP REGIONALES CON OPERACIONES POR REGIONAL---*/
+  /*---- LISTA DE ACP REGIONALES CON OPERACIONES POR REGIONAL trabajando 2027---*/
   public function get_lista_acp_regional_con_operaciones($dep_id){
     $tabla='';
-
     $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id); 
     $tabla.='
     <article class="col-sm-12 col-md-12 col-lg-2">
@@ -468,7 +473,7 @@ class Crep_evalform2 extends CI_Controller {
               <div class="panel-group smart-accordion-default" id="accordion">';
                 $nro_acp=0;
                 foreach($acp_regional as $row){
-                  $matriz=$this->matriz_cumplimiento_operaciones_acp_regional($row['og_id'],$dep_id);
+                  $form2=$this->model_objetivoregion->list_form2_regional_x_form1($row['og_id'],$dep_id);
                   $nro_acp++;
                   $collapse='class="collapsed"';
                   $in='';
@@ -509,20 +514,20 @@ class Crep_evalform2 extends CI_Controller {
                             </thead>
                               <tbody>';
                               $nro_form2=0;
-                            for ($i=0; $i < count($this->model_objetivoregion->list_oregional_regional_graf2($row['og_id'],$dep_id)); $i++) { 
-                              $nro_form2++;
-                              $tabla.='
-                              <tr>
-                                <td style="font-size: 10px;font-family: Arial;text-align:center">'.$nro_form2.'</td>
-                                <td style="font-size: 11px;font-family: Arial;"><b>'.$matriz[$i][0].'.'.$matriz[$i][1].'.- </b>'.$matriz[$i][2].'</td>
-                                <td style="font-size: 10px;font-family: Arial;text-align:right">'.$matriz[$i][3].'</td>
-                                <td style="font-size: 12px;font-family: Arial;text-align:right;" bgcolor="#e6fdfb"><b>'.$matriz[$i][4].' %</b></td>
-                                <td style="font-size: 10px;font-family: Arial;text-align:right">'.$matriz[$i][5].' %</td>
-                                <td align=center>
-                                  <a href="#" data-toggle="modal" data-target="#modal_act_priorizados" style="font-size: 10px;" class="btn btn-lg btn-default" name="'.$matriz[$i][6].'"  onclick="ver_actividades_priorizados('.$matriz[$i][6].','.$dep_id.');" title="VER MIS ACTIVIDADES PRIORIZADOS">ACT. PRIORIZADOS</a>
-                                </td>
-                              </tr>';
-                            }
+                              foreach($form2 as $reg){
+                                $nro_form2++;
+                                $tabla.='
+                                <tr>
+                                  <td style="font-size: 10px;font-family: Arial;text-align:center">'.$nro_form2.'</td>
+                                  <td style="font-size: 11px;font-family: Arial;"><b>'.$reg['og_codigo'].'.'.$reg['or_codigo'].'.- </b>'.$reg['or_objetivo'].'</td>
+                                  <td style="font-size: 10px;font-family: Arial;text-align:right">'.round($reg['or_meta'],2).'</td>
+                                  <td style="font-size: 12px;font-family: Arial;text-align:right;" bgcolor="#e6fdfb"><b>'.round($reg['porc_cump_'.$this->tmes],2).' %</b></td>
+                                  <td style="font-size: 10px;font-family: Arial;text-align:right">'.round($reg['trm_porc_ejec'.$this->tmes],2).' %</td>
+                                  <td align=center>
+                                    <a href="#" data-toggle="modal" data-target="#modal_act_priorizados" style="font-size: 10px;" class="btn btn-lg btn-default" name="'.$reg['or_id'].'"  onclick="ver_actividades_priorizados('.$reg['or_id'].','.$dep_id.');" title="VER MIS ACTIVIDADES PRIORIZADOS">ACT. PRIORIZADOS</a>
+                                  </td>
+                                </tr>';
+                              }
                             $tabla.='
                             </tbody>
                           </table>

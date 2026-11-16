@@ -1,179 +1,130 @@
   base = $('[name="base"]').val();
 
-  function abreVentana(url) {
-    var elemento = window.event ? window.event.target.closest('a') : null;
-    var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";
-    var ancho = 1000;
-    var alto = 800;
-    var posicion_x = (screen.width / 2) - (ancho / 2);
-    var posicion_y = (screen.height / 2) - (alto / 2);
+    function abreVentana(url) {
+        var elemento = window.event ? window.event.target.closest('a') : null;
+        var tituloFinal = (elemento && elemento.title) ? elemento.title : "Reporte POA...";
+        var ancho = 1000;
+        var alto = 800;
+        var posicion_x = (screen.width / 2) - (ancho / 2);
+        var posicion_y = (screen.height / 2) - (alto / 2);
 
-    // 1. Abrimos la ventana vacía primero
-    var nuevaVentana = window.open('', '_blank', "width=" + ancho + ",height=" + alto + ",menubar=0,toolbar=0,directories=0,scrollbars=no,resizable=no,left=" + posicion_x + ",top=" + posicion_y);
+        // 1. Abrimos la ventana vacía primero
+        var nuevaVentana = window.open('', '_blank', "width=" + ancho + ",height=" + alto + ",menubar=0,toolbar=0,directories=0,scrollbars=no,resizable=no,left=" + posicion_x + ",top=" + posicion_y);
 
-    // 2. Inyectamos un HTML de carga estético mientras llega la respuesta del servidor
-    nuevaVentana.document.write(`
-        <html>
-            <head>
-                <title>Cargando Reporte POA...</title>
-                <style>
-                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
-                    .loader-container { text-align: center; }
-                    .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #5B9360; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                    h2 { color: #333; }
-                </style>
-            </head>
-            <body>
-                <div class="loader-container">
-                    <div class="spinner"></div>
-                    <h2>Generando ${tituloFinal}</h2>
-                    <p>Por favor, espere un momento.</p>
-                </div>
-            </body>
-        </html>
-    `);
+        // 2. Inyectamos un HTML de carga estético mientras llega la respuesta del servidor
+        nuevaVentana.document.write(`
+            <html>
+                <head>
+                    <title>Cargando Reporte POA...</title>
+                    <style>
+                        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+                        .loader-container { text-align: center; }
+                        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #5B9360; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+                        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                        h2 { color: #333; }
+                    </style>
+                </head>
+                <body>
+                    <div class="loader-container">
+                        <div class="spinner"></div>
+                        <h2>Generando ${tituloFinal}</h2>
+                        <p>Por favor, espere un momento.</p>
+                    </div>
+                </body>
+            </html>
+        `);
 
-    // 3. Redirigimos la ventana a la URL real del reporte
-    nuevaVentana.location.href = url;
-}
-
-
-
-  function doSearch(){
-    var tableReg = document.getElementById('datos');
-    var searchText = document.getElementById('searchTerm').value.toLowerCase();
-    var cellsOfRow="";
-    var found=false;
-    var compareWith="";
-
-    // Recorremos todas las filas con contenido de la tabla
-    for (var i = 1; i < tableReg.rows.length; i++){
-      cellsOfRow = tableReg.rows[i].getElementsByTagName('td');
-      found = false;
-      // Recorremos todas las celdas
-      for (var j = 0; j < cellsOfRow.length && !found; j++){
-        compareWith = cellsOfRow[j].innerHTML.toLowerCase();
-        // Buscamos el texto en el contenido de la celda
-        if (searchText.length == 0 || (compareWith.indexOf(searchText) > -1)){
-          found = true;
-        }
-      }
-      if(found) {
-        tableReg.rows[i].style.display = '';
-      } else {
-        // si no ha encontrado ninguna coincidencia, esconde la
-        // fila de la tabla
-        tableReg.rows[i].style.display = 'none';
-      }
+        // 3. Redirigimos la ventana a la URL real del reporte
+        nuevaVentana.location.href = url;
     }
-  }
 
+    function doSearch(){
+        var tableReg = document.getElementById('datos');
+        var searchText = document.getElementById('searchTerm').value.toLowerCase();
+        var cellsOfRow="";
+        var found=false;
+        var compareWith="";
 
-
-  /// Actualiza el Tipo de meta (Relativo)
-    // function select_tp_meta(id,or_id){ /// 
-    //   var url = base+"index.php/ejecucion/cevaluacion_form2/update_datos_tpmeta";
-    //   var request;
-    //   if (request) {
-    //       request.abort();
-    //   }
-    //   request = $.ajax({
-    //       url: url,
-    //       type: "POST",
-    //       dataType: 'json',
-    //       data: "or_id="+or_id+"&id="+id
-    //   });
-
-    //   request.done(function (response, textStatus, jqXHR) {
-
-    //   if (response.respuesta == 'correcto') {
-    //       alertify.success("Seleccion procesada correctamente ...");
-    //   }
-    //   else{
-    //       alertify.error("ERROR AL RECUPERAR INFORMACION");
-    //   }
-
-    //   });
-    // }
-
-
-
-//// Selecciona lista de regionales y actualiza la ejecucion 2027
-$(function() {
-  //// LISTA DE OPERACIONES POR REGIONAL 2027
-  var requestOperaciones = null; // Declarada fuera para abortar peticiones previas si cambian rápido de opción
-  jQuery("#dep_id").on("change", function () {
-      var dep_id = jQuery(this).val();
-      var baseUrl = jQuery('input[name="base"]').val(); // Captura segura de la URL base
-
-      if (dep_id != 0) {
-          // Indicador visual de carga centrado
-          jQuery('#titulo_lista').html(
-              '<div style="padding: 40px 20px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 15px;">' +
-                  '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
-                  '<h4 style="margin: 0; font-weight: bold; color: #334155;">Consultando y Actualizando Operaciones de la regional</h4>' +
-                  '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
-              '</div>'
-          );
-
-          // Si ya había una petición en curso, la cancela para evitar cruces de datos
-          if (requestOperaciones != null) {
-              requestOperaciones.abort();
+        // Recorremos todas las filas con contenido de la tabla
+        for (var i = 1; i < tableReg.rows.length; i++){
+          cellsOfRow = tableReg.rows[i].getElementsByTagName('td');
+          found = false;
+          // Recorremos todas las celdas
+          for (var j = 0; j < cellsOfRow.length && !found; j++){
+            compareWith = cellsOfRow[j].innerHTML.toLowerCase();
+            // Buscamos el texto en el contenido de la celda
+            if (searchText.length == 0 || (compareWith.indexOf(searchText) > -1)){
+              found = true;
+            }
           }
+          if(found) {
+            tableReg.rows[i].style.display = '';
+          } else {
+            // si no ha encontrado ninguna coincidencia, esconde la
+            // fila de la tabla
+            tableReg.rows[i].style.display = 'none';
+          }
+        }
+    }
 
-          requestOperaciones = jQuery.ajax({
-              url: baseUrl + "index.php/ejecucion/cevaluacion_form2/get_lista_operaciones_x_regionales",
-              type: "POST",
-              dataType: "json",
-              data: { dep_id: dep_id }
-          });
+    /// Formulario N 2 - Evaluacion Operaciones
+    //// Selecciona lista de regionales y actualiza la ejecucion 2027
+    $(function() {
+      //// LISTA DE OPERACIONES POR REGIONAL 2027
+      var requestOperaciones = null; // Declarada fuera para abortar peticiones previas si cambian rápido de opción
+      jQuery("#dep_id").on("change", function () {
 
-          requestOperaciones.done(function (response) {
-              if (response.respuesta === 'correcto') {
-                  jQuery('#titulo_lista').html(response.tabla);
-              } else {
-                  jQuery('#titulo_lista').html('');
-                  alertify.error("ERROR AL RECUPERAR INFORMACIÓN");
+          var dep_id = jQuery(this).val();
+          var baseUrl = jQuery('input[name="base"]').val(); // Captura segura de la URL base
+
+          if (dep_id != 0) {
+              // Indicador visual de carga centrado
+              jQuery('#titulo_lista').html(
+                  '<div style="padding: 40px 20px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 15px;">' +
+                      '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
+                      '<h4 style="margin: 0; font-weight: bold; color: #334155;">Consultando y Actualizando Operaciones de la regional</h4>' +
+                      '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
+                  '</div>'
+              );
+
+              // Si ya había una petición en curso, la cancela para evitar cruces de datos
+              if (requestOperaciones != null) {
+                  requestOperaciones.abort();
               }
-          });
 
-          requestOperaciones.fail(function (jqXHR, textStatus) {
-              // Ignora el mensaje de error si fue cancelada intencionalmente por el usuario
-              if (textStatus !== 'abort') {
-                  jQuery('#titulo_lista').html('<div class="alert alert-danger">Error de comunicación con el servidor.</div>');
-              }
-          });
+              requestOperaciones = jQuery.ajax({
+                  url: baseUrl + "index.php/ejecucion/cevaluacion_form2/get_lista_operaciones_x_regionales",
+                  type: "POST",
+                  dataType: "json",
+                  data: { dep_id: dep_id }
+              });
 
-      } else {
-          jQuery('#titulo_lista').html('');
-      }
-  });
-});
+              requestOperaciones.done(function (response) {
+                  if (response.respuesta === 'correcto') {
+                      jQuery('#titulo_lista').html(response.tabla);
+                  } else {
+                      jQuery('#titulo_lista').html('');
+                      alertify.error("ERROR AL RECUPERAR INFORMACIÓN");
+                  }
+              });
 
+              requestOperaciones.fail(function (jqXHR, textStatus) {
+                  // Ignora el mensaje de error si fue cancelada intencionalmente por el usuario
+                  if (textStatus !== 'abort') {
+                      jQuery('#titulo_lista').html('<div class="alert alert-danger">Error de comunicación con el servidor.</div>');
+                  }
+              });
 
-  // /// Parametros de cumplimiento
-  // function parametros_cumplimiento(valor) {
-  //   resp='';
-  //   if(valor>0 & valor<=50){
-  //     resp='<b>INSATISFACTORIO</b>';
-  //   }
-  //   if(valor>50 & valor<=75){
-  //    resp='<b>REGULAR</b>'; 
-  //   }
-  //   if(valor>75 & valor<=99){
-  //    resp='<b>BUENO</b>'; 
-  //   }
-  //   if(valor==100){
-  //    resp='<b>OPTIMO</b>'; 
-  //   }
-
-  //   return resp;
-  // }
+          } else {
+              jQuery('#titulo_lista').html('');
+          }
+      });
+    });
 
 
   /// Lista de Actividades Priorizados por cada Objetivo Regional FORM 2
   function ver_actividades_priorizados(or_id,dep_id) {
+    //alert('hola mundo')
     $('#titulo').html('<font size=3><b>Cargando ..</b></font>');
     $('#content1').html('<div class="loading" align="center"><img src="'+base+'/assets/img_v1.1/preloader.gif" alt="loading" /><br/>Un momento por favor, Cargando Ediciones </div>');
     $('#imprimir_act_priori').html('');
@@ -490,39 +441,6 @@ $(function() {
     });
   }
 
-
-
-
-
-  /// GRADO DE CUMPLIMIENTO DE OPERACIONES CONSOLIDADO POR REGIONAL (GRAFICO) FORM 2 2027
-  // function nivel_cumplimiento_operaciones_grafico(dep_id,trm_id) {
-
-  //   var url = base+"index.php/ejecucion/cevaluacion_form2/get_cumplimiento_operaciones_grafico";
-  //   var request;
-  //   if (request) {
-  //       request.abort();
-  //   }
-  //   request = $.ajax({
-  //       url: url,
-  //       type: "POST",
-  //       dataType: 'json',
-  //       data: "dep_id="+dep_id+"&trm_id="+trm_id
-  //   });
-
-  //   request.done(function (response, textStatus, jqXHR) {
-
-  //     if (response.respuesta == 'correcto') {
-  //       $('#titulo_graf').html(response.titulo_graf);
-  //       $('#tabla').html(response.tabla);
-  //     }
-  //     else{
-  //         alertify.error("ERROR AL RECUPERAR INFORMACION");
-  //     }
-
-  //   });
-  // }
-
-
   /////////////
   function nivel_cumplimiento_operaciones_grafico(dep_id, tmes) {
     // 1. Limpiar textos mientras llega la respuesta del servidor
@@ -706,6 +624,118 @@ $(function() {
   }
 
 
+/////=========== FORMULARIO DE EVUALUACION FORM 2 - REPORTES
+
+// Selecciona la Regional para ver su evaluacion del form 2
+var request;
+$("#d_id").change(function () {
+    var dep_id = $(this).val();
+    var contenedor = $('#lista_consolidado');
+
+    // 1. Si no seleccionó ninguna opción válida, mostramos la portada por defecto
+    if (dep_id === '') {
+        contenedor.hide().html(
+            '<div class="well">' +
+                '<div class="jumbotron">' +
+                    '<h1>Evaluaci&oacute;n OPERACIONES ' + gestion + '</h1>' +
+                '</div>' +
+            '</div>'
+        ).fadeIn(400);
+        return;
+    }
+
+    // 2. Definimos la ruta (URL) dinámicamente según sea Institucional (0) o Regional
+    var metodo = (dep_id == 0) 
+        ? "get_cuadro_evaluacion_formulario2_institucional" 
+        : "get_cuadro_evaluacion_formulario2_regional";
+    
+    var url = base + "index.php/reporte_evalform2/crep_evalform2/" + metodo;
+    var titulo_carga = (dep_id == 0) ? "Consolidado Evaluación Formulario N° 2 a nivel Institucional" : "Consolidado Evaluación Formulario N° 2 a nivel Regional";
+
+    // 3. Mostramos un Loading moderno y centrado (Compatible con SmartAdmin / Bootstrap)
+    var html_loading = 
+        '<div style="padding: 40px 20px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 15px;">' +
+                      '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
+                      '<h4 style="margin: 0; font-weight: bold; color: #334155;">'+titulo_carga+'</h4>' +
+                      '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
+                  '</div>';
+
+    contenedor.html(html_loading);
+
+    // 4. Si el usuario cambia rápido el select, cancelamos la petición anterior
+    if (request) {
+        request.abort();
+    }
+
+    // 5. Ejecutamos una sola petición AJAX limpia
+    request = $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "json",
+        data: { dep_id: dep_id }
+    });
+
+    request.done(function (response) {
+        if (response.respuesta === 'correcto') {
+            contenedor.hide().html(response.tabla).fadeIn(500);
+        } else {
+            contenedor.html('<div class="alert alert-danger"><i class="fa fa-warning"></i> No se pudieron cargar los datos solicitados.</div>');
+            alertify.error("ERROR AL LISTAR");
+        }
+    });
+
+    request.fail(function (jqXHR, textStatus) {
+        // Ignoramos el error si fue provocado intencionalmente por request.abort()
+        if (textStatus !== 'abort') {
+            contenedor.html('<div class="alert alert-danger"><i class="fa fa-times-circle"></i> Error de conexi&oacute;n con el servidor. Intente nuevamente.</div>');
+            alertify.error("ERROR DE SERVIDOR AL PROCESAR EL REPORTE");
+        }
+    });
+});
 
 
+/// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL
+  function nivel_cumplimiento_acp_regional(og_id,dep_id) {
+    var url = base+"index.php/reporte_evalform2/crep_evalform2/ver_datos_avance_oregional_acp";
+    var request;
+    if (request) {
+        request.abort();
+    }
+    request = $.ajax({
+        url: url,
+        type: "POST",
+        dataType: 'json',
+        data: "og_id="+og_id+"&dep_id="+dep_id
+    });
+
+    request.done(function (response, textStatus, jqXHR) {
+      if (response.respuesta == 'correcto') {
+
+        $('#tabla').html(response.tabla);
+
+        //// Trimestre
+        // let detalle_trimestre=[];
+        // for (var i = 0; i < response.nro; i++) {
+        //     detalle_trimestre[i]= { name: response.matriz[i][0]+'.'+response.matriz[i][1]+' '+response.matriz[i][2],y: response.matriz[i][4]};
+        // }
+        grafico='container1';
+        titulo='(%) CUMPLIMIENTO DE OPERACIONES <b>'+response.regional+ '</b> - '+response.trimestre[0]['trm_descripcion']+' /'+response.gestion;
+        //cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_trimestre,titulo,response.acp_regional)
+
+        //// Gestion
+        // let detalle_gestion=[];
+        // for (var i = 0; i < response.nro; i++) {
+        //     detalle_gestion[i]= { name: response.matriz[i][0]+'.'+response.matriz[i][1]+' '+response.matriz[i][2],y: response.matriz[i][5]};
+        // }
+        grafico='container2';
+        titulo='(%) CUMPLIMIENTO DE OPERACIONES <b>'+response.regional+ '</b> GESTIÓN - '+response.gestion;
+        //cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_gestion,titulo,response.acp_regional)
+
+      }
+      else{
+          alertify.error("ERROR AL RECUPERAR INFORMACION");
+      }
+
+    });
+  }
   

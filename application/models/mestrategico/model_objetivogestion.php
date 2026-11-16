@@ -366,13 +366,13 @@ class Model_objetivogestion extends CI_Model{
     }
 
 
-    /*----- Lista de ACP por regional (para evaluacion de ACP)-----*/
+    /*----- Lista de ACP por regional (para evaluacion de ACP) 2027-----*/
     public function lista_acp_x_regional($dep_id){
-        $sql = 'select opge.*,tp.*,oge.*
+        $sql = 'SELECT opge.*,tp.*,oge.*
                 from objetivo_gestion oge
                 Inner Join indicador as tp On oge.indi_id=tp.indi_id
                 Inner Join objetivo_programado_mensual as opge on opge.og_id = oge.og_id
-                where opge.dep_id='.$dep_id.' and oge.g_id='.$this->gestion.' and oge.estado!=\'3\'
+                where opge.dep_id='.$dep_id.' and oge.g_id='.$this->gestion.' and oge.estado!=3
                 order by oge.og_codigo asc';
 
         $query = $this->db->query($sql);

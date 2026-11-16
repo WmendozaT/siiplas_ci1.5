@@ -27,7 +27,7 @@
             #mdialTamanio3{
               width: 90% !important;
             }
-		</style>
+			</style>
 	</head>
 	<body class="">
 		<header id="header">
@@ -115,26 +115,9 @@
 		<!-- END MAIN PANEL -->
 
      <!-- MODAL LISTA DE ACTIVIDADES PRIORIZADOS -->
-        <div class="modal fade" id="modal_act_priorizados" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog" id="mdialTamanio3">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-                    </div>
-                    <div class="modal-body">
-                    	<h2 class="alert alert-info"><center>MIS ACTIVIDADES PRIORIZADOS - <?php echo $this->session->userData('gestion');?></center></h2>
-                        <div class="row">
-                            <div id="titulo"></div>
-                            <div id="content1"></div>
-                        </div>
-                        <div id="imprimir_act_priori"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!--  =============== -->  
 
-        <!-- MODAL LISTA DE ACTIVIDADES PRIORIZADOS -->
+        <!--  =============== -->  
+        <?php echo $modal_form4_priorizados; ?>
         <?php echo $modal_grafico_x_form2;?>
         <?php echo $modal_grafico_form2_regional;?>
         <!--  =============== -->   

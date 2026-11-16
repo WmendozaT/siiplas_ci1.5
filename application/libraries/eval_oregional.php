@@ -322,6 +322,30 @@ class Eval_oregional extends CI_Controller{
     }
 
 
+        //// Modal formulsrio 4 priorizados al form 2 - 2027
+    public function modal_form4_priorizados(){
+      $tabla='';
+       $tabla.='
+        <div class="modal fade" id="modal_act_priorizados" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog" id="mdialTamanio3">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <h2 class="alert alert-info"><center>MIS ACTIVIDADES PRIORIZADOS - '.$this->gestion.'</center></h2>
+                        <div class="row">
+                            <div id="titulo"></div>
+                            <div id="content1"></div>
+                        </div>
+                        <div id="imprimir_act_priori"></div>
+                    </div>
+                </div>
+            </div>
+        </div>';
+        
+      return $tabla;
+    }
 
     //// Modal graficos por OPERACION 2027
     public function modal_graficos_x_form2(){

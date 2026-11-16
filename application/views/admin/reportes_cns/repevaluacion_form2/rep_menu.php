@@ -19,6 +19,17 @@
         <!--estiloh-->
         <link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/css/estilosh.css">
         <style>
+            #comparativo{
+              width: 90% !important;
+            }
+            #mdialTamanio{
+              width: 70% !important;
+            }
+            #mdialTamanio3{
+              width: 90% !important;
+            }
+        </style>
+        <style>
             #mdialTamanio_acp_operacion{
               width: 90% !important;
             }
@@ -95,7 +106,7 @@
                 </span>
                 <!-- breadcrumb -->
                 <ol class="breadcrumb">
-                   <li>Reportes POA</li><li>Evaluaci&oacute;n Form. N° 2</li><li>Operaciones</li>
+                   <li>Reportes POA</li><li>Evaluaci&oacute;n Form. N° 2</li>
                 </ol>
             </div>
             <!-- MAIN CONTENT -->
@@ -132,7 +143,9 @@
 
      
      <!-- MODAL LISTA DE ACTIVIDADES PRIORIZADOS -->
-        <div class="modal fade" id="modal_act_priorizados" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+     <?php echo $modal_form4_priorizados; ?>
+     <?php echo $modal_grafico_x_form2; ?>
+<!--         <div class="modal fade" id="modal_act_priorizados" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog" id="mdialTamanio_lista_operaciones">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -148,7 +161,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <!--  =============== -->  
 
         <!-- PAGE FOOTER -->

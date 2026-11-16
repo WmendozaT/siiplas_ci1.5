@@ -50,6 +50,7 @@ class Cevaluacion_form2 extends CI_Controller {
         $data['tabla']=$this->eval_oregional->ver_relacion_ogestion($this->dep_id);
       }
 
+      $data['modal_form4_priorizados']=$this->eval_oregional->modal_form4_priorizados();
       $data['modal_grafico_x_form2']=$this->eval_oregional->modal_graficos_x_form2();
       $data['modal_grafico_form2_regional']=$this->eval_oregional->modal_grafico_cumplimiento_form2_x_regional();
       
