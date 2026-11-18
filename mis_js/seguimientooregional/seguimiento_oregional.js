@@ -739,3 +739,65 @@ $("#d_id").change(function () {
     });
   }
   
+
+
+  function cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_trimestre,titulo,acp_regional){
+      /*let detalle=[];
+      for (var i = 0; i < nro; i++) {
+          detalle[i]= { name: matriz[i][0]+'.'+matriz[i][1]+' '+matriz[i][2],y: matriz[i][4]};
+      }*/
+
+    Highcharts.chart(grafico, {
+      chart: {
+        type: 'column'
+      },
+      title: {
+        align: 'center',
+        text: titulo
+      },
+      subtitle: {
+        align: 'center',
+        text: '<b>ACP. '+acp_regional[0]['og_codigo']+'.'+acp_regional[0]['og_objetivo']+'</b>'
+      },
+      accessibility: {
+        announceNewData: {
+          enabled: true
+        }
+      },
+      xAxis: {
+        type: 'category'
+      },
+      yAxis: {
+        title: {
+          text: '(%) Cumplimiento de Operaciones al Trimestre'
+        }
+
+      },
+      legend: {
+        enabled: false
+      },
+      plotOptions: {
+        series: {
+          borderWidth: 0,
+          dataLabels: {
+            enabled: true,
+            format: '{point.y:.1f}%'
+          }
+        }
+      },
+
+      tooltip: {
+        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+      },
+
+      series: [
+        {
+          name: "OPERACIÓN",
+          colorByPoint: true,
+          data: detalle_trimestre
+        }
+      ]
+
+    });
+}
