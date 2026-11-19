@@ -144,7 +144,7 @@
      
      <!-- MODAL LISTA DE ACTIVIDADES PRIORIZADOS -->
      <?php echo $modal_form4_priorizados; ?>
-     <?php echo $modal_grafico_x_form2; ?>
+     <!-- <?php echo $modal_grafico_x_form2; ?> -->
 <!--         <div class="modal fade" id="modal_act_priorizados" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog" id="mdialTamanio_lista_operaciones">
                 <div class="modal-content">
@@ -162,6 +162,37 @@
                 </div>
             </div>
         </div> -->
+
+          <div class="modal fade" id="modal_grafico_xform2" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" id="mdialTamanio3" style="width: 95%;">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #1c7368; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                
+                <!-- Título e Insignia de Calificación -->
+                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                    <h4 class="modal-title" style="font-weight: bold; margin: 0;">
+                        <i class="fa fa-bar-chart-o"></i> (%) CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTI&Oacute;N '.$this->gestion.'
+                    </h4>
+                    
+                    <!-- Insignia dinámica de Promedio Global -->
+                    <span id="badge_calificacion_acp" style="display: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25); letter-spacing: 0.5px;">
+                        <i class="fa fa-tachometer"></i> <span id="lbl_promedio_acp">0%</span> - <span id="lbl_estado_acp">CARGANDO</span>
+                    </span>
+                </div>
+
+                <!-- Botón Cerrar -->
+                <button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 1; margin-left: auto;" title="SALIR">
+                    <span aria-hidden="true">&times; <b style="font-size: 13px;">Salir Formulario</b></span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- AQUÍ SE INYECTARÁ DINÁMICAMENTE EL GRÁFICO Y LA TABLA -->
+                <div id="tabla"></div>
+            </div>
+        </div>
+    </div>
+</div>
         <!--  =============== -->  
 
         <!-- PAGE FOOTER -->

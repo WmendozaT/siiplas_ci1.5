@@ -349,67 +349,38 @@ class Eval_oregional extends CI_Controller{
 
     //// Modal graficos por OPERACION 2027
     public function modal_graficos_x_form2(){
-      $tabla='';
-       $tabla.='
-          <div class="modal fade" id="modal_cumplimiento" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog" id="mdialTamanio3">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button class="close" data-dismiss="modal" id="amcl" title="SALIR"><span aria-hidden="true">&times; <b>Salir Formulario</b></span></button>
-                    </div>
-                    <div class="modal-body">
-                    <h2 class="alert alert-info"><center>(%) CUMPLIMIENTO OPERACIÓN - '.$this->gestion.'</center></h2>
-                        <div class="row">
-                          <div> 
-                            <h3 class="text-primary" id="titulo_grafico"></h3><hr>
-                            <div class="row">
-                              <article class="col-sm-12 col-md-12 col-lg-6">
-                                <div class="well">
-                                  <center><div id="parametro_efi" style="width: 750px; height: 390px; margin: 0 auto"></div></center>
-                                </div>
-                                <hr>
-                                  <table class="table table-bordered" border=0.2 style="width:100%;">
-                                    <thead>
-                                      <tr>
-                                        <th><center>I TRIMESTRE</center></th>
-                                        <th><center>II TRIMESTRE</center></th>
-                                        <th><center>III TRIMESTRE</center></th>
-                                        <th><center>IV TRIMESTRE</center></th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr id="tab"></tr>  
-                                    </tbody>
-                                  </table>
-                              </article>
-                            
-                              <article class="col-sm-12 col-md-12 col-lg-6">
-                                <div class="well">
-                                  <center><div id="parametro_efi2" style="width: 750px; height: 390px; margin: 0 auto"></div></center>
-                                </div>
-                                <hr>
-                                  <table class="table table-bordered" border=0.2 style="width:100%;">
-                                    <thead>
-                                      <tr>
-                                        <th><center>I TRIMESTRE</center></th>
-                                        <th><center>II TRIMESTRE</center></th>
-                                        <th><center>III TRIMESTRE</center></th>
-                                        <th><center>IV TRIMESTRE</center></th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr id="tab_acumulado"></tr>  
-                                    </tbody>
-                                  </table>
-                              </article>
-                            </div>
-                            <hr>
-                          </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>';
+      $tabla='hola mundo';
+      // $tabla .= '
+      // <div class="modal fade" id="modal_cumplimiento_xform2" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+      //     <div class="modal-dialog modal-lg" id="mdialTamanio3" style="width: 95%;">
+      //         <div class="modal-content">dsadsadsadsadsa
+      //             <div class="modal-header" style="background-color: #1c7368; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                      
+      //                 <!-- Título e Insignia de Calificación -->
+      //                 <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+      //                     <h4 class="modal-title" style="font-weight: bold; margin: 0;">
+      //                         <i class="fa fa-bar-chart-o"></i> (%) CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTI&Oacute;N '.$this->gestion.'
+      //                     </h4>
+                          
+      //                     <!-- Insignia dinámica de Promedio Global -->
+      //                     <span id="badge_calificacion_acp" style="display: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25); letter-spacing: 0.5px;">
+      //                         <i class="fa fa-tachometer"></i> <span id="lbl_promedio_acp">0%</span> - <span id="lbl_estado_acp">CARGANDO</span>
+      //                     </span>
+      //                 </div>
+
+      //                 <!-- Botón Cerrar -->
+      //                 <button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 1; margin-left: auto;" title="SALIR">
+      //                     <span aria-hidden="true">&times; <b style="font-size: 13px;">Salir Formularioferwerwe</b></span>
+      //                 </button>
+      //             </div>
+                  
+      //             <div class="modal-body">
+      //                 <!-- AQUÍ SE INYECTARÁ DINÁMICAMENTE EL GRÁFICO Y LA TABLA -->
+      //                 <div id="tabla"></div>
+      //             </div>
+      //         </div>
+      //     </div>
+      // </div>';
         
       return $tabla;
     }
@@ -418,20 +389,19 @@ class Eval_oregional extends CI_Controller{
     //// Modal Grafico Cumplimiento de Operaciones x Regional
     public function modal_grafico_cumplimiento_form2_x_regional(){
       $tabla='';
-      $tabla .= '
-      <div class="modal fade" id="modal_cumplimiento_grafico" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
-          <!-- 🔥 CAMBIO: Se redujo el margen superior/inferior (margin: 10px auto) para ganar espacio vertical -->
-          <div class="modal-dialog modal-lg" style="width: 94%; max-width: 1300px; margin: 10px auto;">
+     $tabla .= '
+      <div class="modal fade" id="modal_cumplimiento_acp" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-lg" style="width: 95%; max-width: 1350px; margin: 10px auto;">
               <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
                   
                   <!-- BARRA SUPERIOR CON BOTÓN DE IMPRESIÓN Y SALIR -->
                   <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
                       <h4 class="modal-title" style="font-weight: bold; margin: 0; font-size: 16px;">
-                          <i class="fa fa-bar-chart"></i> DETALLE DE CUMPLIMIENTO DE OPERACIONES
+                          <i class="fa fa-bar-chart"></i> CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '
                       </h4>
                       
                       <div style="margin-left: auto;">
-                          <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoRegional();" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
+                          <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoAcp();" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
                               <i class="fa fa-print"></i> EXPORTAR REPORTE PDF
                           </button>
                           <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" title="SALIR" style="background: #ef4444; border: none; font-weight: bold; padding: 6px 12px;">
@@ -440,31 +410,26 @@ class Eval_oregional extends CI_Controller{
                       </div>
                   </div>
                   
-                  <!-- 🔥 CAMBIO: Se aumentó max-height a 85vh (85% de la altura total de la pantalla) -->
-                  <div class="modal-body" id="area_impresion_regional" style="max-height: 85vh; min-height: 75vh; overflow-y: auto; background: #ffffff; padding: 15px 20px;">
+                  <div class="modal-body" id="area_impresion_acp" style="max-height: 85vh; min-height: 75vh; overflow-y: auto; background: #ffffff; padding: 15px 20px;">
                       
                       <!-- Cabecera Institucional -->
                       <div class="alert alert-info text-center" style="margin-bottom: 10px; padding: 10px; background-color: #f0f9ff; border: 1px solid #bae6fd; color: #1e3a8a; border-radius: 4px;">
-                          <h4 style="margin: 0; font-weight: bold; font-size: 15px;">CUADRO DE EVALUACIÓN DE OPERACIONES GESTIÓN ' . $this->gestion . '</h4>
-                          <h5 style="margin: 4px 0 0 0; font-weight: bold; font-size: 13px;" id="lbl_regional_titulo">REGIONAL : CARGANDO...</h5>
+                          <h4 style="margin: 0; font-weight: bold; font-size: 15px;">EVALUACIÓN DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '</h4>
+                          <h5 style="margin: 4px 0 0 0; font-weight: bold; font-size: 13px;" id="lbl_acp_regional_titulo">REGIONAL : CARGANDO...</h5>
                       </div>
 
                       <!-- Banner Dinámico de Porcentaje y Calificación -->
-                      <div id="banner_calificacion_regional" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                          <div style="font-size: 36px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_global">0.0%</div>
-                          <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_calificacion">CALCULANDO...</div>
+                      <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                          <div style="font-size: 34px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">0.0%</div>
+                          <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALCULANDO...</div>
                       </div>
 
-                      <!-- 🔥 CAMBIO: Contenedor del Gráfico con min-height aumentado a 580px -->
-                      <div class="well" style="background: #ffffff; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 0;">
-                          <div id="grafico_barras_regional" style="width: 100%; min-height: 580px;"></div>
-                      </div>
+                      <!-- AQUÍ SE INYECTARÁN LOS 2 GRÁFICOS (container1 y container2) Y LA TABLA INFERIOR -->
+                      <div id="contenedor_detalle_acp"></div>
                   </div>
               </div>
           </div>
       </div>';
-
-
       return $tabla;
     }
 

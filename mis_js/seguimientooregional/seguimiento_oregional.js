@@ -695,109 +695,259 @@ $("#d_id").change(function () {
 
 
 /// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL
-  function nivel_cumplimiento_acp_regional(og_id,dep_id) {
-    var url = base+"index.php/reporte_evalform2/crep_evalform2/ver_datos_avance_oregional_acp";
-    var request;
-    if (request) {
-        request.abort();
+   var request_acp_op;
+
+function nivel_cumplimiento_acp_regional(og_id, dep_id) {
+    // 1. Forzar apertura explícita del modal
+    jQuery('#modal_grafico_xform2').modal('show');
+
+    var url = base + "index.php/reporte_evalform2/crep_evalform2/ver_datos_avance_oregional_acp";
+    var contenedor = jQuery('#modal_grafico_xform2 #tabla');
+
+    // 2. Ocultar la insignia de calificación anterior mientras carga la nueva ACP
+    jQuery('#badge_calificacion_acp').hide();
+
+    contenedor.html(
+        '<div class="text-center" style="padding: 60px 20px;">' +
+            '<i class="fa fa-spinner fa-spin fa-3x" style="color: #1c7368; margin-bottom: 10px;"></i>' +
+            '<h4 style="color: #1c7368; font-weight: bold;">Cargando Operaciones Alineadas...</h4>' +
+        '</div>'
+    );
+
+    if (request_acp_op) {
+        request_acp_op.abort();
     }
-    request = $.ajax({
+
+    request_acp_op = jQuery.ajax({
         url: url,
         type: "POST",
-        dataType: 'json',
-        data: "og_id="+og_id+"&dep_id="+dep_id
+        dataType: "json",
+        data: { og_id: og_id, dep_id: dep_id }
     });
 
-    request.done(function (response, textStatus, jqXHR) {
-      if (response.respuesta == 'correcto') {
+    request_acp_op.done(function (response) {
+        if (response.status === 'success') {
+            // 3. Actualizar y mostrar la insignia en la cabecera con el color de la calificación
+            jQuery('#lbl_promedio_acp').text(response.promedio_global + '%');
+            jQuery('#lbl_estado_acp').text(response.calificacion);
+            jQuery('#badge_calificacion_acp')
+                .css('background-color', response.color_banner)
+                .fadeIn(300);
 
-        $('#tabla').html(response.tabla);
+            // 4. Insertar contenedores de gráficos y tabla
+            contenedor.html(response.lista).show();
 
-        //// Trimestre
-        // let detalle_trimestre=[];
-        // for (var i = 0; i < response.nro; i++) {
-        //     detalle_trimestre[i]= { name: response.matriz[i][0]+'.'+response.matriz[i][1]+' '+response.matriz[i][2],y: response.matriz[i][4]};
-        // }
-        grafico='container1';
-        titulo='(%) CUMPLIMIENTO DE OPERACIONES <b>'+response.regional+ '</b> - '+response.trimestre[0]['trm_descripcion']+' /'+response.gestion;
-        //cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_trimestre,titulo,response.acp_regional)
+            // 5. Ajustar altura dinámica y dibujar los gráficos Highcharts
+            var altoDinamico = Math.max(450, response.categorias.length * 26);
+            jQuery('#container1, #container2').css('height', altoDinamico + 'px');
 
-        //// Gestion
-        // let detalle_gestion=[];
-        // for (var i = 0; i < response.nro; i++) {
-        //     detalle_gestion[i]= { name: response.matriz[i][0]+'.'+response.matriz[i][1]+' '+response.matriz[i][2],y: response.matriz[i][5]};
-        // }
-        grafico='container2';
-        titulo='(%) CUMPLIMIENTO DE OPERACIONES <b>'+response.regional+ '</b> GESTIÓN - '+response.gestion;
-        //cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_gestion,titulo,response.acp_regional)
+            setTimeout(function() {
+                dibujarGraficoBarrasHorizontal(
+                    'container1',
+                    'CUMPLIMIENTO ' + response.regional + ' - ' + response.trimestre + ' / ' + response.gestion,
+                    response.categorias,
+                    response.valores_trimestre,
+                    '#38bdf8'
+                );
 
-      }
-      else{
-          alertify.error("ERROR AL RECUPERAR INFORMACION");
-      }
+                dibujarGraficoBarrasHorizontal(
+                    'container2',
+                    'CUMPLIMIENTO ' + response.regional + ' - GESTIÓN ' + response.gestion,
+                    response.categorias,
+                    response.valores_gestion,
+                    '#1c7368'
+                );
+            }, 350);
 
+        } else {
+            contenedor.html('<div class="alert alert-danger">No se pudieron obtener los datos de la ACP.</div>');
+            alertify.error("ERROR AL RECUPERAR INFORMACION");
+        }
     });
-  }
+}
+
+function dibujarGraficoBarrasHorizontal(renderId, titulo, categorias, valores, colorBarra) {
+    if (!document.getElementById(renderId)) {
+        return;
+    }
+
+    // Transformamos los valores simples en puntos con color dinámico (Semáforo)
+    var datosEstilizados = valores.map(function(val) {
+        var numero = parseFloat(val) || 0;
+        var colorDinamico = colorBarra; // Color por defecto si se desea mantener
+
+        // Asignación automática de color según escala de cumplimiento
+        if (numero <= 50) {
+            colorDinamico = '#ef4444'; // Rojo (Insatisfactorio)
+        } else if (numero <= 75) {
+            colorDinamico = '#f59e0b'; // Ámbar / Naranja (Regular)
+        } else if (numero <= 90) {
+            colorDinamico = '#0ea5e9'; // Azul moderno (Bueno)
+        } else {
+            colorDinamico = '#10b981'; // Verde esmeralda (Óptimo)
+        }
+
+        return {
+            y: numero,
+            color: colorDinamico
+        };
+    });
+
+    new Highcharts.Chart({
+        chart: {
+            renderTo: renderId,
+            type: 'bar',
+            backgroundColor: '#ffffff',
+            style: { fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif" },
+            spacingTop: 15,
+            spacingBottom: 15
+        },
+        title: {
+            text: titulo,
+            align: 'left',
+            margin: 20,
+            style: { 
+                fontSize: '13px', 
+                fontWeight: '700', 
+                color: '#0f172a',
+                textTransform: 'uppercase'
+            }
+        },
+        credits: {
+            enabled: false // Oculta la marca de agua "Highcharts.com"
+        },
+        xAxis: {
+            categories: categorias,
+            lineColor: '#cbd5e1',
+            tickLength: 0,
+            labels: {
+                style: { 
+                    fontSize: '11px', 
+                    fontWeight: '600', 
+                    color: '#334155' 
+                }
+            }
+        },
+        yAxis: {
+            min: 0,
+            max: 108, // Margen extra a la derecha para que el texto "100%" nunca se corte
+            tickInterval: 20,
+            gridLineColor: '#f1f5f9',
+            gridLineDashStyle: 'Dash',
+            title: { 
+                text: 'Porcentaje de Cumplimiento (%)',
+                style: { fontSize: '11px', color: '#64748b', fontWeight: '600' }
+            },
+            labels: {
+                format: '{value}%',
+                style: { fontSize: '10px', color: '#64748b' }
+            },
+            // Línea vertical de referencia en la meta del 100%
+            plotLines: [{
+                value: 100,
+                color: '#94a3b8',
+                dashStyle: 'ShortDot',
+                width: 1.5,
+                zIndex: 3
+            }]
+        },
+        legend: { enabled: false },
+        tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+            borderWidth: 0,
+            borderRadius: 6,
+            style: { color: '#ffffff', fontSize: '11px' },
+            headerFormat: '<span style="font-size: 11px; font-weight: bold; color: #38bdf8;">{point.key}</span><br/>',
+            pointFormat: 'Cumplimiento: <b>{point.y}%</b>'
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                pointWidth: 16, // Barras más gruesas y visibles
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{y}%',
+                    align: 'left',
+                    x: 5, // Separación limpia entre el fin de la barra y el número
+                    style: { 
+                        fontSize: '10px', 
+                        fontWeight: '700', 
+                        color: '#1e293b',
+                        textOutline: 'none' // Quita el borde blanco borroso por defecto
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'Cumplimiento',
+            data: datosEstilizados
+        }]
+    });
+}
+
+
+
   
 
 
-  function cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_trimestre,titulo,acp_regional){
-      /*let detalle=[];
-      for (var i = 0; i < nro; i++) {
-          detalle[i]= { name: matriz[i][0]+'.'+matriz[i][1]+' '+matriz[i][2],y: matriz[i][4]};
-      }*/
+//   function cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_trimestre,titulo,acp_regional){
+//       /*let detalle=[];
+//       for (var i = 0; i < nro; i++) {
+//           detalle[i]= { name: matriz[i][0]+'.'+matriz[i][1]+' '+matriz[i][2],y: matriz[i][4]};
+//       }*/
 
-    Highcharts.chart(grafico, {
-      chart: {
-        type: 'column'
-      },
-      title: {
-        align: 'center',
-        text: titulo
-      },
-      subtitle: {
-        align: 'center',
-        text: '<b>ACP. '+acp_regional[0]['og_codigo']+'.'+acp_regional[0]['og_objetivo']+'</b>'
-      },
-      accessibility: {
-        announceNewData: {
-          enabled: true
-        }
-      },
-      xAxis: {
-        type: 'category'
-      },
-      yAxis: {
-        title: {
-          text: '(%) Cumplimiento de Operaciones al Trimestre'
-        }
+//     Highcharts.chart(grafico, {1510302607
+//       chart: {
+//         type: 'column'
+//       },
+//       title: {
+//         align: 'center',
+//         text: titulo
+//       },
+//       subtitle: {
+//         align: 'center',
+//         text: '<b>ACP. '+acp_regional[0]['og_codigo']+'.'+acp_regional[0]['og_objetivo']+'</b>'
+//       },
+//       accessibility: {
+//         announceNewData: {
+//           enabled: true
+//         }
+//       },
+//       xAxis: {
+//         type: 'category'
+//       },
+//       yAxis: {
+//         title: {
+//           text: '(%) Cumplimiento de Operaciones al Trimestre'
+//         }
 
-      },
-      legend: {
-        enabled: false
-      },
-      plotOptions: {
-        series: {
-          borderWidth: 0,
-          dataLabels: {
-            enabled: true,
-            format: '{point.y:.1f}%'
-          }
-        }
-      },
+//       },
+//       legend: {
+//         enabled: false
+//       },
+//       plotOptions: {
+//         series: {
+//           borderWidth: 0,
+//           dataLabels: {
+//             enabled: true,
+//             format: '{point.y:.1f}%'
+//           }
+//         }
+//       },
 
-      tooltip: {
-        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
-      },
+//       tooltip: {
+//         headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+//         pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+//       },
 
-      series: [
-        {
-          name: "OPERACIÓN",
-          colorByPoint: true,
-          data: detalle_trimestre
-        }
-      ]
+//       series: [
+//         {
+//           name: "OPERACIÓN",
+//           colorByPoint: true,
+//           data: detalle_trimestre
+//         }
+//       ]
 
-    });
-}
+//     });
+// }

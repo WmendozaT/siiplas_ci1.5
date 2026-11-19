@@ -348,80 +348,132 @@ class Crep_evalform2 extends CI_Controller {
 
   /*---- FUNCION GET NIVEL DE CUMPLIMIENTO DE OPERACIONES X ACP REGIONAL (GRAFICO)---*/
   public function ver_datos_avance_oregional_acp(){
-    if($this->input->is_ajax_request() && $this->input->post()){
-      $post = $this->input->post();
-      $og_id = $this->security->xss_clean($post['og_id']); /// og id
-      $dep_id = $this->security->xss_clean($post['dep_id']); /// Regional
-      $regional=$this->model_proyecto->get_departamento($dep_id);
-      $acp_regional=$this->model_objetivogestion->get_objetivosgestion($og_id);
-      $form2=$this->model_objetivoregion->list_form2_regional_x_form1($og_id,$dep_id);
-     // $matriz=$this->matriz_cumplimiento_operaciones_acp_regional($og_id,$dep_id);
-      $tabla='';
-      $tabla.='
-      <div class="row" align=center>
-        <article class="col-sm-12 col-md-12 col-lg-6">
-          <div id="container1" style="width: 770px; height: 550px; margin: 2 auto"></div>
-        </article>
-        <article class="col-sm-12 col-md-12 col-lg-6">
-          <div id="container2" style="width: 770px; height: 550px; margin: 2 auto"></div>
-        </article>
-      </div>
-      <hr>
-      <div class="row" align=center>
-        <article class="col-sm-12 col-md-12 col-lg-12">
-              <table style="width:90%">
-                <tr>
-                  <td><div style="font-size: 15px;font-family: Arial" align=left><b>DETALLE (%) CUMPLIMIENTO DE OPERACIONES DE LA ACP. '.$acp_regional[0]['og_codigo'].' .- </b>'.$acp_regional[0]['og_objetivo'].'</div></td>
-                </tr>
-              </table>
-              <br>
-              <table class="table table-bordered" style="width:90%">
-                <thead>
-                  <tr>
-                    <th style="width:1%;text-align:center">#</th>
-                    <th style="width:20%;text-align:center">OPERACIÓN '.$this->gestion.'</th>
-                    <th style="width:5%;text-align:center">META</th>
-                    <th style="width:10%;text-align:center">(%) CUMPLIMIENTO TRIMESTRAL</th>
-                    <th style="width:10%;text-align:center">(%) CUMPLIMIENTO GESTIÓN</th>
-                  </tr>
-                </thead>
+      if($this->input->is_ajax_request() && $this->input->post()){
+          $post   = $this->input->post();
+          $og_id  = $this->security->xss_clean($post['og_id']);
+          $dep_id = $this->security->xss_clean($post['dep_id']);
+
+          $regional     = $this->model_proyecto->get_departamento($dep_id);
+          $acp_regional = $this->model_objetivogestion->get_objetivosgestion($og_id);
+          $form2        = $this->model_objetivoregion->list_form2_regional_x_form1($og_id, $dep_id);
+          $trimestre    = $this->model_evaluacion->trimestre();
+
+          // 1. INICIALIZAR VARIABLES FALTANTES
+          $nombre_regional = !empty($regional) ? strtoupper($regional[0]['dep_departamento']) : 'REGIONAL';
+          $desc_trimestre  = !empty($trimestre) ? strtoupper($trimestre[0]['trm_descripcion']) : 'TRIMESTRE';
+          $trm_indice      = $this->tmes; // Trimestre activo (1, 2, 3 o 4)
+
+          $categorias        = array();
+          $valores_trimestre = array();
+          $valores_gestion   = array();
+          $suma_porcentajes  = 0;
+          $total_operaciones = 0;
+
+          // 2. CONSTRUIR CONTENEDORES DE GRÁFICOS Y TABLA
+          $tabla = '
+          <div class="row">
+              <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                  <div id="container1" style="width: 100%; height: 480px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px;"></div>
+              </article>
+              <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                  <div id="container2" style="width: 100%; height: 480px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px;"></div>
+              </article>
+          </div>
+          <hr>
+          <div class="alert alert-info" style="background-color: #f4f6f6; border-left: 5px solid #1c7368; color: #1e293b; padding: 10px 15px;">
+              <b>DETALLE (%) CUMPLIMIENTO DE OPERACIONES DE LA ACP. '.$acp_regional[0]['og_codigo'].' .- </b>'.$acp_regional[0]['og_objetivo'].'
+          </div>
+          <div class="table-responsive">
+              <table class="table table-bordered" style="width:100%; font-size: 11px;" id="datos_acp">
+                  <thead>
+                      <tr style="background-color: #1c7368; color: #FFF;">
+                          <th style="width:3%; text-align: center;">#</th>
+                          <th style="width:7%; text-align: center;">COD. ACP</th>
+                          <th style="width:7%; text-align: center;">COD. OPE</th>
+                          <th style="width:53%; text-align: center;">OPERACI&Oacute;N</th>
+                          <th style="width:15%; text-align: center;">(%) CUMP. AL TRIMESTRE</th>
+                          <th style="width:15%; text-align: center;">(%) CUMP. A LA GESTI&Oacute;N</th>
+                      </tr>
+                  </thead>
                   <tbody>';
-                  $nro=0;
-                  foreach($form2 as $reg){
-                    $nro++;
-                    $tabla.='
-                    <tr>
-                      <td style="font-size: 10px;font-family: Arial;text-align:center">'.$nro.'</td>
-                      <td style="font-size: 11px;font-family: Arial;"><b>'.$reg['og_codigo'].'.'.$reg['or_codigo'].'.- </b>'.$reg['or_objetivo'].'</td>
-                      <td style="font-size: 10px;font-family: Arial;text-align:right">'.round($reg['or_meta'],2).'</td>
-                      <td style="font-size: 12px;font-family: Arial;text-align:right;" bgcolor="#e6fdfb"><b>'.round($reg['porc_cump_'.$this->tmes],2).' %</b></td>
-                      <td style="font-size: 10px;font-family: Arial;text-align:right">'.round($reg['trm_porc_ejec'.$this->tmes],2).' %</td>
-                    </tr>';
-                  }
-                $tabla.='
-                </tbody>
+
+          $nro = 0;
+          foreach ($form2 as $row) {
+              $nro++;
+              // Etiqueta para el eje Y de Highcharts
+              $cod_ope = 'OPE ' . $row['og_codigo'] . '.' . $row['or_codigo'];
+
+              // Porcentaje Trimestral (porc_cump_1..4) y Gestión (trm_porc_ejec1..4)
+              $campo_trm = 'porc_cump_' . $trm_indice;
+              $campo_ges = 'trm_porc_ejec' . $trm_indice;
+
+              $porc_trm = isset($row[$campo_trm]) ? round(floatval($row[$campo_trm]), 2) : 0;
+              $porc_ges = isset($row[$campo_ges]) ? round(floatval($row[$campo_ges]), 2) : 0;
+
+              // Tope visual en barras de 100%
+              $valores_trimestre[] = ($porc_trm > 100) ? 100 : $porc_trm;
+              $valores_gestion[]   = ($porc_ges > 100) ? 100 : $porc_ges;
+              $categorias[]        = $cod_ope;
+
+              // El promedio global toma el cumplimiento de gestión (o cambia a $porc_trm si evalúas por trimestre)
+              $suma_porcentajes += ($porc_ges > 100) ? 100 : $porc_ges;
+              $total_operaciones++;
+
+              $tabla .= '
+              <tr>
+                  <td class="text-center">'.$nro.'</td>
+                  <td class="text-center"><b>'.$row['og_codigo'].'</b></td>
+                  <td class="text-center"><b>'.$row['or_codigo'].'</b></td>
+                  <td>'.$row['or_objetivo'].'</td>
+                  <td class="text-right" style="background-color: #f0f9ff;"><b>'.$porc_trm.' %</b></td>
+                  <td class="text-right" style="background-color: #f0fdf4;"><b>'.$porc_ges.' %</b></td>
+              </tr>';
+          }
+
+          $tabla .= '
+                  </tbody>
               </table>
-            </article>
           </div>';
 
+          // 3. CALCULAR PROMEDIO GLOBAL Y CALIFICACIÓN
+          $promedio_global = ($total_operaciones > 0) ? round(($suma_porcentajes / $total_operaciones), 1) : 0;
 
-        $result = array(
-          'respuesta' => 'correcto',
-          'acp_regional' => $acp_regional,
-          'tabla' => $tabla,
-          //'matriz' => $matriz,
-          'nro' => $nro,
-          'trimestre'=>$this->model_evaluacion->trimestre(),
-          'gestion'=>$this->gestion,
-          'regional'=>strtoupper($regional[0]['dep_departamento']),
-          //'lista_acp'=>$this->eval_oregional->ver_relacion_ogestion($dep_id),
-        );
+          if ($promedio_global <= 50) {
+              $calificacion = 'INSATISFACTORIO';
+              $color_banner = '#ef4444';
+          } elseif ($promedio_global <= 75) {
+              $calificacion = 'REGULAR';
+              $color_banner = '#f59e0b';
+          } elseif ($promedio_global <= 90) {
+              $calificacion = 'BUENO';
+              $color_banner = '#0284c7';
+          } else {
+              $calificacion = 'ÓPTIMO';
+              $color_banner = '#16a34a';
+          }
 
-      echo json_encode($result);
-    }else{
-        show_404();
-    }
+          // 4. RESPUESTA JSON UNIFICADA
+          $respuesta = array(
+              'status'            => 'success',
+              'regional'          => $nombre_regional,
+              'trimestre'         => $desc_trimestre,
+              'promedio_global'   => $promedio_global,
+              'calificacion'      => $calificacion,
+              'color_banner'      => $color_banner,
+              'categorias'        => $categorias,
+              'valores_trimestre' => $valores_trimestre,
+              'valores_gestion'   => $valores_gestion,
+              'lista'             => $tabla,
+              'gestion'           => $this->gestion
+          );
+
+          echo json_encode($respuesta);
+      } else {
+          show_404();
+      }
   }
+
+  
 
 
 
@@ -496,7 +548,13 @@ class Crep_evalform2 extends CI_Controller {
                                 <div style="font-size: 15px;font-family: Arial" align=left><b>DETALLE (%) CUMPLIMIENTO DE OPERACIONES DE LA ACP. '.$row['og_codigo'].' .- </b>'.$row['og_objetivo'].'</div>
                               </td>
                               <td>
-                                <a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['og_id'].'"  onclick="nivel_cumplimiento_acp_regional('.$row['og_id'].','.$dep_id.');" title="NIVEL DE CUMPLIMIENTOACCION DE CORTO PLAZO - REGIONAL"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="35" HEIGHT="35"/><br><font size=1>GRAF. CUMPLIMIENTO OPERACIONES</font></a>
+                                  <a href="javascript:void(0);" 
+                                     class="btn btn-lg btn-default" 
+                                     onclick="nivel_cumplimiento_acp_regional('.$row['og_id'].','.$dep_id.'); return false;" 
+                                     title="NIVEL DE CUMPLIMIENTO ACCION DE CORTO PLAZO - REGIONAL">
+                                      <img src="'.base_url().'assets/Iconos/chart_bar.png" width="35" height="35"/><br>
+                                      <span style="font-size: 10px; font-weight: bold;">GRAF. CUMPLIMIENTO OPERACIONES</span>
+                                  </a>
                               </td>
                             </tr>
                           </table>
