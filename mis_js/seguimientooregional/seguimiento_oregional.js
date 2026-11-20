@@ -626,328 +626,507 @@
 
 /////=========== FORMULARIO DE EVUALUACION FORM 2 - REPORTES
 
-// Selecciona la Regional para ver su evaluacion del form 2
-var request;
-$("#d_id").change(function () {
-    var dep_id = $(this).val();
-    var contenedor = $('#lista_consolidado');
+    // Selecciona la Regional para ver su evaluacion del form 2
+    var request;
+    $("#d_id").change(function () {
+        var dep_id = $(this).val();
+        var contenedor = $('#lista_consolidado');
 
-    // 1. Si no seleccionó ninguna opción válida, mostramos la portada por defecto
-    if (dep_id === '') {
-        contenedor.hide().html(
-            '<div class="well">' +
-                '<div class="jumbotron">' +
-                    '<h1>Evaluaci&oacute;n OPERACIONES ' + gestion + '</h1>' +
-                '</div>' +
-            '</div>'
-        ).fadeIn(400);
-        return;
-    }
-
-    // 2. Definimos la ruta (URL) dinámicamente según sea Institucional (0) o Regional
-    var metodo = (dep_id == 0) 
-        ? "get_cuadro_evaluacion_formulario2_institucional" 
-        : "get_cuadro_evaluacion_formulario2_regional";
-    
-    var url = base + "index.php/reporte_evalform2/crep_evalform2/" + metodo;
-    var titulo_carga = (dep_id == 0) ? "Consolidado Evaluación Formulario N° 2 a nivel Institucional" : "Consolidado Evaluación Formulario N° 2 a nivel Regional";
-
-    // 3. Mostramos un Loading moderno y centrado (Compatible con SmartAdmin / Bootstrap)
-    var html_loading = 
-        '<div style="padding: 40px 20px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 15px;">' +
-                      '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
-                      '<h4 style="margin: 0; font-weight: bold; color: #334155;">'+titulo_carga+'</h4>' +
-                      '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
-                  '</div>';
-
-    contenedor.html(html_loading);
-
-    // 4. Si el usuario cambia rápido el select, cancelamos la petición anterior
-    if (request) {
-        request.abort();
-    }
-
-    // 5. Ejecutamos una sola petición AJAX limpia
-    request = $.ajax({
-        url: url,
-        type: "POST",
-        dataType: "json",
-        data: { dep_id: dep_id }
-    });
-
-    request.done(function (response) {
-        if (response.respuesta === 'correcto') {
-            contenedor.hide().html(response.tabla).fadeIn(500);
-        } else {
-            contenedor.html('<div class="alert alert-danger"><i class="fa fa-warning"></i> No se pudieron cargar los datos solicitados.</div>');
-            alertify.error("ERROR AL LISTAR");
-        }
-    });
-
-    request.fail(function (jqXHR, textStatus) {
-        // Ignoramos el error si fue provocado intencionalmente por request.abort()
-        if (textStatus !== 'abort') {
-            contenedor.html('<div class="alert alert-danger"><i class="fa fa-times-circle"></i> Error de conexi&oacute;n con el servidor. Intente nuevamente.</div>');
-            alertify.error("ERROR DE SERVIDOR AL PROCESAR EL REPORTE");
-        }
-    });
-});
-
-
-/// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL
-   var request_acp_op;
-
-function nivel_cumplimiento_acp_regional(og_id, dep_id) {
-    // 1. Forzar apertura explícita del modal
-    jQuery('#modal_grafico_xform2').modal('show');
-
-    var url = base + "index.php/reporte_evalform2/crep_evalform2/ver_datos_avance_oregional_acp";
-    var contenedor = jQuery('#modal_grafico_xform2 #tabla');
-
-    // 2. Ocultar la insignia de calificación anterior mientras carga la nueva ACP
-    jQuery('#badge_calificacion_acp').hide();
-
-    contenedor.html(
-        '<div class="text-center" style="padding: 60px 20px;">' +
-            '<i class="fa fa-spinner fa-spin fa-3x" style="color: #1c7368; margin-bottom: 10px;"></i>' +
-            '<h4 style="color: #1c7368; font-weight: bold;">Cargando Operaciones Alineadas...</h4>' +
-        '</div>'
-    );
-
-    if (request_acp_op) {
-        request_acp_op.abort();
-    }
-
-    request_acp_op = jQuery.ajax({
-        url: url,
-        type: "POST",
-        dataType: "json",
-        data: { og_id: og_id, dep_id: dep_id }
-    });
-
-    request_acp_op.done(function (response) {
-        if (response.status === 'success') {
-            // 3. Actualizar y mostrar la insignia en la cabecera con el color de la calificación
-            jQuery('#lbl_promedio_acp').text(response.promedio_global + '%');
-            jQuery('#lbl_estado_acp').text(response.calificacion);
-            jQuery('#badge_calificacion_acp')
-                .css('background-color', response.color_banner)
-                .fadeIn(300);
-
-            // 4. Insertar contenedores de gráficos y tabla
-            contenedor.html(response.lista).show();
-
-            // 5. Ajustar altura dinámica y dibujar los gráficos Highcharts
-            var altoDinamico = Math.max(450, response.categorias.length * 26);
-            jQuery('#container1, #container2').css('height', altoDinamico + 'px');
-
-            setTimeout(function() {
-                dibujarGraficoBarrasHorizontal(
-                    'container1',
-                    'CUMPLIMIENTO ' + response.regional + ' - ' + response.trimestre + ' / ' + response.gestion,
-                    response.categorias,
-                    response.valores_trimestre,
-                    '#38bdf8'
-                );
-
-                dibujarGraficoBarrasHorizontal(
-                    'container2',
-                    'CUMPLIMIENTO ' + response.regional + ' - GESTIÓN ' + response.gestion,
-                    response.categorias,
-                    response.valores_gestion,
-                    '#1c7368'
-                );
-            }, 350);
-
-        } else {
-            contenedor.html('<div class="alert alert-danger">No se pudieron obtener los datos de la ACP.</div>');
-            alertify.error("ERROR AL RECUPERAR INFORMACION");
-        }
-    });
-}
-
-function dibujarGraficoBarrasHorizontal(renderId, titulo, categorias, valores, colorBarra) {
-    if (!document.getElementById(renderId)) {
-        return;
-    }
-
-    // Transformamos los valores simples en puntos con color dinámico (Semáforo)
-    var datosEstilizados = valores.map(function(val) {
-        var numero = parseFloat(val) || 0;
-        var colorDinamico = colorBarra; // Color por defecto si se desea mantener
-
-        // Asignación automática de color según escala de cumplimiento
-        if (numero <= 50) {
-            colorDinamico = '#ef4444'; // Rojo (Insatisfactorio)
-        } else if (numero <= 75) {
-            colorDinamico = '#f59e0b'; // Ámbar / Naranja (Regular)
-        } else if (numero <= 90) {
-            colorDinamico = '#0ea5e9'; // Azul moderno (Bueno)
-        } else {
-            colorDinamico = '#10b981'; // Verde esmeralda (Óptimo)
+        // 1. Si no seleccionó ninguna opción válida, mostramos la portada por defecto
+        if (dep_id === '') {
+            contenedor.hide().html(
+                '<div class="well">' +
+                    '<div class="jumbotron">' +
+                        '<h1>Evaluaci&oacute;n OPERACIONES ' + gestion + '</h1>' +
+                    '</div>' +
+                '</div>'
+            ).fadeIn(400);
+            return;
         }
 
-        return {
-            y: numero,
-            color: colorDinamico
-        };
-    });
+        // 2. Definimos la ruta (URL) dinámicamente según sea Institucional (0) o Regional
+        var metodo = (dep_id == 0) 
+            ? "get_cuadro_evaluacion_formulario2_institucional" 
+            : "get_cuadro_evaluacion_formulario2_regional";
+        
+        var url = base + "index.php/reporte_evalform2/crep_evalform2/" + metodo;
+        var titulo_carga = (dep_id == 0) ? "Consolidado Evaluación Formulario N° 2 a nivel Institucional" : "Consolidado Evaluación Formulario N° 2 a nivel Regional";
 
-    new Highcharts.Chart({
-        chart: {
-            renderTo: renderId,
-            type: 'bar',
-            backgroundColor: '#ffffff',
-            style: { fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif" },
-            spacingTop: 15,
-            spacingBottom: 15
-        },
-        title: {
-            text: titulo,
-            align: 'left',
-            margin: 20,
-            style: { 
-                fontSize: '13px', 
-                fontWeight: '700', 
-                color: '#0f172a',
-                textTransform: 'uppercase'
-            }
-        },
-        credits: {
-            enabled: false // Oculta la marca de agua "Highcharts.com"
-        },
-        xAxis: {
-            categories: categorias,
-            lineColor: '#cbd5e1',
-            tickLength: 0,
-            labels: {
-                style: { 
-                    fontSize: '11px', 
-                    fontWeight: '600', 
-                    color: '#334155' 
+        // 3. Mostramos un Loading moderno y centrado (Compatible con SmartAdmin / Bootstrap)
+        var html_loading = 
+            '<div style="padding: 40px 20px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 15px;">' +
+                          '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
+                          '<h4 style="margin: 0; font-weight: bold; color: #334155;">'+titulo_carga+'</h4>' +
+                          '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
+                      '</div>';
+
+        contenedor.html(html_loading);
+
+        // 4. Si el usuario cambia rápido el select, cancelamos la petición anterior
+        if (request) {
+            request.abort();
+        }
+
+        // 5. Ejecutamos una sola petición AJAX limpia
+        request = $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            data: { dep_id: dep_id }
+        });
+
+        request.done(function (response) {
+            if (response.respuesta === 'correcto') {
+                contenedor.html(response.tabla).show();
+
+                // Si es reporte regional (dep_id != 0), dibujamos los gráficos en #grafico_trimestral y #grafico1
+                if (dep_id != 0 && response.categorias) {
+                    var altoDinamico = Math.max(550, response.categorias.length * 24);
+                    jQuery('#grafico_trimestral, #grafico1').css('height', altoDinamico + 'px');
+
+                    setTimeout(function() {
+                        // Gráfico 1: Cumplimiento Trimestral
+                        dibujarGraficoBarrasHorizontal(
+                            'grafico_trimestral',
+                            'CUMPLIMIENTO TRIMESTRAL (' + response.trimestre + ' - ' + response.gestion + ')',
+                            response.categorias,
+                            response.valores_trimestre,
+                            '#38bdf8'
+                        );
+
+                        // Gráfico 2: Cumplimiento Anual / Gestión
+                        dibujarGraficoBarrasHorizontal(
+                            'grafico1',
+                            'CUMPLIMIENTO ACUMULADO A LA GESTIÓN ' + response.gestion,
+                            response.categorias,
+                            response.valores_gestion,
+                            '#10b981'
+                        );
+                    }, 200);
                 }
+            } else {
+                contenedor.html('<div class="alert alert-danger"><i class="fa fa-warning"></i> No se pudieron cargar los datos solicitados.</div>');
+                alertify.error("ERROR AL LISTAR");
             }
-        },
-        yAxis: {
-            min: 0,
-            max: 108, // Margen extra a la derecha para que el texto "100%" nunca se corte
-            tickInterval: 20,
-            gridLineColor: '#f1f5f9',
-            gridLineDashStyle: 'Dash',
-            title: { 
-                text: 'Porcentaje de Cumplimiento (%)',
-                style: { fontSize: '11px', color: '#64748b', fontWeight: '600' }
+        });
+
+
+        request.fail(function (jqXHR, textStatus) {
+            // Ignoramos el error si fue provocado intencionalmente por request.abort()
+            if (textStatus !== 'abort') {
+                contenedor.html('<div class="alert alert-danger"><i class="fa fa-times-circle"></i> Error de conexi&oacute;n con el servidor. Intente nuevamente.</div>');
+                alertify.error("ERROR DE SERVIDOR AL PROCESAR EL REPORTE");
+            }
+        });
+    });
+
+
+    /// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL (GRAFICO)
+    var request_acp_op;
+    function nivel_cumplimiento_acp_regional(og_id, dep_id) {
+        var modalEl    = jQuery('#modal_grafico_xform2');
+        var contenedor = modalEl.find('#tabla');
+
+        modalEl.modal('show');
+
+        // Resetear banner superior
+        jQuery('#lbl_acp_regional_titulo').text('REGIONAL : CARGANDO...');
+        jQuery('#lbl_porcentaje_acp').text('0.0%');
+        jQuery('#lbl_estado_acp').text('CALCULANDO...');
+        jQuery('#banner_calificacion_acp').css('background-color', '#64748b');
+
+        contenedor.html(
+            '<div class="text-center" style="padding: 60px 20px;">' +
+                '<i class="fa fa-spinner fa-spin fa-3x" style="color: #1e3a8a; margin-bottom: 10px;"></i>' +
+                '<h4 style="color: #1e3a8a; font-weight: bold;">Cargando Operaciones Alineadas...</h4>' +
+            '</div>'
+        );
+
+        if (request_acp_op) {
+            request_acp_op.abort();
+        }
+
+        request_acp_op = jQuery.ajax({
+            url: base + "index.php/reporte_evalform2/crep_evalform2/ver_datos_avance_oregional_acp",
+            type: "POST",
+            dataType: "json",
+            data: { og_id: og_id, dep_id: dep_id }
+        });
+
+        request_acp_op.done(function (response) {
+            if (response.status === 'success') {
+                // Actualizar banner superior
+                jQuery('#lbl_acp_regional_titulo').text('REGIONAL : ' + response.regional);
+                jQuery('#lbl_porcentaje_acp').text(response.promedio_global + '%');
+                jQuery('#lbl_estado_acp').text(response.calificacion);
+                jQuery('#banner_calificacion_acp').css('background-color', response.color_banner);
+
+                // Insertar contenedores de gráficos y tabla
+                contenedor.html(response.lista).show();
+
+                // Ajustar altura dinámica según cantidad de operaciones
+                var altoDinamico = Math.max(320, response.categorias.length * 30);
+                jQuery('#container1, #container2').css('height', altoDinamico + 'px');
+
+                setTimeout(function() {
+                    dibujarGraficoBarrasHorizontal(
+                        'container1',
+                        'CUMPLIMIENTO DE OPERACIONES AL ' + response.trimestre + ' - ' + response.gestion,
+                        response.categorias,
+                        response.valores_trimestre,
+                        '#38bdf8'
+                    );
+
+                    dibujarGraficoBarrasHorizontal(
+                        'container2',
+                        'CUMPLIMIENTO DE OPERACIONES ACUMULADO A LA GESTIÓN ' + response.gestion,
+                        response.categorias,
+                        response.valores_gestion,
+                        '#0ea5e9'
+                    );
+                }, 300);
+
+            } else {
+                contenedor.html('<div class="alert alert-danger">No se pudieron obtener los datos de la ACP.</div>');
+                alertify.error("ERROR AL RECUPERAR INFORMACION");
+            }
+        });
+    }
+
+
+    function dibujarGraficoBarrasHorizontal(renderId, titulo, categorias, valores, colorBarra) {
+        if (!document.getElementById(renderId)) {
+            return;
+        }
+
+        // Cálculo dinámico del ancho (grosor) de cada barra según cantidad de operaciones
+        var totalOps = categorias.length;
+        var grosorBarra = 16; // Valor por defecto para muchas operaciones
+
+        if (totalOps <= 3) {
+            grosorBarra = 40; // Barras bien anchas cuando hay 1 a 3 operaciones
+        } else if (totalOps <= 6) {
+            grosorBarra = 26; // Grosor medio cuando hay 4 a 6 operaciones
+        } else if (totalOps <= 10) {
+            grosorBarra = 20;
+        }
+
+        var datosEstilizados = valores.map(function(val) {
+            var numero = parseFloat(val) || 0;
+            var colorDinamico = colorBarra;
+
+            if (numero <= 50) {
+                colorDinamico = '#ef4444';
+            } else if (numero <= 75) {
+                colorDinamico = '#f59e0b';
+            } else if (numero <= 90) {
+                colorDinamico = '#0ea5e9';
+            } else {
+                colorDinamico = '#10b981';
+            }
+
+            return { y: numero, color: colorDinamico };
+        });
+
+        new Highcharts.Chart({
+            chart: {
+                renderTo: renderId,
+                type: 'bar',
+                backgroundColor: '#ffffff',
+                style: { fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif" },
+                spacingTop: 15,
+                spacingBottom: 15
             },
-            labels: {
-                format: '{value}%',
-                style: { fontSize: '10px', color: '#64748b' }
+            title: {
+                text: titulo,
+                align: 'left',
+                margin: 20,
+                style: { fontSize: '13px', fontWeight: '700', color: '#0f172a', textTransform: 'uppercase' }
             },
-            // Línea vertical de referencia en la meta del 100%
-            plotLines: [{
-                value: 100,
-                color: '#94a3b8',
-                dashStyle: 'ShortDot',
-                width: 1.5,
-                zIndex: 3
-            }]
-        },
-        legend: { enabled: false },
-        tooltip: {
-            backgroundColor: 'rgba(15, 23, 42, 0.92)',
-            borderWidth: 0,
-            borderRadius: 6,
-            style: { color: '#ffffff', fontSize: '11px' },
-            headerFormat: '<span style="font-size: 11px; font-weight: bold; color: #38bdf8;">{point.key}</span><br/>',
-            pointFormat: 'Cumplimiento: <b>{point.y}%</b>'
-        },
-        plotOptions: {
-            bar: {
-                borderRadius: 4,
-                pointWidth: 16, // Barras más gruesas y visibles
+            credits: { enabled: false },
+            xAxis: {
+                categories: categorias,
+                lineColor: '#cbd5e1',
+                tickLength: 0,
+                labels: {
+                    style: { fontSize: '11px', fontWeight: '600', color: '#334155' }
+                }
+            },
+            yAxis: {
+                min: 0,
+                max: 108,
+                tickInterval: 20,
+                gridLineColor: '#f1f5f9',
+                gridLineDashStyle: 'Dash',
+                title: {
+                    text: 'Porcentaje de Cumplimiento (%)',
+                    style: { fontSize: '11px', color: '#64748b', fontWeight: '600' }
+                },
+                labels: {
+                    format: '{value}%',
+                    style: { fontSize: '10px', color: '#64748b' }
+                },
+                plotLines: [{
+                    value: 100,
+                    color: '#94a3b8',
+                    dashStyle: 'ShortDot',
+                    width: 1.5,
+                    zIndex: 3
+                }]
+            },
+            legend: { enabled: false },
+            tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.92)',
                 borderWidth: 0,
-                dataLabels: {
-                    enabled: true,
-                    format: '{y}%',
-                    align: 'left',
-                    x: 5, // Separación limpia entre el fin de la barra y el número
-                    style: { 
-                        fontSize: '10px', 
-                        fontWeight: '700', 
-                        color: '#1e293b',
-                        textOutline: 'none' // Quita el borde blanco borroso por defecto
+                borderRadius: 6,
+                style: { color: '#ffffff', fontSize: '11px' },
+                headerFormat: '<span style="font-size: 11px; font-weight: bold; color: #38bdf8;">{point.key}</span><br/>',
+                pointFormat: 'Cumplimiento: <b>{point.y}%</b>'
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 5,
+                    pointWidth: grosorBarra, // Aplica el grosor dinámico calculado
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y}%',
+                        align: 'left',
+                        x: 6,
+                        style: {
+                            fontSize: (totalOps <= 4) ? '11px' : '10px', // Número más grande si hay pocas barras
+                            fontWeight: '700',
+                            color: '#1e293b',
+                            textOutline: 'none'
+                        }
                     }
                 }
+            },
+            series: [{
+                name: 'Cumplimiento',
+                data: datosEstilizados
+            }]
+        });
+    }
+
+    //// imprimir Grafico de la ACP alineado a la Operacion
+   function imprimirGraficoAcp() {
+    if (typeof html2pdf === 'undefined') {
+        alert('Error: No se encuentra cargada la librería html2pdf.');
+        return;
+    }
+
+    var tituloGestion    = jQuery('#area_impresion_acp h4').first().text().trim() || 'CUADRO DE EVALUACIÓN DE OPERACIONES';
+    var subtituloReg     = jQuery('#lbl_acp_regional_titulo').text().trim() || 'REGIONAL';
+    var tituloAcp        = jQuery('#tit_acp').text().replace(/\s+/g, ' ').trim() || '';
+    var porcentajeGlobal = jQuery('#lbl_porcentaje_acp').text().trim() || '0.0%';
+    var estadoCalif      = jQuery('#lbl_estado_acp').text().trim() || '';
+    var colorBanner      = jQuery('#banner_calificacion_acp').css('background-color') || '#f59e0b';
+
+    var svg1 = document.querySelector('#container1 svg');
+    var svg2 = document.querySelector('#container2 svg');
+    if (!svg1 || !svg2) {
+        alert('Error: Los gráficos aún no se han renderizado por completo.');
+        return;
+    }
+
+    function convertirSvgAImagen(svgElement, anchoPdf, altoPdf) {
+        var svgClone      = svgElement.cloneNode(true);
+        var anchoOriginal = parseFloat(svgElement.getAttribute('width')) || 650;
+        var altoOriginal  = parseFloat(svgElement.getAttribute('height')) || 350;
+
+        svgClone.setAttribute('width', anchoPdf);
+        svgClone.setAttribute('height', altoPdf);
+        svgClone.setAttribute('viewBox', '0 0 ' + anchoOriginal + ' ' + altoOriginal);
+        svgClone.setAttribute('preserveAspectRatio', 'none');
+
+        var svgData = new XMLSerializer().serializeToString(svgClone);
+        var imgSrc  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+
+        return '<img src="' + imgSrc + '" style="width: 100%; height: ' + altoPdf + 'px; display: block;" />';
+    }
+
+    // Alto ajustado a 320px para compensar el espacio extra de la cabecera con el título de la ACP
+    var imgGrafico1 = convertirSvgAImagen(svg1, 700, 350);
+    var imgGrafico2 = convertirSvgAImagen(svg2, 700, 350);
+
+    var contenedorLimpio = document.createElement('div');
+    contenedorLimpio.style.fontFamily      = 'Arial, Helvetica, sans-serif';
+    contenedorLimpio.style.width           = '100%';
+    contenedorLimpio.style.backgroundColor = '#ffffff';
+    contenedorLimpio.style.letterSpacing   = 'normal';
+    contenedorLimpio.style.wordSpacing     = 'normal';
+
+    var bannerHtml = 
+        '<div style="background-color: ' + colorBanner + '; color: #ffffff; text-align: center; padding: 9px; border-radius: 5px; margin-bottom: 10px;">' +
+            '<div style="font-size: 26px; font-weight: bold; line-height: 1.1;">' + porcentajeGlobal + '</div>' +
+            '<div style="font-size: 10px; font-weight: bold; margin-top: 2px;">' + estadoCalif + '</div>' +
+        '</div>';
+
+    contenedorLimpio.innerHTML = 
+        '<div>' +
+            bannerHtml +
+            '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px; margin-bottom: 10px;">' +
+                imgGrafico1 +
+            '</div>' +
+            '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px;">' +
+                imgGrafico2 +
+            '</div>' +
+        '</div>';
+
+    var regionalArchivo = subtituloReg.replace('REGIONAL :', '').trim() || 'Regional';
+    var opciones = {
+        // Margen superior ampliado a 36mm para albergar las 3 líneas de cabecera (Título, Regional y ACP)
+        margin:       new Array(36, 12, 14, 12),
+        filename:     'Grafico_Cumplimiento_ACP_' + regionalArchivo + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
+        var totalPaginas = pdf.internal.getNumberOfPages();
+        var anchoPagina  = pdf.internal.pageSize.getWidth();
+        var altoPagina   = pdf.internal.pageSize.getHeight();
+
+        for (var i = 1; i <= totalPaginas; i++) {
+            pdf.setPage(i);
+
+            // Caja de cabecera institucional ampliada (25mm de alto)
+            pdf.setFillColor(240, 249, 255);
+            pdf.setDrawColor(186, 230, 253);
+            pdf.roundedRect(12, 7, anchoPagina - 24, 25, 2, 2, 'FD');
+
+            // Línea 1: Título de gestión
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(10.5);
+            pdf.setTextColor(30, 58, 138);
+            pdf.text(tituloGestion, anchoPagina / 2, 13, { align: 'center' });
+
+            // Línea 2: Regional
+            pdf.setFontSize(9);
+            pdf.setTextColor(2, 132, 199);
+            pdf.text(subtituloReg, anchoPagina / 2, 18.5, { align: 'center' });
+
+            // Línea 3: Título de la ACP (ajustado a máximo 2 líneas si es muy largo)
+            if (tituloAcp) {
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(8);
+                pdf.setTextColor(30, 41, 59);
+                var lineasAcp = pdf.splitTextToSize(tituloAcp, anchoPagina - 32);
+                pdf.text(lineasAcp.slice(0, 2), anchoPagina / 2, 24, { align: 'center' });
             }
-        },
-        series: [{
-            name: 'Cumplimiento',
-            data: datosEstilizados
-        }]
-    });
+
+            // Pie de página
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 7);
+            pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 7, { align: 'right' });
+        }
+    }).save();
 }
 
 
+/////// impresion de los graficos CONSOLIDADO POR REGIONAL
+function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
+    // 1. Verificar que html2pdf esté disponible
+    if (typeof html2pdf === 'undefined') {
+        alert('Error: No se encuentra cargada la librería html2pdf.');
+        return;
+    }
 
-  
+    // 2. Obtener el SVG del gráfico seleccionado
+    var svgElement = document.querySelector('#' + idGrafico + ' svg');
+    if (!svgElement) {
+        alert('Error: El gráfico aún no se ha renderizado.');
+        return;
+    }
 
+    // 3. Extraer el título de la regional desde el encabezado principal de la vista
+    var tituloPrincipal = jQuery('#wid-id-3 h2').first().text().trim() || 'Evaluación del Formulario N° 2 (Operaciones)';
+    var subtituloTipo   = (tipoReporte === 'Trimestral') ? 'REPORTE DE CUMPLIMIENTO TRIMESTRAL' : 'REPORTE DE CUMPLIMIENTO ANUAL / GESTIÓN';
 
-//   function cuadro_grafico_cumplimiento_operaciones_x_acp_regional(grafico,detalle_trimestre,titulo,acp_regional){
-//       /*let detalle=[];
-//       for (var i = 0; i < nro; i++) {
-//           detalle[i]= { name: matriz[i][0]+'.'+matriz[i][1]+' '+matriz[i][2],y: matriz[i][4]};
-//       }*/
+    // 4. Extraer datos y color del banner de calificación correspondiente
+    var bannerEl    = jQuery('#' + idBanner);
+    var colorBanner = bannerEl.css('background-color') || '#1c7368';
+    var porcentaje  = bannerEl.find('div').eq(0).text().trim() || '0.0%';
+    var textoCalif  = bannerEl.find('div').eq(1).text().trim() || '';
 
-//     Highcharts.chart(grafico, {1510302607
-//       chart: {
-//         type: 'column'
-//       },
-//       title: {
-//         align: 'center',
-//         text: titulo
-//       },
-//       subtitle: {
-//         align: 'center',
-//         text: '<b>ACP. '+acp_regional[0]['og_codigo']+'.'+acp_regional[0]['og_objetivo']+'</b>'
-//       },
-//       accessibility: {
-//         announceNewData: {
-//           enabled: true
-//         }
-//       },
-//       xAxis: {
-//         type: 'category'
-//       },
-//       yAxis: {
-//         title: {
-//           text: '(%) Cumplimiento de Operaciones al Trimestre'
-//         }
+    // 5. Clonar y escalar el SVG a 700px de ancho para ajustar a hoja Carta
+    var svgClone      = svgElement.cloneNode(true);
+    var anchoOriginal = parseFloat(svgElement.getAttribute('width')) || 700;
+    var altoOriginal  = parseFloat(svgElement.getAttribute('height')) || 550;
+    var anchoPdfPx    = 700;
+    var altoPdfPx     = Math.round((altoOriginal * anchoPdfPx) / anchoOriginal);
 
-//       },
-//       legend: {
-//         enabled: false
-//       },
-//       plotOptions: {
-//         series: {
-//           borderWidth: 0,
-//           dataLabels: {
-//             enabled: true,
-//             format: '{point.y:.1f}%'
-//           }
-//         }
-//       },
+    svgClone.setAttribute('width', anchoPdfPx);
+    svgClone.setAttribute('height', altoPdfPx);
+    svgClone.setAttribute('viewBox', '0 0 ' + anchoOriginal + ' ' + altoOriginal);
 
-//       tooltip: {
-//         headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-//         pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
-//       },
+    var svgData = new XMLSerializer().serializeToString(svgClone);
+    var imgSrc  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 
-//       series: [
-//         {
-//           name: "OPERACIÓN",
-//           colorByPoint: true,
-//           data: detalle_trimestre
-//         }
-//       ]
+    // 6. Construir el contenedor aislado para el PDF
+    var contenedorLimpio = document.createElement('div');
+    contenedorLimpio.style.fontFamily      = 'Arial, Helvetica, sans-serif';
+    contenedorLimpio.style.width           = '100%';
+    contenedorLimpio.style.backgroundColor = '#ffffff';
+    contenedorLimpio.style.letterSpacing   = 'normal';
+    contenedorLimpio.style.wordSpacing     = 'normal';
 
-//     });
-// }
+    var bannerHtml = 
+        '<div style="background-color: ' + colorBanner + '; color: #ffffff; text-align: center; padding: 12px; border-radius: 5px; margin-bottom: 12px;">' +
+            '<div style="font-size: 30px; font-weight: bold; line-height: 1.1;">' + porcentaje + '</div>' +
+            '<div style="font-size: 11px; font-weight: bold; margin-top: 4px;">' + textoCalif + '</div>' +
+        '</div>';
+
+    var graficoHtml = 
+        '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 8px;">' +
+            '<img src="' + imgSrc + '" style="width: 100%; height: auto; display: block; margin: 0 auto;" />' +
+        '</div>';
+
+    contenedorLimpio.innerHTML = bannerHtml + graficoHtml;
+
+    // 7. Configurar opciones de descarga PDF
+    var nombreArchivo = 'Grafico_' + tipoReporte + '_Form2.pdf';
+    var opciones = {
+        margin:       new Array(28, 12, 14, 12),
+        filename:     nombreArchivo,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+    };
+
+    // 8. Generar PDF con cabecera y pie de página en todas las hojas
+    html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
+        var totalPaginas = pdf.internal.getNumberOfPages();
+        var anchoPagina  = pdf.internal.pageSize.getWidth();
+        var altoPagina   = pdf.internal.pageSize.getHeight();
+
+        for (var i = 1; i <= totalPaginas; i++) {
+            pdf.setPage(i);
+
+            // Cabecera institucional
+            pdf.setFillColor(240, 249, 255);
+            pdf.setDrawColor(186, 230, 253);
+            pdf.roundedRect(12, 8, anchoPagina - 24, 16, 2, 2, 'FD');
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(10.5);
+            pdf.setTextColor(30, 58, 138);
+            pdf.text(tituloPrincipal, anchoPagina / 2, 14.5, { align: 'center' });
+
+            pdf.setFontSize(9);
+            pdf.setTextColor(2, 132, 199);
+            pdf.text(subtituloTipo, anchoPagina / 2, 20.5, { align: 'center' });
+
+            // Pie de página
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 7);
+            pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 7, { align: 'right' });
+        }
+    }).save();
+}

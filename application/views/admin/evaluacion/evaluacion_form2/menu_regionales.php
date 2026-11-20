@@ -114,8 +114,6 @@
 		</div>
 		<!-- END MAIN PANEL -->
 
-     <!-- MODAL LISTA DE ACTIVIDADES PRIORIZADOS -->
-
         <!--  =============== -->  
         <?php echo $modal_form4_priorizados; ?>
         <?php echo $modal_grafico_x_form2;?>

@@ -58,33 +58,6 @@ class Cevaluacion_form2 extends CI_Controller {
     }
 
 
-    /*---- UPDATE DATOS OPERACIONES TIPO DE META----*/
-    // public function update_datos_tpmeta(){
-    //   if($this->input->is_ajax_request() && $this->input->post()){
-    //     $post = $this->input->post();
-    //     $or_id = $this->security->xss_clean($post['or_id']);
-    //     $id = $this->security->xss_clean($post['id']);
-    //     $detalle_oregional=$this->model_objetivoregion->get_objetivosregional($or_id); /// Objetivo Regional
-
-    //     if($detalle_oregional[0]['indi_id']==2){
-    //       $update_or = array(
-    //         'tp_meta' => $id,
-    //       );
-    //       $this->db->where('or_id', $or_id);
-    //       $this->db->update('objetivos_regionales', $update_or);
-    //     }
-          
-    //     $result = array(
-    //       'respuesta' => 'correcto',
-    //     );
-
-    //     echo json_encode($result);
-    //   }else{
-    //     show_404();
-    //   }
-    // }
-
-
     /*---- FUNCION GET LISTA DE OPERACIONES POR REGIONAL 2027 --------*/
     public function get_lista_operaciones_x_regionales() {
       if ($this->input->is_ajax_request() && $this->input->post()) {
@@ -272,26 +245,6 @@ class Cevaluacion_form2 extends CI_Controller {
 
 
     /*---- GRAFICO CONSOLIDADO de OPERACIONES (barras) POR REGIONAL 2027 --------*/
-    // public function get_cumplimiento_operaciones_grafico(){
-    //   if($this->input->is_ajax_request() && $this->input->post()){
-    //     $post = $this->input->post();
-    //     $dep_id = $this->security->xss_clean($post['dep_id']); /// Regional
-    //     $trm_id = $this->security->xss_clean($post['trm_id']); /// Trimestre
-    //     $regional=$this->model_proyecto->get_departamento($dep_id);
-    //     $tabla='<iframe id="ipdf" width="100%" height="950px;" src="'.base_url().'index.php/rep_meta_oregional_grafico/'.$dep_id.'"></iframe>';
-
-    //       $result = array(
-    //         'respuesta' => 'correcto',
-    //         'titulo_graf'=> '<b>REGIONAL : '.strtoupper($regional[0]['dep_departamento']).'</b>',
-    //         'tabla' => $tabla,
-    //       );
-
-    //     echo json_encode($result);
-    //   }else{
-    //       show_404();
-    //   }
-    // }
-
     public function get_grafico_cumplimiento_regional() {
       if ($this->input->is_ajax_request() && $this->input->post()) {
           $dep_id = intval($this->input->post('dep_id'));
@@ -332,7 +285,7 @@ class Cevaluacion_form2 extends CI_Controller {
                         $cod_ope = 'OPE ' . $row['og_codigo'] . '.' . $row['or_codigo'];
                         
                         // Capturar el porcentaje acumulado según la columna de tu consulta (trm_porc_ejec1 ... 4)
-                        $campo_porc = 'trm_porc_ejec' . $trm_indice;
+                        $campo_porc = 'trm_porc_ejec' . $trm_indice; /// % gestion
                         $porcentaje = isset($row[$campo_porc]) ? round(floatval($row[$campo_porc]), 2) : 0;
 
                         // Tope opcional de 100% si alguna operación supera su meta
@@ -396,76 +349,6 @@ class Cevaluacion_form2 extends CI_Controller {
       }
   }
 
-
-
-
-
-  //   public function get_grafico_cumplimiento_regional2() {
-  //     if ($this->input->is_ajax_request() && $this->input->post()) {
-  //         $dep_id = intval($this->input->post('dep_id'));
-  //         $tmes   = intval($this->input->post('tmes'));
-
-  //         // 1. Obtener datos de la regional
-  //         $departamento = $this->model_proyecto->get_departamento($dep_id);
-  //         $nombre_regional = !empty($departamento) ? strtoupper($departamento[0]['dep_departamento']) : 'REGIONAL';
-
-  //         // 2. Obtener lista de operaciones de la regional (Usa el método de tu modelo que trae el Form 2)
-  //         $operaciones = $this->eval_oregional->list_operaciones_regional($dep_id); // Ajusta al nombre exacto de tu método de consulta
-
-  //         $categorias = array();
-  //         $valores    = array();
-  //         $suma_porcentajes = 0;
-  //         $total_operaciones = 0;
-
-  //         foreach ($operaciones as $row) {
-  //             // Filtrar solo operaciones priorizadas o activas si corresponde
-  //             $cod_ope = 'OPE ' . $row['og_codigo'] . '.' . $row['or_codigo'];
-              
-  //             // Capturar el porcentaje acumulado a la gestión según el mes ($tmes)
-  //             $campo_porc = 'trm_porc_ejec' . $tmes;
-  //             $porcentaje = isset($row[$campo_porc]) ? round(floatval($row[$campo_porc]), 2) : 0;
-
-  //             $categorias[] = $cod_ope;
-  //             $valores[]    = $porcentaje;
-
-  //             $suma_porcentajes += $porcentaje;
-  //             $total_operaciones++;
-  //         }
-
-  //         // 3. Calcular porcentaje global de la regional
-  //         $promedio_global = ($total_operaciones > 0) ? round(($suma_porcentajes / $total_operaciones), 1) : 0;
-
-  //         // 4. Determinar calificación y color del banner
-  //         if ($promedio_global <= 50) {
-  //             $calificacion = 'INSATISFACTORIO';
-  //             $color_banner = '#ef4444'; // Rojo
-  //         } elseif ($promedio_global <= 75) {
-  //             $calificacion = 'REGULAR';
-  //             $color_banner = '#f59e0b'; // Naranja / Amarillo
-  //         } elseif ($promedio_global <= 90) {
-  //             $calificacion = 'BUENO';
-  //             $color_banner = '#0284c7'; // Azul
-  //         } else {
-  //             $calificacion = 'ÓPTIMO';
-  //             $color_banner = '#16a34a'; // Verde
-  //         }
-
-  //         $respuesta = array(
-  //             'status'          => 'success',
-  //             'regional'        => $nombre_regional,
-  //             'promedio_global' => $promedio_global,
-  //             'calificacion'    => $calificacion,
-  //             'color_banner'    => $color_banner,
-  //             'categorias'      => $categorias,
-  //             'valores'         => $valores,
-  //             'gestion'         => $this->gestion
-  //         );
-
-  //         echo json_encode($respuesta);
-  //     } else {
-  //         show_404();
-  //     }
-  // }
 
     /*----- CUADRO EVALUACION OPERACIONES REGIONALES (GRAFICO FORM 2)  a eliminar ----*/
     public function cuadro_evaluacion_grafico_form2($dep_id){
