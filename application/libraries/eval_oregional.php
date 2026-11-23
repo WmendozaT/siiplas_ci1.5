@@ -102,8 +102,8 @@ class Eval_oregional extends CI_Controller{
 
   
 
-  //// FORMULARIO DE EVALUACION DE FORMULARIO 2 - REGIONAL ALINEADO A OBJETIVOS REGIONALES 2027 ajustando
-    public function ver_relacion_ogestion($dep_id){
+  //// FORMULARIO DE EVALUACION DE FORMULARIO 2 - REGIONAL ALINEADO A OBJETIVOS REGIONALES 2027 (Modulo : Evaluacion POA)
+  public function ver_relacion_ogestion($dep_id){
     $tabla='';
     $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id);
     $departamento=$this->model_proyecto->get_departamento($dep_id);
@@ -125,7 +125,14 @@ class Eval_oregional extends CI_Controller{
               <br>
                 <a href="javascript:abreVentana(\''.site_url("").'/rep_oregional/'.$dep_id.'\');" title="REPORTE REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR OPERACIONES (Form N° 2)</b></a>
                 <a href="javascript:abreVentana(\''.site_url("").'/rep_eval_oregional/'.$dep_id.'\');" title="REPORTE EVALUACIÓN META REGIONAL" class="btn btn-lg btn-default" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>IMPRIMIR EVALUACIÓN (Form N° 2)</b></a>
-                <a href="#" data-toggle="modal" data-target="#modal_cumplimiento_grafico" class="btn btn-lg btn-default" name="'.$dep_id.'" onclick="nivel_cumplimiento_operaciones_grafico('.$dep_id.','.$this->tmes.');" title="NIVEL DE CUMPLIMIENTO DE OPERACIONES (GRAFICO)" style="font-size: 12px; color:#1e5e56; border-color:#1e5e56"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="20" HEIGHT="20"/> &nbsp;<b>DETALLE CUMPLIMIENTO (Form N° 2)</b></a>
+                
+                <a href="javascript:void(0);" 
+                   class="btn btn-lg btn-default" 
+                   onclick="nivel_cumplimiento_form2_regional('.$dep_id.'); return false;" 
+                   title="NIVEL DE CUMPLIMIENTO FORM N° 2">
+                    <img src="'.base_url().'assets/Iconos/chart_bar.png" width="20" height="20"/>
+                    <span style="font-size: 12px; color:#1e5e56; border-color:#1e5e56">GRAF. CUMPLIMIENTO (Form. N° 2)</span>
+                </a>
             </p>
             <ul id="myTab1" class="nav nav-tabs bordered">';
               $nro=0;
@@ -230,7 +237,7 @@ class Eval_oregional extends CI_Controller{
                       if(round($row['or_meta'], 2) == $meta_priorizado) {
                           $boton_ajustar_apriorizados = '<div style="font-size: 15px; color:blue" align=center><b>'.$meta_priorizado.''.$meta.'</b></div>';
                           $datos_fila_json = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
-                          $grafico = '<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento" class="btn btn-lg btn-default" name="'.$row['or_id'].'" onclick="nivel_cumplimiento(this, '.$datos_fila_json.');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
+                          $grafico = '<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento_xform2" class="btn btn-lg btn-default" name="'.$row['or_id'].'" onclick="nivel_cumplimiento(this, '.$datos_fila_json.');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
                         
                           /// registrando temporalidad
                           for ($i=1; $i <=4 ; $i++) { 
@@ -322,7 +329,7 @@ class Eval_oregional extends CI_Controller{
     }
 
 
-        //// Modal formulsrio 4 priorizados al form 2 - 2027
+    //// Modal formulsrio 4 priorizados al form 2 - 2027 (Modulo : evaluacion poa / Reportes Gerenciales)
     public function modal_form4_priorizados(){
       $tabla='';
        $tabla.='
@@ -352,94 +359,94 @@ class Eval_oregional extends CI_Controller{
       return $tabla;
     }
 
-    //// Modal graficos por OPERACION 2027
-    public function modal_graficos_x_form2(){
-      $tabla='hola mundo';
-      // $tabla .= '
-      // <div class="modal fade" id="modal_cumplimiento_xform2" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
-      //     <div class="modal-dialog modal-lg" id="mdialTamanio3" style="width: 95%;">
-      //         <div class="modal-content">dsadsadsadsadsa
-      //             <div class="modal-header" style="background-color: #1c7368; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+    //// Modal graficos por OPERACION 2027 (Modulo : Evaluacion POA)
+    // public function modal_graficos_x_form2(){
+    //   $tabla='';
+    //   $tabla .= '
+    //   <div class="modal fade" id="modal_cumplimiento_xform2" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    //       <div class="modal-dialog modal-lg" id="mdialTamanio3" style="width: 95%;">
+    //           <div class="modal-content">dsadsadsadsadsa
+    //               <div class="modal-header" style="background-color: #1c7368; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
                       
-      //                 <!-- Título e Insignia de Calificación -->
-      //                 <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-      //                     <h4 class="modal-title" style="font-weight: bold; margin: 0;">
-      //                         <i class="fa fa-bar-chart-o"></i> (%) CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTI&Oacute;N '.$this->gestion.'
-      //                     </h4>
+    //                   <!-- Título e Insignia de Calificación -->
+    //                   <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+    //                       <h4 class="modal-title" style="font-weight: bold; margin: 0;">
+    //                           <i class="fa fa-bar-chart-o"></i> (%) CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTI&Oacute;N '.$this->gestion.'
+    //                       </h4>
                           
-      //                     <!-- Insignia dinámica de Promedio Global -->
-      //                     <span id="badge_calificacion_acp" style="display: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25); letter-spacing: 0.5px;">
-      //                         <i class="fa fa-tachometer"></i> <span id="lbl_promedio_acp">0%</span> - <span id="lbl_estado_acp">CARGANDO</span>
-      //                     </span>
-      //                 </div>
+    //                       <!-- Insignia dinámica de Promedio Global -->
+    //                       <span id="badge_calificacion_acp" style="display: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25); letter-spacing: 0.5px;">
+    //                           <i class="fa fa-tachometer"></i> <span id="lbl_promedio_acp">0%</span> - <span id="lbl_estado_acp">CARGANDO</span>
+    //                       </span>
+    //                   </div>
 
-      //                 <!-- Botón Cerrar -->
-      //                 <button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 1; margin-left: auto;" title="SALIR">
-      //                     <span aria-hidden="true">&times; <b style="font-size: 13px;">Salir Formularioferwerwe</b></span>
-      //                 </button>
-      //             </div>
+    //                   <!-- Botón Cerrar -->
+    //                   <button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 1; margin-left: auto;" title="SALIR">
+    //                       <span aria-hidden="true">&times; <b style="font-size: 13px;">Salir Formularioferwerwe</b></span>
+    //                   </button>
+    //               </div>
                   
-      //             <div class="modal-body">
-      //                 <!-- AQUÍ SE INYECTARÁ DINÁMICAMENTE EL GRÁFICO Y LA TABLA -->
-      //                 <div id="tabla"></div>
-      //             </div>
-      //         </div>
-      //     </div>
-      // </div>';
+    //               <div class="modal-body">
+    //                   <!-- AQUÍ SE INYECTARÁ DINÁMICAMENTE EL GRÁFICO Y LA TABLA -->
+    //                   <div id="tabla"></div>
+    //               </div>
+    //           </div>
+    //       </div>
+    //   </div>';
         
-      return $tabla;
-    }
+    //   return $tabla;
+    // }
 
 
     //// Modal Grafico Cumplimiento de Operaciones x Regional
-    public function modal_grafico_cumplimiento_form2_x_regional(){
-      $tabla='';
-     $tabla .= '
-      <div class="modal fade" id="modal_cumplimiento_acp" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
-          <div class="modal-dialog modal-lg" style="width: 95%; max-width: 1350px; margin: 10px auto;">
-              <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
+    // public function modal_grafico_cumplimiento_form2_x_regional(){
+    //   $tabla='';
+    //  $tabla .= '
+    //   <div class="modal fade" id="modal_cumplimiento_acp" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    //       <div class="modal-dialog modal-lg" style="width: 95%; max-width: 1350px; margin: 10px auto;">
+    //           <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
                   
-                  <!-- BARRA SUPERIOR CON BOTÓN DE IMPRESIÓN Y SALIR -->
-                  <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
-                      <h4 class="modal-title" style="font-weight: bold; margin: 0; font-size: 16px;">
-                          <i class="fa fa-bar-chart"></i> CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '
-                      </h4>
+    //               <!-- BARRA SUPERIOR CON BOTÓN DE IMPRESIÓN Y SALIR -->
+    //               <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
+    //                   <h4 class="modal-title" style="font-weight: bold; margin: 0; font-size: 16px;">
+    //                       <i class="fa fa-bar-chart"></i> CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '
+    //                   </h4>
                       
-                      <div style="margin-left: auto;">
-                          <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoAcp();" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
-                              <i class="fa fa-print"></i> EXPORTAR REPORTE PDF
-                          </button>
-                          <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" title="SALIR" style="background: #ef4444; border: none; font-weight: bold; padding: 6px 12px;">
-                              <i class="fa fa-times"></i> Salir
-                          </button>
-                      </div>
-                  </div>
+    //                   <div style="margin-left: auto;">
+    //                       <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoAcp();" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
+    //                           <i class="fa fa-print"></i> EXPORTAR REPORTE PDF
+    //                       </button>
+    //                       <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" title="SALIR" style="background: #ef4444; border: none; font-weight: bold; padding: 6px 12px;">
+    //                           <i class="fa fa-times"></i> Salir
+    //                       </button>
+    //                   </div>
+    //               </div>
                   
-                  <div class="modal-body" id="area_impresion_acp" style="max-height: 85vh; min-height: 75vh; overflow-y: auto; background: #ffffff; padding: 15px 20px;">
+    //               <div class="modal-body" id="area_impresion_acp" style="max-height: 85vh; min-height: 75vh; overflow-y: auto; background: #ffffff; padding: 15px 20px;">
                       
-                      <!-- Cabecera Institucional -->
-                      <div class="alert alert-info text-center" style="margin-bottom: 10px; padding: 10px; background-color: #f0f9ff; border: 1px solid #bae6fd; color: #1e3a8a; border-radius: 4px;">
-                          <h4 style="margin: 0; font-weight: bold; font-size: 15px;">EVALUACIÓN DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '</h4>
-                          <h5 style="margin: 4px 0 0 0; font-weight: bold; font-size: 13px;" id="lbl_acp_regional_titulo">REGIONAL : CARGANDO...</h5>
-                      </div>
+    //                   <!-- Cabecera Institucional -->
+    //                   <div class="alert alert-info text-center" style="margin-bottom: 10px; padding: 10px; background-color: #f0f9ff; border: 1px solid #bae6fd; color: #1e3a8a; border-radius: 4px;">
+    //                       <h4 style="margin: 0; font-weight: bold; font-size: 15px;">EVALUACIÓN DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '</h4>
+    //                       <h5 style="margin: 4px 0 0 0; font-weight: bold; font-size: 13px;" id="lbl_acp_regional_titulo">REGIONAL : CARGANDO...</h5>
+    //                   </div>
 
-                      <!-- Banner Dinámico de Porcentaje y Calificación -->
-                      <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                          <div style="font-size: 34px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">0.0%</div>
-                          <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALCULANDO...</div>
-                      </div>
+    //                   <!-- Banner Dinámico de Porcentaje y Calificación -->
+    //                   <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    //                       <div style="font-size: 34px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">0.0%</div>
+    //                       <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALCULANDO...</div>
+    //                   </div>
 
-                      <!-- AQUÍ SE INYECTARÁN LOS 2 GRÁFICOS (container1 y container2) Y LA TABLA INFERIOR -->
-                      <div id="contenedor_detalle_acp"></div>
-                  </div>
-              </div>
-          </div>
-      </div>';
-      return $tabla;
-    }
+    //                   <!-- AQUÍ SE INYECTARÁN LOS 2 GRÁFICOS (container1 y container2) Y LA TABLA INFERIOR -->
+    //                   <div id="contenedor_detalle_acp"></div>
+    //               </div>
+    //           </div>
+    //       </div>
+    //   </div>';
+    //   return $tabla;
+    // }
 
 
-    ///// Genera temporalidad 2027
+    ///// Genera temporalidad 2027 (Modulo : Evaluacion POA)
     public function genera_temporalidad_form2($row){
       $tabla='';
       $por='';
@@ -1086,10 +1093,10 @@ class Eval_oregional extends CI_Controller{
       }
       else{
         $semaforo='<img src="'.getcwd().'/assets/ifinal/rojo1.JPG" class="img-responsive" style="width:70%; height:3.5%;" align=center />';
-        if($row['trm'.$this->tmes]>50 & $row['trm'.$this->tmes]<=80){
+        if($row['porc_cump_'.$this->tmes]>50 & $row['porc_cump_'.$this->tmes]<=80){
           $semaforo='<img src="'.getcwd().'/assets/ifinal/amarillo.JPG" class="img-responsive" style="width:70%; height:3.5%;" align=center />';
         }
-        elseif($row['trm'.$this->tmes]>80 & $row['trm'.$this->tmes]<=100){
+        elseif($row['porc_cump_'.$this->tmes]>80 & $row['porc_cump_'.$this->tmes]<=100){
           $semaforo='<img src="'.getcwd().'/assets/ifinal/verde.JPG" class="img-responsive" style="width:70%; height:3.5%;" align=center />';
         }
       }

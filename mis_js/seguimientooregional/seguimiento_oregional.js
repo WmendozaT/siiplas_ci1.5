@@ -67,7 +67,7 @@
         }
     }
 
-    /// Formulario N 2 - Evaluacion Operaciones
+    ///                 ---------- Formulario N 2 - Evaluacion Operaciones
     //// Selecciona lista de regionales y actualiza la ejecucion 2027
     $(function() {
       //// LISTA DE OPERACIONES POR REGIONAL 2027
@@ -155,7 +155,7 @@
     });
   }
 
-  // Variables globales para controlar las instancias de los gráficos de este modal 2027
+  // Variables globales para controlar las instancias de los gráficos de este modal 2027 (Modulo : Evaluacion POA)
   function nivel_cumplimiento(elemento, datosFila) {
     // 1. Extraer metadatos para el encabezado del modal
     var codigoOpe = datosFila.or_codigo || '';
@@ -441,191 +441,86 @@
     });
   }
 
-  /////////////
-  function nivel_cumplimiento_operaciones_grafico(dep_id, tmes) {
-    // 1. Limpiar textos mientras llega la respuesta del servidor
-    jQuery('#lbl_regional_titulo').text('REGIONAL : CARGANDO...');
-    jQuery('#lbl_porcentaje_global').text('...');
-    jQuery('#lbl_estado_calificacion').text('PROCESANDO DATOS...');
-    jQuery('#banner_calificacion_regional').css('background-color', '#64748b');
-    jQuery('#grafico_barras_regional').html('<div class="text-center" style="padding: 80px;"><i class="fa fa-spinner fa-spin fa-3x" style="color:#1e3a8a;"></i></div>');
 
-    // 2. Petición AJAX al controlador
-    jQuery.ajax({
-        url: base + "index.php/ejecucion/cevaluacion_form2/get_grafico_cumplimiento_regional",
-        type: "POST",
-        dataType: "json",
-        data: { dep_id: dep_id, tmes: tmes },
-        success: function(response) {
+
+    /// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL (GRAFICO) (Modulo : Evaluacion POA)
+    var request_acp_op;
+    function nivel_cumplimiento_form2_regional(dep_id) {
+        var modalEl    = jQuery('#modal_grafico_xform2');
+        var contenedor = modalEl.find('#tabla');
+
+        modalEl.modal('show');
+
+        // Resetear banner superior
+        jQuery('#lbl_acp_regional_titulo').text('REGIONAL : CARGANDO...');
+        jQuery('#lbl_porcentaje_acp').text('0.0%');
+        jQuery('#lbl_estado_acp').text('CALCULANDO...');
+        jQuery('#banner_calificacion_acp').css('background-color', '#64748b');
+
+        contenedor.html(
+            '<div class="text-center" style="padding: 60px 20px;">' +
+                '<i class="fa fa-spinner fa-spin fa-3x" style="color: #1e3a8a; margin-bottom: 10px;"></i>' +
+                '<h4 style="color: #1e3a8a; font-weight: bold;">Cargando Operaciones Alineadas...</h4>' +
+            '</div>'
+        );
+
+        if (request_acp_op) {
+            request_acp_op.abort();
+        }
+
+        request_acp_op = jQuery.ajax({
+            url: base + "index.php/ejecucion/cevaluacion_form2/get_grafico_cumplimiento_regional", /// form2 
+            type: "POST",
+            dataType: "json",
+            data: { dep_id: dep_id }
+        });
+
+        request_acp_op.done(function (response) {
             if (response.status === 'success') {
                 // Actualizar banner superior
-                jQuery('#lbl_regional_titulo').text('REGIONAL : ' + response.regional);
-                jQuery('#lbl_porcentaje_global').text(response.promedio_global + '%');
-                jQuery('#lbl_estado_calificacion').text(response.calificacion);
+                jQuery('#lbl_acp_regional_titulo').text('REGIONAL : ' + response.regional);
+                jQuery('#lbl_porcentaje_acp').text(response.promedio_global + '%');
+                jQuery('#lbl_estado_acp').text(response.calificacion);
+                jQuery('#banner_calificacion_acp').css('background-color', response.color_banner);
 
-                jQuery('#banner_calificacion_regional').css('background-color', response.color_banner);
+                // Insertar contenedores de gráficos y tabla
+                contenedor.html(response.lista).show();
 
-                // Ajustar altura según la cantidad de filas devueltas por list_form2_regional_x_regional
-                var altoDinamico = Math.max(580, response.categorias.length * 24);
-                jQuery('#grafico_barras_regional').css('height', altoDinamico + 'px');
+                // Ajustar altura dinámica según cantidad de operaciones
+                var altoDinamico = Math.max(320, response.categorias.length * 30);
+                jQuery('#container1, #container2').css('height', altoDinamico + 'px');
 
-                // Esperar a que el modal termine de abrirse para renderizar Highcharts
                 setTimeout(function() {
-                    new Highcharts.Chart({
-                        chart: {
-                            renderTo: 'grafico_barras_regional',
-                            type: 'bar'
-                        },
-                        title: {
-                            text: 'CUMPLIMIENTO DE OPERACIONES ACUMULADO A LA GESTIÓN ' + response.gestion,
-                            style: { fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }
-                        },
-                        xAxis: {
-                            categories: response.categorias,
-                            labels: {
-                                style: { fontSize: '10px', fontWeight: 'bold', color: '#334155' }
-                            }
-                        },
-                        yAxis: {
-                            min: 0,
-                            max: 100,
-                            title: { text: 'Porcentaje de Cumplimiento (%)' }
-                        },
-                        legend: { enabled: false },
-                        tooltip: {
-                            valueSuffix: ' %'
-                        },
-                        plotOptions: {
-                            bar: {
-                                color: '#38bdf8',
-                                borderRadius: 2,
-                                pointWidth: 12,
-                                dataLabels: {
-                                    enabled: true,
-                                    format: '{y}%',
-                                    style: { fontSize: '9px', fontWeight: 'bold', color: '#0f172a' }
-                                }
-                            }
-                        },
-                        series: [{
-                            name: 'Cumplimiento',
-                            data: response.valores
-                        }]
-                    });
+                    dibujarGraficoBarrasHorizontal(
+                        'container1',
+                        'CUMPLIMIENTO DE OPERACIONES AL ' + response.trimestre + ' - ' + response.gestion,
+                        response.categorias,
+                        response.valores_trimestre,
+                        '#38bdf8'
+                    );
+
+                    dibujarGraficoBarrasHorizontal(
+                        'container2',
+                        'CUMPLIMIENTO DE OPERACIONES ACUMULADO A LA GESTIÓN ' + response.gestion,
+                        response.categorias,
+                        response.valores_gestion,
+                        '#0ea5e9'
+                    );
                 }, 300);
 
             } else {
-                alertify.error("No se pudieron obtener los datos de la regional.");
+                contenedor.html('<div class="alert alert-danger">No se pudieron obtener los datos de la ACP.</div>');
+                alertify.error("ERROR AL RECUPERAR INFORMACION");
             }
-        },
-        error: function() {
-            alertify.error("Error de comunicación con el servidor.");
-        }
-    });
-  }
-
-  //// Exportar Grafico
-  function imprimirGraficoRegional() {
-    // 1. Verificar librería
-    if (typeof html2pdf === 'undefined') {
-        alert('Error: No se encuentra cargada la librería html2pdf.');
-        return;
+        });
     }
 
-    // 2. Extraer los textos limpios del modal
-    // 🔥 CORRECCIÓN: Agregamos .first() para tomar solo el primer h4 y evitar que se duplique
-    var tituloGestion = jQuery('#area_impresion_regional h4').first().text().trim() || 'CUADRO DE EVALUACIÓN DE OPERACIONES';
-    var subtituloReg     = jQuery('#lbl_regional_titulo').text().trim() || 'REGIONAL';
-    var porcentajeGlobal = jQuery('#lbl_porcentaje_global').text().trim() || '0.0%';
-    var estadoCalif      = jQuery('#lbl_estado_calificacion').text().trim() || '';
-    var colorBanner      = jQuery('#banner_calificacion_regional').css('background-color') || '#f59e0b';
-
-    // 3. Extraer el SVG de Highcharts y convertirlo a imagen limpia ajustada a la hoja
-    var svgElement = document.querySelector('#grafico_barras_regional svg');
-    if (!svgElement) {
-        alert('Error: El gráfico aún no se ha renderizado.');
-        return;
-    }
-
-    // Clonar el SVG para darle un ancho exacto de 700px (calza perfecto en hoja Carta)
-    var svgClone      = svgElement.cloneNode(true);
-    var anchoOriginal = parseFloat(svgElement.getAttribute('width')) || 800;
-    var altoOriginal  = parseFloat(svgElement.getAttribute('height')) || 600;
-    var anchoPdfPx    = 700;
-    var altoPdfPx     = Math.round((altoOriginal * anchoPdfPx) / anchoOriginal);
-
-    svgClone.setAttribute('width', anchoPdfPx);
-    svgClone.setAttribute('height', altoPdfPx);
-    svgClone.setAttribute('viewBox', '0 0 ' + anchoOriginal + ' ' + altoOriginal);
-
-    var svgData = new XMLSerializer().serializeToString(svgClone);
-    var imgSrc  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-
-    // 4. Construir el contenedor aislado para el cuerpo del reporte
-    var contenedorLimpio = document.createElement('div');
-    contenedorLimpio.style.fontFamily = 'Arial, Helvetica, sans-serif';
-    contenedorLimpio.style.width = '100%';
-    contenedorLimpio.style.backgroundColor = '#ffffff';
-
-    var bannerHtml = 
-        '<div style="background-color: ' + colorBanner + '; color: #ffffff; text-align: center; padding: 12px; border-radius: 5px; margin-bottom: 15px;">' +
-            '<div style="font-size: 32px; font-weight: bold; line-height: 1.1; letter-spacing: 0.5px;">' + porcentajeGlobal + '</div>' +
-            '<div style="font-size: 11px; font-weight: bold; letter-spacing: 1px; word-spacing: 2px; margin-top: 4px;">' + estadoCalif + '</div>' +
-        '</div>';
-
-    var graficoHtml = 
-        '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 10px 5px;">' +
-            '<img src="' + imgSrc + '" style="width: 100%; height: auto; display: block; margin: 0 auto;" />' +
-        '</div>';
-
-    contenedorLimpio.innerHTML = bannerHtml + graficoHtml;
-
-    // 5. Configurar html2pdf con márgenes válidos (Arriba: 28mm, Izquierda: 12mm, Abajo: 14mm, Derecha: 12mm)
-    var regionalArchivo = subtituloReg.replace('REGIONAL :', '').trim() || 'Regional';
-    var opciones = {
-        margin:       new Array(28, 12, 14, 12),
-        filename:     'Cumplimiento_Operaciones_' + regionalArchivo + '.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-    };
-
-    // 6. Generar el PDF e inyectar la CABECERA Y PIE DE PÁGINA EN TODAS LAS HOJAS
-    html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
-        var totalPaginas = pdf.internal.getNumberOfPages();
-        var anchoPagina  = pdf.internal.pageSize.getWidth();
-        var altoPagina   = pdf.internal.pageSize.getHeight();
-
-        for (var i = 1; i <= totalPaginas; i++) {
-            pdf.setPage(i);
-
-            // Cabecera repetitiva en cada hoja
-            pdf.setFillColor(240, 249, 255);
-            pdf.setDrawColor(186, 230, 253);
-            pdf.roundedRect(12, 8, anchoPagina - 24, 16, 2, 2, 'FD');
-
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(11);
-            pdf.setTextColor(30, 58, 138);
-            pdf.text(tituloGestion, anchoPagina / 2, 14.5, { align: 'center' });
-
-            pdf.setFontSize(9.5);
-            pdf.setTextColor(2, 132, 199);
-            pdf.text(subtituloReg, anchoPagina / 2, 20.5, { align: 'center' });
-
-            // Pie de página en cada hoja
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(8);
-            pdf.setTextColor(100, 116, 139);
-            pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 7);
-            pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 7, { align: 'right' });
-        }
-    }).save();
-  }
+  /////////////
 
 
-/////=========== FORMULARIO DE EVUALUACION FORM 2 - REPORTES
+                            // ------- MODULO REPORTE EVALUACION FORM 2
 
+    /////=========== FORMULARIO DE EVUALUACION FORM 2 - REPORTES
     // Selecciona la Regional para ver su evaluacion del form 2
     var request;
     $("#d_id").change(function () {
@@ -721,9 +616,9 @@
     });
 
 
-    /// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL (GRAFICO)
+    /// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL (GRAFICO) (Modulo : Reportes POA)
     var request_acp_op;
-    function nivel_cumplimiento_acp_regional(og_id, dep_id) {
+    function nivel_cumplimiento_rep_form2_regional(og_id, dep_id) {
         var modalEl    = jQuery('#modal_grafico_xform2');
         var contenedor = modalEl.find('#tabla');
 
@@ -747,7 +642,7 @@
         }
 
         request_acp_op = jQuery.ajax({
-            url: base + "index.php/reporte_evalform2/crep_evalform2/ver_datos_avance_oregional_acp",
+            url: base + "index.php/reporte_evalform2/crep_evalform2/ver_datos_avance_oregional_acp", /// form2 x acp
             type: "POST",
             dataType: "json",
             data: { og_id: og_id, dep_id: dep_id }
@@ -793,7 +688,7 @@
         });
     }
 
-
+    //// dibuja el Grafico de las Operaciones Form 2
     function dibujarGraficoBarrasHorizontal(renderId, titulo, categorias, valores, colorBarra) {
         if (!document.getElementById(renderId)) {
             return;
@@ -801,31 +696,30 @@
 
         // Cálculo dinámico del ancho (grosor) de cada barra según cantidad de operaciones
         var totalOps = categorias.length;
-        var grosorBarra = 16; // Valor por defecto para muchas operaciones
+        var grosorBarra = 16;
 
         if (totalOps <= 3) {
-            grosorBarra = 40; // Barras bien anchas cuando hay 1 a 3 operaciones
+            grosorBarra = 40;
         } else if (totalOps <= 6) {
-            grosorBarra = 26; // Grosor medio cuando hay 4 a 6 operaciones
+            grosorBarra = 26;
         } else if (totalOps <= 10) {
             grosorBarra = 20;
         }
 
+        // AJUSTE CLAVE: Leer los objetos {y, color, borderColor, borderWidth} enviados desde PHP
         var datosEstilizados = valores.map(function(val) {
-            var numero = parseFloat(val) || 0;
-            var colorDinamico = colorBarra;
-
-            if (numero <= 50) {
-                colorDinamico = '#ef4444';
-            } else if (numero <= 75) {
-                colorDinamico = '#f59e0b';
-            } else if (numero <= 90) {
-                colorDinamico = '#0ea5e9';
-            } else {
-                colorDinamico = '#10b981';
+            if (typeof val === 'object' && val !== null) {
+                return {
+                    y: parseFloat(val.y) || 0,
+                    color: val.color || colorBarra,
+                    borderColor: val.borderColor || 'transparent',
+                    borderWidth: val.borderWidth || 0
+                };
             }
 
-            return { y: numero, color: colorDinamico };
+            // Respaldo por si algún otro gráfico envía solo números simples
+            var numero = parseFloat(val) || 0;
+            return { y: numero, color: colorBarra };
         });
 
         new Highcharts.Chart({
@@ -886,15 +780,15 @@
             plotOptions: {
                 bar: {
                     borderRadius: 5,
-                    pointWidth: grosorBarra, // Aplica el grosor dinámico calculado
-                    borderWidth: 0,
+                    pointWidth: grosorBarra,
+                    // Se quitó borderWidth: 0 fijo aquí para permitir el borde gris en las barras blancas
                     dataLabels: {
                         enabled: true,
                         format: '{y}%',
                         align: 'left',
                         x: 6,
                         style: {
-                            fontSize: (totalOps <= 4) ? '11px' : '10px', // Número más grande si hay pocas barras
+                            fontSize: (totalOps <= 4) ? '11px' : '10px',
                             fontWeight: '700',
                             color: '#1e293b',
                             textOutline: 'none'
@@ -909,7 +803,8 @@
         });
     }
 
-    //// imprimir Grafico de la ACP alineado a la Operacion
+
+    //// imprimir Grafico de la ACP alineado a la Operacion -> FORM2 A ACP 
    function imprimirGraficoAcp() {
     if (typeof html2pdf === 'undefined') {
         alert('Error: No se encuentra cargada la librería html2pdf.');
@@ -1028,32 +923,27 @@
 }
 
 
-/////// impresion de los graficos CONSOLIDADO POR REGIONAL
+/////// impresion de los graficos CONSOLIDADO POR REGIONAL FORM2 REGIONAL (Modulo : Reportes POA)
 function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
-    // 1. Verificar que html2pdf esté disponible
     if (typeof html2pdf === 'undefined') {
         alert('Error: No se encuentra cargada la librería html2pdf.');
         return;
     }
 
-    // 2. Obtener el SVG del gráfico seleccionado
     var svgElement = document.querySelector('#' + idGrafico + ' svg');
     if (!svgElement) {
         alert('Error: El gráfico aún no se ha renderizado.');
         return;
     }
 
-    // 3. Extraer el título de la regional desde el encabezado principal de la vista
     var tituloPrincipal = jQuery('#wid-id-3 h2').first().text().trim() || 'Evaluación del Formulario N° 2 (Operaciones)';
     var subtituloTipo   = (tipoReporte === 'Trimestral') ? 'REPORTE DE CUMPLIMIENTO TRIMESTRAL' : 'REPORTE DE CUMPLIMIENTO ANUAL / GESTIÓN';
 
-    // 4. Extraer datos y color del banner de calificación correspondiente
     var bannerEl    = jQuery('#' + idBanner);
     var colorBanner = bannerEl.css('background-color') || '#1c7368';
     var porcentaje  = bannerEl.find('div').eq(0).text().trim() || '0.0%';
     var textoCalif  = bannerEl.find('div').eq(1).text().trim() || '';
 
-    // 5. Clonar y escalar el SVG a 700px de ancho para ajustar a hoja Carta
     var svgClone      = svgElement.cloneNode(true);
     var anchoOriginal = parseFloat(svgElement.getAttribute('width')) || 700;
     var altoOriginal  = parseFloat(svgElement.getAttribute('height')) || 550;
@@ -1067,7 +957,6 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
     var svgData = new XMLSerializer().serializeToString(svgClone);
     var imgSrc  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 
-    // 6. Construir el contenedor aislado para el PDF
     var contenedorLimpio = document.createElement('div');
     contenedorLimpio.style.fontFamily      = 'Arial, Helvetica, sans-serif';
     contenedorLimpio.style.width           = '100%';
@@ -1082,13 +971,62 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
         '</div>';
 
     var graficoHtml = 
-        '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 8px;">' +
+        '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 8px; margin-bottom: 16px;">' +
             '<img src="' + imgSrc + '" style="width: 100%; height: auto; display: block; margin: 0 auto;" />' +
         '</div>';
 
-    contenedorLimpio.innerHTML = bannerHtml + graficoHtml;
+    // RANGO DE CUMPLIMIENTO CON DIVS (Inmune a estilos externos de tablas)
+    // 7. LEYENDA DE RANGOS DE CUMPLIMIENTO (Compatible 100% con html2canvas sin superposición de texto)
+    var tituloLeyenda = (tipoReporte === 'Trimestral') ? 'CUMPLIMIENTO TRIMESTRAL ACUMULADO' : 'CUMPLIMIENTO ANUAL / GESTIÓN';
+    var textoSinProg  = (tipoReporte === 'Trimestral') ? 'Sin programación al Trimestre' : 'Sin programación en la Gestión';
 
-    // 7. Configurar opciones de descarga PDF
+    var estiloTexto = 'font-family: Helvetica, sans-serif; font-size: 10px; color: #0f172a; letter-spacing: 0.4px; word-spacing: 2px; white-space: nowrap;';
+
+    var leyendaHtml = 
+        '<div style="width: 75%; page-break-inside: avoid; margin-top: 12px; ' + estiloTexto + '">' +
+            '<div style="font-weight: bold; margin-bottom: 5px; text-transform: uppercase; ' + estiloTexto + '">' +
+                tituloLeyenda +
+            '</div>' +
+            '<div style="border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a; padding: 6px 8px; background-color: #ffffff;">' +
+                '<div style="display: table; width: 100%; margin-bottom: 5px;">' +
+                    '<div style="display: table-cell; width: 26px; vertical-align: middle;">' +
+                        '<span style="display: inline-block; width: 13px; height: 13px; border-radius: 50%; background-color: #ffffff; border: 1.5px solid #64748b;"></span>' +
+                    '</div>' +
+                    '<div style="display: table-cell; vertical-align: middle; ' + estiloTexto + '">' +
+                        'BLANCO:&nbsp;&nbsp;<b style="' + estiloTexto + '">' + textoSinProg + '</b>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display: table; width: 100%; margin-bottom: 5px;">' +
+                    '<div style="display: table-cell; width: 26px; vertical-align: middle;">' +
+                        '<span style="display: inline-block; width: 13px; height: 13px; border-radius: 50%; background-color: #ef4444; border: 1px solid #991b1b;"></span>' +
+                    '</div>' +
+                    '<div style="display: table-cell; vertical-align: middle; ' + estiloTexto + '">' +
+                        'ROJO:&nbsp;&nbsp;<b style="' + estiloTexto + '">Entre 0% y 50%</b>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display: table; width: 100%; margin-bottom: 5px;">' +
+                    '<div style="display: table-cell; width: 26px; vertical-align: middle;">' +
+                        '<span style="display: inline-block; width: 13px; height: 13px; border-radius: 50%; background-color: #f59e0b; border: 1px solid #b45309;"></span>' +
+                    '</div>' +
+                    '<div style="display: table-cell; vertical-align: middle; ' + estiloTexto + '">' +
+                        'AMARILLO:&nbsp;&nbsp;<b style="' + estiloTexto + '">Entre 51% y 80%</b>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display: table; width: 100%;">' +
+                    '<div style="display: table-cell; width: 26px; vertical-align: middle;">' +
+                        '<span style="display: inline-block; width: 13px; height: 13px; border-radius: 50%; background-color: #10b981; border: 1px solid #047857;"></span>' +
+                    '</div>' +
+                    '<div style="display: table-cell; vertical-align: middle; ' + estiloTexto + '">' +
+                        'VERDE:&nbsp;&nbsp;<b style="' + estiloTexto + '">Entre 81% y 100%</b>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+
+    // IMPORTANTE: Concatenar las 3 partes (Banner + Gráfico + Leyenda)
+    contenedorLimpio.innerHTML = bannerHtml + graficoHtml + leyendaHtml;
+
     var nombreArchivo = 'Grafico_' + tipoReporte + '_Form2.pdf';
     var opciones = {
         margin:       new Array(28, 12, 14, 12),
@@ -1098,7 +1036,6 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
         jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
 
-    // 8. Generar PDF con cabecera y pie de página en todas las hojas
     html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
         var totalPaginas = pdf.internal.getNumberOfPages();
         var anchoPagina  = pdf.internal.pageSize.getWidth();
@@ -1130,3 +1067,5 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
         }
     }).save();
 }
+
+

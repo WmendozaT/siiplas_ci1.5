@@ -96,50 +96,22 @@ class Crep_evalform2 extends CI_Controller {
 
 
   /*-------- GET CUADRO EVALUACION FORM 2 INSTITUCIONAL --------*/
-  public function get_cuadro_evaluacion_formulario2_institucional(){
+   public function get_cuadro_evaluacion_formulario2_institucional(){
     if($this->input->is_ajax_request() && $this->input->post()){
       $post = $this->input->post();
       $dep_id = $this->security->xss_clean($post['dep_id']); // dep id, 0: Nacional
         
       $titulo='<b>ACUMULADO INSTITUCIONAL</b>';
-      
-      $nro=count($this->model_proyecto->list_departamentos()); /// nro de regionales
-      $matriz=$this->matriz_eval_form2(); /// Matriz
-      $cabecera=$this->cabecera_reporte_grafico(); /// Cabecera Grafico
-      $tabla_vista=$this->tabla_eval_form2($matriz,$nro,0); /// Tabla Vista
-      $tabla_impresion=$this->tabla_eval_form2($matriz,$nro,1); /// Tabla Impresion
-
-      //-------
-      $matriz_form2_regresion=$this->tabla_trimestral_acumulado_institucional();
-      $tabla_vista_acumulado=$this->get_tabla_cumplimiento_form2_priorizados_institucional(0);
-      $tabla_vista_acumulado_impresion=$this->get_tabla_cumplimiento_form2_priorizados_institucional(1);
-
-      //------
-      $matriz3=$this->eval_oregional->matriz_cumplimiento_operaciones_institucional(); /// Matriz detalle operaciones institucional a la Gestion
-      $matriz4=$this->eval_oregional->matriz_cumplimiento_operaciones_institucional_al_trimestre(); /// Matriz detalle operaciones institucional al Trimestre
-      /// ---------------------------------------------------------------------------------------------
-      $lista='';
-      $lista.=' <div style="font-family: Arial;">DETALLE DE CUMPLIMIENTO DE OPERACIONES - '.$this->gestion.'</div>
-                <ul>';
-                  for ($i=0; $i <count($this->eval_oregional->matriz_cumplimiento_operaciones_institucional()); $i++) { 
-                    $lista.='<li style="font-family: Arial;font-size: 10px;height: 1%;">OPE. '.$matriz3[$i][0].'.'.$matriz3[$i][1].' - <b>'.$matriz3[$i][4].' %</b></li>';
-                  }
-                  $lista.='
-                </ul>
-                <hr>';
-      $lista_operaciones=$lista;
-      //style="display: none"
-      /// ----------------------------------------------------------------------------------------------
 
       $tabla='';
       $tabla='
       <div class="jarviswidget well" id="wid-id-3" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
         <header>
-          <div id="cabecera" style="display: none">'.$cabecera.'</div>
+          <div id="cabecera" style="display: none"></div>
           <div id="calificacion"></div>
         </header>
         <div>
-          <h2>Evaluación del Formulario N° 2 (Operaciones) - '.$titulo.'</h2>
+          <h2>Evaluación del Formulario N° 2 (Operaciones) </h2>
             <div class="jarviswidget-editbox">
             </div>
             <div class="widget-body">
@@ -161,13 +133,7 @@ class Crep_evalform2 extends CI_Controller {
                       <div id="graf_detalle1">
                         <div id="grafico1" style="width: 950px; height: 550px; margin: 2 auto"></div>
                       </div>
-                      '.$tabla_vista.' 
-                    </div>
-                    <div id="tabla_impresion_detalle1" style="display: none">
-                     '.$tabla_impresion.'
-                    </div>
-                    <div align="right">
-                      <button  onClick="imprimir_grafico1()" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="30" HEIGHT="30"/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                     
                     </div>
                   </div>
                   
@@ -176,13 +142,7 @@ class Crep_evalform2 extends CI_Controller {
                       <div id="graf_detalle2">
                         <div id="grafico2" style="width: 900px; height: 550px; margin: 2 auto"></div>
                       </div>
-                      '.$tabla_vista_acumulado.'
-                    </div>
-                    <div id="tabla_impresion_detalle2" style="display: none">
-                     '.$tabla_vista_acumulado_impresion.'
-                    </div>
-                    <div align="right">
-                      <button  onClick="imprimir_grafico2()" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="30" HEIGHT="30"/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      
                     </div>
                   </div>
 
@@ -190,19 +150,13 @@ class Crep_evalform2 extends CI_Controller {
                     <div class="rows" align=center>
                       <article class="col-sm-12 col-md-12 col-lg-6">
                       <div id="graf_detalle3">
-                        <div id="grafico_trimestre" style="width: 900px; height: 800px; margin: 2 auto"></div>
+                        
                       </div>
                       </article>
                       <article class="col-sm-12 col-md-12 col-lg-6">
                         <div id="grafico3" style="width: 900px; height: 800px; margin: 2 auto"></div>
                       </article>
                       
-                    </div>
-                    <div id="tabla_impresion_detalle3" style="display: none">
-                     '.$lista_operaciones.'
-                    </div>
-                    <div align="right">
-                      <button  onClick="imprimir_grafico3()" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="30" HEIGHT="30"/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     </div>
                   </div>
 
@@ -214,20 +168,7 @@ class Crep_evalform2 extends CI_Controller {
 
       $result = array(
         'respuesta' => 'correcto',
-        'trimestre'=>$this->model_evaluacion->trimestre(),
-        'gestion'=>$this->gestion,
-        'titulo'=>$titulo,
-        'tabla'=>$tabla,
-        'nro'=>$nro,
-        'matriz'=>$matriz,
-        'matriz_regresion'=>$matriz_form2_regresion,
-        
-        'nro_form2'=>count($this->eval_oregional->matriz_cumplimiento_operaciones_institucional()),
-        'matriz_form2'=>$matriz3, /// detalle form2 institucional a la gestion
-
-        'nro_form2_trimestre'=>count($this->eval_oregional->matriz_cumplimiento_operaciones_institucional_al_trimestre()),
-        'matriz_form2_trimestre'=>$matriz4, /// detalle form2 institucional al trimestre        
-
+        'tabla'=>$tabla
       );
 
       echo json_encode($result);
@@ -237,7 +178,150 @@ class Crep_evalform2 extends CI_Controller {
   }
 
 
-  /*-------- GET CUADRO EVALUACION FORM 2 REGIONAL --------*/
+
+
+  // public function get_cuadro_evaluacion_formulario2_institucional(){
+  //   if($this->input->is_ajax_request() && $this->input->post()){
+  //     $post = $this->input->post();
+  //     $dep_id = $this->security->xss_clean($post['dep_id']); // dep id, 0: Nacional
+        
+  //     $titulo='<b>ACUMULADO INSTITUCIONAL</b>';
+      
+  //     $nro=count($this->model_proyecto->list_departamentos()); /// nro de regionales
+  //     $matriz=$this->matriz_eval_form2(); /// Matriz
+  //     $cabecera=$this->cabecera_reporte_grafico(); /// Cabecera Grafico
+  //     $tabla_vista=$this->tabla_eval_form2($matriz,$nro,0); /// Tabla Vista
+  //     $tabla_impresion=$this->tabla_eval_form2($matriz,$nro,1); /// Tabla Impresion
+
+  //     //-------
+  //     $matriz_form2_regresion=$this->tabla_trimestral_acumulado_institucional();
+  //     $tabla_vista_acumulado=$this->get_tabla_cumplimiento_form2_priorizados_institucional(0);
+  //     $tabla_vista_acumulado_impresion=$this->get_tabla_cumplimiento_form2_priorizados_institucional(1);
+
+  //     //------
+  //     $matriz3=$this->eval_oregional->matriz_cumplimiento_operaciones_institucional(); /// Matriz detalle operaciones institucional a la Gestion
+  //     $matriz4=$this->eval_oregional->matriz_cumplimiento_operaciones_institucional_al_trimestre(); /// Matriz detalle operaciones institucional al Trimestre
+  //     /// ---------------------------------------------------------------------------------------------
+  //     $lista='';
+  //     $lista.=' <div style="font-family: Arial;">DETALLE DE CUMPLIMIENTO DE OPERACIONES - '.$this->gestion.'</div>
+  //               <ul>';
+  //                 for ($i=0; $i <count($this->eval_oregional->matriz_cumplimiento_operaciones_institucional()); $i++) { 
+  //                   $lista.='<li style="font-family: Arial;font-size: 10px;height: 1%;">OPE. '.$matriz3[$i][0].'.'.$matriz3[$i][1].' - <b>'.$matriz3[$i][4].' %</b></li>';
+  //                 }
+  //                 $lista.='
+  //               </ul>
+  //               <hr>';
+  //     $lista_operaciones=$lista;
+  //     //style="display: none"
+  //     /// ----------------------------------------------------------------------------------------------
+
+  //     $tabla='';
+  //     $tabla='
+  //     <div class="jarviswidget well" id="wid-id-3" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+  //       <header>
+  //         <div id="cabecera" style="display: none">'.$cabecera.'</div>
+  //         <div id="calificacion"></div>
+  //       </header>
+  //       <div>
+  //         <h2>Evaluación del Formulario N° 2 (Operaciones) - '.$titulo.'</h2>
+  //           <div class="jarviswidget-editbox">
+  //           </div>
+  //           <div class="widget-body">
+  //               <ul id="myTab1" class="nav nav-tabs bordered">
+  //                 <li class="active">
+  //                     <a href="#s1" data-toggle="tab"> (%) Cumplimiento de Operaciones por Regional</a>
+  //                 </li>
+  //                 <li>
+  //                     <a href="#s2" data-toggle="tab"> Detalle de Cumplimiento</a>
+  //                 </li>
+  //                 <li>
+  //                     <a href="#s3" data-toggle="tab"> Detalle por Operación</a>
+  //                 </li>
+  //               </ul>
+
+  //               <div id="myTabContent1" class="tab-content padding-10">
+  //                 <div class="tab-pane fade in active" id="s1">
+  //                   <div align=center>
+  //                     <div id="graf_detalle1">
+  //                       <div id="grafico1" style="width: 950px; height: 550px; margin: 2 auto"></div>
+  //                     </div>
+  //                     '.$tabla_vista.' 
+  //                   </div>
+  //                   <div id="tabla_impresion_detalle1" style="display: none">
+  //                    '.$tabla_impresion.'
+  //                   </div>
+  //                   <div align="right">
+  //                     <button  onClick="imprimir_grafico1()" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="30" HEIGHT="30"/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  //                   </div>
+  //                 </div>
+                  
+  //                 <div class="tab-pane fade" id="s2">
+  //                   <div class="rows" align=center>
+  //                     <div id="graf_detalle2">
+  //                       <div id="grafico2" style="width: 900px; height: 550px; margin: 2 auto"></div>
+  //                     </div>
+  //                     '.$tabla_vista_acumulado.'
+  //                   </div>
+  //                   <div id="tabla_impresion_detalle2" style="display: none">
+  //                    '.$tabla_vista_acumulado_impresion.'
+  //                   </div>
+  //                   <div align="right">
+  //                     <button  onClick="imprimir_grafico2()" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="30" HEIGHT="30"/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  //                   </div>
+  //                 </div>
+
+  //                 <div class="tab-pane fade" id="s3">
+  //                   <div class="rows" align=center>
+  //                     <article class="col-sm-12 col-md-12 col-lg-6">
+  //                     <div id="graf_detalle3">
+  //                       <div id="grafico_trimestre" style="width: 900px; height: 800px; margin: 2 auto"></div>
+  //                     </div>
+  //                     </article>
+  //                     <article class="col-sm-12 col-md-12 col-lg-6">
+  //                       <div id="grafico3" style="width: 900px; height: 800px; margin: 2 auto"></div>
+  //                     </article>
+                      
+  //                   </div>
+  //                   <div id="tabla_impresion_detalle3" style="display: none">
+  //                    '.$lista_operaciones.'
+  //                   </div>
+  //                   <div align="right">
+  //                     <button  onClick="imprimir_grafico3()" class="btn btn-default"><img src="'.base_url().'assets/Iconos/printer.png" WIDTH="30" HEIGHT="30"/></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  //                   </div>
+  //                 </div>
+
+  //               </div>
+
+  //           </div>
+  //         </div>
+  //     </div>';
+
+  //     $result = array(
+  //       'respuesta' => 'correcto',
+  //       'trimestre'=>$this->model_evaluacion->trimestre(),
+  //       'gestion'=>$this->gestion,
+  //       'titulo'=>$titulo,
+  //       'tabla'=>$tabla,
+  //       'nro'=>$nro,
+  //       'matriz'=>$matriz,
+  //       'matriz_regresion'=>$matriz_form2_regresion,
+        
+  //       'nro_form2'=>count($this->eval_oregional->matriz_cumplimiento_operaciones_institucional()),
+  //       'matriz_form2'=>$matriz3, /// detalle form2 institucional a la gestion
+
+  //       'nro_form2_trimestre'=>count($this->eval_oregional->matriz_cumplimiento_operaciones_institucional_al_trimestre()),
+  //       'matriz_form2_trimestre'=>$matriz4, /// detalle form2 institucional al trimestre        
+
+  //     );
+
+  //     echo json_encode($result);
+  //   }else{
+  //       show_404();
+  //   }
+  // }
+
+
+  /*-------- GET CUADRO EVALUACION FORM 2 REGIONAL (Consolidado por Regional) 2027 (Modulo : Reportes POA)--------*/
   public function get_cuadro_evaluacion_formulario2_regional(){
     if($this->input->is_ajax_request() && $this->input->post()){
       $post = $this->input->post();
@@ -263,6 +347,11 @@ class Crep_evalform2 extends CI_Controller {
 
           foreach ($form2 as $row) {
               $cod_ope = 'OPE ' . $row['og_codigo'] . '.' . $row['or_codigo'];
+
+              // 1. Capturar metas programadas (Trimestral y Anual/Gestión)
+              $meta_trm = isset($row['trm' . $trm_indice]) ? floatval($row['trm' . $trm_indice]) : 0;
+              $meta_ges = isset($row['trm4']) ? floatval($row['trm4']) : 0; // Meta acumulada al 4to trimestre (Gestión)
+
               // Porcentaje Trimestral (porc_cump_1..4) y Gestión (trm_porc_ejec1..4)
               $campo_trm = 'porc_cump_' . $trm_indice;
               $campo_ges = 'trm_porc_ejec' . $trm_indice;
@@ -270,19 +359,70 @@ class Crep_evalform2 extends CI_Controller {
               $porc_trm = isset($row[$campo_trm]) ? round(floatval($row[$campo_trm]), 2) : 0;
               $porc_ges = isset($row[$campo_ges]) ? round(floatval($row[$campo_ges]), 2) : 0;
 
+              // Tope visual en barras de 100%
+              $val_trm_tope = ($porc_trm > 100) ? 100 : $porc_trm;
+              $val_ges_tope = ($porc_ges > 100) ? 100 : $porc_ges;
+
+
+              // 3. Evaluar color de la barra TRIMESTRAL
+              if ($meta_trm == 0) {
+                  $color_trm = '#ffffff'; // Blanco (Sin programación)
+                  $borde_trm = '#94a3b8'; // Borde gris para que sea visible sobre fondo blanco
+                  $ancho_borde_trm = 1;
+              } else {
+                  $borde_trm = null;
+                  $ancho_borde_trm = 0;
+                  $color_trm = '#ef4444'; // Rojo (<= 50%)
+                  if ($porc_trm > 50 && $porc_trm <= 80) {
+                      $color_trm = '#f59e0b'; // Amarillo
+                  } elseif ($porc_trm > 80) {
+                      $color_trm = '#10b981'; // Verde
+                  }
+              }
+
+              // 4. Evaluar color de la barra ANUAL / GESTIÓN
+              if ($meta_ges == 0) {
+                  $color_ges = '#ffffff'; // Blanco (Sin programación)
+                  $borde_ges = '#94a3b8';
+                  $ancho_borde_ges = 1;
+              } else {
+                  $borde_ges = null;
+                  $ancho_borde_ges = 0;
+                  $color_ges = '#ef4444'; // Rojo (<= 50%)
+                  if ($porc_ges > 50 && $porc_ges <= 80) {
+                      $color_ges = '#f59e0b'; // Amarillo
+                  } elseif ($porc_ges > 80) {
+                      $color_ges = '#10b981'; // Verde
+                  }
+              }
+
               $categorias[] = $cod_ope;
 
-              // Tope visual en barras de 100%
-              $valores_trimestre[] = ($porc_trm > 100) ? 100 : $porc_trm;
-              $valores_gestion[]   = ($porc_ges > 100) ? 100 : $porc_ges;
+              // 5. Enviar objetos con valor y color hacia Highcharts
+              $valores_trimestre[] = array(
+                  'y'           => $val_trm_tope,
+                  'color'       => $color_trm,
+                  'borderColor' => $borde_trm,
+                  'borderWidth' => $ancho_borde_trm
+              );
 
-              // El promedio global toma el cumplimiento trimestral
-              $suma_trm_porcentajes += ($porc_trm > 100) ? 100 : $porc_trm; 
-              $total_trm_operaciones++;
+              $valores_gestion[] = array(
+                  'y'           => $val_ges_tope,
+                  'color'       => $color_ges,
+                  'borderColor' => $borde_ges,
+                  'borderWidth' => $ancho_borde_ges
+              );
 
-              // El promedio global toma el cumplimiento de gestión 
-              $suma_porcentajes += ($porc_ges > 100) ? 100 : $porc_ges; 
-              $total_operaciones++;
+              // 6. Acumuladores para los promedios (solo suma si tiene programación > 0, o quita el if si promedias todo)
+              if ($meta_trm > 0) {
+                  $suma_trm_porcentajes += $val_trm_tope;
+                  $total_trm_operaciones++;
+              }
+
+              if ($meta_ges > 0) {
+                  $suma_porcentajes += $val_ges_tope;
+                  $total_operaciones++;
+              }
           }
 
           $promedio_trm = ($total_trm_operaciones > 0) ? round(($suma_trm_porcentajes / $total_trm_operaciones), 1) : 0;
@@ -365,7 +505,7 @@ class Crep_evalform2 extends CI_Controller {
                           <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                               <div id="calificacion_trimestral" class="text-center" style="padding: 10px; border-radius: 5px; color: #fff; margin-bottom: 10px; background-color: '.$color_banner_trm.';">
                                   <div style="font-size: 26px; font-weight: bold; line-height: 1.1;">'.$promedio_trm.'%</div>
-                                  <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">CALIFICACIÓN TRIMESTRAL: '.$calificacion_trm.'</div>
+                                  <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">'.$calificacion_trm.'</div>
                               </div>
                               <div style="border: 1px solid #e2e8f0; border-radius: 5px; padding: 8px; background: #fff;">
                                   <div id="grafico_trimestral" style="width: 100%; min-height: 550px;"></div>
@@ -376,7 +516,7 @@ class Crep_evalform2 extends CI_Controller {
                           <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                               <div id="calificacion" class="text-center" style="padding: 10px; border-radius: 5px; color: #fff; margin-bottom: 10px; background-color: '.$color_banner.';">
                                   <div style="font-size: 26px; font-weight: bold; line-height: 1.1;">'.$promedio_global.'%</div>
-                                  <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">CALIFICACIÓN GESTIÓN: '.$calificacion.'</div>
+                                  <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">'.$calificacion.'</div>
                               </div>
                               <div style="border: 1px solid #e2e8f0; border-radius: 5px; padding: 8px; background: #fff;">
                                   <div id="grafico1" style="width: 100%; min-height: 550px;"></div>
@@ -446,6 +586,10 @@ class Crep_evalform2 extends CI_Controller {
           $categorias        = array();
           $valores_trimestre = array();
           $valores_gestion   = array();
+
+          $suma_trm_porcentajes  = 0;
+          $total_trm_operaciones = 0;
+
           $suma_porcentajes  = 0;
           $total_operaciones = 0;
 
@@ -482,6 +626,10 @@ class Crep_evalform2 extends CI_Controller {
               $nro++;
               // Etiqueta para el eje Y de Highcharts
               $cod_ope = 'OPE ' . $row['og_codigo'] . '.' . $row['or_codigo'];
+              
+              // 1. Capturar metas programadas (Trimestral y Anual/Gestión)
+              $meta_trm = isset($row['trm' . $trm_indice]) ? floatval($row['trm' . $trm_indice]) : 0;
+              $meta_ges = isset($row['trm4']) ? floatval($row['trm4']) : 0; // Meta acumulada al 4to trimestre (Gestión)
 
               // Porcentaje Trimestral (porc_cump_1..4) y Gestión (trm_porc_ejec1..4)
               $campo_trm = 'porc_cump_' . $trm_indice;
@@ -491,13 +639,69 @@ class Crep_evalform2 extends CI_Controller {
               $porc_ges = isset($row[$campo_ges]) ? round(floatval($row[$campo_ges]), 2) : 0;
 
               // Tope visual en barras de 100%
-              $valores_trimestre[] = ($porc_trm > 100) ? 100 : $porc_trm;
-              $valores_gestion[]   = ($porc_ges > 100) ? 100 : $porc_ges;
-              $categorias[]        = $cod_ope;
+              $val_trm_tope = ($porc_trm > 100) ? 100 : $porc_trm;
+              $val_ges_tope = ($porc_ges > 100) ? 100 : $porc_ges;
 
-              // El promedio global toma el cumplimiento de gestión (o cambia a $porc_trm si evalúas por trimestre)
-              $suma_porcentajes += ($porc_ges > 100) ? 100 : $porc_ges;
-              $total_operaciones++;
+
+              // 3. Evaluar color de la barra TRIMESTRAL
+              if ($meta_trm == 0) {
+                  $color_trm = '#ffffff'; // Blanco (Sin programación)
+                  $borde_trm = '#94a3b8'; // Borde gris para que sea visible sobre fondo blanco
+                  $ancho_borde_trm = 1;
+              } else {
+                  $borde_trm = null;
+                  $ancho_borde_trm = 0;
+                  $color_trm = '#ef4444'; // Rojo (<= 50%)
+                  if ($porc_trm > 50 && $porc_trm <= 80) {
+                      $color_trm = '#f59e0b'; // Amarillo
+                  } elseif ($porc_trm > 80) {
+                      $color_trm = '#10b981'; // Verde
+                  }
+              }
+
+              // 4. Evaluar color de la barra ANUAL / GESTIÓN
+              if ($meta_ges == 0) {
+                  $color_ges = '#ffffff'; // Blanco (Sin programación)
+                  $borde_ges = '#94a3b8';
+                  $ancho_borde_ges = 1;
+              } else {
+                  $borde_ges = null;
+                  $ancho_borde_ges = 0;
+                  $color_ges = '#ef4444'; // Rojo (<= 50%)
+                  if ($porc_ges > 50 && $porc_ges <= 80) {
+                      $color_ges = '#f59e0b'; // Amarillo
+                  } elseif ($porc_ges > 80) {
+                      $color_ges = '#10b981'; // Verde
+                  }
+              }
+
+              $categorias[] = $cod_ope;
+
+              // 5. Enviar objetos con valor y color hacia Highcharts
+              $valores_trimestre[] = array(
+                  'y'           => $val_trm_tope,
+                  'color'       => $color_trm,
+                  'borderColor' => $borde_trm,
+                  'borderWidth' => $ancho_borde_trm
+              );
+
+              $valores_gestion[] = array(
+                  'y'           => $val_ges_tope,
+                  'color'       => $color_ges,
+                  'borderColor' => $borde_ges,
+                  'borderWidth' => $ancho_borde_ges
+              );
+
+              // 6. Acumuladores para los promedios (solo suma si tiene programación > 0, o quita el if si promedias todo)
+              if ($meta_trm > 0) {
+                  $suma_trm_porcentajes += $val_trm_tope;
+                  $total_trm_operaciones++;
+              }
+
+              if ($meta_ges > 0) {
+                  $suma_porcentajes += $val_ges_tope;
+                  $total_operaciones++;
+              }
 
               $tabla .= '
               <tr>
@@ -579,7 +783,7 @@ class Crep_evalform2 extends CI_Controller {
   // }
 
 
-  /*---- LISTA DE ACP REGIONALES CON OPERACIONES POR REGIONAL trabajando 2027---*/
+  /*---- LISTA DE ACP REGIONALES CON OPERACIONES POR REGIONAL 2027 (Modulo : Reportes POA)---*/
   public function get_lista_acp_regional_con_operaciones($dep_id){
     $tabla='';
     $acp_regional=$this->model_objetivogestion->lista_acp_x_regional($dep_id); 
@@ -630,7 +834,7 @@ class Crep_evalform2 extends CI_Controller {
                               <td>
                                   <a href="javascript:void(0);" 
                                      class="btn btn-lg btn-default" 
-                                     onclick="nivel_cumplimiento_acp_regional('.$row['og_id'].','.$dep_id.'); return false;" 
+                                     onclick="nivel_cumplimiento_rep_form2_regional('.$row['og_id'].','.$dep_id.'); return false;" 
                                      title="NIVEL DE CUMPLIMIENTO ACCION DE CORTO PLAZO - REGIONAL">
                                       <img src="'.base_url().'assets/Iconos/chart_bar.png" width="35" height="35"/><br>
                                       <span style="font-size: 10px; font-weight: bold;">GRAF. CUMPLIMIENTO OPERACIONES</span>
@@ -780,207 +984,207 @@ class Crep_evalform2 extends CI_Controller {
 
 
   /*-- VISTA DE TABLA CUMPLIMUENTO PARA IMPRESION (ACUMULADO) --*/
-  public function get_tabla_cumplimiento_form2_priorizados_institucional($tp_rep){
-    /// tp_rep=0 normal
-    /// tp_rep=1 Reporte
+  // public function get_tabla_cumplimiento_form2_priorizados_institucional($tp_rep){
+  //   /// tp_rep=0 normal
+  //   /// tp_rep=1 Reporte
 
-    $valor=$this->tabla_trimestral_acumulado_institucional();
-    $tabla='';
+  //   $valor=$this->tabla_trimestral_acumulado_institucional();
+  //   $tabla='';
 
-    if($tp_rep==0){ /// VISTA NORMAL
+  //   if($tp_rep==0){ /// VISTA NORMAL
 
-      $tabla.='
-      <center>
-        <table class="table table-bordered" border=0.2 style="width:60%;">
-          <thead>
-            <tr align=center>
-              <th style="width:20%; height:30px; text-align:center">I TRIMESTRE</th>
-              <th style="width:20%;text-align:center">II TRIMESTRE</th>
-              <th style="width:20%;text-align:center">III TRIMESTRE</th>
-              <th style="width:20%;text-align:center">IV TRIMESTRE</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>';
-            for ($i=1; $i <=4 ; $i++) {
-              $tabla.='
-              <td style="width:6%;" align=center>
-                <table class="table table-bordered" border=0.2 style="width:80%;">
-                  <tr>
-                    <td style="width:50%;"><b>(%) PROG.</b></td>
-                    <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.$valor[5][$i].'%</b></td>
-                  </tr>
-                  <tr>
-                    <td><b>(%) CUMP.</b></td>
-                    <td style="font-size: 12px; color:blue" align=right><b>'.$valor[6][$i].'%</b></td>
-                  </tr>
-                </table>
-              </td>';
-            }
-            $tabla.='
-            </tr>  
-          </tbody>
-        </table>
-      </center>';
-    }
-    else{ /// VISTA PARA REPORTES
-      $tabla.='
-      <table class="change_order_items" border=1 style="width:100%;">
-        <thead>
-          <tr align=center>
-            <th style="width:10%; text-align:center"></th>
-            <th style="width:23%; height:20px; text-align:center">I TRIMESTRE</th>
-            <th style="width:23%;text-align:center">II TRIMESTRE</th>
-            <th style="width:23%;text-align:center">III TRIMESTRE</th>
-            <th style="width:23%;text-align:center">IV TRIMESTRE</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="width:10%;"><b>(%) PROG.</b></td>';
-            for ($i=1; $i <=4 ; $i++) {
-              $tabla.='
-              <td style="width:20%; height:20px; color:blue" align=right><b>'.$valor[5][$i].'%</b></td>';
-            }
-          $tabla.='
-          </tr> 
-          <tr>
-            <td style="width:10%;"><b>(%) CUMP.</b></td>';
-            for ($i=1; $i <=4 ; $i++) {
-              $tabla.='
-              <td style="width:20%; height:20px; color:blue" align=right><b>'.$valor[6][$i].'%</b></td>';
-            }
-          $tabla.='
-          </tr>  
-        </tbody>
-      </table>';
-    }
+  //     $tabla.='
+  //     <center>
+  //       <table class="table table-bordered" border=0.2 style="width:60%;">
+  //         <thead>
+  //           <tr align=center>
+  //             <th style="width:20%; height:30px; text-align:center">I TRIMESTRE</th>
+  //             <th style="width:20%;text-align:center">II TRIMESTRE</th>
+  //             <th style="width:20%;text-align:center">III TRIMESTRE</th>
+  //             <th style="width:20%;text-align:center">IV TRIMESTRE</th>
+  //           </tr>
+  //         </thead>
+  //         <tbody>
+  //           <tr>';
+  //           for ($i=1; $i <=4 ; $i++) {
+  //             $tabla.='
+  //             <td style="width:6%;" align=center>
+  //               <table class="table table-bordered" border=0.2 style="width:80%;">
+  //                 <tr>
+  //                   <td style="width:50%;"><b>(%) PROG.</b></td>
+  //                   <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.$valor[5][$i].'%</b></td>
+  //                 </tr>
+  //                 <tr>
+  //                   <td><b>(%) CUMP.</b></td>
+  //                   <td style="font-size: 12px; color:blue" align=right><b>'.$valor[6][$i].'%</b></td>
+  //                 </tr>
+  //               </table>
+  //             </td>';
+  //           }
+  //           $tabla.='
+  //           </tr>  
+  //         </tbody>
+  //       </table>
+  //     </center>';
+  //   }
+  //   else{ /// VISTA PARA REPORTES
+  //     $tabla.='
+  //     <table class="change_order_items" border=1 style="width:100%;">
+  //       <thead>
+  //         <tr align=center>
+  //           <th style="width:10%; text-align:center"></th>
+  //           <th style="width:23%; height:20px; text-align:center">I TRIMESTRE</th>
+  //           <th style="width:23%;text-align:center">II TRIMESTRE</th>
+  //           <th style="width:23%;text-align:center">III TRIMESTRE</th>
+  //           <th style="width:23%;text-align:center">IV TRIMESTRE</th>
+  //         </tr>
+  //       </thead>
+  //       <tbody>
+  //         <tr>
+  //           <td style="width:10%;"><b>(%) PROG.</b></td>';
+  //           for ($i=1; $i <=4 ; $i++) {
+  //             $tabla.='
+  //             <td style="width:20%; height:20px; color:blue" align=right><b>'.$valor[5][$i].'%</b></td>';
+  //           }
+  //         $tabla.='
+  //         </tr> 
+  //         <tr>
+  //           <td style="width:10%;"><b>(%) CUMP.</b></td>';
+  //           for ($i=1; $i <=4 ; $i++) {
+  //             $tabla.='
+  //             <td style="width:20%; height:20px; color:blue" align=right><b>'.$valor[6][$i].'%</b></td>';
+  //           }
+  //         $tabla.='
+  //         </tr>  
+  //       </tbody>
+  //     </table>';
+  //   }
 
-    return $tabla;
-  }
+  //   return $tabla;
+  // }
 
 
 
   /// TABLA  EVALUACION DE FORMULARIO 2
-  public function tabla_eval_form2($matriz,$nro,$tp_rep){
-    $tabla='';
-    // tp_rep : 0 normal
-    // tp_rep : 1 impresion
-    $tyle='class="table table-bordered" border=0.2 style="width:80%;"';
-    if($tp_rep==1){
-      $tyle='class="change_order_items" border=1 style="width:100%;"';
-    }
+  // public function tabla_eval_form2($matriz,$nro,$tp_rep){
+  //   $tabla='';
+  //   // tp_rep : 0 normal
+  //   // tp_rep : 1 impresion
+  //   $tyle='class="table table-bordered" border=0.2 style="width:80%;"';
+  //   if($tp_rep==1){
+  //     $tyle='class="change_order_items" border=1 style="width:100%;"';
+  //   }
 
-    $tabla.='
-      <center>
-        <table '.$tyle.'>
-          <thead>
-            <tr align=center>
-              <th style="width:9.09%;"></th>';
-              for ($i=0; $i<$nro; $i++) { 
-                $tabla.='<th style="width:9.09%;"><center>'.$matriz[$i][2].'</center></th>';
-              }
-              $tabla.='
-              </tr>
-            </thead>
-          <tbody>
-            <tr>
-              <td style="height:20px;"><b>(%) CUMPLIMIENTO</b></td>';
-              for ($i=0; $i<$nro; $i++) { 
-                $tabla.='<td style="width:9.09%;" align=right><b>'.$matriz[$i][3].' %</b></td>';
-              }
-              $tabla.='
-            </tr>
-          </tbody>
-        </table>
-      </center>';
+  //   $tabla.='
+  //     <center>
+  //       <table '.$tyle.'>
+  //         <thead>
+  //           <tr align=center>
+  //             <th style="width:9.09%;"></th>';
+  //             for ($i=0; $i<$nro; $i++) { 
+  //               $tabla.='<th style="width:9.09%;"><center>'.$matriz[$i][2].'</center></th>';
+  //             }
+  //             $tabla.='
+  //             </tr>
+  //           </thead>
+  //         <tbody>
+  //           <tr>
+  //             <td style="height:20px;"><b>(%) CUMPLIMIENTO</b></td>';
+  //             for ($i=0; $i<$nro; $i++) { 
+  //               $tabla.='<td style="width:9.09%;" align=right><b>'.$matriz[$i][3].' %</b></td>';
+  //             }
+  //             $tabla.='
+  //           </tr>
+  //         </tbody>
+  //       </table>
+  //     </center>';
 
-    return $tabla;
-  }
+  //   return $tabla;
+  // }
 
 
   /// MATRIZ EVALUACION DE FORMULARIO 2
-  public function matriz_eval_form2(){
-    $regionales=$this->model_proyecto->list_departamentos();
+  // public function matriz_eval_form2(){
+  //   $regionales=$this->model_proyecto->list_departamentos();
     
 
-    $nro=0;
-    foreach($regionales as $reg){
+  //   $nro=0;
+  //   foreach($regionales as $reg){
         
-        /// -----------------------------------------------------------------------------------------
-        $lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional($reg['dep_id']);
-        //$lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional_priorizado($reg['dep_id']);
-        $nro_prog=count($lista_ogestion);
-        $suma_cumplimiento_trimestral=0;
-        $suma_cumplimiento_gestion=0;
+  //       /// -----------------------------------------------------------------------------------------
+  //       $lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional($reg['dep_id']);
+  //       //$lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional_priorizado($reg['dep_id']);
+  //       $nro_prog=count($lista_ogestion);
+  //       $suma_cumplimiento_trimestral=0;
+  //       $suma_cumplimiento_gestion=0;
         
-        foreach($lista_ogestion as $row){
-          $calificacion=$this->eval_oregional->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
-          $suma_cumplimiento_trimestral=$suma_cumplimiento_trimestral+$calificacion[3];
-          $suma_cumplimiento_gestion=$suma_cumplimiento_gestion+$calificacion[4];
-        }
+  //       foreach($lista_ogestion as $row){
+  //         $calificacion=$this->eval_oregional->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
+  //         $suma_cumplimiento_trimestral=$suma_cumplimiento_trimestral+$calificacion[3];
+  //         $suma_cumplimiento_gestion=$suma_cumplimiento_gestion+$calificacion[4];
+  //       }
 
-         $cumplimiento=0;
-         if($nro_prog!=0){
-            $cumplimiento= round(($suma_cumplimiento_gestion/$nro_prog),2); 
-         }
+  //        $cumplimiento=0;
+  //        if($nro_prog!=0){
+  //           $cumplimiento= round(($suma_cumplimiento_gestion/$nro_prog),2); 
+  //        }
 
-        /// -----------------------------------------------------------------------------------------
+  //       /// -----------------------------------------------------------------------------------------
 
-      $mat[$nro][1]=$reg['dep_id'];
-      $mat[$nro][2]=strtoupper($reg['dep_sigla']);
-      $mat[$nro][3]=$cumplimiento; /// % cumplimiento
-      $nro++;
-    }
+  //     $mat[$nro][1]=$reg['dep_id'];
+  //     $mat[$nro][2]=strtoupper($reg['dep_sigla']);
+  //     $mat[$nro][3]=$cumplimiento; /// % cumplimiento
+  //     $nro++;
+  //   }
 
-    return $mat;
-  }
+  //   return $mat;
+  // }
 
 
  /*---- CABECERA REPORTE OPERACIONES POR REGIONALES (GRAFICO)----*/
-  function cabecera_reporte_grafico(){
-    $tabla='';
+  // function cabecera_reporte_grafico(){
+  //   $tabla='';
 
-    $tabla.='
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-        <tr style="border: solid 0px;">              
-            <td style="width:70%;height: 2%">
-                <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-                    <tr style="font-size: 15px;font-family: Arial;">
-                        <td style="width:45%;height: 20%;">&nbsp;&nbsp;<b>'.$this->session->userData('entidad').'</b></td>
-                    </tr>
-                    <tr>
-                        <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-              '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </td>
-        </tr>
-      </table>
-      <hr>
-      <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-          <tr style="border: solid 0px black; text-align: center;">
-              <td style="width:10%; text-align:center;">
-              </td>
-              <td style="width:80%; height: 5%">
-                <table align="center" border="0" style="width:100%;">
-                  <tr style="font-size: 23px;font-family: Arial;">
-                    <td style="height: 32%; text-align:center"><b>PLAN OPERATIVO ANUAL - GESTI&Oacute;N '.$this->gestion.'</b></td>
-                  </tr>
-                  <tr style="font-size: 20px;font-family: Arial;">
-                    <td style="height: 5%; text-align:center">EVALUACIÓN DE OPERACIONES</td>
-                  </tr>
-                </table>
-              </td>
-              <td style="width:10%; text-align:center;">
-              </td>
-          </tr>
-      </table>';
+  //   $tabla.='
+  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //       <tr style="border: solid 0px;">              
+  //           <td style="width:70%;height: 2%">
+  //               <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //                   <tr style="font-size: 15px;font-family: Arial;">
+  //                       <td style="width:45%;height: 20%;">&nbsp;&nbsp;<b>'.$this->session->userData('entidad').'</b></td>
+  //                   </tr>
+  //                   <tr>
+  //                       <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
+  //                   </tr>
+  //               </table>
+  //           </td>
+  //           <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
+  //             '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  //           </td>
+  //       </tr>
+  //     </table>
+  //     <hr>
+  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
+  //         <tr style="border: solid 0px black; text-align: center;">
+  //             <td style="width:10%; text-align:center;">
+  //             </td>
+  //             <td style="width:80%; height: 5%">
+  //               <table align="center" border="0" style="width:100%;">
+  //                 <tr style="font-size: 23px;font-family: Arial;">
+  //                   <td style="height: 32%; text-align:center"><b>PLAN OPERATIVO ANUAL - GESTI&Oacute;N '.$this->gestion.'</b></td>
+  //                 </tr>
+  //                 <tr style="font-size: 20px;font-family: Arial;">
+  //                   <td style="height: 5%; text-align:center">EVALUACIÓN DE OPERACIONES</td>
+  //                 </tr>
+  //               </table>
+  //             </td>
+  //             <td style="width:10%; text-align:center;">
+  //             </td>
+  //         </tr>
+  //     </table>';
 
-    return $tabla;
-  }
+  //   return $tabla;
+  // }
 
   /*=== GENERAR MENU ===*/
   function menu($mod){

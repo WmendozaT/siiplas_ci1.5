@@ -66,9 +66,9 @@
 			<div class="login-info">
 				<span> <!-- User image size is adjusted inside CSS, it should stay as is --> 
 					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
-                              <span>
-                                  <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
-                              </span>
+              <span>
+                <i class="fa fa-user" aria-hidden="true"></i>  <?php echo $this->session->userdata("user_name");?>
+              </span>
 						<i class="fa fa-angle-down"></i>
 					</a>
 				</span>
@@ -76,11 +76,11 @@
 			<nav>
 				<ul>
 					<li class="">
-	                <a href="<?php echo site_url("admin").'/dashboard'; ?>" title="MENÚ PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
-	            	</li>
-		            <li class="text-center">
-		                <a href="#" title="EVALUACION POA"> <span class="menu-item-parent">EVALUACI&Oacute;N POA</span></a>
-		            </li>
+	          <a href="<?php echo site_url("admin").'/dashboard'; ?>" title="MENÚ PRINCIPAL"><i class="fa fa-lg fa-fw fa-home"></i> <span class="menu-item-parent">MEN&Uacute; PRINCIPAL</span></a>
+	        </li>
+		      <li class="text-center">
+		        <a href="#" title="EVALUACION POA"> <span class="menu-item-parent">EVALUACI&Oacute;N POA</span></a>
+		      </li>
 				<?php echo $menu;?>
 				</ul>
 			</nav>
@@ -116,8 +116,50 @@
 
         <!--  =============== -->  
         <?php echo $modal_form4_priorizados; ?>
-        <?php echo $modal_grafico_x_form2;?>
-        <?php echo $modal_grafico_form2_regional;?>
+        <!-- MODAL cuadro grafico de operaciones alineado a la ACP-->
+        <div class="modal fade" id="modal_grafico_xform2" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" style="width: 94%; max-width: 1350px; margin: 10px auto;">
+                <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
+                    
+                    <!-- BARRA SUPERIOR AZUL CON BOTÓN DE EXPORTAR PDF Y SALIR -->
+                    <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 class="modal-title" style="font-weight: bold; margin: 0; font-size: 16px;">
+                            <i class="fa fa-bar-chart"></i> DETALLE DE CUMPLIMIENTO DE OPERACIONES 
+                        </h4>
+                        
+                        <div style="margin-left: auto;">
+                         <!--  <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoAcp();" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
+                              <i class="fa fa-print"></i> EXPORTAR REPORTE PDF
+                          </button> -->
+                          <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" title="SALIR" style="background: #ef4444; border: none; font-weight: bold; padding: 6px 12px;">
+                              <i class="fa fa-times"></i> Salir
+                          </button>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-body" id="area_impresion_acp" style="max-height: 85vh; min-height: 75vh; overflow-y: auto; background: #ffffff; padding: 15px 20px;">
+                        
+                        <!-- Cabecera Institucional Celeste -->
+                        <div class="alert alert-info text-center" style="margin-bottom: 10px; padding: 10px; background-color: #f0f9ff; border: 1px solid #bae6fd; color: #1e3a8a; border-radius: 4px;">
+                            <h4 style="margin: 0; font-weight: bold; font-size: 15px;">CUADRO DE EVALUACIÓN DE OPERACIONES GESTIÓN <?php echo $this->session->userData('gestion') ?></h4>
+                            <h5 style="margin: 4px 0 0 0; font-weight: bold; font-size: 13px;" id="lbl_acp_regional_titulo">REGIONAL : CARGANDO...</h5>
+                        </div>
+
+                        <!-- Banner Dinámico Grande de Porcentaje y Calificación -->
+                        <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 36px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">0.0%</div>
+                            <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALCULANDO...</div>
+                        </div>
+
+                        <!-- Contenedor donde el controlador inyectará los 2 gráficos (#container1, #container2) y la tabla -->
+                        <div id="tabla"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <?php echo $modal_grafico_x_form2;?> -->
+        <!-- <?php echo $modal_grafico_form2_regional;?> -->
         <!--  =============== -->   
 
 		<!-- PAGE FOOTER -->
@@ -147,11 +189,6 @@
 		<script src="<?php echo base_url(); ?>assets/js/app.config.js"></script>
 
 		<script src="<?php echo base_url(); ?>assets/highcharts/js/highcharts.js"></script>
-
-        <script src="<?php echo base_url(); ?>assets/captura/html2canvas.min.js"></script>
-        <script src="<?php echo base_url(); ?>assets/captura/canvasjs.min.js"></script>
-        <script src="<?php echo base_url(); ?>assets/captura/jsPdf.debug.js"></script>
-
 		<!-- JS TOUCH : include this plugin for mobile drag / drop touch events-->
 		<script src="<?php echo base_url(); ?>assets/js/plugin/jquery-touch/jquery.ui.touch-punch.min.js"></script> 
 		<!-- BOOTSTRAP JS -->
