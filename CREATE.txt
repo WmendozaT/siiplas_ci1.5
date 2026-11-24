@@ -2431,3 +2431,168 @@ BEGIN
     ORDER BY d.dep_id ASC;
 END;
 $$ LANGUAGE plpgsql;
+
+
+=============== FUNCION DE OPERACIONES POR REGIONALES
+
+CREATE OR REPLACE FUNCTION public.f_detalle_operaciones_form2_x_regionales(p_gestion integer)
+RETURNS TABLE (
+    dep_id integer,
+    dep_departamento varchar,
+    og_id integer,
+    og_codigo integer,
+    og_objetivo text,
+    or_id integer,
+    pog_id integer,
+    or_codigo integer,
+    or_objetivo text,
+    or_resultado text,
+    or_producto text,
+    or_indicador text,
+    or_verificacion text,
+    or_meta numeric,
+    or_tp integer,
+    or_priorizado integer,
+    or_priorizado2 integer,
+    tp_meta integer,
+    indi_id integer,
+    indi_abreviacion varchar,
+    indi_descripcion varchar,
+    nro integer,
+    trm1 numeric, trm2 numeric, trm3 numeric, trm4 numeric,
+    e_trm1 numeric, e_trm2 numeric, e_trm3 numeric, e_trm4 numeric,
+    porc_cump_1 numeric, porc_cump_2 numeric, porc_cump_3 numeric, porc_cump_4 numeric,
+    trm_porc1 numeric, trm_porc2 numeric, trm_porc3 numeric, trm_porc4 numeric,
+    trm_porc_ejec1 numeric, trm_porc_ejec2 numeric, trm_porc_ejec3 numeric, trm_porc_ejec4 numeric
+)
+LANGUAGE sql STABLE AS $$
+    SELECT 
+        opg.dep_id::integer,
+        dep.dep_departamento::varchar,
+        og.og_id::integer,
+        og.og_codigo::integer,
+        og.og_objetivo::text,
+        oreg.or_id::integer,
+        oreg.pog_id::integer,
+        oreg.or_codigo::integer,
+        oreg.or_objetivo::text,
+        oreg.or_resultado::text,
+        oreg.or_producto::text,
+        oreg.or_indicador::text,
+        oreg.or_verificacion::text,
+        oreg.or_meta::numeric,
+        oreg.or_tp::integer,
+        oreg.or_priorizado::integer,
+        oreg.or_priorizado2::integer,
+        oreg.tp_meta::integer,
+        tp.indi_id::integer,
+        tp.indi_abreviacion::varchar,
+        tp.indi_descripcion::varchar,
+
+        -- Selección condicional de campos basada en oreg.or_tp (0 para regular, 1 para pi)
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.nro            ELSE f2_pi.nro            END, 0)::integer AS nro,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm1           ELSE f2_pi.trm1           END, 0)::numeric AS trm1,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm2           ELSE f2_pi.trm2           END, 0)::numeric AS trm2,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm3           ELSE f2_pi.trm3           END, 0)::numeric AS trm3,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm4           ELSE f2_pi.trm4           END, 0)::numeric AS trm4,
+        
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm1         ELSE f2_pi.e_trm1         END, 0)::numeric AS e_trm1,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm2         ELSE f2_pi.e_trm2         END, 0)::numeric AS e_trm2,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm3         ELSE f2_pi.e_trm3         END, 0)::numeric AS e_trm3,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm4         ELSE f2_pi.e_trm4         END, 0)::numeric AS e_trm4,
+        
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1    ELSE f2_pi.porc_cump_1    END, 0)::numeric AS porc_cump_1,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2    ELSE f2_pi.porc_cump_2    END, 0)::numeric AS porc_cump_2,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3    ELSE f2_pi.porc_cump_3    END, 0)::numeric AS porc_cump_3,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4    ELSE f2_pi.porc_cump_4    END, 0)::numeric AS porc_cump_4,
+
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc1      ELSE f2_pi.trm_porc1      END, 0)::numeric AS trm_porc1,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc2      ELSE f2_pi.trm_porc2      END, 0)::numeric AS trm_porc2,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc3      ELSE f2_pi.trm_porc3      END, 0)::numeric AS trm_porc3,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc4      ELSE f2_pi.trm_porc4      END, 0)::numeric AS trm_porc4,
+
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0)::numeric AS trm_porc_ejec1,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0)::numeric AS trm_porc_ejec2,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0)::numeric AS trm_porc_ejec3,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0)::numeric AS trm_porc_ejec4
+
+    FROM objetivo_programado_mensual opg
+    INNER JOIN _departamentos dep ON dep.dep_id = opg.dep_id
+    INNER JOIN objetivo_gestion og ON og.og_id = opg.og_id
+    INNER JOIN objetivos_regionales oreg ON opg.pog_id = oreg.pog_id
+    INNER JOIN indicador tp ON oreg.indi_id = tp.indi_id
+    LEFT JOIN v_trm_cumplimiento_consolidado_form2(p_gestion) f2_reg 
+        ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
+    LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2(p_gestion) f2_pi 
+        ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
+    WHERE og.g_id = p_gestion
+      AND oreg.estado != 3
+      AND oreg.or_meta != 0
+    ORDER BY opg.dep_id, og.og_codigo, oreg.or_codigo ASC, oreg.or_id ASC;
+$$;
+
+
+------------------ consulta para form 1
+
+
+
+WITH detalle_acp AS (
+    SELECT 
+        og.og_id,
+        og.og_codigo,
+        og.og_objetivo,
+
+        -- Metas Programada y Ejecutada Anual (4to Trimestre)
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm4   ELSE f2_pi.trm4   END, 0)::numeric AS meta_prog_anual,
+        COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm4 ELSE f2_pi.e_trm4 END, 0)::numeric AS meta_ejec_anual,
+
+        -- 1. Porcentajes Trimestrales por operación (redondeados a 2 decimales y con tope 100)
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1 ELSE f2_pi.porc_cump_1 END, 0)::numeric, 2), 100) AS p_trm1,
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2 ELSE f2_pi.porc_cump_2 END, 0)::numeric, 2), 100) AS p_trm2,
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3 ELSE f2_pi.porc_cump_3 END, 0)::numeric, 2), 100) AS p_trm3,
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4 ELSE f2_pi.porc_cump_4 END, 0)::numeric, 2), 100) AS p_trm4,
+
+        -- 2. Porcentajes Anuales / Gestión acumulados por operación (redondeados a 2 decimales y con tope 100)
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0)::numeric, 2), 100) AS p_ges1,
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0)::numeric, 2), 100) AS p_ges2,
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0)::numeric, 2), 100) AS p_ges3,
+        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0)::numeric, 2), 100) AS p_ges4
+
+    FROM objetivo_gestion og
+    INNER JOIN objetivo_programado_mensual opg ON opg.og_id = og.og_id
+    INNER JOIN objetivos_regionales oreg ON oreg.pog_id = opg.pog_id
+    LEFT JOIN v_trm_cumplimiento_consolidado_form2(2026) f2_reg 
+        ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
+    LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2(2026) f2_pi 
+        ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
+    WHERE og.g_id = 2026
+      AND oreg.estado != 3
+      AND oreg.or_meta != 0
+      -- AND opg.dep_id = 9 -- Descomentar si deseas filtrar por una regional específica
+)
+SELECT 
+    og_id,
+    og_codigo,
+    og_objetivo,
+    COUNT(*) AS total_operaciones,
+
+    -- Sumatoria total de metas programadas y ejecutadas anuales
+    ROUND(SUM(meta_prog_anual), 2) AS total_meta_programada,
+    ROUND(SUM(meta_ejec_anual), 2) AS total_meta_ejecutada,
+
+    -- Promedio Trimestral por ACP
+    ROUND(COALESCE(AVG(p_trm1), 0), 1) AS cump_trm1,
+    ROUND(COALESCE(AVG(p_trm2), 0), 1) AS cump_trm2,
+    ROUND(COALESCE(AVG(p_trm3), 0), 1) AS cump_trm3,
+    ROUND(COALESCE(AVG(p_trm4), 0), 1) AS cump_trm4,
+
+    -- Promedio Anual / Gestión por ACP
+    ROUND(COALESCE(AVG(p_ges1), 0), 1) AS cump_anual1,
+    ROUND(COALESCE(AVG(p_ges2), 0), 1) AS cump_anual2,
+    ROUND(COALESCE(AVG(p_ges3), 0), 1) AS cump_anual3,
+    ROUND(COALESCE(AVG(p_ges4), 0), 1) AS cump_anual4
+
+FROM detalle_acp
+GROUP BY og_id, og_codigo, og_objetivo
+ORDER BY og_codigo ASC;
+

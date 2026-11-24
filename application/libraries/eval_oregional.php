@@ -24,7 +24,7 @@ class Eval_oregional extends CI_Controller{
       $this->verif_mes=$this->session->userData('mes_actual');
       $this->resolucion=$this->session->userdata('rd_poa');
       $this->tp_adm = $this->session->userData('tp_adm');
-      $this->mes = $this->mes_nombre();
+      //$this->mes = $this->mes_nombre();
       $this->dep_id = $this->session->userData('dep_id');
       $this->conf_form4 = $this->session->userData('conf_form4');
       $this->conf_form5 = $this->session->userData('conf_form5');
@@ -43,22 +43,6 @@ class Eval_oregional extends CI_Controller{
               <h2>EVALUACI&Oacute;N DE OPERACIONES (FORMULARIO N° 2) '.$trimestre[0]['trm_descripcion'].' / '.$this->gestion.'</h2>
             </div>
         </article>';
-
-      // if ($this->tp_adm==1) {
-      //   $tabla.='
-      //     <div id="row">
-      //       <article class="col-xs-12 col-sm-12 col-md-2 col-lg-2">
-      //           <a href="#" data-toggle="modal" data-target="#modal_update_evaluacion" class="btn btn-default update_evaluacion" style="width:100%;" title="ACTUALIZAR EVALUACION OBJETIVO REGIONAL" ><img src="'.base_url().'assets/Iconos/arrow_refresh.png" WIDTH="25" HEIGHT="30"/>&nbsp;UPDATE EVALUACIÓN DE OPERACIONES</a>    
-      //       </article>
-      //     </div>';
-      // }
-
-      // $tabla.='
-      // <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-      //   <div class="well" id="load_update_temp_general" style="display: none;" >
-      //     <center><img src="'.base_url().'/assets/img_v1.1/preloader.gif" style="width:13%; height:2.5%"><br><b>ACTUALIZANDO EVALUACIÓN POA - OPERACIONES ...</b></center>
-      //   </div>
-      // </article>';
 
       return $tabla;
     } 
@@ -225,12 +209,12 @@ class Eval_oregional extends CI_Controller{
                       }
 
                       ///-----------------------------------------------------
-                        $this->db->where('or_id', $row['or_id']);
-                        $this->db->delete('temp_trm_prog_objetivos_regionales');
+                        // $this->db->where('or_id', $row['or_id']);
+                        // $this->db->delete('temp_trm_prog_objetivos_regionales');
 
-                         /// --- eliminando ejecucion de Objetivos Regionales
-                         $this->db->where('or_id', $row['or_id']);
-                         $this->db->delete('temp_trm_ejec_objetivos_regionales');
+                        //  /// --- eliminando ejecucion de Objetivos Regionales
+                        //  $this->db->where('or_id', $row['or_id']);
+                        //  $this->db->delete('temp_trm_ejec_objetivos_regionales');
                       ///-----------------------------------------------------
 
 
@@ -240,27 +224,27 @@ class Eval_oregional extends CI_Controller{
                           $grafico = '<br><a href="#" data-toggle="modal" data-target="#modal_cumplimiento_xform2" class="btn btn-lg btn-default" name="'.$row['or_id'].'" onclick="nivel_cumplimiento(this, '.$datos_fila_json.');" title="NIVEL DE CUMPLIMIENTO"><img src="'.base_url().'assets/Iconos/chart_bar.png" WIDTH="30" HEIGHT="30"/></a>';
                         
                           /// registrando temporalidad
-                          for ($i=1; $i <=4 ; $i++) { 
-                            if($row['trm'.$i]!=0){
-                                $data_to_store2 = array( ///// Tabla temp prog oregional
-                                'or_id' => $row['or_id'], /// or id
-                                'trm_id' => $i, /// trimestre
-                                'pg_fis' => round($row['trm'.$i],2), /// valor Programado Trimestral
-                                'g_id' => $this->gestion, /// gestion                
-                              );
-                              $this->db->insert('temp_trm_prog_objetivos_regionales', $data_to_store2);
-                            }
+                          // for ($i=1; $i <=4 ; $i++) { 
+                          //   if($row['trm'.$i]!=0){
+                          //       $data_to_store2 = array( ///// Tabla temp prog oregional
+                          //       'or_id' => $row['or_id'], /// or id
+                          //       'trm_id' => $i, /// trimestre
+                          //       'pg_fis' => round($row['trm'.$i],2), /// valor Programado Trimestral
+                          //       'g_id' => $this->gestion, /// gestion                
+                          //     );
+                          //     $this->db->insert('temp_trm_prog_objetivos_regionales', $data_to_store2);
+                          //   }
                             
-                            if($row['e_trm'.$i]!=0){
-                              $data_to_store2 = array( ///// Tabla temp prog oregional
-                                'or_id' => $row['or_id'], /// or id
-                                'trm_id' => $i, /// trimestre
-                                'ejec_fis' => round($row['e_trm'.$i],2), /// valor Ejecutado Trimestral
-                                'g_id' => $this->gestion, /// gestion                
-                              );
-                              $this->db->insert('temp_trm_ejec_objetivos_regionales', $data_to_store2);
-                            }
-                          }
+                          //   if($row['e_trm'.$i]!=0){
+                          //     $data_to_store2 = array( ///// Tabla temp prog oregional
+                          //       'or_id' => $row['or_id'], /// or id
+                          //       'trm_id' => $i, /// trimestre
+                          //       'ejec_fis' => round($row['e_trm'.$i],2), /// valor Ejecutado Trimestral
+                          //       'g_id' => $this->gestion, /// gestion                
+                          //     );
+                          //     $this->db->insert('temp_trm_ejec_objetivos_regionales', $data_to_store2);
+                          //   }
+                          // }
                           /// -----------------------
                       }
                       else{
@@ -359,93 +343,6 @@ class Eval_oregional extends CI_Controller{
       return $tabla;
     }
 
-    //// Modal graficos por OPERACION 2027 (Modulo : Evaluacion POA)
-    // public function modal_graficos_x_form2(){
-    //   $tabla='';
-    //   $tabla .= '
-    //   <div class="modal fade" id="modal_cumplimiento_xform2" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
-    //       <div class="modal-dialog modal-lg" id="mdialTamanio3" style="width: 95%;">
-    //           <div class="modal-content">dsadsadsadsadsa
-    //               <div class="modal-header" style="background-color: #1c7368; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-                      
-    //                   <!-- Título e Insignia de Calificación -->
-    //                   <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-    //                       <h4 class="modal-title" style="font-weight: bold; margin: 0;">
-    //                           <i class="fa fa-bar-chart-o"></i> (%) CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTI&Oacute;N '.$this->gestion.'
-    //                       </h4>
-                          
-    //                       <!-- Insignia dinámica de Promedio Global -->
-    //                       <span id="badge_calificacion_acp" style="display: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25); letter-spacing: 0.5px;">
-    //                           <i class="fa fa-tachometer"></i> <span id="lbl_promedio_acp">0%</span> - <span id="lbl_estado_acp">CARGANDO</span>
-    //                       </span>
-    //                   </div>
-
-    //                   <!-- Botón Cerrar -->
-    //                   <button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 1; margin-left: auto;" title="SALIR">
-    //                       <span aria-hidden="true">&times; <b style="font-size: 13px;">Salir Formularioferwerwe</b></span>
-    //                   </button>
-    //               </div>
-                  
-    //               <div class="modal-body">
-    //                   <!-- AQUÍ SE INYECTARÁ DINÁMICAMENTE EL GRÁFICO Y LA TABLA -->
-    //                   <div id="tabla"></div>
-    //               </div>
-    //           </div>
-    //       </div>
-    //   </div>';
-        
-    //   return $tabla;
-    // }
-
-
-    //// Modal Grafico Cumplimiento de Operaciones x Regional
-    // public function modal_grafico_cumplimiento_form2_x_regional(){
-    //   $tabla='';
-    //  $tabla .= '
-    //   <div class="modal fade" id="modal_cumplimiento_acp" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
-    //       <div class="modal-dialog modal-lg" style="width: 95%; max-width: 1350px; margin: 10px auto;">
-    //           <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
-                  
-    //               <!-- BARRA SUPERIOR CON BOTÓN DE IMPRESIÓN Y SALIR -->
-    //               <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
-    //                   <h4 class="modal-title" style="font-weight: bold; margin: 0; font-size: 16px;">
-    //                       <i class="fa fa-bar-chart"></i> CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '
-    //                   </h4>
-                      
-    //                   <div style="margin-left: auto;">
-    //                       <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoAcp();" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
-    //                           <i class="fa fa-print"></i> EXPORTAR REPORTE PDF
-    //                       </button>
-    //                       <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" title="SALIR" style="background: #ef4444; border: none; font-weight: bold; padding: 6px 12px;">
-    //                           <i class="fa fa-times"></i> Salir
-    //                       </button>
-    //                   </div>
-    //               </div>
-                  
-    //               <div class="modal-body" id="area_impresion_acp" style="max-height: 85vh; min-height: 75vh; overflow-y: auto; background: #ffffff; padding: 15px 20px;">
-                      
-    //                   <!-- Cabecera Institucional -->
-    //                   <div class="alert alert-info text-center" style="margin-bottom: 10px; padding: 10px; background-color: #f0f9ff; border: 1px solid #bae6fd; color: #1e3a8a; border-radius: 4px;">
-    //                       <h4 style="margin: 0; font-weight: bold; font-size: 15px;">EVALUACIÓN DE OPERACIONES ALINEADAS A ACP - GESTIÓN ' . $this->gestion . '</h4>
-    //                       <h5 style="margin: 4px 0 0 0; font-weight: bold; font-size: 13px;" id="lbl_acp_regional_titulo">REGIONAL : CARGANDO...</h5>
-    //                   </div>
-
-    //                   <!-- Banner Dinámico de Porcentaje y Calificación -->
-    //                   <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    //                       <div style="font-size: 34px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">0.0%</div>
-    //                       <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALCULANDO...</div>
-    //                   </div>
-
-    //                   <!-- AQUÍ SE INYECTARÁN LOS 2 GRÁFICOS (container1 y container2) Y LA TABLA INFERIOR -->
-    //                   <div id="contenedor_detalle_acp"></div>
-    //               </div>
-    //           </div>
-    //       </div>
-    //   </div>';
-    //   return $tabla;
-    // }
-
-
     ///// Genera temporalidad 2027 (Modulo : Evaluacion POA)
     public function genera_temporalidad_form2($row){
       $tabla='';
@@ -499,211 +396,6 @@ class Eval_oregional extends CI_Controller{
       
       return $tabla;
     }
-
-
-    // /*--- ACTUALIZA PARAMETRO DE CALIFICACION OPERACIONES REGIONAL ---*/
-    // public function calificacion_total_form2_regional($dep_id,$tp_calificacion){
-    //   /// tp_calificacion : 0 (trimestral)
-    //   /// tp_calificacion : 1 (Acumulado a la gestion)
-
-    //   $lista_ogestion=$this->model_objetivoregion->list_form2_regional_x_regional($dep_id);
-    //   $nro_prog=count($lista_ogestion);
-    //   $suma_cumplimiento_trimestral=0;
-    //   $suma_cumplimiento_gestion=0;
-      
-    //   foreach($lista_ogestion as $row){
-    //     $calificacion=$this->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
-    //     $suma_cumplimiento_trimestral=$suma_cumplimiento_trimestral+$calificacion[3];
-    //     $suma_cumplimiento_gestion=$suma_cumplimiento_gestion+$calificacion[4];
-    //  }
-
-    //  $cumplimiento=0;
-    //  if($nro_prog!=0){
-    //     $cumplimiento= round(($suma_cumplimiento_trimestral/$nro_prog),2);  
-    //     if($tp_calificacion==1){
-    //       $cumplimiento= round(($suma_cumplimiento_gestion/$nro_prog),2); 
-    //     }
-    //  }
-
-
-    //   $calificacion='';$resp='';$color='';
-
-    //   if($cumplimiento>0 & $cumplimiento<=50){
-    //     $resp='<b>INSATISFACTORIO</b>';
-    //     $color='#f95b4f';
-    //   }
-    //   elseif($cumplimiento>50 & $cumplimiento<=75){
-    //    $resp='<b>REGULAR</b>';
-    //    $color='#edd094';
-    //   }
-    //   elseif($cumplimiento>75 & $cumplimiento<=99){
-    //    $resp='<b>BUENO</b>';
-    //    $color='#83bad1';
-    //   }
-    //   elseif($cumplimiento==100){
-    //    $resp='<b>OPTIMO</b>';
-    //    $color='#4caf50';
-    //   }
-
-    //   $calificacion.='<div style="color:white; background-color:'.$color.'"><center><font size="7px">'.$cumplimiento.'%</font><br>'.$resp.'</center></div>';
-    //   return $calificacion;
-    // }
-
-
-    /*-- ARMANDO TEMPORALIDAD PARA OBJETIVOS REGIONAL POR REGIONAL (ACUMULADO) --*/
-    // public function get_temporalidad_acumulado_objetivo_regional($or_id,$tp_rep,$tp_or,$tp_meta){
-    //   /// tp_rep=0 normal
-    //   /// tp_rep=1 Reporte
-    //   /// tp_or=1 (inversion), 0 (gasto corriente) 1
-
-    //   $valor=$this->tabla_trimestral_acumulado_x_oregional($or_id,$tp_or,$tp_meta); /// 
-    //   $tabla='';
-
-    //       if($tp_rep==0){ /// VISTA NORMAL
-    //         for ($i=1; $i <=4 ; $i++) {
-    //           $tabla.='
-    //           <td style="width:6%;" align=center>
-    //             <table class="table table-bordered" border=0.2 style="width:80%;">
-    //               <tr>
-    //                 <td style="width:50%;"><b>(%) PROG.</b></td>
-    //                 <td style="width:50%;font-size: 12px; color:blue" align=right><b>'.$valor[5][$i].'%</b></td>
-    //               </tr>
-    //               <tr>
-    //                 <td><b>(%) EJEC.</b></td>
-    //                 <td style="font-size: 12px; color:blue" align=right><b>'.$valor[6][$i].'%</b></td>
-    //               </tr>
-    //             </table>
-    //           </td>';
-    //         }
-    //       }
-    //       else{ /// VISTA PARA REPORTES
-    //         for ($i=1; $i <=4 ; $i++) {
-    //           $tabla.='
-    //           <td style="width:4.5%;" align=center>
-    //             <table cellpadding="0" cellspacing="0" class="tabla" border=0.1 style="width:90%;" align=center>
-    //               <tr>
-    //                 <td style="width:50%; height: 2%; font-size: 8px;"><b>%PROG.</b></td>
-    //                 <td style="width:50%;font-size: 8.5px;" align=right><b>'.$valor[5][$i].'%</b></td>
-    //               </tr>
-    //               <tr>
-    //                 <td style="width:50%; height: 2%; font-size: 8px;"><b>%EJEC.</b></td>
-    //                 <td style="font-size: 8.5px;" align=right><b>'.$valor[2][$i].'%</b></td>
-    //               </tr>
-    //             </table>
-    //           </td>';
-    //         }
-    //       }
-
-    //   return $tabla;
-    // }
-
-
-
-
-    /*-- GENERA TABLA PARA EVALUACION TRIMESTRAL POR OBJETIVO REGIONAL --*/
-    // public function tabla_trimestral_acumulado_x_oregional($or_id,$tp_or,$tp_meta){
-
-    //     for ($i=1; $i <=4 ; $i++) { 
-    //       $valor=$this->calificacion_trimestral_acumulado_x_oregional($or_id,$i,$tp_or,$tp_meta); /// CALIFICACION TRIMESTRAL POR OBJETIVO REGIONAL GASTO CORRIENTE 
-    //       $matriz[1][$i]=$valor[1];  /// prog
-    //       $matriz[2][$i]=$valor[2];  /// ejec
-    //       $matriz[3][$i]=$valor[3];  /// % cumplimiento trimestral
-    //       $matriz[4][$i]=(100-$valor[3]);  /// % no cumplido
-    //     }
-
-    //     $total=$matriz[1][4];
-
-    //     for ($i=1; $i <=4 ; $i++) { 
-    //       $matriz[5][$i]=round((($matriz[1][$i]/$total)*100),2);  /// % Programado con respecto al total acumulado
-    //       $matriz[6][$i]=round((($matriz[2][$i]/$total)*100),2);  /// % Ejecutado con respecto al total acumulado
-    //     }
-
-    //   return $matriz;
-    // }
-
-    /*-- CALIFICACION TRIMESTRAL POR OBJETIVO REGIONAL GASTO CORRIENTE wil--*/
-    // public function calificacion_trimestral_acumulado_x_oregional($or_id,$trimestre,$tp_or,$tp_meta){
-    //   $valor = array( '1' => '0','2' => '0','3' => '0','4' => '0');
-
-    //   if(count($this->model_objetivoregion->verif_temporalidad_oregional($or_id))!=0){
-    //     $suma_total_prog=0; $suma_prog=0; $suma_ejec=0;$ejecucion=0;
-        
-    //     if($tp_or==0){ //// GASTO CORRIENTE
-              
-    //           //// Suma total programado por operacion (Gasto Corriente)
-    //           $prog_total=$this->model_objetivoregion->get_trm_temporalidad_prog_total_oregional($or_id);
-    //           if(count($prog_total)!=0){
-    //             $suma_total_prog=$prog_total[0]['total_prog'];
-    //           }
-
-
-    //             for ($i=1; $i <=$trimestre; $i++) {
-    //               $get_trm=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,$i); /// Temporalidad Programado
-    //               $get_trm_ejec=$this->model_objetivoregion->get_trm_temporalidad_ejec_oregional($or_id,$i); /// Temporalidad Ejecutado
-
-    //               if(count($get_trm)!=0){
-    //                 if($tp_meta==5){ /// recurrente trimestral
-    //                   $suma_prog=round($get_trm[0]['pg_fis'],2); 
-    //                 }
-    //                 else{
-    //                   $suma_prog=$suma_prog+$get_trm[0]['pg_fis']; 
-    //                 }
-    //               }
-
-    //               if(count($get_trm_ejec)!=0){
-    //                 if($tp_meta==5){ /// recurrente trimestral
-    //                   $suma_ejec=$get_trm_ejec[0]['ejec_fis'];
-    //                 }
-    //                 else{
-    //                   $suma_ejec=$suma_ejec+$get_trm_ejec[0]['ejec_fis'];
-    //                 }
-    //               }
-
-    //               $ejecucion=0;
-    //               if($suma_ejec!=0){
-    //                 $ejecucion=round((($suma_ejec/$suma_prog)*100),2);
-    //               }
-
-    //               $cumplimiento_gestion=0;
-    //               if($suma_total_prog!=0){
-    //                 $cumplimiento_gestion=round((($suma_ejec/$suma_total_prog)*100),2);
-    //               }
-    //             }
-
-    //     }
-    //     else{ //// INVERSION
-    //         $get_trm=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,$trimestre); /// Temporalidad Programado Inversion
-    //         $get_trm_ejec=$this->model_objetivoregion->get_trm_temporalidad_ejec_oregional($or_id,$trimestre); /// Temporalidad Ejecutado Inversion
-    //         $suma_total_prog=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,4);
-
-    //           if(count($get_trm)!=0){
-    //             $suma_prog=round($get_trm[0]['pg_fis'],2); 
-    //           }
-
-    //           if(count($get_trm_ejec)!=0){
-    //             $suma_ejec=round($get_trm_ejec[0]['ejec_fis'],2);
-    //           }
-
-    //           $ejecucion=0;
-    //           if($suma_ejec!=0 && $suma_prog!=0){
-    //             $ejecucion=round((($suma_ejec/$suma_prog)*$suma_total_prog[0]['pg_fis']),2);
-    //           }
-
-    //           $cumplimiento_gestion=0;
-    //           if(count($suma_total_prog)!=0){
-    //             $cumplimiento_gestion=round((($suma_ejec/$suma_total_prog[0]['pg_fis'])*100),2);
-    //           }
-
-    //     }
-
-    //       $valor[1]=$suma_prog; /// Programado Acumulado al trimestre
-    //       $valor[2]=$suma_ejec; /// Ejecutado Acumulado al trimestre
-    //       $valor[3]=$ejecucion; /// Cumplimiento al trimestre
-    //       $valor[4]=$cumplimiento_gestion; /// Cumplimiento a la Gestion
-    //   }
-
-    //   return $valor; 
-    // }
 
 
     //// Lista de Actividades Priorizados a la Operacion 2027 (Gasto Corriente)
@@ -915,51 +607,6 @@ class Eval_oregional extends CI_Controller{
     return $tabla;
   }
 
-
- /*------- CABECERA REPORTE SEGUIMIENTO POA (GRAFICO)------*/
-  // function cabecera_reporte_grafico($regional){
-  //   $tabla='';
-
-  //   $tabla.='
-  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //       <tr style="border: solid 0px;">              
-  //           <td style="width:70%;height: 2%">
-  //               <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //                   <tr style="font-size: 15px;font-family: Arial;">
-  //                       <td style="width:45%;height: 20%;">&nbsp;&nbsp;<b>'.$this->session->userData('entidad').'</b></td>
-  //                   </tr>
-  //                   <tr>
-  //                       <td style="width:50%;height: 20%;font-size: 8px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEPARTAMENTO NACIONAL DE PLANIFICACIÓN</td>
-  //                   </tr>
-  //               </table>
-  //           </td>
-  //           <td style="width:30%; height: 2%; font-size: 8px;text-align:right;">
-  //             '.date("d").' de '.$this->mes[ltrim(date("m"), "0")]. " de " . date("Y").'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  //           </td>
-  //       </tr>
-  //     </table>
-  //     <hr>
-  //     <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
-  //         <tr style="border: solid 0px black; text-align: center;">
-  //             <td style="width:10%; text-align:center;">
-  //             </td>
-  //             <td style="width:80%; height: 5%">
-  //               <table align="center" border="0" style="width:100%;">
-  //                 <tr style="font-size: 23px;font-family: Arial;">
-  //                   <td style="height: 32%; text-align:center"><b>PLAN OPERATIVO ANUAL - GESTI&Oacute;N '.$this->gestion.'</b></td>
-  //                 </tr>
-  //                 <tr style="font-size: 20px;font-family: Arial;">
-  //                   <td style="height: 5%; text-align:center">OPERACIONES - '.strtoupper($regional[0]['dep_departamento']).'</td>
-  //                 </tr>
-  //               </table>
-  //             </td>
-  //             <td style="width:10%; text-align:center;">
-  //             </td>
-  //         </tr>
-  //     </table>';
-
-  //   return $tabla;
-  // }
 
   //// Detalle Lista Operaciones Regional form 2 2027
   public function lista_form2_reporte_x_regional($dep_id){ 
@@ -1272,158 +919,6 @@ class Eval_oregional extends CI_Controller{
     return $tabla;
   }
 
-
-  //// Matriz lista de cumplimiento de Operaciones por Regional ANUAL
-  // public function matriz_cumplimiento_operaciones_regional($dep_id){
-  //   $lista_ogestion=$this->model_objetivoregion->list_form2_regional_x_regional($dep_id);
-  //    for ($i=0; $i <count($lista_ogestion); $i++) { 
-  //     for ($j=0; $j <5 ; $j++) { 
-  //       $matriz[$i][$j]=0;
-  //     } 
-  //    }
-
-  //    $nro=0;
-  //    foreach($lista_ogestion as $row){
-  //     $calificacion=$this->calificacion_trimestral_acumulado_x_oregional($row['or_id'],$this->tmes,$row['or_tp'],$row['tp_meta']);
-        
-  //       $matriz[$nro][0]=$row['og_codigo']; /// cod OG
-  //       $matriz[$nro][1]=$row['or_codigo']; /// cod OR
-  //       $matriz[$nro][2]=$row['or_objetivo']; /// Descripcion
-  //       $matriz[$nro][3]=$calificacion[3]; /// Cumplimiento al Trimestre
-  //       $matriz[$nro][4]=$calificacion[4]; /// Cumplimiento a la Gestion
-
-  //       $nro++;
-  //    }
-
-  //    return $matriz;
-  // }
-
-
-
-
-
-
-  //// Matriz lista de cumplimiento de Operaciones Institucional a la Gestion
-  // public function matriz_cumplimiento_operaciones_institucional(){
-  //   $lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional_institucional();
-  //    for ($i=0; $i <count($lista_ogestion); $i++) { 
-  //     for ($j=0; $j <4 ; $j++) { 
-  //       $matriz[$i][$j]=0;
-  //     } 
-  //    }
-
-  //    $nro=0;
-  //    foreach($lista_ogestion as $row){
-  //     $get_trm_ejec=$this->model_objetivoregion->get_ejec_form2_institucional($row['og_codigo'],$row['or_codigo']); /// Temporalidad Ejecutado
-  //     $ejec_form2_institucional=0;
-  //     if(count($get_trm_ejec)!=0){
-  //       $ejec_form2_institucional=$get_trm_ejec[0]['ejecutado'];
-  //     }  
-
-
-  //       $matriz[$nro][0]=$row['og_codigo']; /// cod OG
-  //       $matriz[$nro][1]=$row['or_codigo']; /// cod OR
-  //       $matriz[$nro][2]=$row['programado_total']; /// Programado Total
-  //       $matriz[$nro][3]=$ejec_form2_institucional; /// ejecutado Total
-  //       $ejecutado=0;
-  //       if($row['programado_total']!=0){
-  //         $ejecutado=round((($ejec_form2_institucional/$row['programado_total'])*100),2);
-  //       }
-  //       $matriz[$nro][4]=$ejecutado; /// ejecutado Total %
-
-  //       $nro++;
-  //    }
-
-  //    return $matriz;
-  // }
-
-
-  //// Matriz lista de cumplimiento de Operaciones Institucional al Trimestre
-  // public function matriz_cumplimiento_operaciones_institucional_al_trimestre(){
-  //   $lista_ogestion=$this->model_objetivogestion->get_list_ogestion_por_regional_institucional_al_trimestre($this->tmes);
-  //    for ($i=0; $i <count($lista_ogestion); $i++) { 
-  //     for ($j=0; $j <4 ; $j++) { 
-  //       $matriz[$i][$j]=0;
-  //     } 
-  //    }
-
-  //    $nro=0;
-  //    foreach($lista_ogestion as $row){
-  //     $get_trm_ejec=$this->model_objetivoregion->get_ejec_form2_institucional_al_trimestre($row['og_codigo'],$row['or_codigo'],$this->tmes); /// Temporalidad Ejecutado
-  //     $ejec_form2_institucional=0;
-  //     if(count($get_trm_ejec)!=0){
-  //       $ejec_form2_institucional=$get_trm_ejec[0]['ejecutado'];
-  //     }  
-
-
-  //       $matriz[$nro][0]=$row['og_codigo']; /// cod OG
-  //       $matriz[$nro][1]=$row['or_codigo']; /// cod OR
-  //       $matriz[$nro][2]=$row['programado_total']; /// Programado Total
-  //       $matriz[$nro][3]=$ejec_form2_institucional; /// ejecutado Total
-  //       $ejecutado=0;
-  //       if($row['programado_total']!=0){
-  //         $ejecutado=round((($ejec_form2_institucional/$row['programado_total'])*100),2);
-  //       }
-  //       $matriz[$nro][4]=$ejecutado; /// ejecutado Total %
-
-  //       $nro++;
-  //    }
-
-  //    return $matriz;
-  // }
-
-
-
- /*-- CALIFICACION TRIMESTRAL POR OBJETIVO REGIONAL (INSTITUCIONAL)--*/
-/*    public function calificacion_trimestral_acumulado_x_oregional_institucional($og_codigo,$or_codigo,$programado_total){
-      $valor = array( '1' => '0','2' => '0','3' => '0','4' => '0');
-
-      if(count($this->model_objetivoregion->verif_temporalidad_oregional($or_id))!=0){
-        $suma_total_prog=0; $suma_prog=0; $suma_ejec=0;
-        
-        //// Suma total programado por operacion
-        $prog_total=$this->model_objetivoregion->get_trm_temporalidad_prog_total_oregional($or_id);
-        if(count($prog_total)!=0){
-          $suma_total_prog=$prog_total[0]['total_prog'];
-        }
-        ///-----
-
-
-
-        for ($i=1; $i <=$trimestre; $i++) {
-          $get_trm=$this->model_objetivoregion->get_trm_temporalidad_prog_oregional($or_id,$i); /// Temporalidad Programado
-          $get_trm_ejec=$this->model_objetivoregion->get_trm_temporalidad_ejec_oregional($or_id,$i); /// Temporalidad Ejecutado
-
-          if(count($get_trm)!=0){
-            $suma_prog=$suma_prog+$get_trm[0]['pg_fis']; 
-          }
-
-          if(count($get_trm_ejec)!=0){
-            $suma_ejec=$suma_ejec+$get_trm_ejec[0]['ejec_fis'];
-          }
-
-          $ejecucion=0;
-          if($suma_ejec!=0){
-            $ejecucion=round((($suma_ejec/$suma_prog)*100),2);
-          }
-
-          $cumplimiento_gestion=0;
-          if($suma_total_prog!=0){
-            $cumplimiento_gestion=round((($suma_ejec/$suma_total_prog)*100),2);
-          }
-        }
-
-        //  $text=strval( $suma_prog);
-          $valor[1]=$suma_prog; /// Programado Acumulado al trimestre
-          $valor[2]=$suma_ejec; /// Ejecutado Acumulado al trimestre
-          $valor[3]=$ejecucion; /// Cumplimiento al trimestre
-          $valor[4]=$cumplimiento_gestion; /// Cumplimiento a la Gestion
-      }
-
-      return $valor; 
-    }*/
-
-
   /*-------- MENU -----*/
     function menu($mod){
         $enlaces=$this->menu_modelo->get_Modulos($mod);
@@ -1449,55 +944,55 @@ class Eval_oregional extends CI_Controller{
         return $tabla;
     }
 
-        /*------ NOMBRE MES -------*/
-    function mes_nombre(){
-        $mes[1] = 'ENE.';
-        $mes[2] = 'FEB.';
-        $mes[3] = 'MAR.';
-        $mes[4] = 'ABR.';
-        $mes[5] = 'MAY.';
-        $mes[6] = 'JUN.';
-        $mes[7] = 'JUL.';
-        $mes[8] = 'AGOS.';
-        $mes[9] = 'SEPT.';
-        $mes[10] = 'OCT.';
-        $mes[11] = 'NOV.';
-        $mes[12] = 'DIC.';
-        return $mes;
-    }
+    // /*------ NOMBRE MES -------*/
+    // function mes_nombre(){
+    //     $mes[1] = 'ENE.';
+    //     $mes[2] = 'FEB.';
+    //     $mes[3] = 'MAR.';
+    //     $mes[4] = 'ABR.';
+    //     $mes[5] = 'MAY.';
+    //     $mes[6] = 'JUN.';
+    //     $mes[7] = 'JUL.';
+    //     $mes[8] = 'AGOS.';
+    //     $mes[9] = 'SEPT.';
+    //     $mes[10] = 'OCT.';
+    //     $mes[11] = 'NOV.';
+    //     $mes[12] = 'DIC.';
+    //     return $mes;
+    // }
 
 
-    public function get_mes($mes_id){
-      $mes[1]='ENERO';
-      $mes[2]='FEBRERO';
-      $mes[3]='MARZO';
-      $mes[4]='ABRIL';
-      $mes[5]='MAYO';
-      $mes[6]='JUNIO';
-      $mes[7]='JULIO';
-      $mes[8]='AGOSTO';
-      $mes[9]='SEPTIEMBRE';
-      $mes[10]='OCTUBRE';
-      $mes[11]='NOVIEMBRE';
-      $mes[12]='DICIEMBRE';
+    // public function get_mes($mes_id){
+    //   $mes[1]='ENERO';
+    //   $mes[2]='FEBRERO';
+    //   $mes[3]='MARZO';
+    //   $mes[4]='ABRIL';
+    //   $mes[5]='MAYO';
+    //   $mes[6]='JUNIO';
+    //   $mes[7]='JULIO';
+    //   $mes[8]='AGOSTO';
+    //   $mes[9]='SEPTIEMBRE';
+    //   $mes[10]='OCTUBRE';
+    //   $mes[11]='NOVIEMBRE';
+    //   $mes[12]='DICIEMBRE';
 
-      $dias[1]='31';
-      $dias[2]='28';
-      $dias[3]='31';
-      $dias[4]='30';
-      $dias[5]='31';
-      $dias[6]='30';
-      $dias[7]='31';
-      $dias[8]='31';
-      $dias[9]='30';
-      $dias[10]='31';
-      $dias[11]='30';
-      $dias[12]='31';
+    //   $dias[1]='31';
+    //   $dias[2]='28';
+    //   $dias[3]='31';
+    //   $dias[4]='30';
+    //   $dias[5]='31';
+    //   $dias[6]='30';
+    //   $dias[7]='31';
+    //   $dias[8]='31';
+    //   $dias[9]='30';
+    //   $dias[10]='31';
+    //   $dias[11]='30';
+    //   $dias[12]='31';
 
-      $valor[1]=$mes[$mes_id];
-      $valor[2]=$dias[$mes_id];
+    //   $valor[1]=$mes[$mes_id];
+    //   $valor[2]=$dias[$mes_id];
 
-      return $valor;
-    }
+    //   return $valor;
+    // }
 }
 ?>

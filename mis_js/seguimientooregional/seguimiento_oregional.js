@@ -547,13 +547,13 @@
         var url = base + "index.php/reporte_evalform2/crep_evalform2/" + metodo;
         var titulo_carga = (dep_id == 0) ? "Consolidado Evaluación Formulario N° 2 a nivel Institucional" : "Consolidado Evaluación Formulario N° 2 a nivel Regional";
 
-        // 3. Mostramos un Loading moderno y centrado (Compatible con SmartAdmin / Bootstrap)
+        // 3. Mostramos un Loading moderno y centrado
         var html_loading = 
             '<div style="padding: 40px 20px; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 15px;">' +
-                          '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
-                          '<h4 style="margin: 0; font-weight: bold; color: #334155;">'+titulo_carga+'</h4>' +
-                          '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
-                      '</div>';
+                '<i class="fa fa-circle-o-notch fa-spin" style="font-size: 150px; color: #1c7368; margin-bottom: 12px;"></i>' +
+                '<h4 style="margin: 0; font-weight: bold; color: #334155;">' + titulo_carga + '</h4>' +
+                '<p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Por favor espere un momento...</p>' +
+            '</div>';
 
         contenedor.html(html_loading);
 
@@ -574,8 +574,68 @@
             if (response.respuesta === 'correcto') {
                 contenedor.html(response.tabla).show();
 
-                // Si es reporte regional (dep_id != 0), dibujamos los gráficos en #grafico_trimestral y #grafico1
-                if (dep_id != 0 && response.categorias) {
+                // --- BLOQUE A: CONSOLIDADO INSTITUCIONAL (dep_id == 0) ---
+                if (dep_id == 0 && response.categorias) {
+                    setTimeout(function() {
+                        new Highcharts.Chart({
+                        chart: {
+                            renderTo: 'grafico_combo_institucional',
+                            type: 'column',
+                            backgroundColor: '#ffffff'
+                        },
+                        title: {
+                            text: 'COMPARATIVO DE CUMPLIMIENTO POR REGIONAL - GESTIÓN ' + response.gestion,
+                            style: { fontSize: '14px', fontWeight: 'bold', color: '#0f172a' }
+                        },
+                        subtitle: {
+                            text: 'Cumplimiento Trimestral vs. Acumulado a la Gestión (Trimestre N° ' + response.trimestre + ')',
+                            style: { fontSize: '11px', color: '#64748b' }
+                        },
+                        credits: { enabled: false },
+                        xAxis: {
+                            categories: response.categorias,
+                            crosshair: true,
+                            labels: { style: { fontSize: '10px', fontWeight: 'bold', color: '#334155' } }
+                        },
+                        yAxis: {
+                            min: 0,
+                            max: 105,
+                            title: { text: 'Porcentaje de Cumplimiento (%)' }
+                        },
+                        tooltip: {
+                            shared: true,
+                            valueSuffix: ' %'
+                        },
+                        plotOptions: {
+                            column: {
+                                borderRadius: 3,
+                                groupPadding: 0.15,
+                                pointPadding: 0.05,
+                                dataLabels: {
+                                    enabled: true,
+                                    format: '{y}%',
+                                    style: { fontSize: '8.5px', fontWeight: 'bold', color: '#1e293b', textOutline: 'none' }
+                                }
+                            }
+                        },
+                        series: [
+                            {
+                                name: '(%) Cumplimiento Trimestral',
+                                data: response.serie_trm,
+                                color: '#38bdf8' // Celeste
+                            },
+                            {
+                                name: '(%) Cumplimiento Acumulado Gestión',
+                                data: response.serie_ges,
+                                color: '#1c7368' // Verde institucional
+                            }
+                        ]
+                    });
+
+                    }, 200);
+                }
+                // --- BLOQUE B: REPORTE REGIONAL INDIVIDUAL (dep_id != 0 - INTACTO) ---
+                else if (dep_id != 0 && response.categorias) {
                     var altoDinamico = Math.max(550, response.categorias.length * 24);
                     jQuery('#grafico_trimestral, #grafico1').css('height', altoDinamico + 'px');
 
@@ -605,15 +665,254 @@
             }
         });
 
-
         request.fail(function (jqXHR, textStatus) {
-            // Ignoramos el error si fue provocado intencionalmente por request.abort()
             if (textStatus !== 'abort') {
                 contenedor.html('<div class="alert alert-danger"><i class="fa fa-times-circle"></i> Error de conexi&oacute;n con el servidor. Intente nuevamente.</div>');
                 alertify.error("ERROR DE SERVIDOR AL PROCESAR EL REPORTE");
             }
         });
     });
+
+
+
+
+    ///// Exportar en PDF el cuadro de cumplimiento Insitucional Form 2 (Modulo : Reportes POA)
+    function imprimirConsolidadoInstitucional() {
+        if (typeof html2pdf === 'undefined') {
+            alert('Error: No se encuentra cargada la librería html2pdf.');
+            return;
+        }
+
+        var svgElement = document.querySelector('#grafico_combo_institucional svg');
+        if (!svgElement) {
+            alert('Error: El gráfico institucional aún no se ha renderizado.');
+            return;
+        }
+
+        var anioGestion     = (typeof gestion !== 'undefined') ? gestion : new Date().getFullYear();
+        var tituloPrincipal = 'CONSOLIDADO INSTITUCIONAL FORMULARIO N° 2 - GESTIÓN ' + anioGestion;
+        var subtituloRep    = 'EVALUACIÓN DE CUMPLIMIENTO TRIMESTRAL Y ACUMULADO POR REGIONAL';
+
+        // 1. Clonar y escalar el SVG a 935px de ancho y 300px de alto
+        var svgClone      = svgElement.cloneNode(true);
+        var anchoOriginal = parseFloat(svgElement.getAttribute('width')) || 950;
+        var altoOriginal  = parseFloat(svgElement.getAttribute('height')) || 420;
+        var anchoPdf      = 935;
+        var altoPdf       = 300;
+
+        svgClone.setAttribute('width', anchoPdf);
+        svgClone.setAttribute('height', altoPdf);
+        svgClone.setAttribute('viewBox', '0 0 ' + anchoOriginal + ' ' + altoOriginal);
+        svgClone.setAttribute('preserveAspectRatio', 'none');
+
+        var svgData = new XMLSerializer().serializeToString(svgClone);
+        var imgSrc  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+
+        // 2. Clonar y dar estilo ejecutivo a la tabla
+        var tablaOriginal = document.getElementById('tabla_detalle_institucional');
+        var tablaHtml     = '';
+
+        if (tablaOriginal) {
+            var tablaClon = tablaOriginal.cloneNode(true);
+            tablaClon.removeAttribute('id');
+            tablaClon.removeAttribute('class');
+
+            tablaClon.style.width          = '100%';
+            tablaClon.style.tableLayout    = 'fixed'; // Garantiza que nunca sobrepase el borde derecho
+            tablaClon.style.borderCollapse = 'collapse';
+            tablaClon.style.marginTop      = '10px';
+            tablaClon.style.fontFamily     = 'Helvetica, Arial, sans-serif';
+
+            // Reemplazar espacios simples por &nbsp; en textos para mantener separación limpia
+            jQuery(tablaClon).find('th, td').each(function() {
+                var textoLimpio = jQuery(this).text().replace(/\s+/g, ' ').trim();
+                jQuery(this).html(textoLimpio.replace(/ /g, '&nbsp;'));
+            });
+
+            // Ajustar anchos exactos de las 11 columnas para que sumen 100% sin recortes
+            var colgroup = 
+                '<colgroup>' +
+                    '<col style="width: 3.5%;">' +   // #
+                    '<col style="width: 24.5%;">' +  // REGIONAL / DEPARTAMENTO
+                    '<col style="width: 8%;">' +     // TOTAL OPE.
+                    '<col style="width: 8%;">' +     // I TRM
+                    '<col style="width: 8%;">' +     // II TRM
+                    '<col style="width: 8%;">' +     // III TRM
+                    '<col style="width: 8%;">' +     // IV TRM
+                    '<col style="width: 8%;">' +     // I TRM (Gestión)
+                    '<col style="width: 8%;">' +     // II TRM (Gestión)
+                    '<col style="width: 8%;">' +     // III TRM (Gestión)
+                    '<col style="width: 8%;">' +     // IV TRM (Gestión)
+                '</colgroup>';
+            jQuery(tablaClon).prepend(colgroup);
+
+            // Estilo de encabezados (th)
+            jQuery(tablaClon).find('th').css({
+                'border': '1px solid #cbd5e1',
+                'padding': '4px 2px',
+                'font-size': '7.5px',
+                'font-weight': 'bold',
+                'text-align': 'center',
+                'font-family': 'Helvetica, Arial, sans-serif',
+                'line-height': '1.2'
+            });
+
+            // Estilo de filas alternas (zebra) y celdas del cuerpo (tbody td)
+            jQuery(tablaClon).find('tbody tr:even').css('background-color', '#ffffff');
+            jQuery(tablaClon).find('tbody tr:odd').css('background-color', '#f8fafc');
+
+            jQuery(tablaClon).find('tbody td').css({
+                'border': '1px solid #e2e8f0',
+                'padding': '3.5px 5px',
+                'font-size': '7.5px',
+                'color': '#1e293b',
+                'font-family': 'Helvetica, Arial, sans-serif',
+                'line-height': '1.2'
+            });
+
+            // Estilo de la fila de Promedio Institucional (tfoot td)
+            jQuery(tablaClon).find('tfoot td').css({
+                'border': '1px solid #94a3b8',
+                'border-top': '2px solid #1e3a8a',
+                'background-color': '#eff6ff',
+                'color': '#1e3a8a',
+                'font-weight': 'bold',
+                'padding': '4.5px 5px',
+                'font-size': '8px',
+                'font-family': 'Helvetica, Arial, sans-serif'
+            });
+
+            tablaHtml = tablaClon.outerHTML;
+        }
+
+        // 3. Contenedor con ancho exacto (955px) y padding lateral para que los bordes izquierdo y derecho se vean completos
+        var contenedorLimpio = document.createElement('div');
+        contenedorLimpio.style.fontFamily      = 'Helvetica, Arial, sans-serif';
+        contenedorLimpio.style.width           = '955px';
+        contenedorLimpio.style.padding         = '0 4px';
+        contenedorLimpio.style.margin          = '0 auto';
+        contenedorLimpio.style.backgroundColor = '#ffffff';
+        contenedorLimpio.style.boxSizing       = 'border-box';
+
+        contenedorLimpio.innerHTML = 
+            '<div style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; text-align: center; box-sizing: border-box; background: #ffffff;">' +
+                '<img src="' + imgSrc + '" style="width: 100%; height: ' + altoPdf + 'px; display: block; margin: 0 auto;" />' +
+            '</div>' +
+            tablaHtml;
+
+        // 4. Configurar opciones de descarga PDF (Márgenes simétricos: 12mm izquierda y 12mm derecha)
+        var opciones = {
+            margin:      new Array(23, 12, 12, 12),
+            filename:    'Consolidado_Institucional_Form2_' + anioGestion + '.pdf',
+            image:       { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, scrollX: 0, scrollY: 0, useCORS: true, logging: false },
+            jsPDF:       { unit: 'mm', format: 'letter', orientation: 'landscape' }
+        };
+
+        // 5. Generar PDF e inyectar Cabecera y Pie de página alineados al margen de 12mm
+        html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
+            var totalPaginas = pdf.internal.getNumberOfPages();
+            var anchoPagina  = pdf.internal.pageSize.getWidth();
+            var altoPagina   = pdf.internal.pageSize.getHeight();
+
+            for (var i = 1; i <= totalPaginas; i++) {
+                pdf.setPage(i);
+
+                // Caja de cabecera institucional
+                pdf.setFillColor(240, 249, 255);
+                pdf.setDrawColor(186, 230, 253);
+                pdf.roundedRect(12, 6, anchoPagina - 24, 14.5, 2, 2, 'FD');
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(11);
+                pdf.setTextColor(30, 58, 138);
+                pdf.text(tituloPrincipal, anchoPagina / 2, 12.2, { align: 'center' });
+
+                pdf.setFontSize(8.5);
+                pdf.setTextColor(2, 132, 199);
+                pdf.text(subtituloRep, anchoPagina / 2, 17.5, { align: 'center' });
+
+                // Pie de página
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 116, 139);
+                pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 6);
+                pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 6, { align: 'right' });
+            }
+        }).save();
+    }
+
+
+    //// Exportar Operaciones Intiucional / regionales
+    function exportarExcelInstitucional(dep_id, btnElement) {
+        if (dep_id === undefined || dep_id === null || dep_id === '') {
+            dep_id = jQuery('#d_id').val() || 0;
+        }
+
+        var boton = btnElement ? jQuery(btnElement) : jQuery('#btn_exportar_excel');
+        var textoOriginal = boton.html();
+        var url = base + "index.php/exportar_form2/" + dep_id;
+
+        // 1. Activar estado Loading y deshabilitar botón para evitar múltiples clics
+        boton.prop('disabled', true)
+             .css('opacity', '0.85')
+             .html('<i class="fa fa-spinner fa-spin"></i> GENERANDO EXCEL...');
+
+        // 2. Descargar el archivo en segundo plano mediante fetch
+        fetch(url)
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+
+                // Extraer el nombre exacto del archivo desde la cabecera Content-Disposition de PHP
+                var disposition = response.headers.get('Content-Disposition');
+                var filename = 'Consolidado_Formulario_N2_' + dep_id + '.xls';
+                if (disposition && disposition.indexOf('filename=') !== -1) {
+                    var matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
+                }
+
+                return response.blob().then(function(blob) {
+                    return { blob: blob, filename: filename };
+                });
+            })
+            .then(function(archivo) {
+                // 3. Crear enlace temporal y disparar la descarga en el navegador
+                var downloadUrl = window.URL.createObjectURL(archivo.blob);
+                var a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                a.download = archivo.filename;
+                document.body.appendChild(a);
+                a.click();
+
+                // Limpiar memoria y restaurar botón
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+                
+                if (typeof alertify !== 'undefined') {
+                    alertify.success("Archivo Excel descargado correctamente.");
+                }
+            })
+            .catch(function(error) {
+                console.error('Error al exportar Excel:', error);
+                if (typeof alertify !== 'undefined') {
+                    alertify.error("Error al generar el archivo Excel.");
+                } else {
+                    alert("Ocurrió un error al generar el archivo Excel.");
+                }
+            })
+            .finally(function() {
+                // 4. Restaurar el botón a su estado original (éxito o error)
+                boton.prop('disabled', false)
+                     .css('opacity', '1')
+                     .html(textoOriginal);
+            });
+    }
+
 
 
     /// Grafico cumplimiento por Objetivo Regional x ACP REGIONAL (GRAFICO) (Modulo : Reportes POA)
