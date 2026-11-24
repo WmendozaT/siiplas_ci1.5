@@ -370,15 +370,15 @@ class Cevaluacion_form2 extends CI_Controller {
                       );
 
                       // 6. Acumuladores para los promedios (solo suma si tiene programación > 0, o quita el if si promedias todo)
-                      if ($meta_trm > 0) {
+                      //if ($meta_trm > 0) {
                           $suma_trm_porcentajes += $val_trm_tope;
                           $total_trm_operaciones++;
-                      }
+                      //}
 
-                      if ($meta_ges > 0) {
+                      //if ($meta_ges > 0) {
                           $suma_porcentajes += $val_ges_tope;
                           $total_operaciones++;
-                      }
+                      //}
                       $tabla.='
                       <tr>
                         <td>'.$nro.'</td>

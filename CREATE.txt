@@ -2363,54 +2363,71 @@ $$ LANGUAGE plpgsql;
 
 
 --------------- cosnulta form 9
+CREATE OR REPLACE FUNCTION public.f_cumplimiento_form2_regionales(p_gestion integer)
+RETURNS TABLE (
+    dep_id integer,
+    dep_departamento varchar,
+    total_operaciones integer,
+    prom_trm1 numeric,
+    prom_trm2 numeric,
+    prom_trm3 numeric,
+    prom_trm4 numeric,
+    prom_ges1 numeric,
+    prom_ges2 numeric,
+    prom_ges3 numeric,
+    prom_ges4 numeric
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH detalle_operaciones AS (
+        SELECT 
+            opg.dep_id,
+            -- Porcentajes trimestrales (porc_cump_1..4) redondeados a 2 decimales y con tope 100
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1 ELSE f2_pi.porc_cump_1 END, 0)::numeric, 2), 100) AS p_trm1,
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2 ELSE f2_pi.porc_cump_2 END, 0)::numeric, 2), 100) AS p_trm2,
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3 ELSE f2_pi.porc_cump_3 END, 0)::numeric, 2), 100) AS p_trm3,
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4 ELSE f2_pi.porc_cump_4 END, 0)::numeric, 2), 100) AS p_trm4,
 
-WITH detalle_operaciones AS (
+            -- Porcentajes de gestión acumulados (trm_porc_ejec1..4) redondeados a 2 decimales y con tope 100
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0)::numeric, 2), 100) AS p_ges1,
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0)::numeric, 2), 100) AS p_ges2,
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0)::numeric, 2), 100) AS p_ges3,
+            LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0)::numeric, 2), 100) AS p_ges4
+
+        FROM objetivo_programado_mensual opg
+        INNER JOIN objetivo_gestion og ON og.og_id = opg.og_id
+        INNER JOIN objetivos_regionales oreg ON opg.pog_id = oreg.pog_id
+        INNER JOIN indicador tp ON oreg.indi_id = tp.indi_id
+        LEFT JOIN v_trm_cumplimiento_consolidado_form2(p_gestion) f2_reg 
+            ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
+        LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2(p_gestion) f2_pi 
+            ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
+        WHERE og.g_id = p_gestion
+          AND oreg.estado != 3
+          AND oreg.or_meta != 0
+          AND opg.dep_id BETWEEN 1 AND 10
+    )
     SELECT 
-        opg.dep_id,
-        -- Porcentajes trimestrales (porc_cump_1..4) redondeados a 2 decimales y con tope 100
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1 ELSE f2_pi.porc_cump_1 END, 0)::numeric, 2), 100) AS p_trm1,
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2 ELSE f2_pi.porc_cump_2 END, 0)::numeric, 2), 100) AS p_trm2,
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3 ELSE f2_pi.porc_cump_3 END, 0)::numeric, 2), 100) AS p_trm3,
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4 ELSE f2_pi.porc_cump_4 END, 0)::numeric, 2), 100) AS p_trm4,
+        d.dep_id::integer,
+        d.dep_departamento::varchar,
+        COUNT(det.dep_id)::integer,
+        
+        -- 1. PROMEDIO TRIMESTRAL
+        ROUND(COALESCE(AVG(det.p_trm1), 0), 1)::numeric,
+        ROUND(COALESCE(AVG(det.p_trm2), 0), 1)::numeric,
+        ROUND(COALESCE(AVG(det.p_trm3), 0), 1)::numeric,
+        ROUND(COALESCE(AVG(det.p_trm4), 0), 1)::numeric,
 
-        -- Porcentajes de gestión acumulados (trm_porc_ejec1..4) redondeados a 2 decimales y con tope 100
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0)::numeric, 2), 100) AS p_ges1,
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0)::numeric, 2), 100) AS p_ges2,
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0)::numeric, 2), 100) AS p_ges3,
-        LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0)::numeric, 2), 100) AS p_ges4
+        -- 2. PROMEDIO ANUAL / GESTIÓN
+        ROUND(COALESCE(AVG(det.p_ges1), 0), 1)::numeric,
+        ROUND(COALESCE(AVG(det.p_ges2), 0), 1)::numeric,
+        ROUND(COALESCE(AVG(det.p_ges3), 0), 1)::numeric,
+        ROUND(COALESCE(AVG(det.p_ges4), 0), 1)::numeric
 
-    FROM objetivo_programado_mensual opg
-    INNER JOIN objetivo_gestion og ON og.og_id = opg.og_id
-    INNER JOIN objetivos_regionales oreg ON opg.pog_id = oreg.pog_id
-    INNER JOIN indicador tp ON oreg.indi_id = tp.indi_id
-    LEFT JOIN v_trm_cumplimiento_consolidado_form2(2026) f2_reg 
-        ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
-    LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2(2026) f2_pi 
-        ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
-    WHERE og.g_id = 2026
-      AND oreg.estado != 3
-      AND oreg.or_meta != 0
-      AND opg.dep_id BETWEEN 1 AND 9
-)
-SELECT 
-    d.dep_id,
-    d.dep_departamento,
-    COUNT(det.dep_id) AS total_operaciones,
-    
-    -- 1. PROMEDIO TRIMESTRAL (Divide entre TODAS las operaciones)
-    ROUND(COALESCE(AVG(det.p_trm1), 0), 1) AS prom_trm1,
-    ROUND(COALESCE(AVG(det.p_trm2), 0), 1) AS prom_trm2,
-    ROUND(COALESCE(AVG(det.p_trm3), 0), 1) AS prom_trm3,
-    ROUND(COALESCE(AVG(det.p_trm4), 0), 1) AS prom_trm4,
-
-    -- 2. PROMEDIO ANUAL / GESTIÓN (Divide entre TODAS las operaciones)
-    ROUND(COALESCE(AVG(det.p_ges1), 0), 1) AS prom_ges1,
-    ROUND(COALESCE(AVG(det.p_ges2), 0), 1) AS prom_ges2,
-    ROUND(COALESCE(AVG(det.p_ges3), 0), 1) AS prom_ges3,
-    ROUND(COALESCE(AVG(det.p_ges4), 0), 1) AS prom_ges4
-
-FROM _departamentos d
-LEFT JOIN detalle_operaciones det ON det.dep_id = d.dep_id
-WHERE d.dep_id BETWEEN 1 AND 9
-GROUP BY d.dep_id, d.dep_departamento
-ORDER BY d.dep_id ASC;
+    FROM _departamentos d
+    LEFT JOIN detalle_operaciones det ON det.dep_id = d.dep_id
+    WHERE d.dep_id BETWEEN 1 AND 10
+    GROUP BY d.dep_id, d.dep_departamento
+    ORDER BY d.dep_id ASC;
+END;
+$$ LANGUAGE plpgsql;

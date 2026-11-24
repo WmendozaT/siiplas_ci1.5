@@ -91,6 +91,8 @@ class Crep_evalform2 extends CI_Controller {
     $data['modal_form4_priorizados']=$this->eval_oregional->modal_form4_priorizados();
     //$data['modal_grafico_x_form2']=$this->eval_oregional->modal_graficos_x_form2();
     $this->load->view('admin/reportes_cns/repevaluacion_form2/rep_menu', $data);
+
+
   }
 
 
@@ -414,15 +416,11 @@ class Crep_evalform2 extends CI_Controller {
               );
 
               // 6. Acumuladores para los promedios (solo suma si tiene programación > 0, o quita el if si promedias todo)
-              if ($meta_trm > 0) {
                   $suma_trm_porcentajes += $val_trm_tope;
                   $total_trm_operaciones++;
-              }
 
-              if ($meta_ges > 0) {
                   $suma_porcentajes += $val_ges_tope;
                   $total_operaciones++;
-              }
           }
 
           $promedio_trm = ($total_trm_operaciones > 0) ? round(($suma_trm_porcentajes / $total_trm_operaciones), 1) : 0;
@@ -693,15 +691,15 @@ class Crep_evalform2 extends CI_Controller {
               );
 
               // 6. Acumuladores para los promedios (solo suma si tiene programación > 0, o quita el if si promedias todo)
-              if ($meta_trm > 0) {
+              //if ($meta_trm > 0) {
                   $suma_trm_porcentajes += $val_trm_tope;
                   $total_trm_operaciones++;
-              }
+              //}
 
-              if ($meta_ges > 0) {
+              //if ($meta_ges > 0) {
                   $suma_porcentajes += $val_ges_tope;
                   $total_operaciones++;
-              }
+              //}
 
               $tabla .= '
               <tr>
