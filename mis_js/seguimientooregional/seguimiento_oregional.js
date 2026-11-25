@@ -1368,3 +1368,84 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
 }
 
 
+
+    ///// Grafico Form 2 Institucional (0 Total Operaciones | 1 Priorizados) (Modulo : Reportes POA)
+    var request_acp_op;
+    function nivel_cumplimiento_form2_institucional_total_o_priorizados(tp) {
+        // tp 0 : total Operaciones Institucional
+        // tp 1 : total Operaciones Institucional Priorizados
+        var modalEl    = jQuery('#modal_grafico_xform2');
+        var contenedor = modalEl.find('#tabla');
+
+        modalEl.modal('show');
+
+        // Resetear banner superior
+        jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL : CARGANDO...');
+        jQuery('#lbl_porcentaje_acp').text('0.0%');
+        jQuery('#lbl_estado_acp').text('CALCULANDO...');
+        jQuery('#banner_calificacion_acp').css('background-color', '#64748b');
+
+        contenedor.html(
+            '<div class="text-center" style="padding: 60px 20px;">' +
+                '<i class="fa fa-spinner fa-spin fa-3x" style="color: #1e3a8a; margin-bottom: 10px;"></i>' +
+                '<h4 style="color: #1e3a8a; font-weight: bold;">Cargando Operaciones ...</h4>' +
+            '</div>'
+        );
+
+        if (request_acp_op) {
+            request_acp_op.abort();
+        }
+
+        request_acp_op = jQuery.ajax({
+            url: base + "index.php/reporte_evalform2/crep_evalform2/get_grafico_cumplimiento_form2_institucional_total_o_priorizados", /// form2 total | priorizados
+            type: "POST",
+            dataType: "json",
+            data: { tp: tp }
+        });
+
+        request_acp_op.done(function (response) {
+            if (response.status === 'success') {
+                // Actualizar banner superior
+                if(tp==0){
+                    jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL FORMULARIO N° 2 - Operaciones');
+                }
+                else{
+                    jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL FORMULARIO N° 2 - Operaciones (Priorizados)');
+                }
+
+                
+                jQuery('#lbl_porcentaje_acp').text(response.promedio_global + '%');
+                jQuery('#lbl_estado_acp').text(response.calificacion);
+                jQuery('#banner_calificacion_acp').css('background-color', response.color_banner);
+
+                // Insertar contenedores de gráficos y tabla
+                contenedor.html(response.lista).show();
+
+                // Ajustar altura dinámica según cantidad de operaciones
+                var altoDinamico = Math.max(320, response.categorias.length * 30);
+                jQuery('#container1, #container2').css('height', altoDinamico + 'px');
+
+                setTimeout(function() {
+                    dibujarGraficoBarrasHorizontal(
+                        'container1',
+                        'CUMPLIMIENTO DE OPERACIONES AL ' + response.trimestre + ' - ' + response.gestion,
+                        response.categorias,
+                        response.valores_trimestre,
+                        '#38bdf8'
+                    );
+
+                    dibujarGraficoBarrasHorizontal(
+                        'container2',
+                        'CUMPLIMIENTO DE OPERACIONES ACUMULADO A LA GESTIÓN ' + response.gestion,
+                        response.categorias,
+                        response.valores_gestion,
+                        '#0ea5e9'
+                    );
+                }, 300);
+
+            } else {
+                contenedor.html('<div class="alert alert-danger">No se pudieron obtener los datos de la ACP.</div>');
+                alertify.error("ERROR AL RECUPERAR INFORMACION");
+            }
+        });
+    }

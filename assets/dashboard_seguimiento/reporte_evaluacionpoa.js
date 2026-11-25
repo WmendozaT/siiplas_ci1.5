@@ -90,6 +90,7 @@ function abreVentana_eficiencia(PDF){
 ////------- menu select regionales
 
   $("#dep_id").change(function () {
+
       $("#dep_id option:selected").each(function () {
           dist_id=$('[name="dist_id"]').val();
           elegido=$(this).val();

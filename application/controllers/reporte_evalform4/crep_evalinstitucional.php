@@ -63,6 +63,8 @@ class Crep_evalinstitucional extends CI_Controller {
       $data['titulo_modulo']=$tabla;
 
       $this->load->view('admin/reportes_cns/repevaluacion_institucional_poa/rep_menu', $data);
+
+      //echo $this->seguimientopoa->update_evaluacion_poa_regional($dep_id,$tp_id);
     }
 
 

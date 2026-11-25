@@ -1471,7 +1471,7 @@ class Seguimientopoa extends CI_Controller{
     public function update_evaluacion_poa_regional($dep_id,$tp_id){
       $unidades=$this->model_seguimientopoa->list_poa_gacorriente_pinversion_regional($dep_id,$tp_id);
       foreach($unidades as $row){
-        $componentes=$this->model_componente->lista_subactividad($row['proy_id']);
+        $componentes=$this->model_componente->lista_UnidadesResponsables($row['proy_id']);
         foreach($componentes as $rowc){
           $this->update_evaluacion_operaciones($rowc['com_id']);
         }

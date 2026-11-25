@@ -253,8 +253,8 @@ class Cevaluacion_form2 extends CI_Controller {
           $trm_indice = ($tmes >= 1 && $tmes <= 4) ? $tmes : 1;
 
           // 1. Obtener datos de la regional
-          $departamento = $this->model_proyecto->get_departamento($dep_id);
-          $nombre_regional = !empty($departamento) ? strtoupper($departamento[0]['dep_departamento']) : 'REGIONAL';
+          //$departamento = $this->model_proyecto->get_departamento($dep_id);
+          //$nombre_regional = !empty($departamento) ? strtoupper($departamento[0]['dep_departamento']) : 'REGIONAL';
           $desc_trimestre  = !empty($trimestre) ? strtoupper($trimestre[0]['trm_descripcion']) : 'TRIMESTRE';
 
 
@@ -429,7 +429,7 @@ class Cevaluacion_form2 extends CI_Controller {
           // 4. RESPUESTA JSON UNIFICADA
           $respuesta = array(
               'status'            => 'success',
-              'regional'          => $nombre_regional,
+              //'regional'          => $nombre_regional,
               'trimestre'         => $desc_trimestre,
               'promedio_trm'      => $promedio_trm,
               'calificacion_trm'  => $calificacion_trm,
@@ -452,29 +452,40 @@ class Cevaluacion_form2 extends CI_Controller {
   }
 
 
+
+  
+
+
+
+
+
+
+
+
+
     /*----- CUADRO EVALUACION OPERACIONES REGIONALES (GRAFICO FORM 2)  a eliminar ----*/
-    public function cuadro_evaluacion_grafico_form2($dep_id){
-      $data['regional']=$this->model_proyecto->get_departamento($dep_id);
-      $data['trimestre']=$this->model_evaluacion->trimestre();
-      $data['nro']=count($this->model_objetivoregion->list_form2_regional_x_regional($dep_id));
-      $data['eval']=$this->eval_oregional->matriz_cumplimiento_operaciones_regional($dep_id); /// matriz form 2  
-      $data['cabecera']=$this->eval_oregional->cabecera_reporte_grafico($data['regional']);
-      $data['calificacion']=$this->eval_oregional->calificacion_total_form2_regional($dep_id,1);
+//     public function cuadro_evaluacion_grafico_form2($dep_id){
+//       $data['regional']=$this->model_proyecto->get_departamento($dep_id);
+//       $data['trimestre']=$this->model_evaluacion->trimestre();
+//       $data['nro']=count($this->model_objetivoregion->list_form2_regional_x_regional($dep_id));
+//       $data['eval']=$this->eval_oregional->matriz_cumplimiento_operaciones_regional($dep_id); /// matriz form 2  
+//       $data['cabecera']=$this->eval_oregional->cabecera_reporte_grafico($data['regional']);
+//       $data['calificacion']=$this->eval_oregional->calificacion_total_form2_regional($dep_id,1);
 
       
-      $tabla='';
-      $tabla.='<div style="font-family: Arial;">DETALLE DE OPERACIONES REGIONALES '.$this->gestion.'</div>
-              <table>';
-                for ($i=0; $i <$data['nro'] ; $i++) { 
-                  $tabla.='<tr><td style="font-family: Arial;font-size: 11px;height: 1%;">OPE. '.$data['eval'][$i][0].'.'.$data['eval'][$i][1].'.- '.$data['eval'][$i][2].' - <b>'.$data['eval'][$i][4].' %</b></td></tr>';
-                }
-                $tabla.='
-              </table>
-              <hr>';
-      $data['tabla_detalle']=$tabla;
-//echo $tabla;
-      $this->load->view('admin/evaluacion/evaluacion_form2/reporte_grafico_meta_form2', $data);
+//       $tabla='';
+//       $tabla.='<div style="font-family: Arial;">DETALLE DE OPERACIONES REGIONALES '.$this->gestion.'</div>
+//               <table>';
+//                 for ($i=0; $i <$data['nro'] ; $i++) { 
+//                   $tabla.='<tr><td style="font-family: Arial;font-size: 11px;height: 1%;">OPE. '.$data['eval'][$i][0].'.'.$data['eval'][$i][1].'.- '.$data['eval'][$i][2].' - <b>'.$data['eval'][$i][4].' %</b></td></tr>';
+//                 }
+//                 $tabla.='
+//               </table>
+//               <hr>';
+//       $data['tabla_detalle']=$tabla;
+// //echo $tabla;
+//       $this->load->view('admin/evaluacion/evaluacion_form2/reporte_grafico_meta_form2', $data);
 
-    }
+//     }
 
 }

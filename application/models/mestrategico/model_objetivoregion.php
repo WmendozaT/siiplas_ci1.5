@@ -271,7 +271,7 @@ class Model_objetivoregion extends CI_Model{
         //               AND oreg.or_meta!=0
         //         ORDER BY opg.dep_id,og.og_codigo,oreg.or_codigo ASC, oreg.or_id ASC;
 
-        
+
         $sql = 'SELECT * FROM public.f_detalle_operaciones_form2_x_regionales('.$this->gestion.')
                 where dep_id='.$dep_id.'';
 
@@ -298,7 +298,7 @@ class Model_objetivoregion extends CI_Model{
     }
 
 
-    //// Cumplimiento Form 2 de todas las regionales 2027
+    //// Cumplimiento Form 2 de todas las regionales 2027 para el reporte Evaluacion form 2 Institucional
     public function consolidado_cumplimiento_formN2_institucional(){
         $sql = '
             SELECT *
@@ -309,6 +309,143 @@ class Model_objetivoregion extends CI_Model{
     }
 
 
+    //// Cumplimiento Form 2 (barras) |cod og, cod or| consolidado reporte Evaluacion form 2 Institucional
+    public function consolidado_formN2_og_or_institucional(){
+        $sql = '
+            WITH detalle_operacion_nacional AS (
+                SELECT 
+                    og.og_id,
+                    og.og_codigo,
+                    oreg.or_codigo,
+                    oreg.or_objetivo,
+
+                    -- Metas Programada y Ejecutada Anual (4to Trimestre)
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm4   ELSE f2_pi.trm4   END, 0)::numeric AS meta_prog_anual,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm4 ELSE f2_pi.e_trm4 END, 0)::numeric AS meta_ejec_anual,
+
+                    -- 1. Porcentajes Trimestrales por regional (redondeados a 2 decimales y con tope 100)
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1 ELSE f2_pi.porc_cump_1 END, 0)::numeric, 2), 100) AS p_trm1,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2 ELSE f2_pi.porc_cump_2 END, 0)::numeric, 2), 100) AS p_trm2,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3 ELSE f2_pi.porc_cump_3 END, 0)::numeric, 2), 100) AS p_trm3,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4 ELSE f2_pi.porc_cump_4 END, 0)::numeric, 2), 100) AS p_trm4,
+
+                    -- 2. Porcentajes Anuales / Gestión acumulados por regional (redondeados a 2 decimales y con tope 100)
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0)::numeric, 2), 100) AS p_ges1,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0)::numeric, 2), 100) AS p_ges2,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0)::numeric, 2), 100) AS p_ges3,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0)::numeric, 2), 100) AS p_ges4
+
+                FROM objetivo_gestion og
+                INNER JOIN objetivo_programado_mensual opg ON opg.og_id = og.og_id
+                INNER JOIN objetivos_regionales oreg ON oreg.pog_id = opg.pog_id
+                LEFT JOIN v_trm_cumplimiento_consolidado_form2('.$this->gestion.') f2_reg 
+                    ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
+                LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2('.$this->gestion.') f2_pi 
+                    ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
+                WHERE og.g_id = '.$this->gestion.'
+                  AND oreg.estado != 3
+                  AND oreg.or_meta != 0
+            )
+            SELECT 
+                og_id,
+                og_codigo,
+                or_codigo,
+                MAX(or_objetivo) AS or_objetivo,
+                COUNT(*) AS total_regionales,
+
+                -- Sumatoria total nacional de metas programadas y ejecutadas anuales
+                ROUND(SUM(meta_prog_anual), 2) AS total_meta_programada,
+                ROUND(SUM(meta_ejec_anual), 2) AS total_meta_ejecutada,
+
+                -- Promedio Trimestral consolidado por operación (og_codigo + or_codigo)
+                ROUND(COALESCE(AVG(p_trm1), 0), 1) AS cump_trm1,
+                ROUND(COALESCE(AVG(p_trm2), 0), 1) AS cump_trm2,
+                ROUND(COALESCE(AVG(p_trm3), 0), 1) AS cump_trm3,
+                ROUND(COALESCE(AVG(p_trm4), 0), 1) AS cump_trm4,
+
+                -- Promedio Anual / Gestión consolidado por operación (og_codigo + or_codigo)
+                ROUND(COALESCE(AVG(p_ges1), 0), 1) AS cump_anual1,
+                ROUND(COALESCE(AVG(p_ges2), 0), 1) AS cump_anual2,
+                ROUND(COALESCE(AVG(p_ges3), 0), 1) AS cump_anual3,
+                ROUND(COALESCE(AVG(p_ges4), 0), 1) AS cump_anual4
+
+            FROM detalle_operacion_nacional
+            GROUP BY og_id, og_codigo, or_codigo
+            ORDER BY og_codigo ASC, or_codigo ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+
+    //// Cumplimiento Form 2 (barras) |cod og, cod or| consolidado reporte Evaluacion form 2 Institucional
+    public function consolidado_formN2_og_or_institucional_priorizado(){
+        $sql = '
+            WITH detalle_operacion_nacional AS (
+                SELECT 
+                    og.og_id,
+                    og.og_codigo,
+                    oreg.or_codigo,
+                    oreg.or_objetivo,
+
+                    -- Metas Programada y Ejecutada Anual (4to Trimestre)
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm4   ELSE f2_pi.trm4   END, 0)::numeric AS meta_prog_anual,
+                    COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.e_trm4 ELSE f2_pi.e_trm4 END, 0)::numeric AS meta_ejec_anual,
+
+                    -- 1. Porcentajes Trimestrales por regional (redondeados a 2 decimales y con tope 100)
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_1 ELSE f2_pi.porc_cump_1 END, 0)::numeric, 2), 100) AS p_trm1,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_2 ELSE f2_pi.porc_cump_2 END, 0)::numeric, 2), 100) AS p_trm2,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_3 ELSE f2_pi.porc_cump_3 END, 0)::numeric, 2), 100) AS p_trm3,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.porc_cump_4 ELSE f2_pi.porc_cump_4 END, 0)::numeric, 2), 100) AS p_trm4,
+
+                    -- 2. Porcentajes Anuales / Gestión acumulados por regional (redondeados a 2 decimales y con tope 100)
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec1 ELSE f2_pi.trm_porc_ejec1 END, 0)::numeric, 2), 100) AS p_ges1,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec2 ELSE f2_pi.trm_porc_ejec2 END, 0)::numeric, 2), 100) AS p_ges2,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec3 ELSE f2_pi.trm_porc_ejec3 END, 0)::numeric, 2), 100) AS p_ges3,
+                    LEAST(ROUND(COALESCE(CASE WHEN oreg.or_tp = 0 THEN f2_reg.trm_porc_ejec4 ELSE f2_pi.trm_porc_ejec4 END, 0)::numeric, 2), 100) AS p_ges4
+
+                FROM objetivo_gestion og
+                INNER JOIN objetivo_programado_mensual opg ON opg.og_id = og.og_id
+                INNER JOIN objetivos_regionales oreg ON oreg.pog_id = opg.pog_id
+                LEFT JOIN v_trm_cumplimiento_consolidado_form2('.$this->gestion.') f2_reg 
+                    ON f2_reg.or_id = oreg.or_id AND f2_reg.prod_priori = 1 AND oreg.or_tp = 0
+                LEFT JOIN v_trm_cumplimiento_pi_consolidado_form2('.$this->gestion.') f2_pi 
+                    ON f2_pi.or_id = oreg.or_id AND f2_pi.prod_priori = 1 AND oreg.or_tp = 1
+                WHERE og.g_id = '.$this->gestion.'
+                  AND oreg.estado != 3
+                  AND oreg.or_priorizado = 1
+                  AND oreg.or_meta != 0
+            )
+            SELECT 
+                og_id,
+                og_codigo,
+                or_codigo,
+                MAX(or_objetivo) AS or_objetivo,
+                COUNT(*) AS total_regionales,
+
+                -- Sumatoria total nacional de metas programadas y ejecutadas anuales
+                ROUND(SUM(meta_prog_anual), 2) AS total_meta_programada,
+                ROUND(SUM(meta_ejec_anual), 2) AS total_meta_ejecutada,
+
+                -- Promedio Trimestral consolidado por operación (og_codigo + or_codigo)
+                ROUND(COALESCE(AVG(p_trm1), 0), 1) AS cump_trm1,
+                ROUND(COALESCE(AVG(p_trm2), 0), 1) AS cump_trm2,
+                ROUND(COALESCE(AVG(p_trm3), 0), 1) AS cump_trm3,
+                ROUND(COALESCE(AVG(p_trm4), 0), 1) AS cump_trm4,
+
+                -- Promedio Anual / Gestión consolidado por operación (og_codigo + or_codigo)
+                ROUND(COALESCE(AVG(p_ges1), 0), 1) AS cump_anual1,
+                ROUND(COALESCE(AVG(p_ges2), 0), 1) AS cump_anual2,
+                ROUND(COALESCE(AVG(p_ges3), 0), 1) AS cump_anual3,
+                ROUND(COALESCE(AVG(p_ges4), 0), 1) AS cump_anual4
+
+            FROM detalle_operacion_nacional
+            GROUP BY og_id, og_codigo, or_codigo
+            ORDER BY og_codigo ASC, or_codigo ASC;';
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
     ///////*---- PARA LA TEMPORALIDAD DE OPERACIONES SEGUN LAS ACTIVIDADES PRIORIZADAS----*/
     // public function get_temp_or_x_actividades($or_id){
     //     $sql = '    
@@ -341,18 +478,18 @@ class Model_objetivoregion extends CI_Model{
     // }
 
     /*---------- LISTA TEMPORALIDAD OREGIONALES a borrar ------------*/
-    public function get_temporalidad_oregional($or_id,$tn_id){
-        $sql = 'select *
-                from objetivo_regional_programado orp
-                Inner Join unidad_actividad as ua On ua.act_id=orp.act_id
-                Inner Join v_tp_establecimiento as te On ua.te_id=te.te_id
-                Inner Join _distritales as dist On ua.dist_id=dist.dist_id
-                where orp.or_id='.$or_id.' and orp.g_id='.$this->gestion.' and te.tn_id='.$tn_id.'
-                order by te.tn_id,orp.por_id asc';
+    // public function get_temporalidad_oregional($or_id,$tn_id){
+    //     $sql = 'select *
+    //             from objetivo_regional_programado orp
+    //             Inner Join unidad_actividad as ua On ua.act_id=orp.act_id
+    //             Inner Join v_tp_establecimiento as te On ua.te_id=te.te_id
+    //             Inner Join _distritales as dist On ua.dist_id=dist.dist_id
+    //             where orp.or_id='.$or_id.' and orp.g_id='.$this->gestion.' and te.tn_id='.$tn_id.'
+    //             order by te.tn_id,orp.por_id asc';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*---------- GET OBJETIVO REGIONAL 2027 --------------*/
     public function get_objetivosregional($or_id){
@@ -401,77 +538,77 @@ class Model_objetivoregion extends CI_Model{
     }
 
     /*---------- GET UNIDAD PROGRAMADO --------------*/
-    public function get_unidad_programado($or_id,$act_id){
-        $sql = 'select *
-                from objetivo_regional_programado
-                where or_id='.$or_id.' and act_id='.$act_id.'';
+    // public function get_unidad_programado($or_id,$act_id){
+    //     $sql = 'select *
+    //             from objetivo_regional_programado
+    //             where or_id='.$or_id.' and act_id='.$act_id.'';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*----- SUMA METAS POR OBJETIVO DE GESTION Y REGIONAL -----*/
-    public function sum_meta_oregional($og_id,$dep_id){
-        $sql = 'select opg.og_id,opg.dep_id,SUM(oreg.or_meta) meta
-                from objetivo_programado_mensual opg
-                Inner Join objetivos_regionales as oreg On opg.pog_id=oreg.pog_id
-                where opg.og_id='.$og_id.' and opg.dep_id='.$dep_id.' and oreg.estado!=\'3\'
-                group by opg.og_id,opg.dep_id';
+    // public function sum_meta_oregional($og_id,$dep_id){
+    //     $sql = 'select opg.og_id,opg.dep_id,SUM(oreg.or_meta) meta
+    //             from objetivo_programado_mensual opg
+    //             Inner Join objetivos_regionales as oreg On opg.pog_id=oreg.pog_id
+    //             where opg.og_id='.$og_id.' and opg.dep_id='.$dep_id.' and oreg.estado!=\'3\'
+    //             group by opg.og_id,opg.dep_id';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     // /*----- SUMA META OBJETIVO REGIONAL revisar a optimizar-----*/
-    public function sum_oregional($or_id){
-        $sql = 'select or_id,SUM(prog_fis) suma_meta
-                from objetivo_regional_programado
-                where or_id='.$or_id.'
-                group by or_id';
+    // public function sum_oregional($or_id){
+    //     $sql = 'select or_id,SUM(prog_fis) suma_meta
+    //             from objetivo_regional_programado
+    //             where or_id='.$or_id.'
+    //             group by or_id';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*----- LISTA DE ACTIVIDADES EN EL OBJETIVO REGIONAL revisar-----*/
-    public function list_actividades_oregional($or_id){
-        $sql = 'select *
-                from objetivo_regional_programado
-                where or_id='.$or_id.'
-                order by act_id asc';
+    // public function list_actividades_oregional($or_id){
+    //     $sql = 'select *
+    //             from objetivo_regional_programado
+    //             where or_id='.$or_id.'
+    //             order by act_id asc';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*----- GET OBJETIVO REGIONAL PROGRAMADO -----*/
-    public function get_pregional_programado($por_id){
-        $sql = 'select *
-                from objetivo_regional_programado orp
-                Inner Join objetivos_regionales as oreg On oreg.or_id=orp.or_id
-                Inner Join objetivo_programado_mensual as ogp On ogp.pog_id=oreg.pog_id
-                Inner Join objetivo_gestion as og On og.og_id=ogp.og_id
-                where orp.por_id='.$por_id.' and oreg.g_id='.$this->gestion.'';
+    // public function get_pregional_programado($por_id){
+    //     $sql = 'select *
+    //             from objetivo_regional_programado orp
+    //             Inner Join objetivos_regionales as oreg On oreg.or_id=orp.or_id
+    //             Inner Join objetivo_programado_mensual as ogp On ogp.pog_id=oreg.pog_id
+    //             Inner Join objetivo_gestion as og On og.og_id=ogp.og_id
+    //             where orp.por_id='.$por_id.' and oreg.g_id='.$this->gestion.'';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*----- GET UNIDAD/ESTABLECIMIENTO EN OBJETIVO REGIONAL (GASTO CORRIENTE) -----*/
-    public function get_unidad_pregional_programado($act_id){
-        $sql = ' select *
-              from objetivo_regional_programado orp
-              Inner Join objetivos_regionales as oreg On oreg.or_id=orp.or_id
-              Inner Join objetivo_programado_mensual as ogp On ogp.pog_id=oreg.pog_id
-              Inner Join objetivo_gestion as og On og.og_id=ogp.og_id
-              Inner Join _objetivos_estrategicos as oe On oe.obj_id=og.oe_id
-              Inner Join aperturaprogramatica as apg On apg.aper_id=og.aper_id
-              where orp.act_id='.$act_id.' and oreg.g_id='.$this->gestion.'
-              order by og.og_codigo,oreg.or_codigo asc';
+    // public function get_unidad_pregional_programado($act_id){
+    //     $sql = ' select *
+    //           from objetivo_regional_programado orp
+    //           Inner Join objetivos_regionales as oreg On oreg.or_id=orp.or_id
+    //           Inner Join objetivo_programado_mensual as ogp On ogp.pog_id=oreg.pog_id
+    //           Inner Join objetivo_gestion as og On og.og_id=ogp.og_id
+    //           Inner Join _objetivos_estrategicos as oe On oe.obj_id=og.oe_id
+    //           Inner Join aperturaprogramatica as apg On apg.aper_id=og.aper_id
+    //           where orp.act_id='.$act_id.' and oreg.g_id='.$this->gestion.'
+    //           order by og.og_codigo,oreg.or_codigo asc';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*----- GET VINCULO PROYECTO - OBJETIVO REGIONAL -----*/
     public function get_proyecto_oregional($proy_id,$por_id){
@@ -565,51 +702,51 @@ class Model_objetivoregion extends CI_Model{
     // }
 
     /*----- Obtiene suma de metas priorizados (meta acumulado) vigente-----*/
-    public function get_suma_meta_form4_x_oregional($or_id){
-        $sql = '
-        select p.or_id, SUM(p.prod_meta) as meta_prog_actividades, COUNT(p.or_id) nro
-        from _productos p
-        Inner Join _componentes as c On c.com_id=p.com_id
-        Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-        where p.or_id='.$or_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and p.prod_priori=\'1\' and apg.aper_estado!=\'3\'
-        group by p.or_id';
+    // public function get_suma_meta_form4_x_oregional($or_id){
+    //     $sql = '
+    //     select p.or_id, SUM(p.prod_meta) as meta_prog_actividades, COUNT(p.or_id) nro
+    //     from _productos p
+    //     Inner Join _componentes as c On c.com_id=p.com_id
+    //     Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
+    //     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //     where p.or_id='.$or_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and p.prod_priori=\'1\' and apg.aper_estado!=\'3\'
+    //     group by p.or_id';
 
-        $query = $this->db->query($sql);
+    //     $query = $this->db->query($sql);
 
-        return $query->result_array();
-    }
+    //     return $query->result_array();
+    // }
 
     /*----- Obtiene suma de metas priorizados (meta Recurrentes y trimestral)-----*/
-    public function get_suma_meta_form4_x_oregional_recurrentes($or_id,$tipo_meta){
-        $sql = '
-        select pr.or_id, SUM(pr.prod_meta) suma, COUNT(pr.or_id) nro, round((SUM(pr.prod_meta)/COUNT(pr.or_id)),2) meta_prog_actividades
-        from _productos pr
-        Inner Join _componentes as c On c.com_id=pr.com_id
-        Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-        where pr.or_id='.$or_id.' and pr.estado!=\'3\' and pr.prod_priori=\'1\' and pr.indi_id=\'2\' and pr.mt_id='.$tipo_meta.' and apg.aper_gestion='.$this->gestion.' and apg.aper_estado!=\'3\'
-        group by pr.or_id';
+    // public function get_suma_meta_form4_x_oregional_recurrentes($or_id,$tipo_meta){
+    //     $sql = '
+    //     select pr.or_id, SUM(pr.prod_meta) suma, COUNT(pr.or_id) nro, round((SUM(pr.prod_meta)/COUNT(pr.or_id)),2) meta_prog_actividades
+    //     from _productos pr
+    //     Inner Join _componentes as c On c.com_id=pr.com_id
+    //     Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
+    //     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //     where pr.or_id='.$or_id.' and pr.estado!=\'3\' and pr.prod_priori=\'1\' and pr.indi_id=\'2\' and pr.mt_id='.$tipo_meta.' and apg.aper_gestion='.$this->gestion.' and apg.aper_estado!=\'3\'
+    //     group by pr.or_id';
 
-        $query = $this->db->query($sql);
+    //     $query = $this->db->query($sql);
 
-        return $query->result_array();
-    }
+    //     return $query->result_array();
+    // }
 
 
     /*----- verif lista actividades alineados (todos)-----*/
-    public function get_lista_form4_alineado_x_oregional_todos($or_id){
-        $sql = '
-        select *
-        from _productos pr
-        Inner Join _componentes as c On c.com_id=pr.com_id
-        Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-        where pr.or_id='.$or_id.' and pr.estado!=\'3\' and pr.prod_priori=\'1\' and apg.aper_gestion='.$this->gestion.' and apg.aper_estado!=\'3\'';
+    // public function get_lista_form4_alineado_x_oregional_todos($or_id){
+    //     $sql = '
+    //     select *
+    //     from _productos pr
+    //     Inner Join _componentes as c On c.com_id=pr.com_id
+    //     Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
+    //     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //     where pr.or_id='.$or_id.' and pr.estado!=\'3\' and pr.prod_priori=\'1\' and apg.aper_gestion='.$this->gestion.' and apg.aper_estado!=\'3\'';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*----- verif lista actividades alineados (todos)-----*/
 /*   public function get_lista_form4_alineado_x_oregional_todos__recurrente_trimestral($or_id,$mt_id){
@@ -625,20 +762,20 @@ class Model_objetivoregion extends CI_Model{
 
 
     /*----- get suma meta de actividades alineados a operacion (todos)-----*/
-    public function get_suma_meta_form4_alineado_x_oregional_todos($or_id){
-        $sql = '
-        select pr.or_id, SUM(pr.prod_meta) suma_meta
-        from _productos pr
-        Inner Join _componentes as c On c.com_id=pr.com_id
-        Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-        where pr.or_id='.$or_id.' and pr.estado!=\'3\' and pr.prod_priori=\'1\' and apg.aper_gestion='.$this->gestion.' and apg.aper_estado!=\'3\'
-        GROUP BY pr.or_id';
+    // public function get_suma_meta_form4_alineado_x_oregional_todos($or_id){
+    //     $sql = '
+    //     select pr.or_id, SUM(pr.prod_meta) suma_meta
+    //     from _productos pr
+    //     Inner Join _componentes as c On c.com_id=pr.com_id
+    //     Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
+    //     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //     where pr.or_id='.$or_id.' and pr.estado!=\'3\' and pr.prod_priori=\'1\' and apg.aper_gestion='.$this->gestion.' and apg.aper_estado!=\'3\'
+    //     GROUP BY pr.or_id';
 
-        $query = $this->db->query($sql);
+    //     $query = $this->db->query($sql);
 
-        return $query->result_array();
-    }
+    //     return $query->result_array();
+    // }
 
     /*----- get suma meta de actividades alineados a operacion (recurrentes trimestral)-----*/
 /*    public function get_suma_meta_form4_alineado_x_oregional_todos_recurrente_trimestral($or_id,$mt_id){
@@ -667,18 +804,18 @@ class Model_objetivoregion extends CI_Model{
 
 
     /*-- verifica si existe registro de temporalidad de Objetivos Regionales (revisando)--*/
-    public function verif_temporalidad_oregional($or_id){
-        $sql = 'select *
-                from temp_trm_prog_objetivos_regionales
-                where or_id='.$or_id.' and g_id='.$this->gestion.'';
+    // public function verif_temporalidad_oregional($or_id){
+    //     $sql = 'select *
+    //             from temp_trm_prog_objetivos_regionales
+    //             where or_id='.$or_id.' and g_id='.$this->gestion.'';
 
-        $query = $this->db->query($sql);
+    //     $query = $this->db->query($sql);
 
-        return $query->result_array();
-    }
+    //     return $query->result_array();
+    // }
 
     /*-- Get valor por trimestre Programado Objetivo Regional revisando --*/
-    public function get_trm_temporalidad_prog_oregional($or_id,$trm_id){
+/*    public function get_trm_temporalidad_prog_oregional($or_id,$trm_id){
         $sql = 'select *
                 from temp_trm_prog_objetivos_regionales
                 where or_id='.$or_id.' and g_id='.$this->gestion.' and trm_id='.$trm_id.'';
@@ -686,159 +823,159 @@ class Model_objetivoregion extends CI_Model{
         $query = $this->db->query($sql);
 
         return $query->result_array();
-    }
+    }*/
 
     // /*-- Suma meta Total Programado por Operacion (Objetivo Regional) Gasto Corriente revisando--*/
-    public function get_trm_temporalidad_prog_total_oregional($or_id){
-        $sql = 'select SUM(pg_fis) total_prog
-                from temp_trm_prog_objetivos_regionales
-                where or_id='.$or_id.' and g_id='.$this->gestion.'';
+    // public function get_trm_temporalidad_prog_total_oregional($or_id){
+    //     $sql = 'select SUM(pg_fis) total_prog
+    //             from temp_trm_prog_objetivos_regionales
+    //             where or_id='.$or_id.' and g_id='.$this->gestion.'';
 
-        $query = $this->db->query($sql);
+    //     $query = $this->db->query($sql);
 
-        return $query->result_array();
-    }
+    //     return $query->result_array();
+    // }
 
 
     // /*-- Get valor por trimestre Ejecutado Objetivo Regional revisando --*/
-    public function get_trm_temporalidad_ejec_oregional($or_id,$trm_id){
-        $sql = 'select *
-                from temp_trm_ejec_objetivos_regionales
-                where or_id='.$or_id.' and g_id='.$this->gestion.' and trm_id='.$trm_id.'';
+    // public function get_trm_temporalidad_ejec_oregional($or_id,$trm_id){
+    //     $sql = 'select *
+    //             from temp_trm_ejec_objetivos_regionales
+    //             where or_id='.$or_id.' and g_id='.$this->gestion.' and trm_id='.$trm_id.'';
 
-        $query = $this->db->query($sql);
+    //     $query = $this->db->query($sql);
 
-        return $query->result_array();
-    }
+    //     return $query->result_array();
+    // }
 
 
     /*-- Get valor por trimestre Ejecutado Objetivo Regional a nivel INSTITUCIONAL (ejecutado a la Gestion)--*/
-    public function get_ejec_form2_institucional($og_codigo,$or_codigo){
-        if($this->gestion>2024){ /// Gestion 2025
-            $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
-                from temp_trm_ejec_objetivos_regionales temejec
-                Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
-                Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-                Inner Join objetivo_gestion as og on og.og_id = opge.og_id
-                where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.'  and oreg.or_priorizado=\'1\'
-                group by opge.g_id,og.og_codigo, oreg.or_codigo
-                order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
-        }
-        else{
-            $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
-                from temp_trm_ejec_objetivos_regionales temejec
-                Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
-                Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-                Inner Join objetivo_gestion as og on og.og_id = opge.og_id
-                where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.'
-                group by opge.g_id,og.og_codigo, oreg.or_codigo
-                order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
-        }
+    // public function get_ejec_form2_institucional($og_codigo,$or_codigo){
+    //     if($this->gestion>2024){ /// Gestion 2025
+    //         $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
+    //             from temp_trm_ejec_objetivos_regionales temejec
+    //             Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
+    //             Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //             Inner Join objetivo_gestion as og on og.og_id = opge.og_id
+    //             where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.'  and oreg.or_priorizado=\'1\'
+    //             group by opge.g_id,og.og_codigo, oreg.or_codigo
+    //             order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
+    //     }
+    //     else{
+    //         $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
+    //             from temp_trm_ejec_objetivos_regionales temejec
+    //             Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
+    //             Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //             Inner Join objetivo_gestion as og on og.og_id = opge.og_id
+    //             where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.'
+    //             group by opge.g_id,og.og_codigo, oreg.or_codigo
+    //             order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
+    //     }
         
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*-- Get valor por trimestre Ejecutado Objetivo Regional a nivel INSTITUCIONAL (ejecutado al Trimestre)--*/
-    public function get_ejec_form2_institucional_al_trimestre($og_codigo,$or_codigo,$trimestre){
-        if($this->gestion>2024){
-            $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
-                from temp_trm_ejec_objetivos_regionales temejec
-                Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
-                Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-                Inner Join objetivo_gestion as og on og.og_id = opge.og_id
-                where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.' and (temejec.trm_id>\'0\' and temejec.trm_id<='.$trimestre.') and oreg.or_priorizado=\'1\'
-                group by opge.g_id,og.og_codigo, oreg.or_codigo
-                order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
-        }
-        else{
-            $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
-                from temp_trm_ejec_objetivos_regionales temejec
-                Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
-                Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-                Inner Join objetivo_gestion as og on og.og_id = opge.og_id
-                where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.' and (temejec.trm_id>\'0\' and temejec.trm_id<='.$trimestre.')
-                group by opge.g_id,og.og_codigo, oreg.or_codigo
-                order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
-        }
+    // public function get_ejec_form2_institucional_al_trimestre($og_codigo,$or_codigo,$trimestre){
+    //     if($this->gestion>2024){
+    //         $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
+    //             from temp_trm_ejec_objetivos_regionales temejec
+    //             Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
+    //             Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //             Inner Join objetivo_gestion as og on og.og_id = opge.og_id
+    //             where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.' and (temejec.trm_id>\'0\' and temejec.trm_id<='.$trimestre.') and oreg.or_priorizado=\'1\'
+    //             group by opge.g_id,og.og_codigo, oreg.or_codigo
+    //             order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
+    //     }
+    //     else{
+    //         $sql = 'select opge.g_id,og.og_codigo, oreg.or_codigo, SUM(temejec.ejec_fis) ejecutado
+    //             from temp_trm_ejec_objetivos_regionales temejec
+    //             Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
+    //             Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //             Inner Join objetivo_gestion as og on og.og_id = opge.og_id
+    //             where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.' and og.og_codigo='.$og_codigo.' and oreg.or_codigo='.$or_codigo.' and (temejec.trm_id>\'0\' and temejec.trm_id<='.$trimestre.')
+    //             group by opge.g_id,og.og_codigo, oreg.or_codigo
+    //             order by opge.g_id,og.og_codigo, oreg.or_codigo asc';
+    //     }
 
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*-- Obtiene suma total por trimestre para armar la tenporalidad por Objetivo Regional (Programacion) --*/
-    public function get_suma_trimestre_para_oregional($or_id,$trimestre){
-        $mes_ini=0; $mes_final=3;
+    // public function get_suma_trimestre_para_oregional($or_id,$trimestre){
+    //     $mes_ini=0; $mes_final=3;
 
-        if($trimestre==2) {
-          $mes_ini=3; $mes_final=6;
-        }
-        elseif ($trimestre==3) {
-          $mes_ini=6; $mes_final=9;
-        }
-        elseif ($trimestre==4) {
-          $mes_ini=9; $mes_final=12;
-        }
+    //     if($trimestre==2) {
+    //       $mes_ini=3; $mes_final=6;
+    //     }
+    //     elseif ($trimestre==3) {
+    //       $mes_ini=6; $mes_final=9;
+    //     }
+    //     elseif ($trimestre==4) {
+    //       $mes_ini=9; $mes_final=12;
+    //     }
 
 
-        $sql = '
-        select p.or_id,SUM(pprog.trm) trimestre
-        from _productos p
-        Inner Join _componentes as c On c.com_id=p.com_id
-        Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-        Inner Join (
-            select prod_id, SUM(pg_fis) trm
-            from prod_programado_mensual
-            where g_id='.$this->gestion.' and (m_id>'.$mes_ini.' and m_id<='.$mes_final.') and pg_fis!=\'0\'
-            group by prod_id
-        ) as pprog On pprog.prod_id=p.prod_id
-        where p.or_id='.$or_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and p.prod_priori=\'1\' and apg.aper_estado!=\'3\'
-        group by p.or_id';
+    //     $sql = '
+    //     select p.or_id,SUM(pprog.trm) trimestre
+    //     from _productos p
+    //     Inner Join _componentes as c On c.com_id=p.com_id
+    //     Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
+    //     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //     Inner Join (
+    //         select prod_id, SUM(pg_fis) trm
+    //         from prod_programado_mensual
+    //         where g_id='.$this->gestion.' and (m_id>'.$mes_ini.' and m_id<='.$mes_final.') and pg_fis!=\'0\'
+    //         group by prod_id
+    //     ) as pprog On pprog.prod_id=p.prod_id
+    //     where p.or_id='.$or_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and p.prod_priori=\'1\' and apg.aper_estado!=\'3\'
+    //     group by p.or_id';
 
-        $query = $this->db->query($sql);
+    //     $query = $this->db->query($sql);
 
-        return $query->result_array();
-    }
+    //     return $query->result_array();
+    // }
 
 
     /*-- Obtiene suma total por trimestre para armar la tenporalidad por Objetivo Regional (Ejecucion) --*/
-    public function get_suma_trimestre_ejecucion_oregional($or_id,$trimestre){
-        $mes_ini=0; $mes_final=3;
+    // public function get_suma_trimestre_ejecucion_oregional($or_id,$trimestre){
+    //     $mes_ini=0; $mes_final=3;
 
-        if($trimestre==2) {
-          $mes_ini=3; $mes_final=6;
-        }
-        elseif ($trimestre==3) {
-          $mes_ini=6; $mes_final=9;
-        }
-        elseif ($trimestre==4) {
-          $mes_ini=9; $mes_final=12;
-        }
+    //     if($trimestre==2) {
+    //       $mes_ini=3; $mes_final=6;
+    //     }
+    //     elseif ($trimestre==3) {
+    //       $mes_ini=6; $mes_final=9;
+    //     }
+    //     elseif ($trimestre==4) {
+    //       $mes_ini=9; $mes_final=12;
+    //     }
 
 
-        $sql = '
-        select p.or_id,SUM(pprog.trm) trimestre
-        from _productos p
-        Inner Join _componentes as c On c.com_id=p.com_id
-        Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
-        Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
-        Inner Join (
-            select prod_id, SUM(pejec_fis) trm
-            from prod_ejecutado_mensual
-            where g_id='.$this->gestion.' and (m_id>'.$mes_ini.' and m_id<='.$mes_final.') and pejec_fis!=\'0\'
-            group by prod_id
-        ) as pprog On pprog.prod_id=p.prod_id
-        where p.or_id='.$or_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and p.prod_priori=\'1\' and apg.aper_estado!=\'3\'
-        group by p.or_id';
+    //     $sql = '
+    //     select p.or_id,SUM(pprog.trm) trimestre
+    //     from _productos p
+    //     Inner Join _componentes as c On c.com_id=p.com_id
+    //     Inner Join _proyectofaseetapacomponente as pfe On pfe.pfec_id=c.pfec_id
+    //     Inner Join aperturaprogramatica as apg On apg.aper_id=pfe.aper_id
+    //     Inner Join (
+    //         select prod_id, SUM(pejec_fis) trm
+    //         from prod_ejecutado_mensual
+    //         where g_id='.$this->gestion.' and (m_id>'.$mes_ini.' and m_id<='.$mes_final.') and pejec_fis!=\'0\'
+    //         group by prod_id
+    //     ) as pprog On pprog.prod_id=p.prod_id
+    //     where p.or_id='.$or_id.' and apg.aper_gestion='.$this->gestion.' and p.estado!=\'3\' and p.prod_priori=\'1\' and apg.aper_estado!=\'3\'
+    //     group by p.or_id';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
     /*-- Get Lista de Actividades Priorizados --*/
@@ -867,60 +1004,60 @@ class Model_objetivoregion extends CI_Model{
 
     //// REPORTE DE EVALUACION POA FORMUALRIO 2 - INSTITUCIONAL -----
     /*-- OBTIENE LA SUMATORIA TOTAL PROGRAMADO FORMULARIO 2 A LA GESTION institucional --*/
-    public function get_suma_total_prog_form2_institucional(){
-        $sql = '
-                select opge.g_id,SUM(temprog.pg_fis) programado_total
-                from temp_trm_prog_objetivos_regionales temprog
-                Inner Join objetivos_regionales as oreg on oreg.or_id = temprog.or_id
-                Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-                where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.'
-                group by opge.g_id';
+    // public function get_suma_total_prog_form2_institucional(){
+    //     $sql = '
+    //             select opge.g_id,SUM(temprog.pg_fis) programado_total
+    //             from temp_trm_prog_objetivos_regionales temprog
+    //             Inner Join objetivos_regionales as oreg on oreg.or_id = temprog.or_id
+    //             Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //             where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.'
+    //             group by opge.g_id';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*-- OBTIENE LA SUMATORIA TOTAL EJECUTADO FORMULARIO 2 A LA GESTION institucional --*/
-    public function get_suma_total_ejec_form2_institucional(){
-        $sql = '
-                select opge.g_id,SUM(temejec.ejec_fis) ejecutado_total
-                from temp_trm_ejec_objetivos_regionales temejec
-                Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
-                Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-                where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.'
-                group by opge.g_id';
+    // public function get_suma_total_ejec_form2_institucional(){
+    //     $sql = '
+    //             select opge.g_id,SUM(temejec.ejec_fis) ejecutado_total
+    //             from temp_trm_ejec_objetivos_regionales temejec
+    //             Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
+    //             Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //             where oreg.estado!=\'3\' and opge.g_id='.$this->gestion.'
+    //             group by opge.g_id';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*-- OBTIENE LA SUMATORIA PROGRAMADO FORMULARIO 2 AL TRIMESTRE institucional --*/
-    public function get_suma_trimestre_prog_form2_institucional($trimestre){
-        $sql = '
-            select temprog.trm_id,opge.g_id,SUM(temprog.pg_fis) prog
-            from temp_trm_prog_objetivos_regionales temprog
-            Inner Join objetivos_regionales as oreg on oreg.or_id = temprog.or_id
-            Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-            where oreg.estado!=\'3\' and temprog.trm_id='.$trimestre.' and opge.g_id='.$this->gestion.'
-            group by temprog.trm_id,opge.g_id';
+    // public function get_suma_trimestre_prog_form2_institucional($trimestre){
+    //     $sql = '
+    //         select temprog.trm_id,opge.g_id,SUM(temprog.pg_fis) prog
+    //         from temp_trm_prog_objetivos_regionales temprog
+    //         Inner Join objetivos_regionales as oreg on oreg.or_id = temprog.or_id
+    //         Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //         where oreg.estado!=\'3\' and temprog.trm_id='.$trimestre.' and opge.g_id='.$this->gestion.'
+    //         group by temprog.trm_id,opge.g_id';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
     /*-- OBTIENE LA SUMATORIA EJECUTADO FORMULARIO 2 AL TRIMESTRE institucional --*/
-    public function get_suma_trimestre_ejec_form2_institucional($trimestre){
-        $sql = '
-            select temejec.trm_id,opge.g_id,SUM(temejec.ejec_fis) ejec
-            from temp_trm_ejec_objetivos_regionales temejec
-            Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
-            Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
-            where oreg.estado!=\'3\' and temejec.trm_id='.$trimestre.' and opge.g_id='.$this->gestion.'
-            group by temejec.trm_id,opge.g_id';
+    // public function get_suma_trimestre_ejec_form2_institucional($trimestre){
+    //     $sql = '
+    //         select temejec.trm_id,opge.g_id,SUM(temejec.ejec_fis) ejec
+    //         from temp_trm_ejec_objetivos_regionales temejec
+    //         Inner Join objetivos_regionales as oreg on oreg.or_id = temejec.or_id
+    //         Inner Join objetivo_programado_mensual as opge on opge.pog_id = oreg.pog_id
+    //         where oreg.estado!=\'3\' and temejec.trm_id='.$trimestre.' and opge.g_id='.$this->gestion.'
+    //         group by temejec.trm_id,opge.g_id';
 
-        $query = $this->db->query($sql);
-        return $query->result_array();
-    }
+    //     $query = $this->db->query($sql);
+    //     return $query->result_array();
+    // }
 
 
 }
