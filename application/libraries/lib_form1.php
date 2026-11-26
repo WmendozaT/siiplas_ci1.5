@@ -1,6 +1,6 @@
 <?php if (!defined('BASEPATH')) exit('No se permite el acceso directo al script');
 
-class Acortoplazo extends CI_Controller{
+class Lib_form1 extends CI_Controller{
     public function __construct (){
         parent::__construct();
         $this->load->model('programacion/model_proyecto');
@@ -344,7 +344,7 @@ class Acortoplazo extends CI_Controller{
       return $tabla;
     }*/
 
-    /// FORM 1 ACP Distribucion Regional
+    /// FORM 1 ACP Distribucion Regional Vigente
     public function reporte_form1(){
       $ogestion = $this->model_objetivogestion->list_objetivosgestion_general(); /// LISTA FORM 1 (ACP)
       $tabla='';

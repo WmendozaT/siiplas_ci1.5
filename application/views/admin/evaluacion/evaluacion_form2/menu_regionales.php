@@ -151,6 +151,8 @@
                             <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALCULANDO...</div>
                         </div>
 
+                        
+
                         <!-- Contenedor donde el controlador inyectará los 2 gráficos (#container1, #container2) y la tabla -->
                         <div id="tabla"></div>
                     </div>

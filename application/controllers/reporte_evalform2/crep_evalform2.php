@@ -423,12 +423,12 @@ class Crep_evalform2 extends CI_Controller {
 
                           <!-- Botón 1: Gráfico Trimestral -->
                           <button type="button" class="btn btn-info btn-sm" onclick="imprimirGraficoIndividual(\'grafico_trimestral\', \'calificacion_trimestral\', \'Trimestral\');" style="background-color: #0284c7; border: none; font-weight: bold; padding: 6px 12px;">
-                              <i class="fa fa-bar-chart"></i> IMPRIMIR GRÁFICO TRIMESTRAL
+                              <i class="fa fa-bar-chart"></i> EXPORTAR GRÁF. TRIMESTRAL.Pdf
                           </button>
 
                           <!-- Botón 2: Gráfico Anual / Gestión -->
                           <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoIndividual(\'grafico1\', \'calificacion\', \'Gestion\');" style="background-color: #1c7368; border: none; font-weight: bold; padding: 6px 12px;">
-                              <i class="fa fa-bar-chart"></i> IMPRIMIR GRÁFICO GESTIÓN
+                              <i class="fa fa-bar-chart"></i> EXPORTAR GRÁF. GESTIÓN.Pdf
                           </button>
 
                           <!-- Botón 3: Reporte Consolidado -->
@@ -538,35 +538,8 @@ class Crep_evalform2 extends CI_Controller {
           $suma_porcentajes  = 0;
           $total_operaciones = 0;
 
-          // 2. CONSTRUIR CONTENEDORES DE GRÁFICOS Y TABLA
-          $tabla = '
-          <div id="tit_acp" class="alert alert-info" style="background-color: #f4f6f6; border-left: 5px solid #1c7368; color: #1e293b; padding: 10px 15px; margin-bottom: 15px;">
-              <b>ACP. '.$acp_regional[0]['og_codigo'].' .- </b>'.$acp_regional[0]['og_objetivo'].'
-          </div>
-          <div class="row">
-              <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                  <div id="container1" style="width: 100%; height: 480px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px;"></div>
-              </article>
-              <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                  <div id="container2" style="width: 100%; height: 480px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px;"></div>
-              </article>
-          </div>
-          <hr>
-          <div class="table-responsive">
-              <table class="table table-bordered" style="width:100%; font-size: 11px;" id="datos_acp">
-                  <thead>
-                      <tr style="background-color: #1c7368; color: #000;">
-                          <th style="width:3%; text-align: center;">#</th>
-                          <th style="width:7%; text-align: center;">COD. ACP</th>
-                          <th style="width:7%; text-align: center;">COD. OPE</th>
-                          <th style="width:53%; text-align: center;">OPERACI&Oacute;N</th>
-                          <th style="width:15%; text-align: center;">(%) CUMP. AL TRIMESTRE</th>
-                          <th style="width:15%; text-align: center;">(%) CUMP. A LA GESTI&Oacute;N</th>
-                      </tr>
-                  </thead>
-                  <tbody>';
-
           $nro = 0;
+          $filas_tabla = '';
           foreach ($form2 as $row) {
               $nro++;
               // Etiqueta para el eje Y de Highcharts
@@ -638,17 +611,13 @@ class Crep_evalform2 extends CI_Controller {
               );
 
               // 6. Acumuladores para los promedios (solo suma si tiene programación > 0, o quita el if si promedias todo)
-              //if ($meta_trm > 0) {
                   $suma_trm_porcentajes += $val_trm_tope;
                   $total_trm_operaciones++;
-              //}
 
-              //if ($meta_ges > 0) {
                   $suma_porcentajes += $val_ges_tope;
                   $total_operaciones++;
-              //}
 
-              $tabla .= '
+              $filas_tabla .= '
               <tr>
                   <td class="text-center">'.$nro.'</td>
                   <td class="text-center"><b>'.$row['og_codigo'].'</b></td>
@@ -659,13 +628,24 @@ class Crep_evalform2 extends CI_Controller {
               </tr>';
           }
 
-          $tabla .= '
-                  </tbody>
-              </table>
-          </div>';
-
           // 3. CALCULAR PROMEDIO GLOBAL Y CALIFICACIÓN
+          $promedio_trm = ($total_trm_operaciones > 0) ? round(($suma_trm_porcentajes / $total_trm_operaciones), 1) : 0;
           $promedio_global = ($total_operaciones > 0) ? round(($suma_porcentajes / $total_operaciones), 1) : 0;
+
+          if ($promedio_trm <= 50) {
+            $calificacion_trm = 'INSATISFACTORIO';
+            $color_banner_trm = '#ef4444';
+          } elseif ($promedio_trm <= 75) {
+              $calificacion_trm = 'REGULAR';
+              $color_banner_trm = '#f59e0b';
+          } elseif ($promedio_trm <= 90) {
+              $calificacion_trm = 'BUENO';
+              $color_banner_trm = '#0284c7';
+          } else {
+              $calificacion_trm = 'ÓPTIMO';
+              $color_banner_trm = '#16a34a';
+          }
+
 
           if ($promedio_global <= 50) {
               $calificacion = 'INSATISFACTORIO';
@@ -680,12 +660,56 @@ class Crep_evalform2 extends CI_Controller {
               $calificacion = 'ÓPTIMO';
               $color_banner = '#16a34a';
           }
+          // 2. CONSTRUIR CONTENEDORES DE GRÁFICOS Y TABLA
+          $tabla = '
+          <div class="row">
+            <div id="tit_acp" class="alert alert-info" style="background-color: #f4f6f6; border-left: 5px solid #1c7368; color: #1e293b; padding: 10px 15px; margin-bottom: 15px;">
+              <b>ACP. '.$acp_regional[0]['og_codigo'].' .- </b>'.$acp_regional[0]['og_objetivo'].'
+            </div>
+            <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                <div id="banner_calificacion_acp_trm" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: '.$color_banner_trm.'; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="font-size: 36px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp_trm">'.$promedio_trm.'%</div>
+                    <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp_trm">'.$calificacion_trm.'</div>
+                </div>
+                <div id="container1" style="width: 100%; min-height: 300px;"></div>
+            </article>
+
+            <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: '.$color_banner.'; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="font-size: 36px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">'.$promedio_global.'%</div>
+                    <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">'.$calificacion.'</div>
+                </div>
+                <div id="container2" style="width: 100%; min-height: 300px;"></div>
+            </article>
+          </div>
+          <hr>
+          <div class="table-responsive">
+              <table class="table table-bordered" style="width:100%; font-size: 11px;" id="datos_acp">
+                  <thead>
+                      <tr style="background-color: #1c7368; color: #000;">
+                          <th style="width:3%; text-align: center;">#</th>
+                          <th style="width:7%; text-align: center;">COD. ACP</th>
+                          <th style="width:7%; text-align: center;">COD. OPE</th>
+                          <th style="width:53%; text-align: center;">OPERACI&Oacute;N</th>
+                          <th style="width:15%; text-align: center;">(%) CUMP. AL TRIMESTRE</th>
+                          <th style="width:15%; text-align: center;">(%) CUMP. A LA GESTI&Oacute;N</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    '.$filas_tabla.'
+                </tbody>
+              </table>
+          </div>';
+        
 
           // 4. RESPUESTA JSON UNIFICADA
           $respuesta = array(
               'status'            => 'success',
               'regional'          => $nombre_regional,
               'trimestre'         => $desc_trimestre,
+              'promedio_trm'      => $promedio_trm,
+              'calificacion_trm'  => $calificacion_trm,
+              'color_banner_trm'  => $color_banner_trm,
               'promedio_global'   => $promedio_global,
               'calificacion'      => $calificacion,
               'color_banner'      => $color_banner,
@@ -820,216 +844,186 @@ class Crep_evalform2 extends CI_Controller {
 
 
   /*---- GRAFICO CONSOLIDADO de OPERACIONES (barras) INSTITUCIONAL 2027 total|Priorizados (Modulo : Reporte POA) --------*/
-    public function get_grafico_cumplimiento_form2_institucional_total_o_priorizados() {
-      if ($this->input->is_ajax_request() && $this->input->post()) {
-          $tp = intval($this->input->post('tp'));
-          $tmes   = $this->tmes;
-          $trimestre    = $this->model_evaluacion->get_trimestre($tmes);
-          $trm_indice = ($tmes >= 1 && $tmes <= 4) ? $tmes : 1;
-          $desc_trimestre  = !empty($trimestre) ? strtoupper($trimestre[0]['trm_descripcion']) : 'TRIMESTRE';
+   public function get_grafico_cumplimiento_form2_institucional_total_o_priorizados() {
+    if ($this->input->is_ajax_request() && $this->input->post()) {
+        $tp             = intval($this->input->post('tp'));
+        $tmes           = $this->tmes;
+        $trimestre      = $this->model_evaluacion->get_trimestre($tmes);
+        $trm_indice     = ($tmes >= 1 && $tmes <= 4) ? $tmes : 1;
+        $desc_trimestre = !empty($trimestre) ? strtoupper($trimestre[0]['trm_descripcion']) : 'TRIMESTRE ' . $trm_indice;
 
-          // 2. Llamar a tu consulta SQL optimizada
-          // Cambia $this->model_evaluacionpoa por el nombre exacto con el que cargas ese modelo
-          if($tp==0){
+        // 1. Llamar al modelo según sea Total (0) o Priorizado (1)
+        if ($tp == 0) {
             $form2 = $this->model_objetivoregion->consolidado_formN2_og_or_institucional();
-          }
-          else{
-            $form2 = $this->model_objetivoregion->consolidado_formN2_og_or_institucional_prioridad();
-          }
-          
-          
-          $categorias        = array();
-          $valores_trimestre = array();
-          $valores_gestion   = array();
+        } else {
+            $form2 = $this->model_objetivoregion->consolidado_formN2_og_or_institucional_priorizado();
+        }
 
-          $suma_trm_porcentajes  = 0;
-          $total_trm_operaciones = 0;
+        $categorias        = array();
+        $valores_trimestre = array();
+        $valores_gestion   = array();
 
-          $suma_porcentajes  = 0;
-          $total_operaciones = 0;
+        $suma_trm_porcentajes  = 0;
+        $total_trm_operaciones = 0;
+        $suma_porcentajes      = 0;
+        $total_operaciones     = 0;
 
-          $tabla='';
-          $tabla.='
-          <div class="row">
-              <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                  <div id="container1" style="width: 100%; height: 480px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px;"></div>
-              </article>
-              <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                  <div id="container2" style="width: 100%; height: 480px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px;"></div>
-              </article>
-          </div>
-          <hr>
-          <div class="table-responsive">
-                <table class="table table-bordered" border=0.2 style="width:100%;" id="datos">
-                  <thead>
-                  <tr style="font-size: 11px;">
-                    <th style="width:1%;height:10px;color:#FFF; text-align: center" bgcolor="#1c7368">#</th>
-                    <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. ACP.</b></th>
-                    <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. OPE.</b></th>
-                    <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">OPERACI&Oacute;N</th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. AL TRIMESTRE</th>
-                    <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. A LA GESTIÓN</th>
-                  </tr>
-                  </thead>
-                  <tbody>';
-                  $nro=0;
-                  foreach ($form2 as $row) {
-                      $nro++;
-                      // Etiqueta para el eje Y de Highcharts
-                      $cod_ope = 'OPE ' . $row['og_codigo'] . '.' . $row['or_codigo'];
-                      // Porcentaje Trimestral (porc_cump_1..4) y Gestión (trm_porc_ejec1..4)
-                      $campo_trm = 'cump_trm' . $trm_indice;
-                      $campo_ges = 'cump_anual' . $trm_indice;
+        // 2. Primero armamos únicamente las filas de la tabla y calculamos los acumuladores
+        $filas_tabla = '';
+        $nro = 0;
+        foreach ($form2 as $row) {
+            $nro++;
+            $cod_ope   = 'OPE ' . $row['og_codigo'] . '.' . $row['or_codigo'];
+            $campo_trm = 'cump_trm' . $trm_indice;
+            $campo_ges = 'cump_anual' . $trm_indice;
 
-                      $porc_trm = isset($row[$campo_trm]) ? round(floatval($row[$campo_trm]), 2) : 0;
-                      $porc_ges = isset($row[$campo_ges]) ? round(floatval($row[$campo_ges]), 2) : 0;
+            $porc_trm = isset($row[$campo_trm]) ? round(floatval($row[$campo_trm]), 2) : 0;
+            $porc_ges = isset($row[$campo_ges]) ? round(floatval($row[$campo_ges]), 2) : 0;
 
-                      // Tope visual en barras de 100%
-                      $val_trm_tope = ($porc_trm > 100) ? 100 : $porc_trm;
-                      $val_ges_tope = ($porc_ges > 100) ? 100 : $porc_ges;
+            $val_trm_tope = ($porc_trm > 100) ? 100 : $porc_trm;
+            $val_ges_tope = ($porc_ges > 100) ? 100 : $porc_ges;
 
-                      // 3. Evaluar color de la barra TRIMESTRAL
-                      if ($campo_trm == 0) {
-                          $color_trm = '#ffffff'; // Blanco (Sin programación)
-                          $borde_trm = '#94a3b8'; // Borde gris para que sea visible sobre fondo blanco
-                          $ancho_borde_trm = 1;
-                      } else {
-                          $borde_trm = null;
-                          $ancho_borde_trm = 0;
-                          $color_trm = '#ef4444'; // Rojo (<= 50%)
-                          if ($porc_trm > 50 && $porc_trm <= 80) {
-                              $color_trm = '#f59e0b'; // Amarillo
-                          } elseif ($porc_trm > 80) {
-                              $color_trm = '#10b981'; // Verde
-                          }
-                      }
+            // Color barra TRIMESTRAL
+            $color_trm = '#ef4444'; // Rojo (0% a 50%)
+            if ($porc_trm > 50 && $porc_trm <= 80) {
+                $color_trm = '#f59e0b'; // Amarillo (51% a 80%)
+            } elseif ($porc_trm > 80) {
+                $color_trm = '#10b981'; // Verde (> 80%)
+            }
 
-                      // 4. Evaluar color de la barra ANUAL / GESTIÓN
-                      if ($campo_ges == 0) {
-                          $color_ges = '#ffffff'; // Blanco (Sin programación)
-                          $borde_ges = '#94a3b8';
-                          $ancho_borde_ges = 1;
-                      } else {
-                          $borde_ges = null;
-                          $ancho_borde_ges = 0;
-                          $color_ges = '#ef4444'; // Rojo (<= 50%)
-                          if ($porc_ges > 50 && $porc_ges <= 80) {
-                              $color_ges = '#f59e0b'; // Amarillo
-                          } elseif ($porc_ges > 80) {
-                              $color_ges = '#10b981'; // Verde
-                          }
-                      }
+            // Color barra ANUAL / GESTIÓN
+            $color_ges = '#ef4444'; // Rojo (0% a 50%)
+            if ($porc_ges > 50 && $porc_ges <= 80) {
+                $color_ges = '#f59e0b'; // Amarillo (51% a 80%)
+            } elseif ($porc_ges > 80) {
+                $color_ges = '#10b981'; // Verde (> 80%)
+            }
 
-                      $categorias[] = $cod_ope;
+            $categorias[] = $cod_ope;
 
-                      // 5. Enviar objetos con valor y color hacia Highcharts
-                      $valores_trimestre[] = array(
-                          'y'           => $val_trm_tope,
-                          'color'       => $color_trm,
-                          'borderColor' => $borde_trm,
-                          'borderWidth' => $ancho_borde_trm
-                      );
+            $valores_trimestre[] = array(
+                'y'           => $val_trm_tope,
+                'color'       => $color_trm,
+                'borderColor' => null,
+                'borderWidth' => 0
+            );
 
-                      $valores_gestion[] = array(
-                          'y'           => $val_ges_tope,
-                          'color'       => $color_ges,
-                          'borderColor' => $borde_ges,
-                          'borderWidth' => $ancho_borde_ges
-                      );
+            $valores_gestion[] = array(
+                'y'           => $val_ges_tope,
+                'color'       => $color_ges,
+                'borderColor' => null,
+                'borderWidth' => 0
+            );
 
-                          $suma_trm_porcentajes += $val_trm_tope;
-                          $total_trm_operaciones++;
-                   
-                          $suma_porcentajes += $val_ges_tope;
-                          $total_operaciones++;
-          
-                      $tabla.='
-                      <tr>
-                        <td class="text-center">'.$nro.'</td>
-                        <td class="text-center"><b>'.$row['og_codigo'].'</b></td>
-                        <td class="text-center"><b>'.$row['or_codigo'].'</b></td>
-                        <td >'.$row['or_objetivo'].'</td>
-                        <td class="text-right" style="background-color: #f0f9ff;"><b>'.round($porc_trm,2).' %</b></td>
-                        <td class="text-right" style="background-color: #f0fdf4;"><b>'.round($porc_ges,2).' %</b></td>
-                      </tr>';
-                    }
-                  $tabla.='
-                  </tbody>
-                </table>
-              </div>';
+            $suma_trm_porcentajes += $val_trm_tope;
+            $total_trm_operaciones++;
 
-          // 3. Calcular porcentaje global de la regional (Calificacion Anual)
-          $promedio_trm = ($total_trm_operaciones > 0) ? round(($suma_trm_porcentajes / $total_trm_operaciones), 1) : 0;
-          $promedio_global = ($total_operaciones > 0) ? round(($suma_porcentajes / $total_operaciones), 1) : 0;
+            $suma_porcentajes += $val_ges_tope;
+            $total_operaciones++;
 
-           //// Prmedio Trimestre
-          if ($promedio_trm <= 50) {
-              $calificacion_trm = 'INSATISFACTORIO';
-              $color_banner_trm = '#ef4444';
-          } elseif ($promedio_trm <= 75) {
-              $calificacion_trm = 'REGULAR';
-              $color_banner_trm = '#f59e0b';
-          } elseif ($promedio_trm <= 90) {
-              $calificacion_trm = 'BUENO';
-              $color_banner_trm = '#0284c7';
-          } else {
-              $calificacion_trm = 'ÓPTIMO';
-              $color_banner_trm = '#16a34a';
-          }
+            $filas_tabla .= '
+            <tr>
+                <td class="text-center">'.$nro.'</td>
+                <td class="text-center"><b>'.$row['og_codigo'].'</b></td>
+                <td class="text-center"><b>'.$row['or_codigo'].'</b></td>
+                <td>'.$row['or_objetivo'].'</td>
+                <td class="text-right" style="background-color: #f0f9ff;"><b>'.round($porc_trm, 2).' %</b></td>
+                <td class="text-right" style="background-color: #f0fdf4;"><b>'.round($porc_ges, 2).' %</b></td>
+            </tr>';
+        }
 
-          //// Promedio Anual
-          if ($promedio_global <= 50) {
-              $calificacion = 'INSATISFACTORIO';
-              $color_banner = '#ef4444';
-          } elseif ($promedio_global <= 75) {
-              $calificacion = 'REGULAR';
-              $color_banner = '#f59e0b';
-          } elseif ($promedio_global <= 90) {
-              $calificacion = 'BUENO';
-              $color_banner = '#0284c7';
-          } else {
-              $calificacion = 'ÓPTIMO';
-              $color_banner = '#16a34a';
-          }
+        // 3. Calcular promedios globales y colores de los banners
+        $promedio_trm    = ($total_trm_operaciones > 0) ? round(($suma_trm_porcentajes / $total_trm_operaciones), 1) : 0;
+        $promedio_global = ($total_operaciones > 0) ? round(($suma_porcentajes / $total_operaciones), 1) : 0;
 
-          // 4. RESPUESTA JSON UNIFICADA
-          $respuesta = array(
-              'status'            => 'success',
-            
-              'trimestre'         => $desc_trimestre,
-              'promedio_trm'      => $promedio_trm,
-              'calificacion_trm'  => $calificacion_trm,
-              'color_banner_trm'  => $color_banner_trm,
+        if ($promedio_trm <= 50) {
+            $calificacion_trm = 'INSATISFACTORIO';
+            $color_banner_trm = '#ef4444';
+        } elseif ($promedio_trm <= 75) {
+            $calificacion_trm = 'REGULAR';
+            $color_banner_trm = '#f59e0b';
+        } elseif ($promedio_trm <= 90) {
+            $calificacion_trm = 'BUENO';
+            $color_banner_trm = '#0284c7';
+        } else {
+            $calificacion_trm = 'ÓPTIMO';
+            $color_banner_trm = '#16a34a';
+        }
 
-              'promedio_global'   => $promedio_global,
-              'calificacion'      => $calificacion,
-              'color_banner'      => $color_banner,
-              'categorias'        => $categorias,
-              'valores_trimestre' => $valores_trimestre,
-              'valores_gestion'   => $valores_gestion,
-              'lista'             => $tabla,
-              'gestion'           => $this->gestion
-          );
+        if ($promedio_global <= 50) {
+            $calificacion = 'INSATISFACTORIO';
+            $color_banner = '#ef4444';
+        } elseif ($promedio_global <= 75) {
+            $calificacion = 'REGULAR';
+            $color_banner = '#f59e0b';
+        } elseif ($promedio_global <= 90) {
+            $calificacion = 'BUENO';
+            $color_banner = '#0284c7';
+        } else {
+            $calificacion = 'ÓPTIMO';
+            $color_banner = '#16a34a';
+        }
 
-          echo json_encode($respuesta);
-      } else {
-          show_404();
-      }
-  }
+        // 4. AHORA que todas las variables existen, armamos el HTML completo con banners + gráficos + tabla
+        $tabla = '
+        <div class="row">
+            <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                <div id="banner_calificacion_acp_trm" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: '.$color_banner_trm.'; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="font-size: 36px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp_trm">'.$promedio_trm.'%</div>
+                    <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp_trm">CALIFICACIÓN TRIMESTRAL: '.$calificacion_trm.'</div>
+                </div>
+                <div id="container1" style="width: 100%; min-height: 300px;"></div>
+            </article>
 
+            <article class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: '.$color_banner.'; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="font-size: 36px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">'.$promedio_global.'%</div>
+                    <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALIFICACIÓN ANUAL: '.$calificacion.'</div>
+                </div>
+                <div id="container2" style="width: 100%; min-height: 300px;"></div>
+            </article>
+        </div>
+        <hr>
+        <div class="table-responsive">
+            <table class="table table-bordered" border="0.2" style="width:100%;" id="datos">
+                <thead>
+                    <tr style="font-size: 11px;">
+                        <th style="width:1%;height:10px;color:#FFF; text-align: center" bgcolor="#1c7368">#</th>
+                        <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. ACP.</b></th>
+                        <th style="width:1.5%;color:#FFF; text-align: center" bgcolor="#1c7368"><b>COD. OPE.</b></th>
+                        <th style="width:11%;color:#FFF; text-align: center" bgcolor="#1c7368">OPERACI&Oacute;N</th>
+                        <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. AL TRIMESTRE</th>
+                        <th style="width:5%;color:#FFF;" bgcolor="#1c7368">(%) CUMP. A LA GESTIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    '.$filas_tabla.'
+                </tbody>
+            </table>
+        </div>';
 
+        // 5. Devolver respuesta JSON limpia
+        $respuesta = array(
+            'status'            => 'success',
+            'trimestre'         => $desc_trimestre,
+            'promedio_trm'      => $promedio_trm,
+            'calificacion_trm'  => $calificacion_trm,
+            'color_banner_trm'  => $color_banner_trm,
+            'promedio_global'   => $promedio_global,
+            'calificacion'      => $calificacion,
+            'color_banner'      => $color_banner,
+            'categorias'        => $categorias,
+            'valores_trimestre' => $valores_trimestre,
+            'valores_gestion'   => $valores_gestion,
+            'lista'             => $tabla,
+            'gestion'           => $this->gestion
+        );
 
-
-
-
-
-
-
-
-
-
-
-
+        echo json_encode($respuesta);
+    } else {
+        show_404();
+    }
+}
 
 
 

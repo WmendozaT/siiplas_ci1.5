@@ -28,7 +28,7 @@
         </style>
         <style>
             #mdialTamanio_acp_operacion{
-              width: 90% !important;
+              width: 95% !important;
             }
             #mdialTamanio_lista_operaciones{
               width: 80% !important;
@@ -143,18 +143,21 @@
      <?php echo $modal_form4_priorizados; ?>
      <!-- MODAL cuadro grafico de operaciones alineado a la ACP-->
         <div class="modal fade" id="modal_grafico_xform2" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-lg" style="width: 94%; max-width: 1350px; margin: 10px auto;">
+            <div class="modal-dialog" id="mdialTamanio_acp_operacion">
                 <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
                     
                     <!-- BARRA SUPERIOR AZUL CON BOTÓN DE EXPORTAR PDF Y SALIR -->
                     <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
                         <h4 class="modal-title" style="font-weight: bold; margin: 0; font-size: 16px;">
-                            <i class="fa fa-bar-chart"></i> DETALLE DE CUMPLIMIENTO DE OPERACIONES ALINEADAS A ACP
+                            <i class="fa fa-bar-chart"></i> DETALLE DE CUMPLIMIENTO DE OPERACIONES INSTITUCIONAL
                         </h4>
                         
                         <div style="margin-left: auto;">
-                            <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoAcp();" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
-                                <i class="fa fa-print"></i> EXPORTAR REPORTE PDF
+                            <button type="button" class="btn btn-info btn-sm" onclick="imprimirGraficoIndividual('container1', 'banner_calificacion_acp_trm', 'Trimestre');" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
+                                <i class="fa fa-print"></i> EXPORTAR GRAF. TRIMESTRAL.Pdf
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="imprimirGraficoIndividual('container2', 'banner_calificacion_acp', 'Gestion');" style="background: #10b981; border: none; font-weight: bold; margin-right: 10px; padding: 6px 14px;">
+                                <i class="fa fa-print"></i> EXPORTAR GRAF. ANUAL.Pdf
                             </button>
                             <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" title="SALIR" style="background: #ef4444; border: none; font-weight: bold; padding: 6px 12px;">
                                 <i class="fa fa-times"></i> Salir
@@ -166,14 +169,8 @@
                         
                         <!-- Cabecera Institucional Celeste -->
                         <div class="alert alert-info text-center" style="margin-bottom: 10px; padding: 10px; background-color: #f0f9ff; border: 1px solid #bae6fd; color: #1e3a8a; border-radius: 4px;">
-                            <h4 style="margin: 0; font-weight: bold; font-size: 15px;">CUADRO DE EVALUACIÓN DE OPERACIONES ALINEADAS GESTIÓN <?php echo $this->session->userData('gestion') ?></h4>
+                            <h4 style="margin: 0; font-weight: bold; font-size: 15px;">CUADRO DE EVALUACIÓN DE OPERACIONES INSTITUCIONAL GESTIÓN <?php echo $this->session->userData('gestion') ?></h4>
                             <h5 style="margin: 4px 0 0 0; font-weight: bold; font-size: 13px;" id="lbl_acp_regional_titulo">REGIONAL : CARGANDO...</h5>
-                        </div>
-
-                        <!-- Banner Dinámico Grande de Porcentaje y Calificación -->
-                        <div id="banner_calificacion_acp" class="text-center" style="padding: 12px; border-radius: 4px; color: #ffffff; margin-bottom: 15px; background-color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <div style="font-size: 36px; font-weight: bold; line-height: 1.1;" id="lbl_porcentaje_acp">0.0%</div>
-                            <div style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; margin-top: 4px; text-transform: uppercase;" id="lbl_estado_acp">CALCULANDO...</div>
                         </div>
 
                         <!-- Contenedor donde el controlador inyectará los 2 gráficos (#container1, #container2) y la tabla -->

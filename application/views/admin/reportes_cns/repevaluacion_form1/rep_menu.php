@@ -87,16 +87,13 @@
                 </span>
                 <!-- breadcrumb -->
                 <ol class="breadcrumb">
-                   <li>Reportes POA</li><li>Evaluaci&oacute;n A.c.p.</li><li>Accion de Corto Plazo</li>
+                   <li>Reportes POA</li><li>Evaluaci&oacute;n Form. N° 1</li><li>Accion de Corto Plazo</li>
                 </ol>
             </div>
             <!-- MAIN CONTENT -->
                 <div id="content">
                     <div class="jarviswidget well" id="wid-id-3" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
-                    <div>
-                        <h2>CUADRO DE EVALUACIÓN - FORM 1 (A.C.P.) INSTITUCIONAL</h2>
-                          <?php echo $informacion_trimestral;?>
-                        </div>
+                        <?php echo $tabla; ?>
                     </div>
                 </div>
             <!-- END MAIN CONTENT -->
@@ -123,6 +120,10 @@
         </script>
 
         <!-- IMPORTANT: APP CONFIG -->
+        <script src="<?php echo base_url(); ?>assets/highcharts/js/highcharts.js"></script>
+        <script src="<?php echo base_url(); ?>assets/highcharts/js/highcharts-3d.js"></script>
+        <script src="<?php echo base_url(); ?>assets/highcharts/js/modules/exporting.js"></script>
+        
         <script src="<?php echo base_url(); ?>assets/js/session_time/jquery-idletimer.js"></script>
         <script src="<?php echo base_url(); ?>assets/js/app.config.js"></script>
         <!-- JS TOUCH : include this plugin for mobile drag / drop touch events-->
@@ -143,6 +144,16 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/masked-input/jquery.maskedinput.min.js"></script>
         <!-- JQUERY UI + Bootstrap Slider -->
         <script src="<?php echo base_url(); ?>assets/js/plugin/bootstrap-slider/bootstrap-slider.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
+        <script type="text/javascript">
+    window.datosEvalACP = {
+        categorias: <?php echo $categorias_json; ?>,
+        valoresTrm: <?php echo $valores_trm_json; ?>,
+        valoresGes: <?php echo $valores_ges_json; ?>,
+        gestion:    "<?php echo $gestion; ?>",
+        trimestre:  "<?php echo $desc_trimestre; ?>"
+    };
+</script>
         <script src="<?php echo base_url(); ?>mis_js/seguimientoacp/evaluacionacp.js"></script>
         <!-- browser msie issue fix -->
         <script src="<?php echo base_url(); ?>assets/js/app.min.js"></script>

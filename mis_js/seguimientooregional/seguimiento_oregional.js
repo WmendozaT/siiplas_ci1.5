@@ -1104,122 +1104,122 @@
 
 
     //// imprimir Grafico de la ACP alineado a la Operacion -> FORM2 A ACP 
-   function imprimirGraficoAcp() {
-    if (typeof html2pdf === 'undefined') {
-        alert('Error: No se encuentra cargada la librería html2pdf.');
-        return;
-    }
+//    function imprimirGraficoAcp() {
+//     if (typeof html2pdf === 'undefined') {
+//         alert('Error: No se encuentra cargada la librería html2pdf.');
+//         return;
+//     }
 
-    var tituloGestion    = jQuery('#area_impresion_acp h4').first().text().trim() || 'CUADRO DE EVALUACIÓN DE OPERACIONES';
-    var subtituloReg     = jQuery('#lbl_acp_regional_titulo').text().trim() || 'REGIONAL';
-    var tituloAcp        = jQuery('#tit_acp').text().replace(/\s+/g, ' ').trim() || '';
-    var porcentajeGlobal = jQuery('#lbl_porcentaje_acp').text().trim() || '0.0%';
-    var estadoCalif      = jQuery('#lbl_estado_acp').text().trim() || '';
-    var colorBanner      = jQuery('#banner_calificacion_acp').css('background-color') || '#f59e0b';
+//     var tituloGestion    = jQuery('#area_impresion_acp h4').first().text().trim() || 'CUADRO DE EVALUACIÓN DE OPERACIONES';
+//     var subtituloReg     = jQuery('#lbl_acp_regional_titulo').text().trim() || 'REGIONAL';
+//     var tituloAcp        = jQuery('#tit_acp').text().replace(/\s+/g, ' ').trim() || '';
+//     var porcentajeGlobal = jQuery('#lbl_porcentaje_acp').text().trim() || '0.0%';
+//     var estadoCalif      = jQuery('#lbl_estado_acp').text().trim() || '';
+//     var colorBanner      = jQuery('#banner_calificacion_acp').css('background-color') || '#f59e0b';
 
-    var svg1 = document.querySelector('#container1 svg');
-    var svg2 = document.querySelector('#container2 svg');
-    if (!svg1 || !svg2) {
-        alert('Error: Los gráficos aún no se han renderizado por completo.');
-        return;
-    }
+//     var svg1 = document.querySelector('#container1 svg');
+//     var svg2 = document.querySelector('#container2 svg');
+//     if (!svg1 || !svg2) {
+//         alert('Error: Los gráficos aún no se han renderizado por completo.');
+//         return;
+//     }
 
-    function convertirSvgAImagen(svgElement, anchoPdf, altoPdf) {
-        var svgClone      = svgElement.cloneNode(true);
-        var anchoOriginal = parseFloat(svgElement.getAttribute('width')) || 650;
-        var altoOriginal  = parseFloat(svgElement.getAttribute('height')) || 350;
+//     function convertirSvgAImagen(svgElement, anchoPdf, altoPdf) {
+//         var svgClone      = svgElement.cloneNode(true);
+//         var anchoOriginal = parseFloat(svgElement.getAttribute('width')) || 650;
+//         var altoOriginal  = parseFloat(svgElement.getAttribute('height')) || 350;
 
-        svgClone.setAttribute('width', anchoPdf);
-        svgClone.setAttribute('height', altoPdf);
-        svgClone.setAttribute('viewBox', '0 0 ' + anchoOriginal + ' ' + altoOriginal);
-        svgClone.setAttribute('preserveAspectRatio', 'none');
+//         svgClone.setAttribute('width', anchoPdf);
+//         svgClone.setAttribute('height', altoPdf);
+//         svgClone.setAttribute('viewBox', '0 0 ' + anchoOriginal + ' ' + altoOriginal);
+//         svgClone.setAttribute('preserveAspectRatio', 'none');
 
-        var svgData = new XMLSerializer().serializeToString(svgClone);
-        var imgSrc  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+//         var svgData = new XMLSerializer().serializeToString(svgClone);
+//         var imgSrc  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 
-        return '<img src="' + imgSrc + '" style="width: 100%; height: ' + altoPdf + 'px; display: block;" />';
-    }
+//         return '<img src="' + imgSrc + '" style="width: 100%; height: ' + altoPdf + 'px; display: block;" />';
+//     }
 
-    // Alto ajustado a 320px para compensar el espacio extra de la cabecera con el título de la ACP
-    var imgGrafico1 = convertirSvgAImagen(svg1, 700, 350);
-    var imgGrafico2 = convertirSvgAImagen(svg2, 700, 350);
+//     // Alto ajustado a 320px para compensar el espacio extra de la cabecera con el título de la ACP
+//     var imgGrafico1 = convertirSvgAImagen(svg1, 700, 350);
+//     var imgGrafico2 = convertirSvgAImagen(svg2, 700, 350);
 
-    var contenedorLimpio = document.createElement('div');
-    contenedorLimpio.style.fontFamily      = 'Arial, Helvetica, sans-serif';
-    contenedorLimpio.style.width           = '100%';
-    contenedorLimpio.style.backgroundColor = '#ffffff';
-    contenedorLimpio.style.letterSpacing   = 'normal';
-    contenedorLimpio.style.wordSpacing     = 'normal';
+//     var contenedorLimpio = document.createElement('div');
+//     contenedorLimpio.style.fontFamily      = 'Arial, Helvetica, sans-serif';
+//     contenedorLimpio.style.width           = '100%';
+//     contenedorLimpio.style.backgroundColor = '#ffffff';
+//     contenedorLimpio.style.letterSpacing   = 'normal';
+//     contenedorLimpio.style.wordSpacing     = 'normal';
 
-    var bannerHtml = 
-        '<div style="background-color: ' + colorBanner + '; color: #ffffff; text-align: center; padding: 9px; border-radius: 5px; margin-bottom: 10px;">' +
-            '<div style="font-size: 26px; font-weight: bold; line-height: 1.1;">' + porcentajeGlobal + '</div>' +
-            '<div style="font-size: 10px; font-weight: bold; margin-top: 2px;">' + estadoCalif + '</div>' +
-        '</div>';
+//     var bannerHtml = 
+//         '<div style="background-color: ' + colorBanner + '; color: #ffffff; text-align: center; padding: 9px; border-radius: 5px; margin-bottom: 10px;">' +
+//             '<div style="font-size: 26px; font-weight: bold; line-height: 1.1;">' + porcentajeGlobal + '</div>' +
+//             '<div style="font-size: 10px; font-weight: bold; margin-top: 2px;">' + estadoCalif + '</div>' +
+//         '</div>';
 
-    contenedorLimpio.innerHTML = 
-        '<div>' +
-            bannerHtml +
-            '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px; margin-bottom: 10px;">' +
-                imgGrafico1 +
-            '</div>' +
-            '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px;">' +
-                imgGrafico2 +
-            '</div>' +
-        '</div>';
+//     contenedorLimpio.innerHTML = 
+//         '<div>' +
+//             bannerHtml +
+//             '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px; margin-bottom: 10px;">' +
+//                 imgGrafico1 +
+//             '</div>' +
+//             '<div style="width: 100%; text-align: center; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px;">' +
+//                 imgGrafico2 +
+//             '</div>' +
+//         '</div>';
 
-    var regionalArchivo = subtituloReg.replace('REGIONAL :', '').trim() || 'Regional';
-    var opciones = {
-        // Margen superior ampliado a 36mm para albergar las 3 líneas de cabecera (Título, Regional y ACP)
-        margin:       new Array(36, 12, 14, 12),
-        filename:     'Grafico_Cumplimiento_ACP_' + regionalArchivo + '.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-    };
+//     var regionalArchivo = subtituloReg.replace('REGIONAL :', '').trim() || 'Regional';
+//     var opciones = {
+//         // Margen superior ampliado a 36mm para albergar las 3 líneas de cabecera (Título, Regional y ACP)
+//         margin:       new Array(36, 12, 14, 12),
+//         filename:     'Grafico_Cumplimiento_ACP_' + regionalArchivo + '.pdf',
+//         image:        { type: 'jpeg', quality: 0.98 },
+//         html2canvas:  { scale: 2, useCORS: true, logging: false },
+//         jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+//     };
 
-    html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
-        var totalPaginas = pdf.internal.getNumberOfPages();
-        var anchoPagina  = pdf.internal.pageSize.getWidth();
-        var altoPagina   = pdf.internal.pageSize.getHeight();
+//     html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
+//         var totalPaginas = pdf.internal.getNumberOfPages();
+//         var anchoPagina  = pdf.internal.pageSize.getWidth();
+//         var altoPagina   = pdf.internal.pageSize.getHeight();
 
-        for (var i = 1; i <= totalPaginas; i++) {
-            pdf.setPage(i);
+//         for (var i = 1; i <= totalPaginas; i++) {
+//             pdf.setPage(i);
 
-            // Caja de cabecera institucional ampliada (25mm de alto)
-            pdf.setFillColor(240, 249, 255);
-            pdf.setDrawColor(186, 230, 253);
-            pdf.roundedRect(12, 7, anchoPagina - 24, 25, 2, 2, 'FD');
+//             // Caja de cabecera institucional ampliada (25mm de alto)
+//             pdf.setFillColor(240, 249, 255);
+//             pdf.setDrawColor(186, 230, 253);
+//             pdf.roundedRect(12, 7, anchoPagina - 24, 25, 2, 2, 'FD');
 
-            // Línea 1: Título de gestión
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(10.5);
-            pdf.setTextColor(30, 58, 138);
-            pdf.text(tituloGestion, anchoPagina / 2, 13, { align: 'center' });
+//             // Línea 1: Título de gestión
+//             pdf.setFont('helvetica', 'bold');
+//             pdf.setFontSize(10.5);
+//             pdf.setTextColor(30, 58, 138);
+//             pdf.text(tituloGestion, anchoPagina / 2, 13, { align: 'center' });
 
-            // Línea 2: Regional
-            pdf.setFontSize(9);
-            pdf.setTextColor(2, 132, 199);
-            pdf.text(subtituloReg, anchoPagina / 2, 18.5, { align: 'center' });
+//             // Línea 2: Regional
+//             pdf.setFontSize(9);
+//             pdf.setTextColor(2, 132, 199);
+//             pdf.text(subtituloReg, anchoPagina / 2, 18.5, { align: 'center' });
 
-            // Línea 3: Título de la ACP (ajustado a máximo 2 líneas si es muy largo)
-            if (tituloAcp) {
-                pdf.setFont('helvetica', 'bold');
-                pdf.setFontSize(8);
-                pdf.setTextColor(30, 41, 59);
-                var lineasAcp = pdf.splitTextToSize(tituloAcp, anchoPagina - 32);
-                pdf.text(lineasAcp.slice(0, 2), anchoPagina / 2, 24, { align: 'center' });
-            }
+//             // Línea 3: Título de la ACP (ajustado a máximo 2 líneas si es muy largo)
+//             if (tituloAcp) {
+//                 pdf.setFont('helvetica', 'bold');
+//                 pdf.setFontSize(8);
+//                 pdf.setTextColor(30, 41, 59);
+//                 var lineasAcp = pdf.splitTextToSize(tituloAcp, anchoPagina - 32);
+//                 pdf.text(lineasAcp.slice(0, 2), anchoPagina / 2, 24, { align: 'center' });
+//             }
 
-            // Pie de página
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(8);
-            pdf.setTextColor(100, 116, 139);
-            pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 7);
-            pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 7, { align: 'right' });
-        }
-    }).save();
-}
+//             // Pie de página
+//             pdf.setFont('helvetica', 'normal');
+//             pdf.setFontSize(8);
+//             pdf.setTextColor(100, 116, 139);
+//             pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 7);
+//             pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 7, { align: 'right' });
+//         }
+//     }).save();
+// }
 
 
 /////// impresion de los graficos CONSOLIDADO POR REGIONAL FORM2 REGIONAL (Modulo : Reportes POA)
@@ -1325,70 +1325,67 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
 
     // IMPORTANTE: Concatenar las 3 partes (Banner + Gráfico + Leyenda)
     contenedorLimpio.innerHTML = bannerHtml + graficoHtml + leyendaHtml;
+        var nombreArchivo = 'Grafico_' + tipoReporte + '_Form2.pdf';
+        var opciones = {
+            margin:       new Array(28, 12, 14, 12),
+            filename:     nombreArchivo,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+        };
 
-    var nombreArchivo = 'Grafico_' + tipoReporte + '_Form2.pdf';
-    var opciones = {
-        margin:       new Array(28, 12, 14, 12),
-        filename:     nombreArchivo,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-    };
+        html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
+            var totalPaginas = pdf.internal.getNumberOfPages();
+            var anchoPagina  = pdf.internal.pageSize.getWidth();
+            var altoPagina   = pdf.internal.pageSize.getHeight();
 
-    html2pdf().set(opciones).from(contenedorLimpio).toPdf().get('pdf').then(function (pdf) {
-        var totalPaginas = pdf.internal.getNumberOfPages();
-        var anchoPagina  = pdf.internal.pageSize.getWidth();
-        var altoPagina   = pdf.internal.pageSize.getHeight();
+            for (var i = 1; i <= totalPaginas; i++) {
+                pdf.setPage(i);
 
-        for (var i = 1; i <= totalPaginas; i++) {
-            pdf.setPage(i);
+                // Cabecera institucional
+                pdf.setFillColor(240, 249, 255);
+                pdf.setDrawColor(186, 230, 253);
+                pdf.roundedRect(12, 8, anchoPagina - 24, 16, 2, 2, 'FD');
 
-            // Cabecera institucional
-            pdf.setFillColor(240, 249, 255);
-            pdf.setDrawColor(186, 230, 253);
-            pdf.roundedRect(12, 8, anchoPagina - 24, 16, 2, 2, 'FD');
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(10.5);
+                pdf.setTextColor(30, 58, 138);
+                pdf.text(tituloPrincipal, anchoPagina / 2, 14.5, { align: 'center' });
 
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(10.5);
-            pdf.setTextColor(30, 58, 138);
-            pdf.text(tituloPrincipal, anchoPagina / 2, 14.5, { align: 'center' });
+                pdf.setFontSize(9);
+                pdf.setTextColor(2, 132, 199);
+                pdf.text(subtituloTipo, anchoPagina / 2, 20.5, { align: 'center' });
 
-            pdf.setFontSize(9);
-            pdf.setTextColor(2, 132, 199);
-            pdf.text(subtituloTipo, anchoPagina / 2, 20.5, { align: 'center' });
-
-            // Pie de página
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(8);
-            pdf.setTextColor(100, 116, 139);
-            pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 7);
-            pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 7, { align: 'right' });
-        }
-    }).save();
-}
+                // Pie de página
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 116, 139);
+                pdf.text('Fecha de impresión: ' + new Date().toLocaleDateString('es-ES'), 12, altoPagina - 7);
+                pdf.text('Página ' + i + ' de ' + totalPaginas, anchoPagina - 12, altoPagina - 7, { align: 'right' });
+            }
+        }).save();
+    }
 
 
 
     ///// Grafico Form 2 Institucional (0 Total Operaciones | 1 Priorizados) (Modulo : Reportes POA)
     var request_acp_op;
     function nivel_cumplimiento_form2_institucional_total_o_priorizados(tp) {
-        // tp 0 : total Operaciones Institucional
-        // tp 1 : total Operaciones Institucional Priorizados
+        // tp 0 : Total Operaciones Institucional
+        // tp 1 : Total Operaciones Institucional Priorizados
         var modalEl    = jQuery('#modal_grafico_xform2');
         var contenedor = modalEl.find('#tabla');
 
         modalEl.modal('show');
 
-        // Resetear banner superior
+        // Resetear título superior mientras carga
         jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL : CARGANDO...');
-        jQuery('#lbl_porcentaje_acp').text('0.0%');
-        jQuery('#lbl_estado_acp').text('CALCULANDO...');
-        jQuery('#banner_calificacion_acp').css('background-color', '#64748b');
 
         contenedor.html(
             '<div class="text-center" style="padding: 60px 20px;">' +
                 '<i class="fa fa-spinner fa-spin fa-3x" style="color: #1e3a8a; margin-bottom: 10px;"></i>' +
                 '<h4 style="color: #1e3a8a; font-weight: bold;">Cargando Operaciones ...</h4>' +
+                '<p class="text-muted">Procesando indicadores trimestrales y anuales, por favor espere.</p>' +
             '</div>'
         );
 
@@ -1397,7 +1394,7 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
         }
 
         request_acp_op = jQuery.ajax({
-            url: base + "index.php/reporte_evalform2/crep_evalform2/get_grafico_cumplimiento_form2_institucional_total_o_priorizados", /// form2 total | priorizados
+            url: base + "index.php/reporte_evalform2/crep_evalform2/get_grafico_cumplimiento_form2_institucional_total_o_priorizados",
             type: "POST",
             dataType: "json",
             data: { tp: tp }
@@ -1405,30 +1402,36 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
 
         request_acp_op.done(function (response) {
             if (response.status === 'success') {
-                // Actualizar banner superior
-                if(tp==0){
-                    jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL FORMULARIO N° 2 - Operaciones');
-                }
-                else{
-                    jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL FORMULARIO N° 2 - Operaciones (Priorizados)');
+                // 1. Actualizar subtítulo institucional
+                if (tp == 0) {
+                    titulo='INSTITUCIONAL';
+                    jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL FORMULARIO N° 2 - Total Operaciones');
+                } else {
+                    titulo='INSTITUCIONAL (PRIORIZADOS)';
+                    jQuery('#lbl_acp_regional_titulo').text('INSTITUCIONAL FORMULARIO N° 2 - Operaciones Priorizadas');
                 }
 
-                
-                jQuery('#lbl_porcentaje_acp').text(response.promedio_global + '%');
-                jQuery('#lbl_estado_acp').text(response.calificacion);
-                jQuery('#banner_calificacion_acp').css('background-color', response.color_banner);
-
-                // Insertar contenedores de gráficos y tabla
+                // 2. Insertar primero el HTML (contiene los 2 banners, #container1, #container2 y la tabla)
                 contenedor.html(response.lista).show();
 
-                // Ajustar altura dinámica según cantidad de operaciones
-                var altoDinamico = Math.max(320, response.categorias.length * 30);
+                // 3. Actualizar ambos banners de calificación (Trimestral y Anual)
+                jQuery('#lbl_porcentaje_acp_trm').text(response.promedio_trm + '%');
+                jQuery('#lbl_estado_acp_trm').text('' + response.calificacion_trm);
+                jQuery('#banner_calificacion_acp_trm').css('background-color', response.color_banner_trm);
+
+                jQuery('#lbl_porcentaje_acp').text(response.promedio_global + '%');
+                jQuery('#lbl_estado_acp').text('' + response.calificacion);
+                jQuery('#banner_calificacion_acp').css('background-color', response.color_banner);
+
+                // 4. Ajustar altura dinámica según la cantidad de operaciones
+                var altoDinamico = Math.max(550, response.categorias.length * 24);
                 jQuery('#container1, #container2').css('height', altoDinamico + 'px');
 
+                // 5. Renderizar ambos gráficos Highcharts
                 setTimeout(function() {
                     dibujarGraficoBarrasHorizontal(
                         'container1',
-                        'CUMPLIMIENTO DE OPERACIONES AL ' + response.trimestre + ' - ' + response.gestion,
+                        '(%) CUMPLIMIENTO OPERACIONES '+titulo+' ACUMULADO AL ' + response.trimestre + ' - ' + response.gestion,
                         response.categorias,
                         response.valores_trimestre,
                         '#38bdf8'
@@ -1436,16 +1439,41 @@ function imprimirGraficoIndividual(idGrafico, idBanner, tipoReporte) {
 
                     dibujarGraficoBarrasHorizontal(
                         'container2',
-                        'CUMPLIMIENTO DE OPERACIONES ACUMULADO A LA GESTIÓN ' + response.gestion,
+                        '(%) CUMPLIMIENTO OPERACIONES '+titulo+' A LA GESTIÓN ' + response.gestion,
                         response.categorias,
                         response.valores_gestion,
                         '#0ea5e9'
                     );
                 }, 300);
 
-            } else {
-                contenedor.html('<div class="alert alert-danger">No se pudieron obtener los datos de la ACP.</div>');
-                alertify.error("ERROR AL RECUPERAR INFORMACION");
+                    } else {
+                contenedor.html('<div class="alert alert-danger"><i class="fa fa-warning"></i> No se pudieron obtener los datos solicitados.</div>');
+                if (typeof alertify !== 'undefined') {
+                    alertify.error("ERROR AL RECUPERAR INFORMACIÓN");
+                }
+            }
+        });
+
+        request_acp_op.fail(function (jqXHR, textStatus, errorThrown) {
+            if (textStatus !== 'abort') {
+                // Mostramos el error exacto del servidor dentro del modal para facilitar la depuración
+                contenedor.html(
+                    '<div class="alert alert-danger">' +
+                        '<h4><i class="fa fa-times-circle"></i> Error del Servidor (' + jqXHR.status + ' - ' + errorThrown + ')</h4>' +
+                        '<p>Detalle t&eacute;cnico: ' + jqXHR.responseText + '</p>' +
+                    '</div>'
+                );
+
+                if (typeof alertify !== 'undefined') {
+                    alertify.error("ERROR DE CONEXIÓN");
+                }
+            }
+        });
+
+        request_acp_op.fail(function (jqXHR, textStatus) {
+            if (textStatus !== 'abort') {
+                contenedor.html('<div class="alert alert-danger"><i class="fa fa-times-circle"></i> Error de conexi&oacute;n con el servidor.</div>');
+                alertify.error("ERROR DE CONEXIÓN");
             }
         });
     }

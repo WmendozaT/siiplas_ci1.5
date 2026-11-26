@@ -22,7 +22,7 @@ class Cobjetivo_gestion extends CI_Controller {
           $this->fun_id = $this->session->userData('fun_id');
           $this->dep_id = $this->session->userData('dep_id');
           $this->tp_adm = $this->session->userData('tp_adm');
-          $this->load->library('acortoplazo');
+          $this->load->library('lib_form1');
         }else{
             redirect('/','refresh');
         }
@@ -32,12 +32,12 @@ class Cobjetivo_gestion extends CI_Controller {
     
     /*----- LISTA ACCION DE CORTO PLAZO 2024 ----*/
     public function list_objetivos_gestion(){
-      $data['menu']=$this->acortoplazo->menu(1);
-      $data['titulo']=$this->acortoplazo->titulo();
+      $data['menu']=$this->lib_form1->menu(1);
+      $data['titulo']=$this->lib_form1->titulo();
       $data['oestrategicos'] = $this->model_mestrategico->list_objetivos_estrategicos(); /// Objetivos Estrategicos
       $data['indi']= $this->model_proyecto->indicador(); /// indicador
       $data['programas']=$this->model_proyecto->list_prog(); /// Aperturas Programatica
-      $data['ogestion']=$this->acortoplazo->mis_ogestion_gral();
+      $data['ogestion']=$this->lib_form1->mis_ogestion_gral();
       $data['modal_migracion']=$this->modal_migracion_form2(); /// MODAL DE MIGRACION OPERACIONES
       $data['modal_migracion_alineacion_form4']=$this->modal_migracion_alineacion_form4(); /// MODAL DE MIGRACION PARA ALINEAR LAS ACTIVIDADES
 
@@ -190,17 +190,17 @@ class Cobjetivo_gestion extends CI_Controller {
         
         // Limpieza preliminar del búfer de salida para proteger el binario del PDF
         if (ob_get_length()) ob_clean();
-        $cabecera=$this->acortoplazo->cabecera_acp();
-        $pie=$this->acortoplazo->pie_form1();
+        $cabecera=$this->lib_form1->cabecera_acp();
+        $pie=$this->lib_form1->pie_form1();
         $pie_report='FORM_SPO_N1_'.$this->gestion;
         if($tp==0){
-            $form1= $this->acortoplazo->reporte_form1(); /// lista 1
+            $form1= $this->lib_form1->reporte_form1(); /// lista 1
         }
         else{
-            $form1= $this->acortoplazo->reporte_form1_ppto(); /// lista 1 con ppto
+            $form1= $this->lib_form1->reporte_form1_ppto(); /// lista 1 con ppto
         }
       
-        $form2= $this->acortoplazo->reporte_form1_distribucion_mensual(); /// lista 2
+        $form2= $this->lib_form1->reporte_form1_distribucion_mensual(); /// lista 2
 
         $data['lista'] = '
               <page orientation="landscape" backtop="50mm" backbottom="35mm" backleft="5mm" backright="5mm" pagegroup="new">
@@ -267,16 +267,16 @@ class Cobjetivo_gestion extends CI_Controller {
       //$data['mes'] = $this->acortoplazo->mes_nombre();
 
       //$data['gestion']=$this->gestion;
-        $cabecera=$this->acortoplazo->cabecera_acp();
-        $pie=$this->acortoplazo->pie_form1();
+        $cabecera=$this->lib_form1->cabecera_acp();
+        $pie=$this->lib_form1->pie_form1();
         if($tp==0){
-            $form1= $this->acortoplazo->reporte_form1(); /// lista 1
+            $form1= $this->lib_form1->reporte_form1(); /// lista 1
         }
         else{
-            $form1= $this->acortoplazo->reporte_form1_ppto(); /// lista 1 con ppto
+            $form1= $this->lib_form1->reporte_form1_ppto(); /// lista 1 con ppto
         }
       
-        $lista2= $this->acortoplazo->reporte_form1_distribucion_mensual(); /// lista 2
+        $lista2= $this->lib_form1->reporte_form1_distribucion_mensual(); /// lista 2
 
 
         $data['lista'] = '
@@ -346,7 +346,7 @@ class Cobjetivo_gestion extends CI_Controller {
 
     /*----- LISTA OBJETIVOS DE GESTION SEGUN ACCION ESTRATEGICO ----*/
     public function objetivos_gestion($acc_id){
-      $data['menu']=$this->acortoplazo->menu(1);
+      $data['menu']=$this->lib_form1->menu(1);
       $data['resp']=$this->session->userdata('funcionario');
       $data['res_dep']=$this->tp_resp();
       $data['configuracion']=$this->model_proyecto->configuracion_session();
@@ -966,9 +966,9 @@ class Cobjetivo_gestion extends CI_Controller {
     /*------ REPORTE ALINEACION ACP-FORM 2 Y 4-----*/
     public function reporte_alineacion_acp_act($og_id,$dep_id){
       $ogestion=$this->model_objetivogestion->get_objetivosgestion($og_id);
-      $data['cabecera']=$this->acortoplazo->cabecera_alineacion_acp($ogestion);
-      $data['pie']=$this->acortoplazo->pie_rep_alineacion_acp();
-      $data['alineacion']=$this->acortoplazo->rep_lista_alineacion_poa($og_id,$dep_id);
+      $data['cabecera']=$this->lib_form1->cabecera_alineacion_acp($ogestion);
+      $data['pie']=$this->lib_form1->pie_rep_alineacion_acp();
+      $data['alineacion']=$this->lib_form1->rep_lista_alineacion_poa($og_id,$dep_id);
     
      // echo $data['alineacion'];
       $this->load->view('admin/mestrategico/objetivos_gestion/reporte_alineacion_acp_act', $data); 
