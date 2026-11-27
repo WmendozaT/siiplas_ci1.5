@@ -146,14 +146,14 @@
         <script src="<?php echo base_url(); ?>assets/js/plugin/bootstrap-slider/bootstrap-slider.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
         <script type="text/javascript">
-    window.datosEvalACP = {
-        categorias: <?php echo $categorias_json; ?>,
-        valoresTrm: <?php echo $valores_trm_json; ?>,
-        valoresGes: <?php echo $valores_ges_json; ?>,
-        gestion:    "<?php echo $gestion; ?>",
-        trimestre:  "<?php echo $desc_trimestre; ?>"
-    };
-</script>
+            window.datosEvalACP = {
+                categorias: <?php echo $categorias_json; ?>,
+                valoresTrm: <?php echo $valores_trm_json; ?>,
+                valoresGes: <?php echo $valores_ges_json; ?>,
+                gestion:    "<?php echo $gestion; ?>",
+                trimestre:  "<?php echo $desc_trimestre; ?>"
+            };
+        </script>
         <script src="<?php echo base_url(); ?>mis_js/seguimientoacp/evaluacionacp.js"></script>
         <!-- browser msie issue fix -->
         <script src="<?php echo base_url(); ?>assets/js/app.min.js"></script>

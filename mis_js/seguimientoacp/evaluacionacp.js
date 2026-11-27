@@ -39,79 +39,33 @@ gestion = $('[name="gestion"]').val();
         nuevaVentana.location.href = url;
     }
 
-  function doSearch(){
-    var tableReg = document.getElementById('datos');
-    var searchText = document.getElementById('searchTerm').value.toLowerCase();
-    var cellsOfRow="";
-    var found=false;
-    var compareWith="";
 
-    // Recorremos todas las filas con contenido de la tabla
-    for (var i = 1; i < tableReg.rows.length; i++){
-      cellsOfRow = tableReg.rows[i].getElementsByTagName('td');
-      found = false;
-      // Recorremos todas las celdas
-      for (var j = 0; j < cellsOfRow.length && !found; j++){
-        compareWith = cellsOfRow[j].innerHTML.toLowerCase();
-        // Buscamos el texto en el contenido de la celda
-        if (searchText.length == 0 || (compareWith.indexOf(searchText) > -1)){
-          found = true;
+    jQuery(document).ready(function() {
+        if (typeof window.datosEvalACP !== 'undefined' && window.datosEvalACP.categorias.length > 0) {
+            var datos        = window.datosEvalACP;
+            var altoDinamico = Math.max(350, datos.categorias.length * 38);
+            
+            jQuery('#container1, #container2').css('height', altoDinamico + 'px');
+
+            // Dibujar Gráfico 1: Cumplimiento Trimestral ACP
+            dibujarGraficoBarrasHorizontal(
+                'container1',
+                'CUMPLIMIENTO DE ACP AL ' + datos.trimestre + ' - ' + datos.gestion,
+                datos.categorias,
+                datos.valoresTrm,
+                '#38bdf8'
+            );
+
+            // Dibujar Gráfico 2: Cumplimiento Anual / Gestión ACP
+            dibujarGraficoBarrasHorizontal(
+                'container2',
+                'CUMPLIMIENTO DE ACP ACUMULADO A LA GESTIÓN ' + datos.gestion,
+                datos.categorias,
+                datos.valoresGes,
+                '#10b981'
+            );
         }
-      }
-      if(found) {
-        tableReg.rows[i].style.display = '';
-      } else {
-        // si no ha encontrado ninguna coincidencia, esconde la
-        // fila de la tabla
-        tableReg.rows[i].style.display = 'none';
-      }
-    }
-  }
-
-
-  $( function() {
-    $( "#grupoTablas" ).tabs();
-  } );
-
-  function justNumbers(e){
-    var keynum = window.event ? window.event.keyCode : e.which;
-    if ((keynum == 8) || (keynum == 46))
-    return true;           
-    return /\d/.test(String.fromCharCode(keynum));
-  }
-
-
-
-
-jQuery(document).ready(function() {
-    if (typeof window.datosEvalACP !== 'undefined' && window.datosEvalACP.categorias.length > 0) {
-        var datos        = window.datosEvalACP;
-        var altoDinamico = Math.max(350, datos.categorias.length * 38);
-        
-        jQuery('#container1, #container2').css('height', altoDinamico + 'px');
-
-        // Dibujar Gráfico 1: Cumplimiento Trimestral ACP
-        dibujarGraficoBarrasHorizontal(
-            'container1',
-            'CUMPLIMIENTO DE ACP AL ' + datos.trimestre + ' - ' + datos.gestion,
-            datos.categorias,
-            datos.valoresTrm,
-            '#38bdf8'
-        );
-
-        // Dibujar Gráfico 2: Cumplimiento Anual / Gestión ACP
-        dibujarGraficoBarrasHorizontal(
-            'container2',
-            'CUMPLIMIENTO DE ACP ACUMULADO A LA GESTIÓN ' + datos.gestion,
-            datos.categorias,
-            datos.valoresGes,
-            '#10b981'
-        );
-    }
-});
-
-
-
+    });
 
 
 
@@ -228,4 +182,75 @@ jQuery(document).ready(function() {
                 data: datosEstilizados
             }]
         });
+    }
+
+
+    //// Exportar Operaciones Intiucional / regionales
+    function exportarExcelInstitucional_form1() {
+        if (dep_id === undefined || dep_id === null || dep_id === '') {
+            dep_id = jQuery('#d_id').val() || 0;
+        }
+
+        var boton = btnElement ? jQuery(btnElement) : jQuery('#btn_exportar_excel');
+        var textoOriginal = boton.html();
+        var url = base + "index.php/exportar_form1";
+
+        // 1. Activar estado Loading y deshabilitar botón para evitar múltiples clics
+        boton.prop('disabled', true)
+             .css('opacity', '0.85')
+             .html('<i class="fa fa-spinner fa-spin"></i> GENERANDO EXCEL...');
+
+        // 2. Descargar el archivo en segundo plano mediante fetch
+        fetch(url)
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+
+                // Extraer el nombre exacto del archivo desde la cabecera Content-Disposition de PHP
+                var disposition = response.headers.get('Content-Disposition');
+                var filename = 'Consolidado_Formulario_N2_' + dep_id + '.xls';
+                if (disposition && disposition.indexOf('filename=') !== -1) {
+                    var matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
+                }
+
+                return response.blob().then(function(blob) {
+                    return { blob: blob, filename: filename };
+                });
+            })
+            .then(function(archivo) {
+                // 3. Crear enlace temporal y disparar la descarga en el navegador
+                var downloadUrl = window.URL.createObjectURL(archivo.blob);
+                var a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                a.download = archivo.filename;
+                document.body.appendChild(a);
+                a.click();
+
+                // Limpiar memoria y restaurar botón
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+                
+                if (typeof alertify !== 'undefined') {
+                    alertify.success("Archivo Excel descargado correctamente.");
+                }
+            })
+            .catch(function(error) {
+                console.error('Error al exportar Excel:', error);
+                if (typeof alertify !== 'undefined') {
+                    alertify.error("Error al generar el archivo Excel.");
+                } else {
+                    alert("Ocurrió un error al generar el archivo Excel.");
+                }
+            })
+            .finally(function() {
+                // 4. Restaurar el botón a su estado original (éxito o error)
+                boton.prop('disabled', false)
+                     .css('opacity', '1')
+                     .html(textoOriginal);
+            });
     }

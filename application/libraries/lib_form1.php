@@ -201,7 +201,7 @@ class Lib_form1 extends CI_Controller{
                 <td style="width:30%; height: 3%">
                   <table border="0" cellpadding="0" cellspacing="0" class="tabla" style="width:100%;">
                     <tr style="font-size: 15px;font-family: Arial;">
-                      <td align=center style="width:100%;height: 10%;"><b>FORMULARIO SPO N° 1 </b></td>
+                      <td align=center style="width:100%;height: 10%;"><b>FORMULARIO EVALUACIÓN FORM N° 1 </b></td>
                     </tr>
                   </table>
                 </td>

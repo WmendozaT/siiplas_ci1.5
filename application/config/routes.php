@@ -452,7 +452,8 @@ $route['rep_indicadores_programa/(:any)'] = 'reporte_evalform4/creportes_evaluac
 
 //====== REPORTE EVALUACION A.C.P. FORM 1 
 $route['menu_eval_objetivos'] = 'reporte_evalform1/crep_evalform1/menu_eval_acp';  /// MENU EVALUACION OBJETIVOS  2027
-$route['rep_eval_form1'] = 'reporte_evalform1/crep_evalform1/reporte_evaluacion_form1'; //// Reporte EJEUCION FORM 1
+$route['rep_eval_form1/(:any)'] = 'reporte_evalform1/crep_evalform1/reporte_evaluacion_form1/$1'; //// Reporte EJEUCION FORM 1
+$route['exportar_form1'] = 'reporte_evalform1/crep_evalform1/exportar_form1';  /// eXPORTAR EN EXCEL  2027
 
 //====== REPORTE EVALUACION OPERACIONES FORM 2
 $route['menu_eval_form2'] = 'reporte_evalform2/crep_evalform2/menu_eval_form2';  /// MENU EVALUACION OPERACIONES FORM 2 2027
